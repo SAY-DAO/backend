@@ -1,5 +1,6 @@
 from flask import Flask
-from flask import Blueprint , Response , request , json
+from flask import Blueprint , Response , request , json, abort
+from sqlalchemy import inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
@@ -9,6 +10,10 @@ from say.models import Privileges
 
 
 privilege = Blueprint('privilege' , __name__)
+
+def object_as_dict(obj):
+    return {c.key: getattr(obj, c.key)
+            for c in inspect(obj).mapper.column_attrs}
 
 base = declarative_base()
 
@@ -91,20 +96,16 @@ def getPrivilegeByName(name):
 def getPrivilegeById(privilege_id):
     Session = sessionmaker(db)
     session = Session()
-    base.metadata.create_all(db)
+    # base.metadata.create_all(db)
 
 
     try: 
-        privelegesList = session.query(Privileges).filter_by(id = privilege_id)
-        r = {}
-        for p in privelegesList:
-            res = {
-                'name' : p.name,
-                'privilege' : p.privilege
-            }
-            r[p.id] = res
+        privelegesList = session.query(Privileges).filter_by(id = privilege_id).first()
+
+        if not privelegesList:
+            abort(400)
         
-        resp = Response(json.dumps(r) , status= 200)
+        resp = Response(json.dumps(object_as_dict(privelegesList)) , status= 200)
 
     except Exception as e:
         print(e)

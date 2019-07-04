@@ -1,5 +1,6 @@
 from flask import Flask
-from flask import Blueprint , Response , request , json
+from flask import Blueprint , Response , request , json, abort
+from sqlalchemy import inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
@@ -9,6 +10,11 @@ from say.models import Activity
 
 
 activity  = Blueprint('activity', __name__)
+
+def object_as_dict(obj):
+    return {c.key: getattr(obj, c.key)
+            for c in inspect(obj).mapper.column_attrs}
+
 
 base = declarative_base()
 
@@ -32,7 +38,7 @@ def api_activity():
                     }
                 r[a.id] = res
         
-            resp = Response(json.dumps(r) , status= 200)
+            resp = Response(json.dumps(r) , status= 200, headers={'Access-Control-Allow-Origin': '*'})
         except Exception as e:
             print(e)
             resp = Response(json.dumps({'message' : 'Something is Wrong !!!'}) , status= 500)
@@ -52,7 +58,7 @@ def api_activity():
             session.commit()
 
             res = {'message' : 'New Activity is added'}
-            resp = Response(json.dumps(res) , status=200)
+            resp = Response(json.dumps(res) , status=200, headers={'Access-Control-Allow-Origin': '*'})
             
         except Exception as e:
             print(e)
@@ -123,18 +129,12 @@ def getActivityById(activityId):
     
     Session = sessionmaker(db)
     session = Session()
-    base.metadata.create_all(db)
     try : 
-        activities = session.query(Activity).filter_by(id = activityId)
-        r = {}
-        for a in activities:
-            res = {
-                'socialworker_id' : a.socialworker_id,
-                'activityCode' : a.activityCode, 
-            }
-            r[a.id] = res
+        activity = session.query(Activity).filter_by(id = activityId).first()
 
-        resp = Response(json.dumps(r) , status=200)
+        if not activity:
+            abort(400)
+        resp = Response(json.dumps(object_as_dict(activity)), status=200)
     
     except Exception as e :
         print(e)
