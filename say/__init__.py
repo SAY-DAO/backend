@@ -11,3 +11,13 @@ app.register_blueprint(socialworker, url_prefix='/api/v1')
 app.register_blueprint(ngo, url_prefix='/api/v1')
 app.register_blueprint(privilege, url_prefix='/api/v1')
 app.register_blueprint(activity, url_prefix='/api/v1')
+
+# Middle Ware APIs
+
+from say.api.authentication import authentication
+
+
+
+
+
+app.register_blueprint(authentication , url_prefix = '/api/v1')
