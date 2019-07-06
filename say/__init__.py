@@ -15,9 +15,14 @@ app.register_blueprint(activity, url_prefix='/api/v1')
 # Middle Ware APIs
 
 from say.api.authentication import authentication
-
+from say.api.child import child
+from say.api.need import need
+from say.api.search import search
 
 
 
 
 app.register_blueprint(authentication , url_prefix = '/api/v1')
+app.register_blueprint(child , url_prefix = '/api/v1')
+app.register_blueprint(need , url_prefix = '/api/v1')
+app.register_blueprint(search , url_prefix = '/api/v1')
