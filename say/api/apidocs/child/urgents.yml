@@ -1,0 +1,15 @@
+get children urgent needs
+---
+
+tags:
+  - Child API
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: need_model

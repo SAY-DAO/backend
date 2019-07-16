@@ -1,0 +1,111 @@
+add a child
+---
+
+tags:
+  - Child API
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - name: AvatarUrl
+    in: formData
+    type: file
+    required: true
+
+  - name: VoiceUrl
+    in: formData
+    type: file
+    required: true
+
+  - name: FirstName
+    in: formData
+    type: string
+
+  - name: LastName
+    in: formData
+    type: string
+
+  - name: SayName
+    in: formData
+    type: string
+    required: true
+
+  - name: PhoneNumber
+    in: formData
+    type: string
+    required: true
+
+  - name: Nationality
+    in: formData
+    type: string
+
+  - name: Country
+    in: formData
+    type: integer
+    required: true
+
+  - name: City
+    in: formData
+    type: integer
+    required: true
+
+  - name: Gender
+    in: formData
+    type: boolean
+    required: true
+
+  - name: Bio
+    in: formData
+    type: string
+    required: true
+
+  - name: BioSummary
+    in: formData
+    type: string
+    required: true
+
+  - name: BirthPlace
+    in: formData
+    type: string
+
+  - name: BirthDate
+    in: formData
+    type: string
+
+  - name: Address
+    in: formData
+    type: string
+
+  - name: HousingStatus
+    in: formData
+    type: string
+
+  - name: FamilyCount
+    in: formData
+    type: integer
+
+  - name: Education
+    in: formData
+    type: string
+
+  - name: Status
+    in: formData
+    type: integer
+
+  - name: NgoId
+    in: path
+    type: integer
+    required: true
+
+  - name: SocialWorkerId
+    in: path
+    type: integer
+    required: true
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok

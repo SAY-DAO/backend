@@ -1,0 +1,21 @@
+get social worker by ngo id
+---
+
+tags:
+  - Social Worker API
+
+parameters:
+  - in: path
+    name: socialworker_ngoid
+    required: true
+    type: string
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: social_worker_model

@@ -1,0 +1,86 @@
+get all children
+---
+
+tags:
+  - Child API
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: child_model
+#      properties:
+#        Id:
+#          type: Integer
+#        FirstName:
+#          type: String
+#        LastName:
+#          type: String
+#        SayName:
+#          type: String
+#        PhoneNumber:
+#          type: String
+#        Nationality:
+#          type: String
+#        Country:
+#          type: Integer
+#        City:
+#          type: Integer
+#        AvatarUrl:
+#          type: String
+#        Gender:
+#          type: Boolean
+#        Bio:
+#          type: Text
+#        BioSummary:
+#          type: Text
+#        VoiceUrl:
+#          type: String
+#        BirthPlace:
+#          type: String
+#        BirthDate:
+#          type: Date
+#        Address:
+#          type: Text
+#        HousingStatus:
+#          type: String
+#        FamilyCount:
+#          type: Integer
+#        SayFamilyCount:
+#          type: Integer
+#          default: 0
+#        Education:
+#          type: String
+#        Status:
+#          type: Integer
+#        DoneNeedCount:
+#          type: Integer
+#          default: 0
+#        NgoId:
+#          type: Integer
+#        SocialWorkerId:
+#          type: Integer
+#        SpentCredit:
+#          type: Integer
+#          default: 0
+#        CreatedAt:
+#          type: Date
+#        LastUpdate:
+#          type: Date
+#        IsDeleted:
+#          type: Boolean
+#          default: False
+#        IsConfirmed:
+#          type: Boolean
+#          default: False
+#        ConfirmUser:
+#          type: Integer
+#        ConfirmDate:
+#          type: Date
+#        GeneratedCode:
+#          type: String
+

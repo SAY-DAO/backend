@@ -1,0 +1,68 @@
+get user by id
+---
+
+tags:
+  - User API
+
+parameters:
+  - in: path
+    name: user_id
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: user_model
+      properties:
+        Id:
+          type: integer
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        UserName:
+          type: string
+        PhoneNumber:
+          type: string
+        Credit:
+          type: integer
+          default: 0
+        Country:
+          type: integer
+        City:
+          type: integer
+        AvatarUrl:
+          type: string
+        FlagUrl:
+          type: string
+        Gender:
+          type: boolean
+        EmailAddress:
+          type: string
+        BirthPlace:
+          type: string
+        BirthDate:
+          type: string
+        Password:
+          type: string
+        SpentCredit:
+          type: integer
+          default: 0
+        CreatedAt:
+          type: string
+        LastUpdate:
+          type: string
+        IsDeleted:
+          type: boolean
+          default: False
+        LastLogin:
+          type: string
+        DoneNeedCount:
+          type: string
+          default: 0

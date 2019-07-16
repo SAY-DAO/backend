@@ -1,0 +1,21 @@
+get user by birth date
+---
+
+tags:
+  - User API
+
+parameters:
+  - in: path
+    name: birth_date
+    required: true
+    type: string
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: user_model

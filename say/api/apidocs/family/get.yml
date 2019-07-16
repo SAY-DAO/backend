@@ -1,0 +1,29 @@
+get family by id
+---
+
+tags:
+  - Family API
+
+parameters:
+  - in: path
+    name: family_id
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      properties:
+        UserId:
+          type: integer
+        UserRole:
+          type: integer
+        ChildId:
+          type: integer
+        FamilyId:
+          type: integer

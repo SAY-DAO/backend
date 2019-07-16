@@ -1,0 +1,56 @@
+update need
+---
+
+tags:
+  - Need API
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - name: ImageUrl
+    in: formData
+    type: file
+
+  - name: Name
+    in: formData
+    type: string
+
+  - name: Category
+    in: formData
+    type: integer
+
+  - name: IsUrgent
+    in: formData
+    type: boolean
+
+  - name: Description
+    in: formData
+    type: string
+
+  - name: DescriptionSummary
+    in: formData
+    type: string
+
+  - name: Cost
+    in: formData
+    type: integer
+
+  - name: Type
+    in: formData
+    type: integer
+
+  - name: AffiliateLinkUrl
+    in: formData
+    type: string
+
+  - name: Receipts
+    in: formData
+    type: string
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok

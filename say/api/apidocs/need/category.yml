@@ -1,0 +1,21 @@
+get need by category
+---
+
+tags:
+  - Need API
+
+parameters:
+  - in: path
+    name: category
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: need_model

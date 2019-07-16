@@ -1,0 +1,95 @@
+get social worker by id
+---
+
+tags:
+  - Social Worker API
+
+parameters:
+  - in: path
+    name: socialworker_id
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: social_worker_model
+
+      properties:
+        Id:
+          type: integer
+        GeneratedCode:
+          type: string
+        Id_ngo:
+          type: integer
+        Country:
+          type: integer
+        City:
+          type: integer
+        Id_type:
+          type: integer
+        FirstName:
+          type: string
+        LastName:
+          type: string
+        UserName:
+          type: string
+        Password:
+          type: string
+        BirthCertificateNumber:
+          type: string
+        IdNumber:
+          type: string
+        IdCardUrl:
+          type: string
+        PassportNumber:
+          type: string
+        PassportUrl:
+          type: string
+        Gender:
+          type: boolean
+        BirthDate:
+          type: string
+        PhoneNumber:
+          type: string
+        EmergencyPhoneNumber:
+          type: string
+        EmailAddress:
+          type: string
+        TelegramId:
+          type: string
+        PostalAddress:
+          type: string
+        AvatarUrl:
+          type: string
+        ChildCount:
+          type: integer
+          default: 0
+        NeedCount:
+          type: integer
+          default: 0
+        BankAccountNumber:
+          type: string
+        BankAccountShebaNumber:
+          type: string
+        BankAccountCardNumber:
+          type: string
+        RegisterDate:
+          type: string
+        LastUpdateDate:
+          type: string
+        LastLoginDate:
+          type: string
+        LastLogoutDate:
+          type: string
+        IsActive:
+          type: boolean
+          default: true
+        IsDeleted:
+          type: boolean
+          default: false

@@ -1,0 +1,15 @@
+get user by id
+---
+
+tags:
+  - User API
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: user_model

@@ -1,0 +1,117 @@
+update social worker
+---
+
+tags:
+  - Social Worker API
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - name: socialworker_id
+    in: path
+    type: integer
+    required: true
+
+  - name: Id_ngo
+    in: formData
+    type: integer
+
+  - name: Country
+    in: formData
+    type: integer
+
+  - name: City
+    in: formData
+    type: integer
+
+  - name: Id_type
+    in: formData
+    type: integer
+
+  - name: FirstName
+    in: formData
+    type: string
+
+  - name: LastName
+    in: formData
+    type: string
+
+  - name:
+    in: formData
+    type: string
+
+  - name: UserName
+    in: formData
+    type: string
+
+  - name: BirthCertificateNumber
+    in: formData
+    type: string
+
+  - name: IdNumber
+    in: formData
+    type: string
+
+  - name: IdCardUrl
+    in: formData
+    type: file
+
+  - name: PassportNumber
+    in: formData
+    type: string
+
+  - name: PassportUrl
+    in: formData
+    type: file
+
+  - name: Gender
+    in: formData
+    type: boolean
+
+  - name: BirthDate
+    in: formData
+    type: string
+
+  - name: PhoneNumber
+    in: formData
+    type: string
+
+  - name: EmergencyPhoneNumber
+    in: formData
+    type: string
+
+  - name: EmailAddress
+    in: formData
+    type: string
+
+  - name: TelegramId
+    in: formData
+    type: string
+
+  - name: PostalAddress
+    in: formData
+    type: string
+
+  - name: AvatarUrl
+    in: formData
+    type: file
+
+  - name: BankAccountNumber
+    in: formData
+    type: string
+
+  - name: BankAccountShebaNumber
+    in: formData
+    type: string
+
+  - name: BankAccountCardNumber
+    in: formData
+    type: string
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok

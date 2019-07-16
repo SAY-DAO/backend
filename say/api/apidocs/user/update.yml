@@ -1,0 +1,68 @@
+update a user
+---
+
+tags:
+  - User API
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - name: user_id
+    in: path
+    type: integer
+    required: true
+
+  - name: FirstName
+    in: formData
+    type: string
+
+  - name: LastName
+    in: formData
+    type: string
+
+  - name: UserName
+    in: formData
+    type: string
+
+  - name: AvatarUrl
+    in: formData
+    type: file
+
+  - name: EmailAddress
+    in: formData
+    type: string
+
+  - name: Password
+    in: formData
+    type: string
+
+  - name: Gender
+    in: formData
+    type: boolean
+
+  - name: Country
+    in: formData
+    type: integer
+
+  - name: City
+    in: formData
+    type: integer
+
+  - name: BirthPlace
+    in: formData
+    type: string
+
+  - name: BirthDate
+    in: formData
+    type: string
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: user_model

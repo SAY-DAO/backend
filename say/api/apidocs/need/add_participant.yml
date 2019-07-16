@@ -1,0 +1,28 @@
+add participant to need
+---
+
+tags:
+  - Need API
+
+parameters:
+  - in: path
+    name: need_id
+    required: true
+    type: integer
+
+  - in: path
+    name: user_id
+    required: true
+    type: integer
+
+  - in: path
+    name: family_id
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
