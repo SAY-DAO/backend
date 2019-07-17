@@ -9,7 +9,7 @@ from flasgger import Swagger
 from flasgger.utils import swag_from
 from werkzeug.utils import secure_filename
 
-db = create_engine('postgresql://postgres:postgres@localhost:5432/say')
+db = create_engine('postgresql://postgres:postgres@postgres:5432/say')
 
 UPLOAD_FOLDER = "C:\\Users\\Parsa\\PycharmProjects\\SAY\\say\\files"
 FLAGS = "C:\\Users\\Parsa\\PycharmProjects\\SAY\\say\\flags"
