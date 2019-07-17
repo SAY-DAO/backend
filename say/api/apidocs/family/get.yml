@@ -18,6 +18,8 @@ responses:
     description: Ok
 
     schema:
+      id: family_model
+
       properties:
         UserId:
           type: integer

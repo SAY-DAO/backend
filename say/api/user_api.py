@@ -12,7 +12,7 @@ User APIs
 
 
 def get_user_by_something(session, user_id):
-    user = session.query(UserModel).get(user_id)
+    user = session.query(UserModel).filter_by(Id=user_id).filter_by(IsDeleted=False).first()
 
     user_data = obj_to_dict(user)
     children = get_user_children(session, user)
@@ -27,7 +27,7 @@ def get_user_children(session, user):
 
     children = {}
     for family in families:
-        child = session.query(FamilyModel).get(family.Id_child)
+        child = session.query(FamilyModel).filter_by(Id_child=family.family_relation.Id_child).filter_by(IsDeleted=False).first()
         child_data = get_child_by_id(session, child.Id)
         children[child.Id] = child_data
 
@@ -39,7 +39,7 @@ def get_user_needs(session, user, urgent=False):
 
     needs = {}
     for family in families:
-        child = session.query(FamilyModel).get(family.Id_child)
+        child = session.query(FamilyModel).filter_by(Id_child=family.family_relation.Id_child).filter_by(IsDeleted=False).first()
         child_data = get_child_need(session, child.Id, urgent)
         needs[child.Id] = child_data
 
@@ -605,20 +605,24 @@ class UpdateUserById(Resource):
         try:
             primary_user = session.query(UserModel).filter_by(Id=user_id).filter_by(IsDeleted=False).first()
 
-            if 'UserName' in request.form.keys():
-                primary_user.UserName = request.form['UserName']
-            if 'AvatarUrl' in request.form.keys():
+            if 'AvatarUrl' in request.files.keys():
                 file = request.files['AvatarUrl']
                 if file.filename == '':
                     resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
                     session.close()
                     return resp
-                if file and allowed_file(file.filename):
+                if file and allowed_image(file.filename):
                     filename = secure_filename(file.filename)
-                    primary_user.AvatarUrl = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    temp_user_path = os.path.join(app.config['UPLOAD_FOLDER'], str(primary_user.Id) + '-user')
+                    for obj in os.listdir(temp_user_path):
+                        check = str(primary_user.Id) + '-avatar'
+                        if obj.split('_')[0] == check:
+                            os.remove(os.path.join(temp_user_path, obj))
+                    primary_user.AvatarUrl = os.path.join(temp_user_path, str(primary_user.Id) + '-avatar_' + filename)
                     file.save(primary_user.AvatarUrl)
                     resp = Response(json.dumps({'message': 'WELL DONE!'}))
-                primary_user.AvatarUrl = request.form['AvatarUrl']
+            if 'UserName' in request.form.keys():
+                primary_user.UserName = request.form['UserName']
             if 'EmailAddress' in request.form.keys():
                 primary_user.EmailAddress = request.form['EmailAddress']
             if 'Password' in request.form.keys():
@@ -700,6 +704,12 @@ class AddUser(Resource):
         session = session_maker()
 
         try:
+            if len(session.query(UserModel).all()):
+                last_user = session.query(UserModel).order_by(UserModel.Id.desc()).first()
+                current_id = last_user.Id + 1
+            else:
+                current_id = 1
+
             path = None
             if 'AvatarUrl' in request.files:
                 file = request.files['AvatarUrl']
@@ -707,16 +717,17 @@ class AddUser(Resource):
                     resp =  Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
                     session.close()
                     return resp
-                if file and allowed_file(file.filename):
+                if file and allowed_image(file.filename):
                     filename = secure_filename(file.filename)
-                    path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    file.save(path)
-                    resp =  Response(json.dumps({'message': 'WELL DONE!'}))
 
-            FirstName = request.form['FirstName']
-            LastName = request.form['LastName']
-            UserName = request.form['UserName']
-            AvatarUrl = path
+                    temp_user_path = os.path.join(app.config['UPLOAD_FOLDER'], str(current_id) + '-user')
+                    if not os.path.isdir(temp_user_path):
+                        os.mkdir(temp_user_path)
+
+                    path = os.path.join(temp_user_path, str(current_id) + '-avatar_' + filename)
+                    file.save(path)
+                    resp = Response(json.dumps({'message': 'WELL DONE!'}))
+
             PhoneNumber = request.form['PhoneNumber']
             if 'EmailAddress' in request.form.keys():
                 EmailAddress = request.form['EmailAddress']
@@ -726,10 +737,6 @@ class AddUser(Resource):
                 Gender = True if request.form['Gender'] == 'true' else False
             else:
                 Gender = None
-            City = int(request.form['City'])
-            Country = int(request.form['Country'])
-            CreatedAt = datetime.now()
-            LastUpdate = datetime.now()
             if 'BirthDate' in request.form.keys():
                 BirthDate = datetime.strptime(request.form['BirthDate'], '%Y-%m-%d')
             else:
@@ -740,6 +747,15 @@ class AddUser(Resource):
                 BirthPlace = None
             LastLogin = datetime.now()
             Password = request.form['Password']
+            FirstName = request.form['FirstName']
+            LastName = request.form['LastName']
+            UserName = request.form['UserName']
+            AvatarUrl = path
+            City = int(request.form['City'])
+            Country = int(request.form['Country'])
+            CreatedAt = datetime.now()
+            LastUpdate = datetime.now()
+            FlagUrl = os.path.join(FLAGS, str(Country) + '.png')
 
             new_user = UserModel(
                 FirstName=FirstName,
@@ -756,7 +772,8 @@ class AddUser(Resource):
                 BirthDate=BirthDate,
                 BirthPlace=BirthPlace,
                 LastLogin=LastLogin,
-                Password=Password
+                Password=Password,
+                FlagUrl=FlagUrl
             )
 
             session.add(new_user)
@@ -778,7 +795,7 @@ API URLs
 """
 
 api.add_resource(GetUserById, '/api/v2/user/userId=<user_id>')
-api.add_resource(GetUserByFullName, '/api/v2/user/name=<first_name>%<last_name>')
+api.add_resource(GetUserByFullName, '/api/v2/user/name=<first_name>&<last_name>')
 api.add_resource(GetUserByBirthPlace, '/api/v2/user/birthPlace=<birth_place>')
 api.add_resource(GetUserByBirthDate, '/api/v2/user/birthDate=<birth_date>')
 api.add_resource(GetUserByCountry, '/api/v2/user/country=<country>')

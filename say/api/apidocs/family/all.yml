@@ -1,0 +1,15 @@
+get all families
+---
+
+tags:
+  - Family API
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: family_model

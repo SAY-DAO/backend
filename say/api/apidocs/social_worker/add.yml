@@ -32,10 +32,6 @@ parameters:
     in: formData
     type: string
 
-  - name:
-    in: formData
-    type: string
-
   - name: UserName
     in: formData
     type: string

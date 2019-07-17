@@ -1,7 +1,9 @@
+from say.models.child_model import ChildModel
 from say.models.child_need_model import ChildNeedModel
 from say.models.need_family_model import NeedFamilyModel
 from say.models.need_model import NeedModel
 from say.models.payment_model import PaymentModel
+from say.models.social_worker_model import SocialWorkerModel
 from say.models.user_model import UserModel
 from . import *
 
@@ -29,7 +31,7 @@ def get_need(need, session):
 
     users = {}
     for participant in participants:
-        user = session.query(UserModel).filter_by(IsDeleted=False).get(participant.Id_user)
+        user = session.query(UserModel).filter_by(IsDeleted=False).filter_by(Id=participant.Id_user).first()
         users[user.Id] = obj_to_dict(user)
 
     need_data['ChildId'] = child_data
@@ -123,7 +125,7 @@ class GetNeedParticipants(Resource):
 
             users = {}
             for p in participants:
-                user = session.query(UserModel).filter_by(IsDeleted=False).get(p.Id_user)
+                user = session.query(UserModel).filter_by(IsDeleted=False).filter_by(Id=p.Id_user).first()
                 users[user.Id] = obj_to_dict(user)
 
             users['TotalSpentCredit'] = need.Spent
@@ -173,8 +175,8 @@ class AddPaymentForNeed(Resource):
             Amount = int(request.form['Amount'])
             CreatedAt = datetime.now()
 
-            user = session.query(UserModel).filter_by(IsDeleted=False).get(Id_user)
-            need = session.query(NeedModel).filter_by(IsDeleted=False).get(Id_need)
+            user = session.query(UserModel).filter_by(IsDeleted=False).filter_by(Id=Id_user).first()
+            need = session.query(NeedModel).filter_by(IsDeleted=False).filter_by(Id=Id_need).first()
 
             if Amount > need.Cost - need.Spent:
                 resp = Response(json.dumps({'msg': 'error in payment!'}))
@@ -196,7 +198,8 @@ class AddPaymentForNeed(Resource):
                 need.Progress = need.Spent // need.Cost
 
                 if need.Spent == need.Cost:
-                    need.Status = 2  # done
+                    need.IsDone = True
+                    user.DoneNeedCount += 1
 
                 session.commit()
 
@@ -219,6 +222,7 @@ class UpdateNeedById(Resource):
 
         try:
             primary_need = session.query(NeedModel).filter_by(Id=need_id).filter_by(IsDeleted=False).first()
+            child = session.query(ChildNeedModel).filter_by(Id_need=need_id).filter_by(IsDeleted=False).first()
 
             if 'Cost' in request.form.keys():
                 # if len(session.query(NeedFamilyModel).filter_by(Id_need=need_id).all()) != 0:
@@ -240,9 +244,16 @@ class UpdateNeedById(Resource):
                     resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
                     session.close()
                     return resp
-                if file and allowed_file(file.filename):
+                if file and allowed_image(file.filename):
                     filename = secure_filename(file.filename)
-                    primary_need.ImageUrl = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    temp_need_path = os.path.join(app.config['UPLOAD_FOLDER'], str(child.Id_child) + '-child')
+                    temp_need_path = os.path.join(temp_need_path, 'needs')
+                    temp_need_path = os.path.join(temp_need_path, str(primary_need.Id) + '-need')
+                    for obj in os.listdir(temp_need_path):
+                        check = str(primary_need.Id) + '-image'
+                        if obj.split('_')[0] == check:
+                            os.remove(os.path.join(temp_need_path, obj))
+                    primary_need.ImageUrl = os.path.join(temp_need_path, str(primary_need.Id) + '-image_' + filename)
                     file.save(primary_need.ImageUrl)
                     resp = Response(json.dumps({'message': 'WELL DONE!'}))
             if 'Category' in request.form.keys():
@@ -324,7 +335,7 @@ class ConfirmNeed(Resource):
             # child = session.query(ChildNeedModel).filter_by(IsDeleted=False).get(need_id)
 
             if 'IsConfirmed' in request.form.keys():
-                primary_need.IsConfirmed = request.form['IsConfirmed']
+                primary_need.IsConfirmed = True if request.form['IsConfirmed'] == 'true' else False
             if 'ConfirmUser' in request.form.keys():
                 # if child.NgoId == request.form['NgoId']
                 primary_need.ConfirmUser = user_id
@@ -380,6 +391,14 @@ class AddNeed(Resource):
         resp = {'msg': 'shit happened.'}
 
         try:
+            if len(session.query(NeedModel).all()):
+                last_need = session.query(NeedModel).order_by(NeedModel.Id.desc()).first()
+                current_id = last_need.Id + 1
+            else:
+                current_id = 1
+
+            Name = request.form['Name']
+
             path = 'some wrong url'
             if 'Image' not in request.files:
                 resp =  Response(json.dumps({'message': 'ERROR OCCURRED IN FILE UPLOADING!'}))
@@ -387,17 +406,23 @@ class AddNeed(Resource):
                 return resp
             file = request.files['Image']
             if file.filename == '':
-                resp =  Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
+                resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
                 session.close()
                 return resp
-            if file and allowed_file(file.filename):
+            if file and allowed_image(file.filename):
                 filename = secure_filename(file.filename)
-                path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+                temp_need_path = os.path.join(app.config['UPLOAD_FOLDER'], str(child_id) + '-child')
+                temp_need_path = os.path.join(temp_need_path, 'needs')
+                temp_need_path = os.path.join(temp_need_path, str(current_id) + '-need')
+                if not os.path.isdir(temp_need_path):
+                    os.mkdir(temp_need_path)
+
+                path = os.path.join(temp_need_path, str(current_id) + '-image_' + filename)
                 file.save(path)
-                resp =  Response(json.dumps({'message': 'WELL DONE!'}))
+                resp = Response(json.dumps({'message': 'WELL DONE!'}))
 
             ImageUrl = path
-            Name = request.form['Name']
             CreatedAt = datetime.now()
             Category = int(request.form['Category'])
             Cost = (request.form['Cost'])
@@ -438,6 +463,11 @@ class AddNeed(Resource):
                 Id_need=new_need.Id,
             )
 
+            child = session.query(ChildModel).filter_by(Id=child_id).filter_by(IsDeleted=False).first()
+            social_worker = session.query(SocialWorkerModel).filter_by(Id=child.SocialWorkerId).filter_by(IsDeleted=False).first()
+            if not social_worker:
+                social_worker.NeedCount += 1
+
             session.add(new_child_need)
             session.commit()
 
@@ -461,9 +491,9 @@ api.add_resource(GetNeedByCategory, '/api/v2/need/category=<category>')
 api.add_resource(GetNeedByType, '/api/v2/need/type=<type>')
 api.add_resource(GetNeedParticipants, '/api/v2/need/participants/needId=<need_id>')
 api.add_resource(GetAllUrgentNeeds, '/api/v2/need/urgent/all')
-api.add_resource(AddPaymentForNeed, '/api/v2/need/payment/needId=<need_id>%userId=<user_id>')
+api.add_resource(AddPaymentForNeed, '/api/v2/need/payment/needId=<need_id>&userId=<user_id>')
 api.add_resource(UpdateNeedById, '/api/v2/need/update/needId=<need_id>')
 api.add_resource(DeleteNeedById, '/api/v2/need/delete/needId=<need_id>')
-api.add_resource(ConfirmNeed, '/api/v2/need/confirm/needId=<need_id>')
-api.add_resource(AddParticipantToNeed, '/api/v2/need/participants/add/needId=<need_id>%userId=<user_id>%familyId=<family_id>')
+api.add_resource(ConfirmNeed, '/api/v2/need/confirm/needId=<need_id>&userId=<user_id>')
+api.add_resource(AddParticipantToNeed, '/api/v2/need/participants/add/needId=<need_id>&userId=<user_id>&familyId=<family_id>')
 api.add_resource(AddNeed, '/api/v2/need/add/childId=<child_id>')

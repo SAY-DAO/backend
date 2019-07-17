@@ -93,12 +93,12 @@ parameters:
     in: formData
     type: integer
 
-  - name: NgoId
+  - name: ngo_id
     in: path
     type: integer
     required: true
 
-  - name: SocialWorkerId
+  - name: social_worker_id
     in: path
     type: integer
     required: true

@@ -3,6 +3,8 @@ from flasgger.utils import validate
 from say.models.child_model import ChildModel
 from say.models.child_need_model import ChildNeedModel
 from say.models.family_model import FamilyModel
+from say.models.ngo_model import NgoModel
+from say.models.social_worker_model import SocialWorkerModel
 from say.models.user_family_model import UserFamilyModel
 from say.models.user_model import UserModel
 from . import *
@@ -122,7 +124,7 @@ class GetChildrenOfUserByUserId(Resource):
                 families = session.query(FamilyModel).filter_by(Id_child=user.Id_family).all()
 
                 for family in families:
-                    child = session.query(FamilyModel).filter_by(IsDeleted=False).get(family.Id_child)  # TODO: check!
+                    child = session.query(FamilyModel).filter_by(IsDeleted=False).filter_by(Id=family.Id_child).first()
                     child_data = get_child_by_id(session, child.Id)
                     child_res[family.Id] = child_data
 
@@ -185,6 +187,27 @@ class GetChildSayName(Resource):
             return resp
 
 
+class GetChildFamilyId(Resource):
+    @swag_from('./apidocs/child/family_id.yml')
+    def get(self, child_id):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+
+        try:
+            family = session.query(FamilyModel).filter_by(Id_child=child_id).filter_by(IsDeleted=False).first()
+
+            resp = Response(json.dumps({'ChildFamilyId': family.Id}))
+
+        except Exception as e:
+            print(e)
+
+            resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
+
+        finally:
+            session.close()
+            return resp
+
+
 class GetChildAvatarUrl(Resource):
     @swag_from('./apidocs/child/avatar.yml')
     def get(self, child_id):
@@ -234,6 +257,14 @@ class AddChild(Resource):
         session = session_maker()
 
         try:
+            if len(session.query(ChildModel).all()):
+                last_child = session.query(ChildModel).order_by(ChildModel.Id.desc()).first()
+                current_id = last_child.Id + 1
+            else:
+                current_id = 1
+
+            print(list(request.files.keys()))
+            print(list(request.form.keys()))
             avatar_path, voice_path = 'wrong avatar', 'wrong voice'
             if 'VoiceUrl' not in request.files or 'AvatarUrl' not in request.files:
                 resp = Response(json.dumps({'message': 'ERROR OCCURRED IN FILE UPLOADING!'}))
@@ -249,23 +280,34 @@ class AddChild(Resource):
                 resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY AVATAR!'}))
                 session.close()
                 return resp
-            if file1 and allowed_file(file1.filename):
+            if file1 and allowed_voice(file1.filename):
                 filename = secure_filename(file1.filename)
-                voice_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+                temp_voice_path = os.path.join(app.config['UPLOAD_FOLDER'], str(current_id) + '-child')
+                if not os.path.isdir(temp_voice_path):
+                    os.mkdir(temp_voice_path)
+
+                voice_path = os.path.join(temp_voice_path, str(current_id) + '-voice_' + filename)
                 file1.save(voice_path)
                 resp = Response(json.dumps({'message': 'WELL DONE!'}))
-            if file2 and allowed_file(file2.filename):
+            if file2 and allowed_image(file2.filename):
                 filename = secure_filename(file2.filename)
-                avatar_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+                temp_avatar_path = os.path.join(app.config['UPLOAD_FOLDER'], str(current_id) + '-child')
+                if not os.path.isdir(temp_avatar_path):
+                    os.mkdir(temp_avatar_path)
+                temp_need_path = os.path.join(temp_avatar_path, 'needs')
+                if not os.path.isdir(temp_need_path):
+                    os.mkdir(temp_need_path)
+
+                avatar_path = os.path.join(temp_avatar_path, str(current_id) + '-avatar_' + filename)
                 file2.save(avatar_path)
                 resp = Response(json.dumps({'message': 'WELL DONE!'}))
 
-            PhoneNumber = request.form['PhoneNumber']
             if 'Nationality' in request.form.keys():
                 Nationality = request.form['Nationality']
             else:
                 Nationality = None
-            AvatarUrl = avatar_path
             if 'HousingStatus' in request.form.keys():
                 HousingStatus = request.form['HousingStatus']
             else:
@@ -278,9 +320,6 @@ class AddChild(Resource):
                 LastName = request.form['LastName']
             else:
                 LastName = None
-            FamilyCount = int(request.form['FamilyCount'])
-            Education = request.form['Education']
-            CreatedAt = datetime.now()
             if 'BirthPlace' in request.form.keys():
                 BirthPlace = request.form['BirthPlace']
             else:
@@ -293,6 +332,20 @@ class AddChild(Resource):
                 Address = request.form['Address']
             else:
                 Address = None
+            if 'Status' in request.form.keys():
+                Status = int(request.form['Status'])
+            else:
+                Status = None
+            if 'Education' in request.form.keys():
+                Education = request.form['Education']
+            else:
+                Education = None
+            if 'FamilyCount' in request.form.keys():
+                FamilyCount = int(request.form['FamilyCount'])
+            else:
+                FamilyCount = None
+            PhoneNumber = request.form['PhoneNumber']
+            AvatarUrl = avatar_path
             Bio = request.form['Bio']
             VoiceUrl = voice_path
             NgoId = ngo_id
@@ -302,11 +355,9 @@ class AddChild(Resource):
             City = int(request.form['City'])
             Gender = True if request.form['Gender'] == 'true' else False
             BioSummary = request.form['BioSummary']
-            if 'Status' in request.form.keys():
-                Status = int(request.form['Status'])
-            else:
-                Status = None
+            CreatedAt = datetime.now()
             LastUpdate = datetime.now()
+
 
             new_child = ChildModel(
                 PhoneNumber=PhoneNumber,
@@ -343,6 +394,9 @@ class AddChild(Resource):
                 Id_child=same_child.Id
             )
 
+            session.query(NgoModel).filter_by(Id=NgoId).filter_by(IsDeleted=False).first().ChildrenCount += 1
+            session.query(SocialWorkerModel).filter_by(Id=SocialWorkerId).filter_by(IsDeleted=False).first().ChildCount += 1
+
             session.add(new_family)
             session.commit()
 
@@ -364,12 +418,12 @@ class GetChildFamilyMembers(Resource):
         session = session_maker()
 
         try:
-            family = session.query(FamilyModel).filter_by(IsDeleted=False).get(child_id)
+            family = session.query(FamilyModel).filter_by(IsDeleted=False).filter_by(Id_child=child_id).first()
             members = session.query(UserFamilyModel).filter_by(Id_family=family.Id).filter_by(IsDeleted=False).all()
 
             family_res = {}
             for member in members:
-                user = session.query(UserModel).filter_by(IsDeleted=False).get(member.Id_user)
+                user = session.query(UserModel).filter_by(IsDeleted=False).filter_by(Id=member.Id_user).first()
                 user_data = obj_to_dict(user)
                 user_data['Role'] = member.UserRole
                 family_res[user.Id] = user_data
@@ -431,9 +485,14 @@ class UpdateChildById(Resource):
                     resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY AVATAR!'}))
                     session.close()
                     return resp
-                if file2 and allowed_file(file2.filename):
+                if file2 and allowed_image(file2.filename):
                     filename = secure_filename(file2.filename)
-                    primary_child.AvatarUrl =  os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    temp_avatar_path = os.path.join(app.config['UPLOAD_FOLDER'], str(primary_child.Id) + '-child')
+                    for obj in os.listdir(temp_avatar_path):
+                        check = str(primary_child.Id) + '-avatar'
+                        if obj.split('_')[0] == check:
+                            os.remove(os.path.join(temp_avatar_path, obj))
+                    primary_child.AvatarUrl =  os.path.join(temp_avatar_path, str(primary_child.Id) + '-avatar_' + filename)
                     file2.save(primary_child.AvatarUrl)
                     resp = Response(json.dumps({'message': 'WELL DONE!'}))
             if 'HousingStatus' in request.form.keys():
@@ -470,9 +529,14 @@ class UpdateChildById(Resource):
                     resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY VOICE!'}))
                     session.close()
                     return resp
-                if file1 and allowed_file(file1.filename):
+                if file1 and allowed_voice(file1.filename):
                     filename = secure_filename(file1.filename)
-                    primary_child.VoiceUrl = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    temp_voice_path = os.path.join(app.config['UPLOAD_FOLDER'], str(primary_child.Id) + '-child')
+                    for obj in os.listdir(temp_voice_path):
+                        check = str(primary_child.Id) + '-voice'
+                        if obj.split('_')[0] == check:
+                            os.remove(os.path.join(temp_voice_path, obj))
+                    primary_child.VoiceUrl = os.path.join(temp_voice_path, str(primary_child.Id) + '-voice_' + filename)
                     file1.save(primary_child.VoiceUrl)
                     resp = Response(json.dumps({'message': 'WELL DONE!'}))
             if 'SayName' in request.form.keys():
@@ -711,7 +775,7 @@ class ConfirmChild(Resource):
             primary_child = session.query(ChildModel).filter_by(Id=child_id).filter_by(IsDeleted=False).first()
 
             if 'IsConfirmed' in request.form.keys():
-                primary_child.IsConfirmed = bool(request.form['IsConfirmed'])
+                primary_child.IsConfirmed = True if request.form['IsConfirmed'] == 'true' else False
             # if 'ConfirmUser' in request.form.keys():
             primary_child.ConfirmUser = user_id
 
@@ -741,24 +805,25 @@ class GenerateCodeForChild(Resource):
 API URLs 
 """
 
-api.add_resource(GetChildById, '/api/v2/child/childId=<child_id>')  # ok
+api.add_resource(GetChildById, '/api/v2/child/childId=<child_id>')
 api.add_resource(GetChildrenOfUserByUserId, '/api/v2/child/user/userId=<user_id>')
-api.add_resource(GetAllChildren, '/api/v2/child/all')  # ok
+api.add_resource(GetAllChildren, '/api/v2/child/all')
 api.add_resource(GetChildNeeds, '/api/v2/child/need/childId=<child_id>')
 api.add_resource(GetChildSayName, '/api/v2/child/sayName/childId=<child_id>')
+api.add_resource(GetChildFamilyId, '/api/v2/child/family/childId=<child_id>')
 api.add_resource(GetChildAvatarUrl, '/api/v2/child/avatar/childId=<child_id>')
 api.add_resource(GetChildCreditSpent, '/api/v2/child/creditSpent/childId=<child_id>')
-api.add_resource(AddChild, '/api/v2/child/add/socialWorkerId=<social_worker_id>%ngoId=<ngo_id>')  # ok
-api.add_resource(GetChildFamilyMembers, '/api/v2/child/family/childId=<child_id>')
-api.add_resource(DeleteUserFromChildFamily, '/api/v2/child/family/delete/userId=<user_id>%childId=<child_id>')
+api.add_resource(AddChild, '/api/v2/child/add/socialWorkerId=<social_worker_id>&ngoId=<ngo_id>')
+api.add_resource(GetChildFamilyMembers, '/api/v2/child/family/members/childId=<child_id>')
+api.add_resource(DeleteUserFromChildFamily, '/api/v2/child/family/delete/userId=<user_id>&childId=<child_id>')
 api.add_resource(UpdateChildById, '/api/v2/child/update/childId=<child_id>')
 api.add_resource(DeleteChildById, '/api/v2/child/delete/childId=<child_id>')
 api.add_resource(GetChildrenByBirthPlace, '/api/v2/child/birthPlace=<birth_place>')
-api.add_resource(GetChildrenByBirthDate, '/api/v2/child/date=<birth_date>%isAfter=<is_after>')
+api.add_resource(GetChildrenByBirthDate, '/api/v2/child/date=<birth_date>&isAfter=<is_after>')
 api.add_resource(GetChildrenByNationality, '/api/v2/child/nationality=<nationality>')
 api.add_resource(GetChildByNgoId, '/api/v2/child/ngoId=<ngo_id>')
 api.add_resource(GetChildBySocialWorkerId, '/api/v2/child/socialWorkerId=<social_worker_id>')
 api.add_resource(GetChildUrgentNeedsById, '/api/v2/child/need/urgent/childId=<child_id>')
 api.add_resource(GetAllChildrenUrgentNeeds, '/api/v2/child/need/urgent/all')
-api.add_resource(ConfirmChild, '/api/v2/child/confirm/childId=<child_id>%userId=<user_id>')
+api.add_resource(ConfirmChild, '/api/v2/child/confirm/childId=<child_id>&userId=<user_id>')
 api.add_resource(GenerateCodeForChild, '/api/v2/child/generateCode/childId=<child_id>')

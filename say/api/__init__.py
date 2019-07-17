@@ -9,16 +9,19 @@ from flasgger import Swagger
 from flasgger.utils import swag_from
 from werkzeug.utils import secure_filename
 
-db = create_engine('postgresql://postgres:13771998@localhost:5432/say_db')
+db = create_engine('postgresql://postgres:postgres@127.0.0.1:5432/say')
 
 UPLOAD_FOLDER = "C:\\Users\\Parsa\\PycharmProjects\\SAY\\say\\files"
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'wav', 'm4a', 'wma', 'mp3', 'aac', 'ogg'}
+FLAGS = "C:\\Users\\Parsa\\PycharmProjects\\SAY\\say\\flags"
+ALLOWED_VOICE_EXTENSIONS = {'wav', 'm4a', 'wma', 'mp3', 'aac', 'ogg'}
+ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 Swagger(app)
+# Swagger.config[''] = ''
 
 api = Api(app)
 # api_bp = Blueprint('api', __name__)
@@ -32,5 +35,8 @@ def obj_to_dict(obj):
     return {c.key: getattr(obj, c.key) for c in inspect(obj).mapper.column_attrs}
 
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+def allowed_voice(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_VOICE_EXTENSIONS
+
+def allowed_image(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS

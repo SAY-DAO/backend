@@ -17,10 +17,10 @@ parameters:
         ActivityCode:
           type: integer
 #
-#  - name: TEST
-#    required: true
-#    in: formData
-#    type: file
+  - name: socialworker_id
+    required: true
+    in: path
+    type: integer
 #    schema:
 #      properties:
 #        ActivityCode:

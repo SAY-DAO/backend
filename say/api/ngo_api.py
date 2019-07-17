@@ -37,19 +37,30 @@ class AddNgo(Resource):
         session = Session()
 
         try:
+            if len(session.query(NgoModel).all()):
+                last_ngo = session.query(NgoModel).order_by(NgoModel.Id.desc()).first()
+                current_id = last_ngo.Id + 1
+            else:
+                current_id = 1
+
             path = 'some wrong url'
             if 'LogoUrl' not in request.files:
-                resp =  Response(json.dumps({'message': 'ERROR OCCURRED IN FILE UPLOADING!'}))
+                resp = Response(json.dumps({'message': 'ERROR OCCURRED IN FILE UPLOADING!'}))
                 session.close()
                 return resp
             file = request.files['LogoUrl']
             if file.filename == '':
-                resp =  Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
+                resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
                 session.close()
                 return resp
-            if file and allowed_file(file.filename):
+            if file and allowed_image(file.filename):
                 filename = secure_filename(file.filename)
-                path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+                temp_logo_path = os.path.join(app.config['UPLOAD_FOLDER'], str(current_id) + '-ngo')
+                if not os.path.isdir(temp_logo_path):
+                    os.mkdir(temp_logo_path)
+
+                path = os.path.join(temp_logo_path, str(current_id) + '-logo_' + filename)
                 file.save(path)
                 resp =  Response(json.dumps({'message': 'WELL DONE!'}))
 
@@ -250,12 +261,16 @@ class UpdateNgo(Resource):
                     resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
                     session.close()
                     return resp
-                if file and allowed_file(file.filename):
+                if file and allowed_image(file.filename):
                     filename = secure_filename(file.filename)
-                    base_ngo.LogoUrl = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    temp_logo_path = os.path.join(app.config['UPLOAD_FOLDER'], str(base_ngo.Id) + '-ngo')
+                    for obj in os.listdir(temp_logo_path):
+                        check = str(base_ngo.Id) + '-logo'
+                        if obj.split('_')[0] == check:
+                            os.remove(os.path.join(temp_logo_path, obj))
+                    base_ngo.LogoUrl = os.path.join(temp_logo_path, str(base_ngo.Id) + '-logo_' + filename)
                     file.save(base_ngo.LogoUrl)
                     resp = Response(json.dumps({'message': 'WELL DONE!'}))
-                base_ngo.LogoUrl = request.form['LogoUrl']
             if 'Balance' in request.form.keys():
                 base_ngo.Balance = request.form['Balance']
             base_ngo.lastUpdateDate = datetime.now()

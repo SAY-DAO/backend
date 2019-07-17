@@ -1,3 +1,4 @@
+from say.models.ngo_model import NgoModel
 from say.models.social_worker_model import SocialWorkerModel
 from . import *
 
@@ -36,6 +37,12 @@ class AddSocialWorker(Resource):
         session = Session()
 
         try:
+            if len(session.query(SocialWorkerModel).all()):
+                lastObj = session.query(SocialWorkerModel).order_by(SocialWorkerModel.Id.desc()).first()
+                currentId = lastObj.Id + 1
+            else:
+                currentId = 1
+
             id_card, passport, avatar = 'wrong id card', 'wrong passport', 'wrong avatar'
             if 'IdCardUrl' not in request.files or 'PassportUrl' not in request.files or 'AvatarUrl' not in request.files:
                 resp = Response(json.dumps({'message': 'ERROR OCCURRED IN FILE UPLOADING!'}))
@@ -56,24 +63,36 @@ class AddSocialWorker(Resource):
                 resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY AVATAR!'}))
                 session.close()
                 return resp
-            if file1 and allowed_file(file1.filename):
+            if file1 and allowed_image(file1.filename):
                 filename = secure_filename(file1.filename)
-                id_card = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+                temp_idcard_path = os.path.join(app.config['UPLOAD_FOLDER'], str(currentId) + '-socialworker')
+                if not os.path.isdir(temp_idcard_path):
+                    os.mkdir(temp_idcard_path)
+
+                id_card = os.path.join(temp_idcard_path, str(currentId) + '-idcard_' + filename)
                 file1.save(id_card)
                 resp = Response(json.dumps({'message': 'WELL DONE!'}))
-            if file2 and allowed_file(file2.filename):
+            if file2 and allowed_image(file2.filename):
                 filename = secure_filename(file2.filename)
-                passport = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+                temp_passport_path = os.path.join(app.config['UPLOAD_FOLDER'], str(currentId) + '-socialworker')
+                if not os.path.isdir(temp_passport_path):
+                    os.mkdir(temp_passport_path)
+
+                passport = os.path.join(temp_passport_path, str(currentId) + '-passport_' + filename)
                 file2.save(passport)
                 resp = Response(json.dumps({'message': 'WELL DONE!'}))
-            if file3 and allowed_file(file3.filename):
+            if file3 and allowed_image(file3.filename):
                 filename = secure_filename(file3.filename)
-                avatar = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+                temp_avatar_path = os.path.join(app.config['UPLOAD_FOLDER'], str(currentId) + '-socialworker')
+                if not os.path.isdir(temp_avatar_path):
+                    os.mkdir(temp_avatar_path)
+
+                avatar = os.path.join(temp_avatar_path, str(currentId) + '-avatar_' + filename)
                 file3.save(avatar)
                 resp = Response(json.dumps({'message': 'WELL DONE!'}))
-
-            lastObj = session.query(SocialWorkerModel).order_by(SocialWorkerModel.Id.desc()).first()
-            currentId = lastObj.Id + 1
 
             Id_ngo = int(request.form['Id_ngo'])
             Country = int(request.form['Country'])
@@ -88,7 +107,7 @@ class AddSocialWorker(Resource):
             IdCardUrl = id_card
             PassportNumber = request.form['PassportNumber']
             PassportUrl = passport
-            Gender = request.form['Gender']
+            Gender = True if request.form['Gender'] == 'true' else False
             BirthDate = datetime.strptime(request.form['BirthDate'], '%Y-%m-%d')
             PhoneNumber = request.form['PhoneNumber']
             EmergencyPhoneNumber = request.form['EmergencyPhoneNumber']
@@ -136,6 +155,10 @@ class AddSocialWorker(Resource):
             )
 
             session.add(new_socialWorker)
+
+            ngo = session.query(NgoModel).filter_by(IsDeleted=False).filter_by(Id=Id_ngo).first()
+            ngo.SocialWorkerCount += 1
+
             session.commit()
 
             res = {'msg': 'social_worker is created'}
@@ -236,7 +259,7 @@ class GetSocialWorkerByIdNumber(Resource):
             fetch = {}
 
             socialworkers = session.query(SocialWorkerModel).filter_by(IdNumber=socialworker_idnumber).filter_by(
-                isActive=True).filter_by(isDeleted=False).all()
+                IsActive=True).filter_by(IsDeleted=False).all()
             for socialworker in socialworkers:
                 if not socialworker:
                     resp = Response(json.dumps({'message': 'error'}))
@@ -335,7 +358,7 @@ class GetSocialWorkerByUserName(Resource):
                     return resp
                 data = obj_to_dict(socialworker)
 
-                fetch[socialworker.id] = data
+                fetch[socialworker.Id] = data
 
             resp = Response(json.dumps(fetch), status=200)
 
@@ -366,7 +389,7 @@ class GetSocialWorkerByBirthCertificateNumber(Resource):
                     return resp
                 data = obj_to_dict(socialworker)
 
-                fetch[socialworker.id] = data
+                fetch[socialworker.Id] = data
 
             resp = Response(json.dumps(fetch), status=200)
 
@@ -397,7 +420,7 @@ class GetSocialWorkerByEmailAddress(Resource):
                     return resp
                 data = obj_to_dict(socialworker)
 
-                fetch[socialworker.id] = data
+                fetch[socialworker.Id] = data
 
             resp = Response(json.dumps(fetch), status=200)
 
@@ -427,7 +450,7 @@ class GetSocialWorkerByTelegramId(Resource):
                     return resp
                 data = obj_to_dict(socialworker)
 
-                fetch[socialworker.id] = data
+                fetch[socialworker.Id] = data
 
             resp = Response(json.dumps(fetch), status=200)
 
@@ -444,13 +467,17 @@ class UpdateSocialWorker(Resource):
     def patch(self, socialworker_id):
         Session = sessionmaker(db)
         session = Session()
+        ngo_change = False
+        previous_ngo = None
 
         try:
-            base_socialworker = session.query(SocialWorkerModel).filter_by(id=socialworker_id).filter_by(
-                isActive=True).filter_by(isDeleted=False).first()
+            base_socialworker = session.query(SocialWorkerModel).filter_by(Id=socialworker_id).filter_by(
+                IsActive=True).filter_by(IsDeleted=False).first()
 
             if 'Id_ngo' in request.form.keys():
+                previous_ngo = base_socialworker.Id_ngo
                 base_socialworker.Id_ngo = int(request.form['Id_ngo'])
+                ngo_change = True
             if 'Country' in request.form.keys():
                 base_socialworker.Country = int(request.form['Country'])
             if 'City' in request.form.keys():
@@ -473,9 +500,14 @@ class UpdateSocialWorker(Resource):
                     resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY VOICE!'}))
                     session.close()
                     return resp
-                if file1 and allowed_file(file1.filename):
+                if file1 and allowed_image(file1.filename):
                     filename = secure_filename(file1.filename)
-                    base_socialworker.IdCardUrl = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    temp_idcard_path = os.path.join(app.config['UPLOAD_FOLDER'], str(base_socialworker.Id) + '-socialworker')
+                    for obj in os.listdir(temp_idcard_path):
+                        check = str(base_socialworker.Id) + '-idcard'
+                        if obj.split('_')[0] == check:
+                            os.remove(os.path.join(temp_idcard_path, obj))
+                    base_socialworker.IdCardUrl = os.path.join(temp_idcard_path, str(base_socialworker.Id) + '-idcard_' + filename)
                     file1.save(base_socialworker.IdCardUrl)
                     resp = Response(json.dumps({'message': 'WELL DONE!'}))
             if 'PassportNumber' in request.form.keys():
@@ -486,9 +518,14 @@ class UpdateSocialWorker(Resource):
                     resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY VOICE!'}))
                     session.close()
                     return resp
-                if file1 and allowed_file(file1.filename):
+                if file1 and allowed_image(file1.filename):
                     filename = secure_filename(file1.filename)
-                    base_socialworker.PassportUrl = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    temp_passport_path = os.path.join(app.config['UPLOAD_FOLDER'], str(base_socialworker.Id) + '-socialworker')
+                    for obj in os.listdir(temp_passport_path):
+                        check = str(base_socialworker.Id) + '-passport'
+                        if obj.split('_')[0] == check:
+                            os.remove(os.path.join(temp_passport_path, obj))
+                    base_socialworker.PassportUrl = os.path.join(temp_passport_path, str(base_socialworker.Id) + '-passport_' + filename)
                     file1.save(base_socialworker.PassportUrl)
                     resp = Response(json.dumps({'message': 'WELL DONE!'}))
             if 'Gender' in request.form.keys():
@@ -511,9 +548,14 @@ class UpdateSocialWorker(Resource):
                     resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY VOICE!'}))
                     session.close()
                     return resp
-                if file1 and allowed_file(file1.filename):
+                if file1 and allowed_image(file1.filename):
                     filename = secure_filename(file1.filename)
-                    base_socialworker.AvatarUrl = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    temp_avatar_path = os.path.join(app.config['UPLOAD_FOLDER'], str(base_socialworker.Id) + '-socialworker')
+                    for obj in os.listdir(temp_avatar_path):
+                        check = str(base_socialworker.Id) + '-avatar'
+                        if obj.split('_')[0] == check:
+                            os.remove(os.path.join(temp_avatar_path, obj))
+                    base_socialworker.AvatarUrl = os.path.join(temp_avatar_path, str(base_socialworker.Id) + '-avatar_' + filename)
                     file1.save(base_socialworker.AvatarUrl)
                     resp = Response(json.dumps({'message': 'WELL DONE!'}))
             if 'BankAccountNumber' in request.form.keys():
@@ -526,8 +568,19 @@ class UpdateSocialWorker(Resource):
 
             res = obj_to_dict(base_socialworker)
 
-            resp = Response(json.dumps(res), status=200)
+            if ngo_change:
+                that_ngo = session.query(NgoModel).filter_by(Id=previous_ngo).filter_by(IsDeleted=False).first()
+                this_ngo = session.query(NgoModel).filter_by(Id=base_socialworker.Id_ngo).filter_by(IsDeleted=False).first()
+
+                that_ngo.ChildrenCount -= base_socialworker.ChildCount
+                that_ngo.SocialWorkerCount -= 1
+
+                this_ngo.ChildrenCount += base_socialworker.ChildCount
+                this_ngo.SocialWorkerCount += 1
+
+
             session.commit()
+            resp = Response(json.dumps(res), status=200)
 
         except Exception as e:
             print(e)
@@ -548,7 +601,10 @@ class DeleteSocialWorker(Resource):
                 IsActive=True).filter_by(IsDeleted=False).first()
 
             base_socialworker.IsDeleted = True
+            this_ngo = session.query(NgoModel).filter_by(Id=base_socialworker.Id_ngo).filter_by(IsDeleted=False).first()
 
+            this_ngo.ChildrenCount -= base_socialworker.ChildCount
+            this_ngo.SocialWorkerCount -= 1
             # res = obj_to_dict(base_socialworker)
 
             session.commit()

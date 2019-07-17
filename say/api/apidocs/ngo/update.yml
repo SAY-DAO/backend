@@ -11,6 +11,7 @@ parameters:
   - name: ngo_id
     in: path
     type: integer
+    required: true
 
   - name: Country
     in: formData
