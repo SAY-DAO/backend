@@ -6,3 +6,4 @@ psycopg2
 requests
 flasgger
 pyotp
+flask_security

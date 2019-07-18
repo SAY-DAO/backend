@@ -4,6 +4,9 @@ from say.models.need_family_model import NeedFamilyModel
 from say.models.payment_model import PaymentModel
 from say.models.user_family_model import UserFamilyModel
 from say.models.user_model import UserModel
+
+from flask_security.utils import encrypt_password
+
 from . import *
 
 """
@@ -660,7 +663,7 @@ class UpdateUserById(Resource):
 
 class DeleteUserById(Resource):
     @swag_from('./apidocs/user/delete.yml')
-    def get(self, user_id):
+    def patch(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
 
@@ -790,6 +793,22 @@ class AddUser(Resource):
             return resp
 
 
+class ChangeUserPassword(Resource):
+    @swag_from('./apidocs/user/change_password.yml')
+    def patch(self , user_id):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+
+        try :
+            user = session.query(UserModel).get(user_id)
+
+
+
+        except Exception as e :
+            print(e)
+
+        finally:
+            session.close()
 """
 API URLs
 """
@@ -819,3 +838,5 @@ api.add_resource(UpdateUserById, '/api/v2/user/update/userId=<user_id>')
 api.add_resource(DeleteUserById, '/api/v2/user/delete/userId=<user_id>')
 api.add_resource(GetUserUrgentNeeds, '/api/v2/user/needs/urgent/userId=<user_id>')
 api.add_resource(AddUser, '/api/v2/user/add')
+api.add_resource(ChangeUserPassword, '/api/v2/user/changepassword/userId=<user_id>')
+
