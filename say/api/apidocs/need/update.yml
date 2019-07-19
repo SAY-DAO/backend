@@ -8,6 +8,11 @@ consumes:
   - multipart/form-data
 
 parameters:
+  - name: need_id
+    in: path
+    type: integer
+    required: true
+
   - name: ImageUrl
     in: formData
     type: file

@@ -2,32 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d82a866d-42e8-42ac-98fe-ba5f506d068e" name="Default Changelist" comment="second commit">
-      <change beforePath="$PROJECT_DIR$/SAY_db" beforeDir="false" afterPath="$PROJECT_DIR$/SAY_db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/api/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/say/api/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/api/apidocs/activity/add.yml" beforeDir="false" afterPath="$PROJECT_DIR$/say/api/apidocs/activity/add.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/api/apidocs/child/add.yml" beforeDir="false" afterPath="$PROJECT_DIR$/say/api/apidocs/child/add.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/api/apidocs/child/confirm.yml" beforeDir="false" afterPath="$PROJECT_DIR$/say/api/apidocs/child/confirm.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/api/apidocs/child/update.yml" beforeDir="false" afterPath="$PROJECT_DIR$/say/api/apidocs/child/update.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/api/apidocs/need/add.yml" beforeDir="false" afterPath="$PROJECT_DIR$/say/api/apidocs/need/add.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/api/apidocs/need/confirm.yml" beforeDir="false" afterPath="$PROJECT_DIR$/say/api/apidocs/need/confirm.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/api/apidocs/need/update.yml" beforeDir="false" afterPath="$PROJECT_DIR$/say/api/apidocs/need/update.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/api/apidocs/ngo/add.yml" beforeDir="false" afterPath="$PROJECT_DIR$/say/api/apidocs/ngo/add.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/api/apidocs/ngo/update.yml" beforeDir="false" afterPath="$PROJECT_DIR$/say/api/apidocs/ngo/update.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/api/apidocs/social_worker/add.yml" beforeDir="false" afterPath="$PROJECT_DIR$/say/api/apidocs/social_worker/add.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/api/apidocs/social_worker/update.yml" beforeDir="false" afterPath="$PROJECT_DIR$/say/api/apidocs/social_worker/update.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/api/apidocs/user/update.yml" beforeDir="false" afterPath="$PROJECT_DIR$/say/api/apidocs/user/update.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/api/child_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/say/api/child_api.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/api/need_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/say/api/need_api.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/api/ngo_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/say/api/ngo_api.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/api/social_worker_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/say/api/social_worker_api.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/say/api/user_api.py" beforeDir="false" afterPath="$PROJECT_DIR$/say/api/user_api.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/models/child_need_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/say/models/child_need_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/models/family_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/say/models/family_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/models/need_family_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/say/models/need_family_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/models/need_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/say/models/need_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/models/payment_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/say/models/payment_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/models/user_family_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/say/models/user_family_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/say/models/user_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/say/models/user_model.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -40,11 +15,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/say/api/need_api.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
-              <caret line="375" column="34" selection-start-line="375" selection-start-column="34" selection-end-line="375" selection-end-column="34" />
-              <folding>
-                <element signature="e#0#54#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="6256">
+              <caret line="375" selection-start-line="375" selection-end-line="375" />
             </state>
           </provider>
         </entry>
@@ -58,13 +30,25 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/say/api/__init__.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="238">
-              <caret line="14" selection-start-line="14" selection-end-line="14" selection-end-column="85" />
+            <state relative-caret-position="136">
+              <caret line="17" selection-start-line="17" selection-end-line="17" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/say/api/user_api.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="334">
+              <caret line="30" column="60" selection-start-line="30" selection-start-column="60" selection-end-line="30" selection-end-column="60" />
+              <folding>
+                <element signature="e#0#61#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -83,10 +67,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/../SAY/say/api/apidocs/privilege/all.yml" />
-        <option value="$PROJECT_DIR$/../SAY/say/api/apidocs/privilege/name.yml" />
-        <option value="$PROJECT_DIR$/../SAY/say/api/apidocs/privilege/add.yml" />
-        <option value="$PROJECT_DIR$/../SAY/say/api/apidocs/privilege/update.yml" />
         <option value="$PROJECT_DIR$/../SAY/say/api/apidocs/social_worker/id.yml" />
         <option value="$PROJECT_DIR$/../SAY/say/api/apidocs/social_worker/all.yml" />
         <option value="$PROJECT_DIR$/../SAY/say/api/apidocs/social_worker/gcode.yml" />
@@ -114,7 +94,6 @@
         <option value="$PROJECT_DIR$/../SAY/say/models/need_family_model.py" />
         <option value="$PROJECT_DIR$/../SAY/say/models/user_family_model.py" />
         <option value="$PROJECT_DIR$/../SAY/say/models/payment_model.py" />
-        <option value="$PROJECT_DIR$/../SAY/say/api/apidocs/need/update.yml" />
         <option value="$PROJECT_DIR$/../SAY/say/api/apidocs/need/add.yml" />
         <option value="$PROJECT_DIR$/../SAY/say/api/apidocs/child/confirm.yml" />
         <option value="$PROJECT_DIR$/../SAY/say/api/apidocs/need/confirm.yml" />
@@ -123,9 +102,6 @@
         <option value="$PROJECT_DIR$/../SAY/say/api/apidocs/user/update.yml" />
         <option value="$PROJECT_DIR$/../SAY/say/models/user_model.py" />
         <option value="$PROJECT_DIR$/../SAY/say/api/apidocs/user/add.yml" />
-        <option value="$PROJECT_DIR$/../SAY/say/api/child_api.py" />
-        <option value="$PROJECT_DIR$/../SAY/say/api/user_api.py" />
-        <option value="$PROJECT_DIR$/../SAY/say/api/need_api.py" />
         <option value="$PROJECT_DIR$/../SAY/say/api/apidocs/ngo/add.yml" />
         <option value="$PROJECT_DIR$/../SAY/say/api/apidocs/ngo/update.yml" />
         <option value="$PROJECT_DIR$/../SAY/say/api/apidocs/social_worker/update.yml" />
@@ -133,11 +109,19 @@
         <option value="$PROJECT_DIR$/../SAY/say/api/ngo_api.py" />
         <option value="$PROJECT_DIR$/../SAY/say/api/social_worker_api.py" />
         <option value="$PROJECT_DIR$/say/api/__init__.py" />
+        <option value="$PROJECT_DIR$/say/api/user_api.py" />
+        <option value="$PROJECT_DIR$/../SAY/say/api/apidocs/user/by_birthdate.yml" />
+        <option value="$PROJECT_DIR$/../SAY/say/api/apidocs/child/birthdate.yml" />
+        <option value="$PROJECT_DIR$/../SAY/say/api/user_api.py" />
+        <option value="$PROJECT_DIR$/../SAY/say/api/search_api.py" />
+        <option value="$PROJECT_DIR$/../SAY/say/api/apidocs/need/update.yml" />
+        <option value="$PROJECT_DIR$/../SAY/say/api/need_api.py" />
+        <option value="$PROJECT_DIR$/../SAY/say/api/child_api.py" />
         <option value="$PROJECT_DIR$/../SAY/say/api/__init__.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="-8" />
     <option name="y" value="-8" />
     <option name="width" value="784" />
@@ -154,26 +138,19 @@
         <subPane>
           <expand>
             <path>
-              <item name="newApi" type="b2602c69:ProjectViewProjectNode" />
-              <item name="newApi" type="462c0819:PsiDirectoryNode" />
+              <item name="SAY_api" type="b2602c69:ProjectViewProjectNode" />
+              <item name="SAY_api" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
-              <item name="newApi" type="b2602c69:ProjectViewProjectNode" />
-              <item name="newApi" type="462c0819:PsiDirectoryNode" />
+              <item name="SAY_api" type="b2602c69:ProjectViewProjectNode" />
+              <item name="SAY_api" type="462c0819:PsiDirectoryNode" />
               <item name="say" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
-              <item name="newApi" type="b2602c69:ProjectViewProjectNode" />
-              <item name="newApi" type="462c0819:PsiDirectoryNode" />
-              <item name="say" type="462c0819:PsiDirectoryNode" />
-              <item name="api" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="newApi" type="b2602c69:ProjectViewProjectNode" />
-              <item name="newApi" type="462c0819:PsiDirectoryNode" />
+              <item name="SAY_api" type="b2602c69:ProjectViewProjectNode" />
+              <item name="SAY_api" type="462c0819:PsiDirectoryNode" />
               <item name="say" type="462c0819:PsiDirectoryNode" />
               <item name="api" type="462c0819:PsiDirectoryNode" />
-              <item name="apidocs" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -213,6 +190,7 @@
       <workItem from="1562577470017" duration="473000" />
       <workItem from="1562598917262" duration="1153000" />
       <workItem from="1563094731432" duration="9251000" />
+      <workItem from="1563346278697" duration="6076000" />
     </task>
     <task id="LOCAL-00001" summary="second commit">
       <created>1562599161703</created>
@@ -225,13 +203,13 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="10877000" />
+    <option name="totallyTimeSpent" value="16953000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="754" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.31240544" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1762481" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -246,7 +224,7 @@
       <window_info anchor="bottom" id="Version Control" order="9" weight="0.47987118" />
       <window_info anchor="bottom" id="Database Changes" order="10" />
       <window_info anchor="bottom" id="GitLabIntegration" order="11" />
-      <window_info anchor="bottom" id="Terminal" order="12" visible="true" weight="0.2415459" />
+      <window_info anchor="bottom" id="Terminal" order="12" visible="true" weight="0.23671497" />
       <window_info anchor="bottom" id="Python Console" order="13" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -263,13 +241,6 @@
     <option name="LAST_COMMIT_MESSAGE" value="second commit" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/say/api/user_api.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="3" column="45" selection-start-line="3" selection-start-column="45" selection-end-line="3" selection-end-column="45" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/say/api/apidocs/child/user_children.yml">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -344,8 +315,16 @@
         <state relative-caret-position="-204" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/say/api/apidocs/need/add_need.yml">
-      <provider selected="true" editor-type-id="text-editor" />
+    <entry file="file://$PROJECT_DIR$/say/api/apidocs/need/add_need.yml" />
+    <entry file="file://$PROJECT_DIR$/say/api/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="17" selection-start-line="17" selection-end-line="17" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/say/api/apidocs/need/add.yml">
       <provider selected="true" editor-type-id="text-editor">
@@ -356,20 +335,17 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/say/api/need_api.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="375" column="34" selection-start-line="375" selection-start-column="34" selection-end-line="375" selection-end-column="34" />
-          <folding>
-            <element signature="e#0#54#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="6256">
+          <caret line="375" selection-start-line="375" selection-end-line="375" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/say/api/__init__.py">
+    <entry file="file://$PROJECT_DIR$/say/api/user_api.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="14" selection-start-line="14" selection-end-line="14" selection-end-column="85" />
+        <state relative-caret-position="334">
+          <caret line="30" column="60" selection-start-line="30" selection-start-column="60" selection-end-line="30" selection-end-column="60" />
           <folding>
-            <element signature="e#0#9#0" expanded="true" />
+            <element signature="e#0#61#0" expanded="true" />
           </folding>
         </state>
       </provider>

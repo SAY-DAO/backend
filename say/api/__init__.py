@@ -11,8 +11,15 @@ from werkzeug.utils import secure_filename
 
 db = create_engine('postgresql://postgres:13771998@localhost:5432/say_db')
 
-UPLOAD_FOLDER = "C:\\Users\\Parsa\\PycharmProjects\\SAY\\say\\files"
-FLAGS = "C:\\Users\\Parsa\\PycharmProjects\\SAY\\say\\flags"
+# UPLOAD_FOLDER = "C:\\Users\\Parsa\\PycharmProjects\\SAY\\say\\files"
+BASE_FOLDER = os.getcwd()
+
+UPLOAD_FOLDER = os.path.join(BASE_FOLDER, 'say')
+UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, 'files')
+
+FLAGS = os.path.join(BASE_FOLDER, 'say')
+FLAGS = os.path.join(FLAGS, 'flags')
+
 ALLOWED_VOICE_EXTENSIONS = {'wav', 'm4a', 'wma', 'mp3', 'aac', 'ogg'}
 ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
@@ -20,8 +27,19 @@ app = Flask(__name__)
 app.config['DEBUG'] = True
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+app.config['SWAGGER'] = {
+    # "swagger_version": "3.20.9",
+    "specs": [
+        {
+            "version": "2.0",
+            "title": "SAY API",
+            "endpoint": 'api_v2',
+            "route": '/api/v2',
+        }
+    ]
+}
+
 Swagger(app)
-# Swagger.config[''] = ''
 
 api = Api(app)
 # api_bp = Blueprint('api', __name__)

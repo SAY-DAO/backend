@@ -4,9 +4,6 @@ from say.models.need_family_model import NeedFamilyModel
 from say.models.payment_model import PaymentModel
 from say.models.user_family_model import UserFamilyModel
 from say.models.user_model import UserModel
-
-from flask_security.utils import encrypt_password
-
 from . import *
 
 """
@@ -27,12 +24,15 @@ def get_user_by_something(session, user_id):
 
 def get_user_children(session, user):
     families = session.query(UserFamilyModel).filter_by(Id_user=user.Id).all()
+    print(11)
 
     children = {}
     for family in families:
         child = session.query(FamilyModel).filter_by(Id_child=family.family_relation.Id_child).filter_by(IsDeleted=False).first()
-        child_data = get_child_by_id(session, child.Id)
-        children[child.Id] = child_data
+        print(22)
+        child_data = get_child_by_id(session, child.Id_child)
+        print(33)
+        children['child'+str(child.Id)] = child_data
 
     return children
 
@@ -43,8 +43,8 @@ def get_user_needs(session, user, urgent=False):
     needs = {}
     for family in families:
         child = session.query(FamilyModel).filter_by(Id_child=family.family_relation.Id_child).filter_by(IsDeleted=False).first()
-        child_data = get_child_need(session, child.Id, urgent)
-        needs[child.Id] = child_data
+        child_data = get_child_need(session, child.Id_child, urgent)
+        needs['child'+str(child.Id)] = child_data
 
     return needs
 
@@ -57,14 +57,19 @@ class GetUserById(Resource):
 
         try:
             user = session.query(UserModel).get(user_id)
+            print(0)
 
             user_data = obj_to_dict(user)
+            print(1)
             children = get_user_children(session, user)
+            print(2)
 
             user_data['Children'] = children
+            print(3)
 
             if not user.IsDeleted:
                 resp = Response(json.dumps(user_data))
+                print(4)
             else:
                 return {'msg': 'error occurred!'}
 
@@ -137,12 +142,17 @@ class GetUserByBirthPlace(Resource):
 
 class GetUserByBirthDate(Resource):
     @swag_from('./apidocs/user/by_birthdate.yml')
-    def get(self, birth_date):
+    def get(self, birth_date, is_after):
         session_maker = sessionmaker(db)
         session = session_maker()
 
         try:
-            users = session.query(UserModel).filter_by(BirthDate=birth_date).filter_by(IsDeleted=False).all()
+            if is_after.lower() == 'true':
+                users = session.query(UserModel).filter(UserModel.BirthDate >= birth_date).filter_by(
+                    IsDeleted=False).all()
+            else:
+                users = session.query(UserModel).filter(UserModel.BirthDate <= birth_date).filter_by(
+                    IsDeleted=False).all()
 
             res = {}
             for user in users:
@@ -385,6 +395,7 @@ class GetUserUserName(Resource):
             user = session.query(UserModel).get(user_id)
 
             if not user.IsDeleted:
+                print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', os.getcwd())
                 resp = Response(json.dumps({'UserName': user.UserName}))
             else:
                 resp = Response(json.dumps({'msg': 'error occurred!'}))
@@ -585,7 +596,7 @@ class GetAllUsersNeeds(Resource):
             user_needs = {}
             for user in users:
                 need = get_user_needs(session, user)
-                user_needs[user.Id] = need
+                user_needs['user' + str(user.Id)] = need
 
             resp = Response(json.dumps(user_needs))
 
@@ -793,22 +804,6 @@ class AddUser(Resource):
             return resp
 
 
-class ChangeUserPassword(Resource):
-    @swag_from('./apidocs/user/change_password.yml')
-    def patch(self , user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-
-        try :
-            user = session.query(UserModel).get(user_id)
-
-
-
-        except Exception as e :
-            print(e)
-
-        finally:
-            session.close()
 """
 API URLs
 """
@@ -816,7 +811,7 @@ API URLs
 api.add_resource(GetUserById, '/api/v2/user/userId=<user_id>')
 api.add_resource(GetUserByFullName, '/api/v2/user/name=<first_name>&<last_name>')
 api.add_resource(GetUserByBirthPlace, '/api/v2/user/birthPlace=<birth_place>')
-api.add_resource(GetUserByBirthDate, '/api/v2/user/birthDate=<birth_date>')
+api.add_resource(GetUserByBirthDate, '/api/v2/user/birthDate=<birth_date>&isAfter=<is_after>')
 api.add_resource(GetUserByCountry, '/api/v2/user/country=<country>')
 api.add_resource(GetUserByCity, '/api/v2/user/city=<city>')
 api.add_resource(GetUserByUserName, '/api/v2/user/username=<username>')
@@ -838,5 +833,3 @@ api.add_resource(UpdateUserById, '/api/v2/user/update/userId=<user_id>')
 api.add_resource(DeleteUserById, '/api/v2/user/delete/userId=<user_id>')
 api.add_resource(GetUserUrgentNeeds, '/api/v2/user/needs/urgent/userId=<user_id>')
 api.add_resource(AddUser, '/api/v2/user/add')
-api.add_resource(ChangeUserPassword, '/api/v2/user/changepassword/userId=<user_id>')
-

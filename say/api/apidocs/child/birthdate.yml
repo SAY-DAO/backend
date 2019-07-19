@@ -10,6 +10,11 @@ parameters:
     required: true
     type: string
 
+  - in: path
+    name: is_after
+    required: true
+    type: boolean
+
 responses:
   500:
     description: Error occurred somewhere!

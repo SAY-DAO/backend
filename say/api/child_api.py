@@ -3,6 +3,7 @@ from flasgger.utils import validate
 from say.models.child_model import ChildModel
 from say.models.child_need_model import ChildNeedModel
 from say.models.family_model import FamilyModel
+from say.models.need_model import NeedModel
 from say.models.ngo_model import NgoModel
 from say.models.social_worker_model import SocialWorkerModel
 from say.models.user_family_model import UserFamilyModel
@@ -20,13 +21,17 @@ Child APIs
 def get_child_by_id(session, child_id):
     child = session.query(ChildModel).filter_by(Id=child_id).filter_by(IsDeleted=False).first()
     needs = session.query(ChildNeedModel).filter_by(Id_child=child_id).filter_by(IsDeleted=False).all()
+    print(111)
+    print('$$$$$', child_id)
 
     child_data = obj_to_dict(child)
+    print(222)
 
     child_needs = {}
     for need in needs:
-        need_data = obj_to_dict(need)
-        child_needs[need.Id] = need_data
+        need_data = obj_to_dict(session.query(ChildModel).filter_by(Id=need.Id_child).filter_by(IsDeleted=False).first())
+        print(333)
+        child_needs[need.Id_need] = need_data
 
     child_data['Needs'] = child_needs
 
@@ -39,12 +44,12 @@ def get_child_need(session, child_id, urgent=False):
     child_needs = {}
     for need in needs:
         if not urgent:
-            need_data = obj_to_dict(need)
-            child_needs[need.Id] = need_data
+            need_data = obj_to_dict(session.query(NeedModel).filter_by(Id=need.Id_need).filter_by(IsDeleted=False).first())
+            child_needs['need'+str(need_data['Id'])] = need_data
         else:
-            if need.IsUrgent == 1:
-                need_data = obj_to_dict(need)
-                child_needs[need.Id] = need_data
+            if need.need_relation.IsUrgent:
+                need_data = obj_to_dict(session.query(NeedModel).filter_by(Id=need.Id_need).filter_by(IsDeleted=False).first())
+                child_needs['need'+str(need['Id'])] = need_data
 
             if not len(child_needs):
                 child_needs = {['msg']: 'no urgent needs founded!'}
@@ -151,7 +156,7 @@ class GetChildNeeds(Resource):
 
             need_res = {}
             for need in needs:
-                need_data = obj_to_dict(need)
+                need_data = obj_to_dict(session.query(NeedModel).filter_by(Id=need.Id_need).filter_by(IsDeleted=False).first())
                 need_res[need.Id] = need_data
 
             resp = Response(json.dumps(need_res))
@@ -447,7 +452,7 @@ class DeleteUserFromChildFamily(Resource):
 
         try:
             family = session.query(FamilyModel).filter_by(Id_child=child_id).filter_by(IsDeleted=False).first()
-            user = session.query(UserFamilyModel).filter_by(Id_user=user_id).filter_by(Id_family=family.Id_family).filter_by(IsDeleted=False).first()
+            user = session.query(UserFamilyModel).filter_by(Id_user=user_id).filter_by(Id_family=family.Id).filter_by(IsDeleted=False).first()
             child = session.query(ChildModel).filter_by(Id=child_id).filter_by(IsDeleted=False).first()
 
             child.SayFamilyCount -= 1
@@ -625,7 +630,7 @@ class GetChildrenByBirthDate(Resource):
         session = session_maker()
 
         try:
-            if is_after:
+            if is_after.lower() == 'true':
                 children = session.query(ChildModel).filter(ChildModel.BirthDate >= birth_date).filter_by(
                     IsDeleted=False).all()
             else:
@@ -721,13 +726,15 @@ class GetChildUrgentNeedsById(Resource):
         session = session_maker()
 
         try:
-            needs = session.query(ChildNeedModel).filter_by(Id_child=child_id).filter_by(IsUrgent=1).filter_by(
-                IsDeleted=False).all()
+            needs = session.query(ChildNeedModel).filter_by(Id_child=child_id).filter_by(IsDeleted=False).all()
 
             need_res = {}
             for need in needs:
-                need_data = obj_to_dict(need)
-                need_res[need.Id] = need_data
+                temps = session.query(NeedModel).filter_by(Id=need.Id_need).filter_by(IsDeleted=False).filter_by(
+                    IsUrgent=True).all()
+                for temp in temps:
+                    need_data = obj_to_dict(temp)
+                    need_res[need_data['Id']] = need_data
 
             resp = Response(json.dumps(need_res))
 
@@ -747,12 +754,14 @@ class GetAllChildrenUrgentNeeds(Resource):
         session = session_maker()
 
         try:
-            needs = session.query(ChildNeedModel).filter_by(IsUrgent=1).filter_by(IsDeleted=False).all()
+            needs = session.query(ChildNeedModel).filter_by(IsDeleted=False).all()
 
             need_res = {}
             for need in needs:
-                need_data = obj_to_dict(need)
-                need_res[need.Id] = need_data
+                temps = session.query(NeedModel).filter_by(Id=need.Id_need).filter_by(IsDeleted=False).filter_by(IsUrgent=True).all()
+                for temp in temps:
+                    need_data = obj_to_dict(temp)
+                    need_res[need_data['Id']] = need_data
 
             resp = Response(json.dumps(need_res))
 

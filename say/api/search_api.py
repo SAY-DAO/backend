@@ -17,9 +17,9 @@ class GetRandomSearchResult(Resource):
         session = session_maker()
 
         try:
-            families = session.query(UserFamilyModel).filter(UserFamilyModel.Id_user != user_id).filter_by(
-                IsDeleted=False).all()
-            other_children = [family.Id_child for family in families]
+            families = session.query(UserFamilyModel).filter_by(Id_user=user_id).filter_by(IsDeleted=False).all()
+            my_families = [family.Id_family for family in families]
+            other_children = []
             children = session.query(ChildModel).filter(ChildModel.Id.in_(other_children)).filter_by(
                 IsDeleted=False).all()
 
@@ -37,15 +37,18 @@ class GetRandomSearchResult(Resource):
                 child_data['Needs'] = child_needs
 
                 search_data.append([3 * need_amount - 2 * child.SayFamilyCount, child])
-
+            print(f'0- children length: {children.__len__()}')
+            print(f'0- families length: {families.__len__()}')
+            print(f'0- other children length: {other_children.__len__()}')
+            print(f'1- search data length: {search_data.__len__()}')
             search_data.sort(reverse=True)
             search_data = [data[1] for data in search_data]
-
+            print(f'2- search data length: {search_data.__len__()}')
             res = []
             for data in search_data:
                 if r() > 0.7:
                     res.append(data)
-
+            print(f'3- search data length: {search_data.__len__()}')
             resp = Response(json.dumps(res))
 
         except Exception as e:

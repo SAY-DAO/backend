@@ -34,7 +34,7 @@ def get_need(need, session):
         user = session.query(UserModel).filter_by(IsDeleted=False).filter_by(Id=participant.Id_user).first()
         users[user.Id] = obj_to_dict(user)
 
-    need_data['ChildId'] = child_data
+    need_data['ChildId'] = child_data['Id_child']
     need_data['Participants'] = users
 
     return need_data
@@ -126,9 +126,10 @@ class GetNeedParticipants(Resource):
             users = {}
             for p in participants:
                 user = session.query(UserModel).filter_by(IsDeleted=False).filter_by(Id=p.Id_user).first()
-                users[user.Id] = obj_to_dict(user)
+                users[str(user.Id)] = obj_to_dict(user)
 
-            users['TotalSpentCredit'] = need.Spent
+            users['TotalSpentCredit'] = need.Paid
+
 
             resp = Response(json.dumps(users))
 
@@ -172,14 +173,22 @@ class AddPaymentForNeed(Resource):
         try:
             Id_need = need_id
             Id_user = user_id
-            Amount = int(request.form['Amount'])
+            Amount = int(request.json['Amount'])
             CreatedAt = datetime.now()
 
             user = session.query(UserModel).filter_by(IsDeleted=False).filter_by(Id=Id_user).first()
             need = session.query(NeedModel).filter_by(IsDeleted=False).filter_by(Id=Id_need).first()
 
-            if Amount > need.Cost - need.Spent:
-                resp = Response(json.dumps({'msg': 'error in payment!'}))
+            if Amount > need.Cost - need.Paid:
+                resp = Response(json.dumps({'msg': f'you can pay {need.Cost - need.Paid} at most!'}))
+                session.close()
+                return resp
+            elif Amount > user.Credit:
+                resp = Response(json.dumps({'msg': f'your credit is less than {Amount}! you have {user.Credit}.'}))
+                session.close()
+                return resp
+            elif Amount <= 0:
+                resp = Response(json.dumps({'msg': 'amount can not be 0 or less!'}))
                 session.close()
                 return resp
             else:
@@ -194,8 +203,8 @@ class AddPaymentForNeed(Resource):
                 session.commit()
 
                 user.Credit -= Amount
-                need.Spent += Amount
-                need.Progress = need.Spent // need.Cost
+                need.Paid += Amount
+                need.Progress = need.Paid // need.Cost
 
                 if need.Spent == need.Cost:
                     need.IsDone = True
@@ -265,10 +274,11 @@ class UpdateNeedById(Resource):
             if 'AffiliateLinkUrl' in request.form.keys():
                 primary_need.AffiliateLinkUrl = request.form['AffiliateLinkUrl']
             if 'Receipts' in request.form.keys():
-                if not primary_need.Receipt:
-                    primary_need.Receipt += request.form['Receipts']
+                print(primary_need.Receipts)
+                if primary_need.Receipts is None:
+                    primary_need.Receipts = str(request.form['Receipts'])
                 else:
-                    primary_need.Receipt = request.form['Receipts']
+                    primary_need.Receipts += ',' + str(request.form['Receipts'])
 
             primary_need.LastUpdate = datetime.now()
 
@@ -336,9 +346,9 @@ class ConfirmNeed(Resource):
 
             if 'IsConfirmed' in request.form.keys():
                 primary_need.IsConfirmed = True if request.form['IsConfirmed'] == 'true' else False
-            if 'ConfirmUser' in request.form.keys():
+            # if 'ConfirmUser' in request.form.keys():
                 # if child.NgoId == request.form['NgoId']
-                primary_need.ConfirmUser = user_id
+            primary_need.ConfirmUser = user_id
 
             primary_need.ConfirmDate = datetime.now()
 
