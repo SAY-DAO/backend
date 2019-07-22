@@ -149,15 +149,15 @@ class UpdatePrivilege(Resource):
             if 'Name' in request.json.keys():
                 base_privilege.Name = request.json['Name']
             if 'Privilege' in request.json.keys():
-                base_privilege.Privilege = request.json['Privilege']
+                base_privilege.Privilege = int(request.json['Privilege'])
             res = {
-                'Id': privilege_id,
+                'Id': int(privilege_id),
                 'Name': base_privilege.Name,
                 'Privilege': base_privilege.Privilege
             }
             session.commit()
 
-            resp = Response(json.dumps({'message': 'privilege updated successfully!'}), status=200)
+            resp = Response(json.dumps(res), status=200)
 
         except Exception as e:
             print(e)

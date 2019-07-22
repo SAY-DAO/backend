@@ -178,6 +178,7 @@ class AddPaymentForNeed(Resource):
 
             user = session.query(UserModel).filter_by(IsDeleted=False).filter_by(Id=Id_user).first()
             need = session.query(NeedModel).filter_by(IsDeleted=False).filter_by(Id=Id_need).first()
+            child = session.query(ChildNeedModel).filter_by(Id_need=need_id).filter_by(IsDeleted=False).first()
 
             if Amount > need.Cost - need.Paid:
                 resp = Response(json.dumps({'msg': f'you can pay {need.Cost - need.Paid} at most!'}))
@@ -200,15 +201,19 @@ class AddPaymentForNeed(Resource):
                 )
 
                 session.add(new_payment)
-                session.commit()
+                # session.commit()
 
                 user.Credit -= Amount
+                user.SpentCredit += Amount
                 need.Paid += Amount
-                need.Progress = need.Paid // need.Cost
+                need.Progress = need.Paid / need.Cost * 100
 
-                if need.Spent == need.Cost:
+                child.child_relation.SpentCredit += Amount
+                if need.Paid == need.Cost:
                     need.IsDone = True
                     user.DoneNeedCount += 1
+
+                    child.child_relation.DoneNeedCount += 1
 
                 session.commit()
 

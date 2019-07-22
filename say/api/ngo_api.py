@@ -13,7 +13,7 @@ class GetAllNgo(Resource):
         session = Session()
 
         try:
-            base_ngos = session.query(NgoModel).filter_by(IsActive=True).filter_by(IsDeleted=False).all()
+            base_ngos = session.query(NgoModel).filter_by(IsDeleted=False).all()
 
             fetch = {}
 
@@ -112,7 +112,7 @@ class GetNgoById(Resource):
         session = Session()
 
         try:
-            base_ngo = session.query(NgoModel).filter_by(Id=ngo_id).filter_by(IsActive=True).filter_by(
+            base_ngo = session.query(NgoModel).filter_by(Id=ngo_id).filter_by(
                 IsDeleted=False).first()
 
             if not base_ngo:
@@ -140,8 +140,7 @@ class GetNgoByCoordinatorId(Resource):
         try:
             fetch = {}
 
-            base_ngos = session.query(NgoModel).filter_by(CoordinatorId=ngo_coordinatorid).filter_by(
-                IsActive=True).filter_by(IsDeleted=False).all()
+            base_ngos = session.query(NgoModel).filter_by(CoordinatorId=ngo_coordinatorid).filter_by(IsDeleted=False).all()
 
             for n in base_ngos:
                 if not n:
@@ -173,7 +172,7 @@ class GetNgoByName(Resource):
         try:
             fetch = {}
 
-            base_ngos = session.query(NgoModel).filter_by(Name=ngo_name).filter_by(IsActive=True).filter_by(
+            base_ngos = session.query(NgoModel).filter_by(Name=ngo_name).filter_by(
                 IsDeleted=False).all()
 
             for n in base_ngos:
@@ -207,7 +206,6 @@ class GetNgoByPhoneNumber(Resource):
             fetch = {}
 
             base_ngos = session.query(NgoModel).filter_by(PhoneNumber=ngo_phonenumber).filter_by(
-                IsActive=True).filter_by(
                 IsDeleted=False).all()
 
             for n in base_ngos:
@@ -238,7 +236,7 @@ class UpdateNgo(Resource):
         session = Session()
 
         try:
-            base_ngo = session.query(NgoModel).filter_by(Id=ngo_id).filter_by(IsActive=True).filter_by(
+            base_ngo = session.query(NgoModel).filter_by(Id=ngo_id).filter_by(
                 IsDeleted=False).first()
 
             if 'Country' in request.form.keys():
@@ -296,7 +294,7 @@ class DeleteNgo(Resource):
 
         try:
 
-            base_ngo = session.query(NgoModel).filter_by(Id=ngo_id).filter_by(IsActive=True).filter_by(
+            base_ngo = session.query(NgoModel).filter_by(Id=ngo_id).filter_by(
                 IsDeleted=False).first()
 
             base_ngo.IsDeleted = True

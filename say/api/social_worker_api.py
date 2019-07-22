@@ -14,7 +14,7 @@ class GetAllSocialWorkers(Resource):
         session = Session()
 
         try:
-            socialworkers = session.query(SocialWorkerModel).filter_by(IsActive=True).filter_by(IsDeleted=False).all()
+            socialworkers = session.query(SocialWorkerModel).filter_by(IsDeleted=False).all()
 
             fetch = {}
 
@@ -166,6 +166,7 @@ class AddSocialWorker(Resource):
 
         except Exception as e:
             print(e)
+            resp = Response(json.dumps({'message': 'error'}), status=500)
         finally:
             session.close()
             return resp
@@ -179,10 +180,9 @@ class GetSocialWorkerById(Resource):
             session = Session()
 
             socialworker = session.query(SocialWorkerModel).filter_by(Id=socialworker_id).filter_by(
-                IsActive=True).filter_by(
                 IsDeleted=False).first()
             if not socialworker:
-                resp = Response(json.dumps({'message': 'error'}))
+                resp = Response(json.dumps({'message': 'null error'}))
                 session.close()
                 return resp
             resp = Response(json.dumps(obj_to_dict(socialworker)), status=200)
@@ -203,8 +203,7 @@ class GetSocialWorkerByGeneratedCode(Resource):
 
         try:
             socialworker = session.query(SocialWorkerModel).filter_by(
-                GeneratedCode=socialworker_generatedcode).filter_by(
-                IsActive=True).filter_by(IsDeleted=False).first()
+                GeneratedCode=socialworker_generatedcode).filter_by(IsDeleted=False).first()
             if not socialworker:
                 resp = Response(json.dumps({'message': 'error'}))
                 session.close()
@@ -228,8 +227,7 @@ class GetSocialWorkerByNgoId(Resource):
         try:
             fetch = {}
 
-            socialworkers = session.query(SocialWorkerModel).filter_by(Id_ngo=socialworker_ngoid).filter_by(
-                IsActive=True).filter_by(IsDeleted=False).all()
+            socialworkers = session.query(SocialWorkerModel).filter_by(Id_ngo=socialworker_ngoid).filter_by(IsDeleted=False).all()
             for socialworker in socialworkers:
                 if not socialworker:
                     resp = Response(json.dumps({'message': 'error'}))
@@ -258,8 +256,7 @@ class GetSocialWorkerByIdNumber(Resource):
         try:
             fetch = {}
 
-            socialworkers = session.query(SocialWorkerModel).filter_by(IdNumber=socialworker_idnumber).filter_by(
-                IsActive=True).filter_by(IsDeleted=False).all()
+            socialworkers = session.query(SocialWorkerModel).filter_by(IdNumber=socialworker_idnumber).filter_by(IsDeleted=False).all()
             for socialworker in socialworkers:
                 if not socialworker:
                     resp = Response(json.dumps({'message': 'error'}))
@@ -288,8 +285,7 @@ class GetSocialWorkerByPhoneNumber(Resource):
         try:
             fetch = {}
 
-            socialworkers = session.query(SocialWorkerModel).filter_by(PhoneNumber=socialworker_phonenumber).filter_by(
-                IsActive=True).filter_by(IsDeleted=False).all()
+            socialworkers = session.query(SocialWorkerModel).filter_by(PhoneNumber=socialworker_phonenumber).filter_by(IsDeleted=False).all()
             for socialworker in socialworkers:
                 if not socialworker:
                     resp = Response(json.dumps({'message': 'error'}))
@@ -319,8 +315,7 @@ class GetSocialWorkerByPassportNumber(Resource):
             fetch = {}
 
             socialworkers = session.query(SocialWorkerModel).filter_by(
-                PassportNumber=socialworker_passportnumber).filter_by(
-                IsActive=True).filter_by(IsDeleted=False).all()
+                PassportNumber=socialworker_passportnumber).filter_by(IsDeleted=False).all()
             for socialworker in socialworkers:
                 if not socialworker:
                     resp = Response(json.dumps({'message': 'error'}))
@@ -349,8 +344,7 @@ class GetSocialWorkerByUserName(Resource):
         try:
             fetch = {}
 
-            socialworkers = session.query(SocialWorkerModel).filter_by(UserName=socialworker_username).filter_by(
-                IsActive=True).filter_by(IsDeleted=False).all()
+            socialworkers = session.query(SocialWorkerModel).filter_by(UserName=socialworker_username).filter_by(IsDeleted=False).all()
             for socialworker in socialworkers:
                 if not socialworker:
                     resp = Response(json.dumps({'message': 'error'}))
@@ -380,7 +374,7 @@ class GetSocialWorkerByBirthCertificateNumber(Resource):
             fetch = {}
 
             socialworkers = session.query(SocialWorkerModel).filter_by(
-                BirthCertificateNumber=socialworker_birthcertificatenumber).filter_by(IsActive=True).filter_by(
+                BirthCertificateNumber=socialworker_birthcertificatenumber).filter_by(
                 IsDeleted=False).all()
             for socialworker in socialworkers:
                 if not socialworker:
@@ -411,8 +405,7 @@ class GetSocialWorkerByEmailAddress(Resource):
             fetch = {}
 
             socialworkers = session.query(SocialWorkerModel).filter_by(
-                EmailAddress=socialworker_emailaddress).filter_by(
-                IsActive=True).filter_by(IsDeleted=False).all()
+                EmailAddress=socialworker_emailaddress).filter_by(IsDeleted=False).all()
             for socialworker in socialworkers:
                 if not socialworker:
                     resp = Response(json.dumps({'message': 'error'}))
@@ -441,8 +434,7 @@ class GetSocialWorkerByTelegramId(Resource):
         try:
             fetch = {}
 
-            socialworkers = session.query(SocialWorkerModel).filter_by(TelegramId=socialworker_telegramid).filter_by(
-                IsActive=True).filter_by(IsDeleted=False).all()
+            socialworkers = session.query(SocialWorkerModel).filter_by(TelegramId=socialworker_telegramid).filter_by(IsDeleted=False).all()
             for socialworker in socialworkers:
                 if not socialworker:
                     resp = Response(json.dumps({'message': 'error'}))
@@ -471,8 +463,7 @@ class UpdateSocialWorker(Resource):
         previous_ngo = None
 
         try:
-            base_socialworker = session.query(SocialWorkerModel).filter_by(Id=socialworker_id).filter_by(
-                IsActive=True).filter_by(IsDeleted=False).first()
+            base_socialworker = session.query(SocialWorkerModel).filter_by(Id=socialworker_id).filter_by(IsDeleted=False).first()
 
             if 'Id_ngo' in request.form.keys():
                 previous_ngo = base_socialworker.Id_ngo
@@ -597,8 +588,7 @@ class DeleteSocialWorker(Resource):
         session = Session()
 
         try:
-            base_socialworker = session.query(SocialWorkerModel).filter_by(Id=socialworker_id).filter_by(
-                IsActive=True).filter_by(IsDeleted=False).first()
+            base_socialworker = session.query(SocialWorkerModel).filter_by(Id=socialworker_id).filter_by(IsDeleted=False).first()
 
             base_socialworker.IsDeleted = True
             this_ngo = session.query(NgoModel).filter_by(Id=base_socialworker.Id_ngo).filter_by(IsDeleted=False).first()
@@ -625,8 +615,7 @@ class DeactivateSocialWorker(Resource):
         session = Session()
 
         try:
-            base_socialworker = session.query(SocialWorkerModel).filter_by(Id=socialworker_id).filter_by(
-                IsActive=True).filter_by(IsDeleted=False).first()
+            base_socialworker = session.query(SocialWorkerModel).filter_by(Id=socialworker_id).filter_by(IsDeleted=False).first()
 
             base_socialworker.IsActive = False
 
@@ -654,7 +643,7 @@ api.add_resource(GetSocialWorkerByGeneratedCode, '/api/v2/socialWorker/generated
 api.add_resource(GetSocialWorkerByNgoId, '/api/v2/socialWorker/ngoId=<socialworker_ngoid>')
 api.add_resource(GetSocialWorkerByIdNumber, '/api/v2/socialWorker/idNumber=<socialworker_idnumber>')
 api.add_resource(GetSocialWorkerByPhoneNumber, '/api/v2/socialWorker/phone=<socialworker_phonenumber>')
-api.add_resource(GetSocialWorkerByPassportNumber, '/api/v2/socialWorker/PassportName=<socialworker_passportnumber>')
+api.add_resource(GetSocialWorkerByPassportNumber, '/api/v2/socialWorker/PassportNumber=<socialworker_passportnumber>')
 api.add_resource(GetSocialWorkerByUserName, '/api/v2/socialWorker/username=<socialworker_username>')
 api.add_resource(GetSocialWorkerByBirthCertificateNumber,
                  '/api/v2/socialWorker/bcNumber=<socialworker_birthcertificatenumber>')

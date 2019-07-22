@@ -1,10 +1,15 @@
-add privilege
+update privilege
 ---
 
 tags:
   - Privilege API
 
 parameters:
+  - name: privilege_id
+    required: true
+    in: path
+    type: integer
+
   - name: Privilege information
     required: true
     in: body

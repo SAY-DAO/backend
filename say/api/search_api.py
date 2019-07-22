@@ -1,4 +1,4 @@
-from random import random as r
+from random import randrange
 
 from say.models.child_model import ChildModel
 from say.models.child_need_model import ChildNeedModel
@@ -17,13 +17,15 @@ class GetRandomSearchResult(Resource):
         session = session_maker()
 
         try:
-            families = session.query(UserFamilyModel).filter_by(Id_user=user_id).filter_by(IsDeleted=False).all()
-            my_families = [family.Id_family for family in families]
-            other_children = []
-            children = session.query(ChildModel).filter(ChildModel.Id.in_(other_children)).filter_by(
+            other_families = session.query(UserFamilyModel).filter(UserFamilyModel.Id_user != user_id).filter_by(
+                IsDeleted=False).all()
+            other_children = [family.family_relation.Id_child for family in other_families]
+
+            children = session.query(ChildModel).filter(
+                or_(ChildModel.Id.in_(other_children), ChildModel.HasFamily.is_(False))).filter_by(
                 IsDeleted=False).all()
 
-            search_data = []
+            search_data, index = [], []
             for child in children:
                 needs = session.query(ChildNeedModel).filter_by(Id_child=child.Id).filter_by(IsDeleted=False).all()
                 need_amount = len(needs)
@@ -36,20 +38,24 @@ class GetRandomSearchResult(Resource):
                 child_data = obj_to_dict(child)
                 child_data['Needs'] = child_needs
 
-                search_data.append([3 * need_amount - 2 * child.SayFamilyCount, child])
-            print(f'0- children length: {children.__len__()}')
-            print(f'0- families length: {families.__len__()}')
-            print(f'0- other children length: {other_children.__len__()}')
-            print(f'1- search data length: {search_data.__len__()}')
-            search_data.sort(reverse=True)
-            search_data = [data[1] for data in search_data]
-            print(f'2- search data length: {search_data.__len__()}')
-            res = []
-            for data in search_data:
-                if r() > 0.7:
-                    res.append(data)
-            print(f'3- search data length: {search_data.__len__()}')
-            resp = Response(json.dumps(res))
+                index.append(3 * need_amount - 2 * child.SayFamilyCount)
+                search_data.append(child_data)
+
+            search_data_temp = index.copy()
+            search_data_temp.sort(reverse=True)
+            out = [search_data[index.index(i)] for i in search_data_temp]
+
+            search_range = sum(search_data_temp)
+            for j in search_data_temp:
+                search_range += 1 if j == 0 else 0
+
+            r = randrange(search_range)
+            for i in range(len(search_data_temp)):
+                if r <= sum(search_data_temp[:i + 1]):
+                    resp = Response(json.dumps(out[i]))
+                    break
+
+            print(10)
 
         except Exception as e:
             print(e)
@@ -68,13 +74,15 @@ class GetSayBrainSearchResult(Resource):
         session = session_maker()
 
         try:
-            families = session.query(UserFamilyModel).filter(UserFamilyModel.Id_user != user_id).filter_by(
+            other_families = session.query(UserFamilyModel).filter(UserFamilyModel.Id_user != user_id).filter_by(
                 IsDeleted=False).all()
-            other_children = [family.Id_child for family in families]
-            children = session.query(ChildModel).filter(ChildModel.Id.in_(other_children)).filter_by(
+            other_children = [family.family_relation.Id_child for family in other_families]
+
+            children = session.query(ChildModel).filter(
+                or_(ChildModel.Id.in_(other_children), ChildModel.HasFamily.is_(False))).filter_by(
                 IsDeleted=False).all()
 
-            search_data = []
+            search_data, index = [], []
             for child in children:
                 needs = session.query(ChildNeedModel).filter_by(Id_child=child.Id).filter_by(IsDeleted=False).all()
                 need_amount = len(needs)
@@ -87,17 +95,24 @@ class GetSayBrainSearchResult(Resource):
                 child_data = obj_to_dict(child)
                 child_data['Needs'] = child_needs
 
-                search_data.append([3 * need_amount - 2 * child.SayFamilyCount, child])
+                index.append(3 * need_amount - 2 * child.SayFamilyCount)
+                search_data.append(child_data)
 
-            search_data.sort(reverse=True)
-            search_data = [data[1] for data in search_data]
+            search_data_temp = index.copy()
+            search_data_temp.sort(reverse=True)
+            out = [search_data[index.index(i)] for i in search_data_temp]
 
-            res = []
-            for data in search_data:
-                if r() > 0.7:
-                    res.append(data)
+            search_range = sum(search_data_temp)
+            for j in search_data_temp:
+                search_range += 1 if j == 0 else 0
 
-            resp = Response(json.dumps(res))
+            r = randrange(search_range)
+            for i in range(len(search_data_temp)):
+                if r <= sum(search_data_temp[:i + 1]):
+                    resp = Response(json.dumps(out[i]))
+                    break
+
+            print(10)
 
         except Exception as e:
             print(e)

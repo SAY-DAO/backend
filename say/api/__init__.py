@@ -2,7 +2,7 @@ import os
 
 from flask import Flask, jsonify, json, Response, request, Blueprint, send_from_directory
 from flask_restful import Api, Resource
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import create_engine, inspect, or_
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 from flasgger import Swagger
@@ -10,12 +10,15 @@ from flasgger.utils import swag_from
 from werkzeug.utils import secure_filename
 
 db = create_engine('postgresql://postgres:13771998@localhost:5432/say_db')
+# db = create_engine('postgresql://postgres:postgres@5.253.27.219:5432/say')
 
 # UPLOAD_FOLDER = "C:\\Users\\Parsa\\PycharmProjects\\SAY\\say\\files"
 BASE_FOLDER = os.getcwd()
 
 UPLOAD_FOLDER = os.path.join(BASE_FOLDER, 'say')
 UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, 'files')
+if not os.path.isdir(UPLOAD_FOLDER):
+    os.mkdir(UPLOAD_FOLDER)
 
 FLAGS = os.path.join(BASE_FOLDER, 'say')
 FLAGS = os.path.join(FLAGS, 'flags')

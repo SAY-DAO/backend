@@ -37,6 +37,7 @@ class ChildModel(base):
     LastUpdate = Column(Date, nullable=False)
     IsDeleted = Column(Boolean, nullable=False, default=False)
     IsConfirmed = Column(Boolean, nullable=False, default=False)
+    HasFamily = Column(Boolean, nullable=False, default=False)
     ConfirmUser = Column(Integer, nullable=True)
     ConfirmDate = Column(Date, nullable=True)
     GeneratedCode = Column(String, nullable=True)

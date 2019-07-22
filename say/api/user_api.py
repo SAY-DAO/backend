@@ -23,7 +23,7 @@ def get_user_by_something(session, user_id):
 
 
 def get_user_children(session, user):
-    families = session.query(UserFamilyModel).filter_by(Id_user=user.Id).all()
+    families = session.query(UserFamilyModel).filter_by(Id_user=user.Id).filter_by(IsDeleted=False).all()
     print(11)
 
     children = {}
@@ -787,7 +787,8 @@ class AddUser(Resource):
                 BirthPlace=BirthPlace,
                 LastLogin=LastLogin,
                 Password=Password,
-                FlagUrl=FlagUrl
+                FlagUrl=FlagUrl,
+                # Credit=5000  # TODO: remove it!
             )
 
             session.add(new_user)

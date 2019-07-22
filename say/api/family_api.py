@@ -94,6 +94,7 @@ class AddUserToFamily(Resource):
 
             child = session.query(FamilyModel).filter_by(Id=Id_family).filter_by(IsDeleted=False).first()
             child.family_child_relation.SayFamilyCount += 1
+            child.family_child_relation.HasFamily = True
             print(2)
 
             session.add(new_member)

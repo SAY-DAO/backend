@@ -3,6 +3,7 @@ from flasgger.utils import validate
 from say.models.child_model import ChildModel
 from say.models.child_need_model import ChildNeedModel
 from say.models.family_model import FamilyModel
+from say.models.need_family_model import NeedFamilyModel
 from say.models.need_model import NeedModel
 from say.models.ngo_model import NgoModel
 from say.models.social_worker_model import SocialWorkerModel
@@ -29,7 +30,7 @@ def get_child_by_id(session, child_id):
 
     child_needs = {}
     for need in needs:
-        need_data = obj_to_dict(session.query(ChildModel).filter_by(Id=need.Id_child).filter_by(IsDeleted=False).first())
+        need_data = obj_to_dict(session.query(NeedModel).filter_by(Id=need.Id_need).filter_by(IsDeleted=False).first())
         print(333)
         child_needs[need.Id_need] = need_data
 
@@ -55,6 +56,34 @@ def get_child_need(session, child_id, urgent=False):
                 child_needs = {['msg']: 'no urgent needs founded!'}
 
     return child_needs
+
+
+def generateCode(ngoId , swId , childId):
+    res = ""
+    ngo = "000"
+    sw = "000"
+    child = "0000"
+    index = 2
+    while ngoId > 0:
+        ngo[index] = str(ngoId%10)
+        ngoId = ngoId/10
+        index = index - 1
+    
+    index = 2
+    while swId > 0:
+        sw[index] = str(swId%10)
+        swId = swId/10
+        index = index - 1
+    
+    index = 3
+    while childId > 0:
+        child[index] = str(childId%10)
+        childId = childId/10
+        index = index - 1
+    
+    res = ngo + sw + child
+    print(res)
+    return res
 
 
 class GetAllChildren(Resource):
@@ -125,12 +154,10 @@ class GetChildrenOfUserByUserId(Resource):
 
             child_res = {}
             for user in users:
-
-                families = session.query(FamilyModel).filter_by(Id_child=user.Id_family).all()
+                families = session.query(FamilyModel).filter_by(Id=user.Id_family).filter_by(IsDeleted=False).all()
 
                 for family in families:
-                    child = session.query(FamilyModel).filter_by(IsDeleted=False).filter_by(Id=family.Id_child).first()
-                    child_data = get_child_by_id(session, child.Id)
+                    child_data = get_child_by_id(session, family.family_child_relation.Id)
                     child_res[family.Id] = child_data
 
             resp = Response(json.dumps(child_res))
@@ -262,6 +289,18 @@ class AddChild(Resource):
         session = session_maker()
 
         try:
+            ngo = session.query(NgoModel).filter_by(Id=ngo_id).filter_by(IsDeleted=False).first()
+            sw = session.query(SocialWorkerModel).filter_by(Id=social_worker_id).filter_by(IsDeleted=False).first()
+
+            code = generateCode(ngo_id , social_worker_id , sw.childCount)
+            # code = str(ngo_id) + str(social_worker_id) + str(sw.ChildCount)
+            children = session.query(ChildModel).filter_by(IsDeleted=False).all()
+            for child in children:
+                if code == child.GeneratedCode:
+                    resp = Response(json.dumps({'message': 'Child was already here!'}))
+                    session.close()
+                    return resp
+
             if len(session.query(ChildModel).all()):
                 last_child = session.query(ChildModel).order_by(ChildModel.Id.desc()).first()
                 current_id = last_child.Id + 1
@@ -387,7 +426,8 @@ class AddChild(Resource):
                 Gender=Gender,
                 BioSummary=BioSummary,
                 Status=Status,
-                LastUpdate=LastUpdate
+                LastUpdate=LastUpdate,
+                GeneratedCode=code
             )
 
             session.add(new_child)
@@ -399,8 +439,8 @@ class AddChild(Resource):
                 Id_child=same_child.Id
             )
 
-            session.query(NgoModel).filter_by(Id=NgoId).filter_by(IsDeleted=False).first().ChildrenCount += 1
-            session.query(SocialWorkerModel).filter_by(Id=SocialWorkerId).filter_by(IsDeleted=False).first().ChildCount += 1
+            ngo.ChildrenCount += 1
+            sw.ChildCount += 1
 
             session.add(new_family)
             session.commit()
@@ -453,11 +493,17 @@ class DeleteUserFromChildFamily(Resource):
         try:
             family = session.query(FamilyModel).filter_by(Id_child=child_id).filter_by(IsDeleted=False).first()
             user = session.query(UserFamilyModel).filter_by(Id_user=user_id).filter_by(Id_family=family.Id).filter_by(IsDeleted=False).first()
-            child = session.query(ChildModel).filter_by(Id=child_id).filter_by(IsDeleted=False).first()
+            participation = session.query(NeedFamilyModel).filter_by(Id_user=user_id).filter_by(Id_family=user_id).filter_by(IsDeleted=False).all()
 
-            child.SayFamilyCount -= 1
+            for participate in participation:
+                participate.IsDeleted = True
+
+            family.family_child_relation.SayFamilyCount -= 1
             user.IsDeleted = True
-            # session.delete(user)
+            if family.family_child_relation.SayFamilyCount == 0:
+                family.family_child_relation.HasFamily = False
+
+                # session.delete(user)
             session.commit()
 
             resp = Response(json.dumps({'msg': 'DELETED SUCCESSFULLY!'}))
@@ -806,8 +852,25 @@ class ConfirmChild(Resource):
             return resp
 
 
-class GenerateCodeForChild(Resource):
-    pass
+class GetChildGeneratedCode(Resource):
+    @swag_from('./apidocs/child/code.yml')
+    def get(self, child_id):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+
+        try:
+            child = session.query(ChildModel).filter_by(Id=child_id).filter_by(IsDeleted=False).first()
+
+            resp = Response(json.dumps({'ChildGeneratedCode': child.GeneratedCode}))
+
+        except Exception as e:
+            print(e)
+
+            resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
+
+        finally:
+            session.close()
+            return resp
 
 
 """
@@ -835,4 +898,4 @@ api.add_resource(GetChildBySocialWorkerId, '/api/v2/child/socialWorkerId=<social
 api.add_resource(GetChildUrgentNeedsById, '/api/v2/child/need/urgent/childId=<child_id>')
 api.add_resource(GetAllChildrenUrgentNeeds, '/api/v2/child/need/urgent/all')
 api.add_resource(ConfirmChild, '/api/v2/child/confirm/childId=<child_id>&userId=<user_id>')
-api.add_resource(GenerateCodeForChild, '/api/v2/child/generateCode/childId=<child_id>')
+api.add_resource(GetChildGeneratedCode, '/api/v2/child/generatedCode/childId=<child_id>')
