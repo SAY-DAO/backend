@@ -14,6 +14,6 @@ build-master:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   script:
     - docker build --pull -t "$CI_REGISTRY/$CI_REGISTRY_USER/$CI_PROJECT_NAME" .
-    - docker push "$CI_REGISTRY/$CI_PROJECT_PATH"
+    - docker push "$CI_REGISTRY/$CI_REGISTRY_USER/$CI_PROJECT_NAME"
   only:
     - master
