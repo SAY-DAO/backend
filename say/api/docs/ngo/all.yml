@@ -1,0 +1,110 @@
+get all ngos
+Returns information of all NGOs in a json.
+Json key is NGO id and json value is NGO object.
+Calling this API only affects ngo table by selecting rows from it.
+---
+
+tags:
+  - NGO API
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: ngo_model
+
+      properties:
+        id:
+          type: integer
+          description: the ngo id
+          example: 1
+
+        country:
+          type: integer
+          description: the international code of country
+          example: 98
+
+        city:
+          type: integer
+          description: the international code of city
+          example: 21
+
+        coordinatorId:
+          type: integer
+          description: the coordinator of ngo id
+          example: 1
+
+        name:
+          type: string
+          description: name of the ngo
+
+        website:
+          type: string
+          description: website of the ngo
+          example: sample-ngo.com
+
+        postalAddress:
+          type: string
+          description: address of the ngo
+          example: Iran, Tehran.
+
+        emailAddress:
+          type: string
+          description: email of the ngo
+          example: sample.ngo@mailserver.com
+
+        phoneNumber:
+          type: string
+          description: phone numbers of the ngo, comma separated
+          example: 1234,5678,...
+
+        logoUrl:
+          type: string
+          description: logo of the ngo as file
+
+        balance:
+          type: integer
+          default: 0
+          description: amount of money the ngo has
+
+        socialWorkerCount:
+          type: integer
+          default: 0
+          description: count of all the social workers in history of the ngo
+
+        currentSocialWorkerCount:
+          type: integer
+          default: 0
+          description: count of all the social workers in the ngo right now
+
+        childrenCount:
+          type: integer
+          default: 0
+          description: count of all the social workers in history of the ngo
+
+        currentChildrenCount:
+          type: integer
+          default: 0
+          description: count of all the social workers in the ngo right now
+
+        registerDate:
+          type: string
+          description: registeration date
+
+        lastUpdateDate:
+          type: string
+          description: last update date
+
+        isActive:
+          type: boolean
+          default: true
+          description: ngo is active or not
+
+        isDeleted:
+          type: boolean
+          default: false
+          description: ngo is deleted or not

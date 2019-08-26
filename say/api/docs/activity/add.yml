@@ -1,0 +1,36 @@
+add activity
+Adds an activity.
+This API creates a row in activity table containing a new activity information.
+Here is a guide to find the activity by its code:
+• [11]update profile, [12]update child, [13]update need, [14]update socialworker, [15]update privilege, [16]update ngo, [17]update need category, [18]update receipt
+• [21]add user, [22]add child, [23]add need, [24]add privilege, [25]add ngo, [26]add need category, [27]add receipt
+• [31]delete user, [32]delete child, [33]delete need, [34]delete privilege, [35]delete ngo, [36]delete need type (category), [37]delete receipt
+• [4]payment
+• [5]need done
+---
+
+tags:
+  - Activity API
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - name: activityCode
+    required: true
+    in: formData
+    type: integer
+    description: the activity code
+
+  - name: social_worker_id
+    required: true
+    in: path
+    type: integer
+    description: the social worker id
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok

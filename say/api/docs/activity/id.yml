@@ -1,0 +1,40 @@
+get activity by id
+Returns information of an activity with given id as a json object.
+Calling this API only affects activity table by selecting a single row from it.
+---
+
+tags:
+  - Activity API
+
+parameters:
+  - in: path
+    name: activity_id
+    required: true
+    type: integer
+    description: the activity id
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: activity_model
+
+      properties:
+        id:
+          type: integer
+          description: id of activity
+          example: 1
+
+        id_social_worker:
+          type: integer
+          description: the social worker who has done the activity
+          example: 1
+
+        activityCode:
+          type: integer
+          description: the code assigned to activity
+          example: 12

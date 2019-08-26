@@ -1,0 +1,119 @@
+get need by id
+Returns information of a need with given id as a json object.
+Calling this API affects need, child_need and need_family and user tables.
+Confirm parameter determines how do you want the result:
+[0]not onfirmed, [1]confirmed, [2]both
+---
+
+tags:
+  - Need API
+
+parameters:
+  - in: path
+    name: need_id
+    required: true
+    type: integer
+
+  - in: path
+    name: confirm
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: need_model
+
+      properties:
+        id:
+          type: integer
+          description: the need's id
+
+        name:
+          type: string
+          description: the need's name
+
+        imageUrl:
+          type: string
+          description: the need's image path
+
+        category:
+          type: integer
+          description: the need's category (joy, love, growth, etc)
+          example: 0
+
+        isUrgent:
+          type: boolean
+          description: determines if the need is urgent or not
+
+        description:
+          type: string
+          description: the need's description
+
+        descriptionSummary:
+          type: string
+          description: the summary of description
+
+        cost:
+          type: integer
+          description: the need's cost
+
+        progress:
+          type: integer
+          description: the need's progress percent
+          default: 0
+
+        paid:
+          type: integer
+          description: paid amount for the need
+          default: 0
+
+        affiliateLinkUrl:
+          type: string
+          description: the need's affiliate link
+
+        isDone:
+          type: boolean
+          description: determines if the need is done or not
+          default: false
+
+        isDeleted:
+          type: boolean
+          description: determines if the need is deleted or not
+          default: false
+
+        createdAt:
+          type: string
+          description: the date that the need has been created
+
+        receipts:
+          type: string
+          description: the need's receipts, comma separated
+
+        isConfirmed:
+          type: boolean
+          description: determines if the need is confirmed or not
+          default: false
+
+        confirmDate:
+          type: string
+          description: the date that the need has been confirmed
+
+        confirmUser:
+          type: integer
+          description: id of the user who has cnfirmed the need
+
+        type:
+          type: integer
+          description: the need's type (donate or affiliate)
+          example: 0
+
+        lastUpdate:
+          type: string
+          description: the last date that the need has been updated
+

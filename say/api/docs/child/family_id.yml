@@ -1,0 +1,25 @@
+get child family id
+Returns child's family id.
+Calling this API affect s on family table only.
+---
+
+tags:
+  - Child API
+
+parameters:
+  - in: path
+    name: child_id
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      properties:
+        familyId:
+          type: integer

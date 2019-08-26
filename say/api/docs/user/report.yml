@@ -1,0 +1,44 @@
+get user payment report
+Returns records of all the payments that the user have done so far.
+Calling this API affects payment table only.
+---
+
+tags:
+  - User API
+
+parameters:
+  - in: path
+    name: user_id
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: payment_model
+
+      properties:
+        id:
+          type: integer
+          description: the payment's id
+
+        id_need:
+          type: integer
+          description: the need's id
+
+        id_user:
+          type: integer
+          description: the user's id
+
+        amount:
+          type: integer
+          description: the amount of payment
+
+        createdAt:
+          type: string
+          description: the date that the payment has been done

@@ -1,0 +1,74 @@
+add ngo
+Adds an NGO.
+This API creates a row in ngo table containing a new NGO information.
+Be aware that city and country are integer fields, so you cannot insert their names in those fields.
+You have to insert the international codes for countries and cities.
+Adding website is optional.
+For logoUrl ypu have to upload a file.
+Adding multiple phone numbers is allowed.
+They must be comma separated and without any spaces like the example bellow:
+[number],[number],...
+---
+
+tags:
+  - NGO API
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - name: country
+    in: formData
+    type: integer
+    required: true
+
+  - name: city
+    in: formData
+    type: integer
+    required: true
+
+  - name: coordinatorId
+    in: formData
+    type: integer
+    required: true
+
+  - name: name
+    in: formData
+    type: string
+    required: true
+
+  - name: website
+    in: formData
+    type: string
+
+  - name: postalAddress
+    in: formData
+    type: string
+    required: true
+
+  - name: emailAddress
+    in: formData
+    type: string
+    required: true
+
+  - name: phoneNumber
+    in: formData
+    type: string
+    required: true
+
+  - name: logoUrl
+    in: formData
+    type: file
+    required: true
+
+  - name: balance
+    in: formData
+    type: integer
+    required: true
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok

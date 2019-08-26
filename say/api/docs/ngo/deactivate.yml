@@ -1,0 +1,20 @@
+deactivate ngo
+Deactivates an active NGO.
+Calling this API only affects ngo table by updating a row.
+---
+
+tags:
+  - NGO API
+
+parameters:
+  - in: path
+    name: ngo_id
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok

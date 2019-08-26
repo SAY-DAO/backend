@@ -1,0 +1,18 @@
+get all privileges
+Returns information of all privileges in a json.
+Json key is privilege id and json value is privilege object.
+Calling this API only affects social_worker_type table by selecting rows from it.
+---
+
+tags:
+  - Privilege API
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: privilege_model

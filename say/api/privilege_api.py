@@ -7,43 +7,47 @@ Privilege APIs
 
 
 class GetAllPrivileges(Resource):
-    @swag_from('./apidocs/privilege/all.yml')
+    @swag_from('./docs/privilege/all.yml')
     def get(self):
-        Session = sessionmaker(db)
-        session = Session()
-
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
             privileges = session.query(PrivilegeModel).all()
-            r = {}
-            for p in privileges:
-                res = {
-                    'Id': p.Id,
-                    'Name': p.Name,
-                    'Privilege': p.Privilege
-                }
-                r[p.Id] = res
 
-            resp = Response(json.dumps(r), status=200)
+            result = {}
+            for privilege in privileges:
+                res = {
+                    'Id': privilege.id,
+                    'Name': privilege.name,
+                    'Privilege': privilege.privilege
+                }
+                result[str(privilege.id)] = res
+
+            resp = Response(utf8_response(result, True), status=200)
 
         except Exception as e:
             print(e)
             resp = Response(json.dumps({'message': 'Something is Wrong !!!'}), status=500)
+
         finally:
             session.close()
             return resp
 
 
 class AddPrivilege(Resource):
-    @swag_from('./apidocs/privilege/add.yml')
+    @swag_from('./docs/privilege/add.yml')
     def post(self):
-        Session = sessionmaker(db)
-        session = Session()
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            name = request.json['Name']
-            privilege = request.json['Privilege']
-            new_privilege = PrivilegeModel(Name=name, Privilege=privilege)
+            name = request.form['name']
+            privilege = request.form['privilege']
+            new_privilege = PrivilegeModel(name=name, privilege=privilege)
+
             session.add(new_privilege)
             session.commit()
 
@@ -59,22 +63,24 @@ class AddPrivilege(Resource):
 
 
 class GetPrivilegeByName(Resource):
-    @swag_from('./apidocs/privilege/name.yml')
+    @swag_from('./docs/privilege/name.yml')
     def get(self, name):
-        Session = sessionmaker(db)
-        session = Session()
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            privelegesList = session.query(PrivilegeModel).filter_by(Name=name).all()
-            r = {}
-            for p in privelegesList:
-                res = {
-                    'Id': p.Id,
-                    'Privilege': p.Privilege
-                }
-                r[p.Id] = res
+            privilege_list = session.query(PrivilegeModel).filter_by(name=name).all()
 
-            resp = Response(json.dumps(r), status=200)
+            result = {}
+            for privilege in privilege_list:
+                res = {
+                    'Id': privilege.id,
+                    'Privilege': privilege.privilege
+                }
+                result[str(privilege.id)] = res
+
+            resp = Response(utf8_response(result, True), status=200)
 
         except Exception as e:
             print(e)
@@ -86,20 +92,22 @@ class GetPrivilegeByName(Resource):
 
 
 class GetPrivilegeById(Resource):
-    @swag_from('./apidocs/privilege/id.yml')
+    @swag_from('./docs/privilege/id.yml')
     def get(self, privilege_id):
-        Session = sessionmaker(db)
-        session = Session()
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            privelegesList = session.query(PrivilegeModel).filter_by(Id=privilege_id).first()
+            privilege = session.query(PrivilegeModel).filter_by(id=privilege_id).first()
 
-            if not privelegesList:
+            if not privilege:
                 resp = Response(json.dumps({'message': 'something is Wrong !!'}, status=500))
                 session.close()
                 return resp
 
-            resp = Response(json.dumps(obj_to_dict(privelegesList)), status=200)
+            result = obj_to_dict(privilege)
+            resp = Response(utf8_response(result), status=200)
 
         except Exception as e:
             print(e)
@@ -111,22 +119,24 @@ class GetPrivilegeById(Resource):
 
 
 class GetPrivilegeByPrivilege(Resource):
-    @swag_from('./apidocs/privilege/privilege.yml')
+    @swag_from('./docs/privilege/privilege.yml')
     def get(self, privilege_type):
-        Session = sessionmaker(db)
-        session = Session()
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            privelegesList = session.query(PrivilegeModel).filter_by(Privilege=privilege_type).all()
-            r = {}
-            for p in privelegesList:
-                res = {
-                    'Id': p.Id,
-                    'Name': p.Name
-                }
-                r[p.Id] = res
+            privilege_list = session.query(PrivilegeModel).filter_by(privilege=privilege_type).all()
 
-            resp = Response(json.dumps(r), status=200)
+            result = {}
+            for privilege in privilege_list:
+                res = {
+                    'Id': privilege.id,
+                    'Name': privilege.name
+                }
+                result[str(privilege.id)] = res
+
+            resp = Response(utf8_response(result, True), status=200)
 
         except Exception as e:
             print(e)
@@ -138,30 +148,35 @@ class GetPrivilegeByPrivilege(Resource):
 
 
 class UpdatePrivilege(Resource):
-    @swag_from('./apidocs/privilege/update.yml')
+    @swag_from('./docs/privilege/update.yml')
     def patch(self, privilege_id):
-        Session = sessionmaker(db)
-        session = Session()
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            base_privilege = session.query(PrivilegeModel).filter_by(Id=privilege_id).first()
-            print(base_privilege)
-            if 'Name' in request.json.keys():
-                base_privilege.Name = request.json['Name']
-            if 'Privilege' in request.json.keys():
-                base_privilege.Privilege = int(request.json['Privilege'])
+            base_privilege = session.query(PrivilegeModel).filter_by(id=privilege_id).first()
+
+            if 'name' in request.form.keys():
+                base_privilege.name = request.form['name']
+
+            if 'privilege' in request.form.keys():
+                base_privilege.privilege = int(request.form['privilege'])
+
             res = {
                 'Id': int(privilege_id),
-                'Name': base_privilege.Name,
-                'Privilege': base_privilege.Privilege
+                'Name': base_privilege.name,
+                'Privilege': base_privilege.privilege
             }
+
             session.commit()
 
-            resp = Response(json.dumps(res), status=200)
+            resp = Response(utf8_response(res), status=200)
 
         except Exception as e:
             print(e)
             resp = Response(json.dumps({'message': 'something is Wrong !!'}, status=500))
+
         finally:
             session.close()
             return resp

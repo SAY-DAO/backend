@@ -1,0 +1,26 @@
+get all children
+Returns information of all children as a json object.
+Json key is child id and json value is children data.
+Calling this API affects on child, need, child_need, need_family and user tables.
+It contains children info, their needs and participants of those needs. Confirm tag determines the type of output:
+[0]for not confirmed children only, [1]for confirmed children only, [2]for both confirmed and not confirmed children
+---
+
+tags:
+  - Child API
+
+parameters:
+  - in: path
+    name: confirm
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: child_model

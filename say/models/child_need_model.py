@@ -11,10 +11,10 @@ Child-Need Model
 class ChildNeedModel(base):
     __tablename__ = 'child_need'
 
-    Id_child = Column(Integer, ForeignKey(ChildModel.Id), nullable=False)
-    Id_need = Column(Integer, ForeignKey(NeedModel.Id), nullable=False)
-    Id = Column(Integer, nullable=False, primary_key=True)
-    IsDeleted = Column(Boolean, nullable=False, default=False)
+    id_child = Column(Integer, ForeignKey(ChildModel.id), nullable=False)
+    id_need = Column(Integer, ForeignKey(NeedModel.id), nullable=False)
+    id = Column(Integer, nullable=False, primary_key=True)
+    isDeleted = Column(Boolean, nullable=False, default=False)
 
-    child_relation = relationship('ChildModel', foreign_keys='ChildNeedModel.Id_child')
-    need_relation = relationship('NeedModel', foreign_keys='ChildNeedModel.Id_need')
+    child_relation = relationship('ChildModel', foreign_keys='ChildNeedModel.id_child')
+    need_relation = relationship('NeedModel', foreign_keys='ChildNeedModel.id_need')

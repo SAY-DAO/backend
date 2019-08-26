@@ -1,0 +1,187 @@
+get child by id
+Returns information of a child with given id as a json object.
+Calling this API affects on child, need, child_need and need_family and user tables.
+It contains child info, its needs and participants of those needs.
+Confirm parameter determines how do you want the result:
+[0]not onfirmed, [1] confirmed, [2]both
+---
+
+tags:
+  - Child API
+
+parameters:
+  - in: path
+    name: child_id
+    required: true
+    type: integer
+
+  - in: path
+    name: confirm
+    required: true
+    type: integer
+
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: child_model
+
+      properties:
+        id:
+          type: integer
+          description: the child's id
+
+        firstName:
+          type: string
+          description: the child's real first name
+
+        lastName:
+          type: string
+          description: the child's real last name
+
+        sayName:
+          type: string
+          description: the child's virtual name
+
+        phoneNumber:
+          type: string
+          description: the child's phone number or a contact way
+
+        nationality:
+          type: integer
+          description: the child's nationality, the international country codes
+          example: 98
+
+        country:
+          type: integer
+          description: the child's country, the international country codes
+          example: 98
+
+        city:
+          type: integer
+          description: the child's city, the international city codes
+          example: 21
+
+        avatarUrl:
+          type: string
+          description: the child's avatar image path url
+
+        gender:
+          type: boolean
+          description: determines the child's gender, true for male and false for female
+
+        bio:
+          type: string
+          description: a text that describes the child
+
+        bioSummary:
+          type: string
+          description: summary of bio
+
+        voiceUrl:
+          type: string
+          description: the child's voice file path url
+
+        birthPlace:
+          type: integer
+          description: the child's birth place, the international city codes
+          example: 21
+
+        birthDate:
+          type: string
+          description: the child's birth date
+
+        address:
+          type: string
+          description: the child's address
+
+        housingStatus:
+          type: integer
+          description: describes how does the child lives
+          example: 0
+
+        familyCount:
+          type: integer
+          description: number of child's real family members
+
+        sayFamilyCount:
+          type: integer
+          description: number of child's SAY family members
+          default: 0
+
+        education:
+          type: integer
+          description: describes the child's education level
+          example: 7
+
+        status:
+          type: integer
+          description: child's state of happiness
+          example: 0
+
+        doneNeedCount:
+          type: integer
+          description: number of done needs of child
+          default: 0
+
+        ngoId:
+          type: integer
+          description: the ngo that the child is in
+
+        socialWorkerId:
+          type: integer
+          description: the social worker who covers the child's needs
+
+        spentCredit:
+          type: integer
+          description: total credit spent on child
+          default: 0
+
+        createdAt:
+          type: string
+          description: the date that the child has been created
+
+        lastUpdate:
+          type: string
+          description: the last date that the child has been updated
+
+        isDeleted:
+          type: boolean
+          description: determines if the child is confirmed or not
+          default: False
+
+        isConfirmed:
+          type: boolean
+          description: determines if the child is confirmed or not
+          default: False
+
+        confirmUser:
+          type: integer
+          description: the panel user who confirms the child
+
+        confirmDate:
+          type: string
+          description: the date that the child has been confirmed
+
+        generatedCode:
+          type: string
+          description: a unique code generated automatically from ngo id, ngo's social workers count and social worker's children count
+          example: 0010010001
+
+        isMigrated:
+          type: boolean
+          description: determines if the child is migrated or not
+          default: false
+
+        migratedId:
+          type: boolean
+          description: the social worker whom the child is migrated to
+
+        migrateDate:
+          type: boolean
+          description: the date that the child has been migrated

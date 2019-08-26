@@ -1,0 +1,17 @@
+get all activities
+Returns information of all activities in a json.
+Json key is activity id and json value is activity object.
+Calling this API only affects activity table by selecting rows from it.
+---
+
+tags:
+  - Activity API
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: activity_model

@@ -1,0 +1,18 @@
+get all social workers
+Returns information of all social workers in a json.
+Json key is social worker id and json value is social worker object.
+Calling this API only affects social_worker table by selecting rows from it.
+---
+
+tags:
+  - Social Worker API
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: social_worker_model

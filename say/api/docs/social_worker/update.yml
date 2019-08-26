@@ -1,0 +1,124 @@
+update social worker
+All the fields are optional.
+You can fill every field you want to change, and it will update the desired social worker.
+Calling this API only affects social_worker table by updating a row.
+Be aware that city and country are integer fields, so you cannot insert their names in those fields.
+You have to insert the international codes for countries and cities.
+For idCardUrl, passportUrl and avatarUrl you have to upload a file.
+Social workers can change their NGO by editing id_ngo field.
+---
+
+tags:
+  - Social Worker API
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - name: social_worker_id
+    in: path
+    type: integer
+    required: true
+
+  - name: id_ngo
+    in: formData
+    type: integer
+
+  - name: country
+    in: formData
+    type: integer
+
+  - name: city
+    in: formData
+    type: integer
+
+  - name: id_type
+    in: formData
+    type: integer
+
+  - name: firstName
+    in: formData
+    type: string
+
+  - name: lastName
+    in: formData
+    type: string
+
+  - name: userName
+    in: formData
+    type: string
+
+  - name: password
+    in: formData
+    type: string
+
+  - name: birthCertificateNumber
+    in: formData
+    type: string
+
+  - name: idNumber
+    in: formData
+    type: string
+
+  - name: idCardUrl
+    in: formData
+    type: file
+
+  - name: passportNumber
+    in: formData
+    type: string
+
+  - name: passportUrl
+    in: formData
+    type: file
+
+  - name: gender
+    in: formData
+    type: boolean
+
+  - name: birthDate
+    in: formData
+    type: string
+
+  - name: phoneNumber
+    in: formData
+    type: string
+
+  - name: emergencyPhoneNumber
+    in: formData
+    type: string
+
+  - name: emailAddress
+    in: formData
+    type: string
+
+  - name: telegramId
+    in: formData
+    type: string
+
+  - name: postalAddress
+    in: formData
+    type: string
+
+  - name: avatarUrl
+    in: formData
+    type: file
+
+  - name: bankAccountNumber
+    in: formData
+    type: string
+
+  - name: bankAccountShebaNumber
+    in: formData
+    type: string
+
+  - name: bankAccountCardNumber
+    in: formData
+    type: string
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok

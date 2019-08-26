@@ -1,0 +1,125 @@
+add social worker
+Adds a social worker.
+This API creates a row in social_worker table containing a new social worker information.
+Be aware that city and country are integer fields, so you cannot insert their names in those fields.
+You have to insert the international codes for countries and cities.
+Adding birthCertificateNumber, idCardUrl, passportNumber, passportUrl, birthDate, postalAddress, bankAccountNumber, bankAccountShebaNumber and bankAccountCardNumber is optional.
+For idCardUrl, passportUrl and avatarUrl you have to upload a file.
+---
+
+tags:
+  - Social Worker API
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - name: id_ngo
+    in: formData
+    type: integer
+    required: true
+
+  - name: country
+    in: formData
+    type: integer
+
+  - name: city
+    in: formData
+    type: integer
+
+  - name: id_type
+    in: formData
+    type: integer
+    required: true
+
+  - name: firstName
+    in: formData
+    type: string
+
+  - name: lastName
+    in: formData
+    type: string
+    required: true
+
+  - name: userName
+    in: formData
+    type: string
+    required: true
+
+  - name: birthCertificateNumber
+    in: formData
+    type: string
+
+  - name: idNumber
+    in: formData
+    type: string
+    required: true
+
+  - name: idCardUrl
+    in: formData
+    type: file
+
+  - name: passportNumber
+    in: formData
+    type: string
+
+  - name: passportUrl
+    in: formData
+    type: file
+
+  - name: gender
+    in: formData
+    type: boolean
+    required: true
+
+  - name: birthDate
+    in: formData
+    type: string
+
+  - name: phoneNumber
+    in: formData
+    type: string
+    required: true
+
+  - name: emergencyPhoneNumber
+    in: formData
+    type: string
+    required: true
+
+  - name: emailAddress
+    in: formData
+    type: string
+    required: true
+
+  - name: telegramId
+    in: formData
+    type: string
+    required: true
+
+  - name: postalAddress
+    in: formData
+    type: string
+
+  - name: avatarUrl
+    in: formData
+    type: file
+    required: true
+
+  - name: bankAccountNumber
+    in: formData
+    type: string
+
+  - name: bankAccountShebaNumber
+    in: formData
+    type: string
+
+  - name: bankAccountCardNumber
+    in: formData
+    type: string
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok

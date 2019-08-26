@@ -1,0 +1,23 @@
+get user needs
+Returns all the needs that this user's children have.
+Calling this API affects family, user_family, user, child_need, need and need_family tables.
+---
+
+tags:
+  - User API
+
+parameters:
+  - in: path
+    name: user_id
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: need_model

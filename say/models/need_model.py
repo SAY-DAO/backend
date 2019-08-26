@@ -8,23 +8,23 @@ Need Model
 class NeedModel(base):
     __tablename__ = 'need'
 
-    Id = Column(Integer, nullable=False, primary_key=True, unique=True)
-    Name = Column(String, nullable=False)
-    ImageUrl = Column(String, nullable=False)
-    Category = Column(Integer, nullable=False)  # love, joy, etc
-    IsUrgent = Column(Boolean, nullable=False)
-    Description = Column(Text, nullable=False)
-    DescriptionSummary = Column(Text, nullable=False)
-    Cost = Column(Integer, nullable=False)
-    Progress = Column(Integer, nullable=False, default=0)
-    Paid = Column(Integer, nullable=False, default=0)
-    AffiliateLinkUrl = Column(String, nullable=True)
-    IsDone = Column(Boolean, nullable=False, default=False)
-    IsDeleted = Column(Boolean, nullable=False, default=False)
-    CreatedAt = Column(Date, nullable=False)
-    Receipts = Column(String, nullable=True)  # comma separated
-    IsConfirmed = Column(Boolean, nullable=False, default=False)
-    ConfirmDate = Column(Date, nullable=True)
-    ConfirmUser = Column(Integer, nullable=True)
-    Type = Column(Integer, nullable=False)  # donate, affiliate
-    LastUpdate = Column(Date, nullable=False)
+    id = Column(Integer, nullable=False, primary_key=True, unique=True)
+    name = Column(String, nullable=False)
+    imageUrl = Column(String, nullable=False)
+    category = Column(Integer, nullable=False)  # 0:growth | 1:joy | 2:health
+    isUrgent = Column(Boolean, nullable=False)
+    description = Column(Text, nullable=False)
+    descriptionSummary = Column(Text, nullable=False)
+    cost = Column(Integer, nullable=False)
+    progress = Column(Integer, nullable=False, default=0)
+    paid = Column(Integer, nullable=False, default=0)
+    affiliateLinkUrl = Column(String, nullable=True)
+    isDone = Column(Boolean, nullable=False, default=False)
+    isDeleted = Column(Boolean, nullable=False, default=False)
+    createdAt = Column(Date, nullable=False)
+    receipts = Column(String, nullable=True)  # comma separated
+    isConfirmed = Column(Boolean, nullable=False, default=False)
+    confirmDate = Column(Date, nullable=True)
+    confirmUser = Column(Integer, nullable=True)
+    type = Column(Integer, nullable=False)  # 0:donate | 1:affiliate
+    lastUpdate = Column(Date, nullable=False)

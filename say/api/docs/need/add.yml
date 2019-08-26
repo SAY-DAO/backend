@@ -1,0 +1,75 @@
+add need
+Adds a need.
+It is possible to have multiple receipts, but each time you can upload one receipt, but their addresses will be saved as a comma separated string in db.
+You have to upload a file for receipts and imageUrl.
+Calling this API affects need table only.
+Adding affiliateLinkUrl and receipts are optional.
+type codes: [0]donate, [1]affiliate
+---
+
+tags:
+  - Need API
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - name: child_id
+    in: path
+    type: integer
+    required: true
+
+  - name: imageUrl
+    in: formData
+    type: file
+    required: true
+
+  - name: name
+    in: formData
+    type: string
+    required: true
+
+  - name: category
+    in: formData
+    type: integer
+    required: true
+
+  - name: isUrgent
+    in: formData
+    type: boolean
+    required: true
+
+  - name: description
+    in: formData
+    type: string
+    required: true
+
+  - name: descriptionSummary
+    in: formData
+    type: string
+    required: true
+
+  - name: cost
+    in: formData
+    type: integer
+    required: true
+
+  - name: type
+    in: formData
+    type: integer
+    required: true
+
+  - name: affiliateLinkUrl
+    in: formData
+    type: string
+
+  - name: receipts
+    in: formData
+    type: file
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok

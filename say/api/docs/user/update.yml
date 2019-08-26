@@ -1,0 +1,81 @@
+update a user
+Updates a user information.
+All the fields are optional.
+For avatarUrl you have to upload a file in png, jpg or jpeg.
+Be aware that city and country are integer fields, so you cannot insert their names in those fields.
+You have to insert the international codes for countries and cities and the same rule is applied for birthPlace.
+Calling this API only affects on user table.
+For gender, [true] is male and [false] is female.
+---
+
+tags:
+  - User API
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - name: user_id
+    in: path
+    type: integer
+    required: true
+
+  - name: firstName
+    in: formData
+    type: string
+    required: true
+
+  - name: lastName
+    in: formData
+    type: string
+    required: true
+
+  - name: userName
+    in: formData
+    type: string
+    required: true
+
+  - name: avatarUrl
+    in: formData
+    type: file
+
+  - name: emailAddress
+    in: formData
+    type: string
+
+  - name: password
+    in: formData
+    type: string
+    required: true
+
+  - name: gender
+    in: formData
+    type: boolean
+
+  - name: country
+    in: formData
+    type: integer
+    required: true
+
+  - name: city
+    in: formData
+    type: integer
+    required: true
+
+  - name: birthPlace
+    in: formData
+    type: integer
+
+  - name: birthDate
+    in: formData
+    type: string
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: user_model

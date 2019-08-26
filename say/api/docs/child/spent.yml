@@ -1,0 +1,25 @@
+get spent credit on child
+Returns amount of spent credit for child so far.
+Calling this API affect s on child table only.
+---
+
+tags:
+  - Child API
+
+parameters:
+  - in: path
+    name: child_id
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      properties:
+        creditSpent:
+          type: integer

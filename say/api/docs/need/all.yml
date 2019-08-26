@@ -1,0 +1,25 @@
+get all needs
+Returns information of all needs as a json object.
+Calling this API affects need, child_need and need_family and user tables.
+Confirm parameter determines how do you want the result:
+[0]not onfirmed, [1]confirmed, [2]both
+---
+
+tags:
+  - Need API
+
+parameters:
+  - in: path
+    name: confirm
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: need_model

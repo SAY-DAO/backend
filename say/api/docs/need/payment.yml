@@ -1,0 +1,35 @@
+add payment
+Adds a record for each payment.
+The user who does the payment, will be considered as the need participant.
+Calling this API affects need, child_need, payment, user, need_family and family tables.
+Payment is only available for confirmed needs.
+---
+
+tags:
+  - Need API
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - in: path
+    name: need_id
+    required: true
+    type: integer
+
+  - in: path
+    name: user_id
+    required: true
+    type: integer
+
+  - name: amount
+    required: true
+    in: formData
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok

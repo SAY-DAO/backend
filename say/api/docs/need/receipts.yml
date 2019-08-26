@@ -1,0 +1,25 @@
+get need receipts
+Returns information of all payments that user have done.
+Calling this API affects need table only.
+---
+
+tags:
+  - Need API
+
+parameters:
+  - in: path
+    name: need_id
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      properties:
+        receipts:
+          type: string

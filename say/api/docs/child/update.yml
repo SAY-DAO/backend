@@ -1,0 +1,107 @@
+update a child
+All the fields are optional. You can fill every field you want to change, and it will update the desired child.
+Calling this API only affects child table by updating a row.
+Be aware that city and country are integer fields, so you cannot insert their names in those fields.
+You have to insert the international codes for countries and cities.
+The same rule applied for nationality and birthPlace.
+For voiceUrl and avatarUrl you have to upload a file; for avatar in png, jpg or jpeg and for voice in wav, m4a, wma, mp3, aac or ogg format.
+Social workers can change their NGO by editing id_ngo field.
+---
+
+tags:
+  - Child API
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - name: avatarUrl
+    in: formData
+    type: file
+
+  - name: voiceUrl
+    in: formData
+    type: file
+
+  - name: firstName
+    in: formData
+    type: string
+
+  - name: lastName
+    in: formData
+    type: string
+
+  - name: sayName
+    in: formData
+    type: string
+
+  - name: phoneNumber
+    in: formData
+    type: string
+
+  - name: nationality
+    in: formData
+    type: integer
+
+  - name: country
+    in: formData
+    type: integer
+
+  - name: city
+    in: formData
+    type: integer
+
+  - name: gender
+    in: formData
+    type: boolean
+
+  - name: bio
+    in: formData
+    type: string
+
+  - name: bioSummary
+    in: formData
+    type: string
+
+  - name: birthPlace
+    in: formData
+    type: integer
+
+  - name: birthDate
+    in: formData
+    type: string
+
+  - name: address
+    in: formData
+    type: string
+
+  - name: housingStatus
+    in: formData
+    type: integer
+
+  - name: familyCount
+    in: formData
+    type: integer
+
+  - name: education
+    in: formData
+    type: integer
+
+  - name: status
+    in: formData
+    type: integer
+
+  - name: child_id
+    in: path
+    type: integer
+    required: true
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: child_model

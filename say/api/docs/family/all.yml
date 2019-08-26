@@ -1,0 +1,17 @@
+get all families
+Returns all families as a json object.
+Calling this API affects family and user_family tables.
+---
+
+tags:
+  - Family API
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: family_model

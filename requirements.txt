@@ -1,3 +1,4 @@
+werkzeug
 Flask
 Flask-RESTful
 Flask-SQLAlchemy

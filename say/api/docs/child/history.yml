@@ -1,0 +1,23 @@
+get all source children (migrated from)
+Returns all children who current child is migrated from them recursivly as a json.
+Calling this API affects on child, need, child_need and need_family and user tables.
+---
+
+tags:
+  - Child API
+
+parameters:
+  - in: path
+    name: child_id
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: child_model

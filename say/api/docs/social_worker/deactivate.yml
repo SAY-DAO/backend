@@ -1,0 +1,20 @@
+deactivate social worker
+Deactivates an active social worker.
+Calling this API only affects social_worker table by updating a row.
+---
+
+tags:
+  - Social Worker API
+
+parameters:
+  - in: path
+    name: social_worker_id
+    required: true
+    type: string
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok

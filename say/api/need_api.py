@@ -1,9 +1,11 @@
 from say.models.child_model import ChildModel
 from say.models.child_need_model import ChildNeedModel
+from say.models.family_model import FamilyModel
 from say.models.need_family_model import NeedFamilyModel
 from say.models.need_model import NeedModel
 from say.models.payment_model import PaymentModel
 from say.models.social_worker_model import SocialWorkerModel
+from say.models.user_family_model import UserFamilyModel
 from say.models.user_model import UserModel
 from . import *
 
@@ -13,45 +15,97 @@ Need APIs
 
 
 def get_all_urgent_needs(session):
-    needs = session.query(NeedModel).filter_by(IsUrgent=True).filter_by(IsDeleted=False).all()
+    needs = session.query(NeedModel).filter_by(isUrgent=True).filter_by(isDeleted=False).filter_by(
+        isConfirmed=True).all()
 
-    needs_data = {}
+    needs_data = '{'
     for need in needs:
-        needs_data[need.Id] = get_need(need, session)
+        needs_data += f'"{str(need.id)}": {get_need(need, session)}, '
 
-    return needs_data
+    return needs_data[:-2] + '}' if len(needs_data) != 1 else '{}'
 
 
-def get_need(need, session):
-    child = session.query(ChildNeedModel).filter_by(Id_need=need.Id).filter_by(IsDeleted=False).first()
-    participants = session.query(NeedFamilyModel).filter_by(Id_need=need.Id).filter_by(IsDeleted=False).all()
+def get_need(need, session, participants_only=False):
+    if need.isConfirmed:
+        child = session.query(ChildNeedModel).filter_by(id_need=need.id).filter_by(isDeleted=False).first()
+        participants = session.query(NeedFamilyModel).filter_by(id_need=need.id).filter_by(isDeleted=False).all()
 
-    need_data = obj_to_dict(need)
-    child_data = obj_to_dict(child)
+        need_data = obj_to_dict(need)
+        need_data['ChildId'] = child.id_child
+        need_data = utf8_response(need_data)
 
-    users = {}
-    for participant in participants:
-        user = session.query(UserModel).filter_by(IsDeleted=False).filter_by(Id=participant.Id_user).first()
-        users[user.Id] = obj_to_dict(user)
+        users = '{'
+        for participant in participants:
+            user = session.query(UserModel).filter_by(isDeleted=False).filter_by(id=participant.id_user).first()
+            users += f'"{str(user.id)}": {utf8_response(obj_to_dict(user))}, '
 
-    need_data['ChildId'] = child_data['Id_child']
-    need_data['Participants'] = users
+        users_data = users[:-2] + "}" if len(users) != 1 else '{}'
+
+        if participants_only:
+            return users_data
+
+        need_data = need_data[:-1] + f', "Participants": {users_data}' + '}'
+
+    else:
+        need_data = obj_to_dict(need)
+        need_data = utf8_response(need_data)
 
     return need_data
 
 
 class GetNeedById(Resource):
-    @swag_from('./apidocs/need/id.yml')
-    def get(self, need_id):
+    @swag_from('./docs/need/id.yml')
+    def get(self, need_id, confirm):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            need = session.query(NeedModel).filter_by(IsDeleted=False).filter_by(Id=need_id).first()
+            if int(confirm) == 2:
+                need = session.query(NeedModel).filter_by(isDeleted=False).filter_by(id=need_id).first()
+            elif int(confirm) == 1:
+                need = session.query(NeedModel).filter_by(isDeleted=False).filter_by(id=need_id).filter_by(
+                    isConfirmed=True).first()
+            elif int(confirm) == 0:
+                need = session.query(NeedModel).filter_by(isDeleted=False).filter_by(id=need_id).filter_by(
+                    isConfirmed=False).first()
+            else:
+                return '{wrong input}'
 
-            need_data = get_need(need, session)
+            resp = Response(get_need(need, session))
 
-            resp = Response(json.dumps(need_data))
+        except Exception as e:
+            print(e)
+
+            resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
+
+        finally:
+            session.close()
+            return resp
+
+
+class GetAllNeeds(Resource):
+    @swag_from('./docs/need/all.yml')
+    def get(self, confirm):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = {'message1': 'major error occurred!', 'message2': str(datetime.now())}
+
+        try:
+            if int(confirm) == 2:
+                needs = session.query(NeedModel).filter_by(isDeleted=False).all()
+            elif int(confirm) == 1:
+                needs = session.query(NeedModel).filter_by(isDeleted=False).filter_by(isConfirmed=True).all()
+            elif int(confirm) == 0:
+                needs = session.query(NeedModel).filter_by(isDeleted=False).filter_by(isConfirmed=False).all()
+            else:
+                return '{wrong input}'
+
+            res = '{'
+            for need in needs:
+                res += f'"{str(need.id)}": {get_need(need, session)}, '
+
+            resp = Response(res[:-2] + "}" if len(res) != 1 else '{}')
 
         except Exception as e:
             print(e)
@@ -64,19 +118,21 @@ class GetNeedById(Resource):
 
 
 class GetNeedByCategory(Resource):
-    @swag_from('./apidocs/need/category.yml')
+    @swag_from('./docs/need/category.yml')
     def get(self, category):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            needs = session.query(NeedModel).filter_by(IsDeleted=False).filter_by(Category=category).all()
+            needs = session.query(NeedModel).filter_by(isDeleted=False).filter_by(category=category).filter_by(
+                isConfirmed=True).all()
 
-            need_data = {}
+            res = '{'
             for need in needs:
-                need_data[need.Id] = get_need(need, session)
+                res += f'"{str(need.id)}": {get_need(need, session)}, '
 
-            resp = Response(json.dumps(need_data))
+            resp = Response(res[:-2] + "}" if len(res) != 1 else '{}')
 
         except Exception as e:
             print(e)
@@ -89,19 +145,21 @@ class GetNeedByCategory(Resource):
 
 
 class GetNeedByType(Resource):
-    @swag_from('./apidocs/need/type.yml')
-    def get(self, type):
+    @swag_from('./docs/need/type.yml')
+    def get(self, need_type):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            needs = session.query(NeedModel).filter_by(IsDeleted=False).filter_by(Type=type).all()
+            needs = session.query(NeedModel).filter_by(isDeleted=False).filter_by(type=need_type).filter_by(
+                isConfirmed=True).all()
 
-            need_data = {}
+            res = '{'
             for need in needs:
-                need_data[need.Id] = get_need(need, session)
+                res += f'"{str(need.id)}": {get_need(need, session)}, '
 
-            resp = Response(json.dumps(need_data))
+            resp = Response(res[:-2] + "}" if len(res) != 1 else '{}')
 
         except Exception as e:
             print(e)
@@ -114,24 +172,40 @@ class GetNeedByType(Resource):
 
 
 class GetNeedParticipants(Resource):
-    @swag_from('./apidocs/need/participants.yml')
+    @swag_from('./docs/need/participants.yml')
     def get(self, need_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            participants = session.query(NeedFamilyModel).filter_by(Id_need=need_id).filter_by(IsDeleted=False).all()
-            need = session.query(NeedModel).filter_by(Id=need_id).filter_by(IsDeleted=False).first()
+            need = session.query(NeedModel).filter_by(id=need_id).filter_by(isDeleted=False).filter_by(
+                isConfirmed=True).first()
 
-            users = {}
-            for p in participants:
-                user = session.query(UserModel).filter_by(IsDeleted=False).filter_by(Id=p.Id_user).first()
-                users[str(user.Id)] = obj_to_dict(user)
+            resp = Response(get_need(need, session, participants_only=True))
 
-            users['TotalSpentCredit'] = need.Paid
+        except Exception as e:
+            print(e)
+
+            resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
+
+        finally:
+            session.close()
+            return resp
 
 
-            resp = Response(json.dumps(users))
+class GetNeedReceipts(Resource):
+    @swag_from('./docs/need/receipts.yml')
+    def get(self, need_id):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = {'message': 'major error occurred!'}
+
+        try:
+            need = session.query(NeedModel).filter_by(id=need_id).filter_by(isDeleted=False).filter_by(
+                isConfirmed=True).first()
+
+            resp = Response(utf8_response({'NeedReceipts': need.receipts}))
 
         except Exception as e:
             print(e)
@@ -144,15 +218,14 @@ class GetNeedParticipants(Resource):
 
 
 class GetAllUrgentNeeds(Resource):
-    @swag_from('./apidocs/need/urgents.yml')
+    @swag_from('./docs/need/all_urgent.yml')
     def get(self):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            needs_data = get_all_urgent_needs(session)
-
-            resp = Response(json.dumps(needs_data))
+            resp = Response(get_all_urgent_needs(session))
 
         except Exception as e:
             print(e)
@@ -165,55 +238,88 @@ class GetAllUrgentNeeds(Resource):
 
 
 class AddPaymentForNeed(Resource):
-    @swag_from('./apidocs/need/payment.yml')
-    def patch(self, need_id, user_id):
+    @swag_from('./docs/need/payment.yml')
+    def post(self, need_id, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            Id_need = need_id
-            Id_user = user_id
-            Amount = int(request.json['Amount'])
-            CreatedAt = datetime.now()
+            amount = int(request.json['amount'])
+            created_at = datetime.now()
 
-            user = session.query(UserModel).filter_by(IsDeleted=False).filter_by(Id=Id_user).first()
-            need = session.query(NeedModel).filter_by(IsDeleted=False).filter_by(Id=Id_need).first()
-            child = session.query(ChildNeedModel).filter_by(Id_need=need_id).filter_by(IsDeleted=False).first()
+            need = session.query(NeedModel).filter_by(isDeleted=False).filter_by(id=need_id).first()
 
-            if Amount > need.Cost - need.Paid:
-                resp = Response(json.dumps({'msg': f'you can pay {need.Cost - need.Paid} at most!'}))
+            if not need.isConfirmed:
+                resp = Response(json.dumps({'msg': 'error: need is not confirmed yet!'}))
                 session.close()
                 return resp
-            elif Amount > user.Credit:
-                resp = Response(json.dumps({'msg': f'your credit is less than {Amount}! you have {user.Credit}.'}))
+
+            user = session.query(UserModel).filter_by(isDeleted=False).filter_by(id=user_id).first()
+            child = session.query(ChildNeedModel).filter_by(id_need=need_id).filter_by(isDeleted=False).first()
+            family = session.query(FamilyModel).filter_by(id_child=child.id_child).filter_by(isDeleted=False).first()
+
+            if session.query(UserFamilyModel).filter_by(isDeleted=False).filter_by(id_family=family.id).filter_by(
+                    id_user=user_id).first() is None:
+                resp = Response(json.dumps({'message': "payment must be added by the child's family!"}))
                 session.close()
                 return resp
-            elif Amount <= 0:
+
+            if amount > need.cost - need.paid:
+                resp = Response(json.dumps({'msg': f'you can pay {need.cost - need.paid} at most!'}))
+                session.close()
+                return resp
+
+            elif amount > user.credit:
+                resp = Response(json.dumps({'msg': f'your credit is less than {amount}! you have {user.credit}.'}))
+                session.close()
+                return resp
+
+            elif amount <= 0:
                 resp = Response(json.dumps({'msg': 'amount can not be 0 or less!'}))
                 session.close()
                 return resp
+
             else:
                 new_payment = PaymentModel(
-                    Id_need=Id_need,
-                    Id_user=Id_user,
-                    Amount=Amount,
-                    CreatedAt=CreatedAt,
+                    id_need=need_id,
+                    id_user=user_id,
+                    amount=amount,
+                    createdAt=created_at,
                 )
 
                 session.add(new_payment)
-                # session.commit()
 
-                user.Credit -= Amount
-                user.SpentCredit += Amount
-                need.Paid += Amount
-                need.Progress = need.Paid / need.Cost * 100
+                participant = session.query(NeedFamilyModel).filter_by(id_need=need_id).filter_by(
+                    id_user=user_id).filter_by(isDeleted=False).first()
+                if participant is None:
+                    new_participant = NeedFamilyModel(
+                        id_family=family.id,
+                        id_user=user_id,
+                        id_need=need_id,
+                    )
 
-                child.child_relation.SpentCredit += Amount
-                if need.Paid == need.Cost:
-                    need.IsDone = True
-                    user.DoneNeedCount += 1
+                    session.add(new_participant)
 
-                    child.child_relation.DoneNeedCount += 1
+                session.commit()
+
+                user.credit -= amount
+                user.spentCredit += amount
+                need.paid += amount
+                need.progress = need.paid / need.cost * 100
+
+                child.child_relation.spentCredit += amount
+                if need.paid == need.cost:
+                    need.isDone = True
+                    # user.doneNeedCount += 1  # TODO: which one is correct?
+
+                    participants = session.query(NeedFamilyModel).filter_by(id_need=need_id).filter_by(
+                        isDeleted=False).all()
+
+                    for participate in participants:
+                        participate.user_relation.doneNeedCount += 1
+
+                    child.child_relation.doneNeedCount += 1
 
                 session.commit()
 
@@ -229,68 +335,110 @@ class AddPaymentForNeed(Resource):
 
 
 class UpdateNeedById(Resource):
-    @swag_from('./apidocs/need/update.yml')
+    @swag_from('./docs/need/update.yml')
     def patch(self, need_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            primary_need = session.query(NeedModel).filter_by(Id=need_id).filter_by(IsDeleted=False).first()
-            child = session.query(ChildNeedModel).filter_by(Id_need=need_id).filter_by(IsDeleted=False).first()
+            primary_need = session.query(NeedModel).filter_by(id=need_id).filter_by(isDeleted=False).first()
+            child = session.query(ChildNeedModel).filter_by(id_need=need_id).filter_by(isDeleted=False).first()
 
-            if 'Cost' in request.form.keys():
-                # if len(session.query(NeedFamilyModel).filter_by(Id_need=need_id).all()) != 0:
-                if primary_need.IsConfirmed == 0:
-                    primary_need.Cost = int(request.form['Cost'])
+            if 'cost' in request.form.keys():
+                if not primary_need.isConfirmed:
+                    primary_need.cost = int(request.form['cost'])
+
                 else:
-                    resp = Response(json.dumps({'msg': 'error in update need!'}))
+                    resp = Response(json.dumps({'msg': 'error: cannot change cost for confirmed need!'}))
                     session.close()
                     return resp
-            if 'Description' in request.form.keys():
-                primary_need.Description = request.form['Description']
-            if 'DescriptionSummary' in request.form.keys():
-                primary_need.DescriptionSummary = request.form['DescriptionSummary']
-            if 'Name' in request.form.keys():
-                primary_need.Name = request.form['Name']
-            if 'ImageUrl' in request.files.keys():
-                file = request.files['ImageUrl']
+
+            if 'imageUrl' in request.files.keys():
+                file = request.files['imageUrl']
+
                 if file.filename == '':
                     resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
                     session.close()
                     return resp
+
                 if file and allowed_image(file.filename):
-                    filename = secure_filename(file.filename)
-                    temp_need_path = os.path.join(app.config['UPLOAD_FOLDER'], str(child.Id_child) + '-child')
+                    # filename = secure_filename(file.filename)
+                    filename = str(primary_need.id) + '.' + file.filename.split('.')[-1]
+
+                    temp_need_path = os.path.join(app.config['UPLOAD_FOLDER'], str(child.id_child) + '-child')
                     temp_need_path = os.path.join(temp_need_path, 'needs')
-                    temp_need_path = os.path.join(temp_need_path, str(primary_need.Id) + '-need')
+                    temp_need_path = os.path.join(temp_need_path, str(primary_need.id) + '-need')
+
                     for obj in os.listdir(temp_need_path):
-                        check = str(primary_need.Id) + '-image'
+                        check = str(primary_need.id) + '-image'
+
                         if obj.split('_')[0] == check:
                             os.remove(os.path.join(temp_need_path, obj))
-                    primary_need.ImageUrl = os.path.join(temp_need_path, str(primary_need.Id) + '-image_' + filename)
-                    file.save(primary_need.ImageUrl)
-                    resp = Response(json.dumps({'message': 'WELL DONE!'}))
-            if 'Category' in request.form.keys():
-                primary_need.Category = int(request.form['Category'])
-            if 'Type' in request.form.keys():
-                primary_need.Type = int(request.form['Type'])
-            if 'IsUrgent' in request.form.keys():
-                primary_need.IsUrgent = True if request.form['IsUrgent'] == 'true' else False
-            if 'AffiliateLinkUrl' in request.form.keys():
-                primary_need.AffiliateLinkUrl = request.form['AffiliateLinkUrl']
-            if 'Receipts' in request.form.keys():
-                print(primary_need.Receipts)
-                if primary_need.Receipts is None:
-                    primary_need.Receipts = str(request.form['Receipts'])
-                else:
-                    primary_need.Receipts += ',' + str(request.form['Receipts'])
 
-            primary_need.LastUpdate = datetime.now()
+                    primary_need.imageUrl = os.path.join(temp_need_path, str(primary_need.id) + '-image_' + filename)
+
+                    file.save(primary_need.imageUrl)
+
+                    resp = Response(json.dumps({'message': 'WELL DONE!'}))
+
+            if 'receipts' in request.files.keys():
+                file2 = request.files['receipts']
+
+                if file2.filename == '':
+                    resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
+                    session.close()
+                    return resp
+
+                if file2 and allowed_image(file2.filename):
+                    # filename = secure_filename(file2.filename)
+                    if primary_need.receipts is not None:
+                        filename = str(len(primary_need.receipts.split(','))) + '.' + file2.filename.split('.')[-1]
+                    else:
+                        filename = str(0) + '.' + file2.filename.split('.')[-1]
+
+                    temp_need_path = os.path.join(app.config['UPLOAD_FOLDER'], str(child.id_child) + '-child')
+                    temp_need_path = os.path.join(temp_need_path, 'needs')
+                    temp_need_path = os.path.join(temp_need_path, str(primary_need.id) + '-need')
+                    receipt_path = os.path.join(temp_need_path, str(primary_need.id) + '-receipt_' + filename)
+
+                    if primary_need.receipts is None:
+                        primary_need.receipts = str(receipt_path)
+
+                    else:
+                        primary_need.receipts += ',' + str(receipt_path)
+
+                    file2.save(receipt_path)
+
+                    resp = Response(json.dumps({'message': 'WELL DONE!'}))
+
+            if 'category' in request.form.keys():
+                primary_need.category = int(request.form['category'])
+
+            if 'type' in request.form.keys():
+                primary_need.type = int(request.form['type'])
+
+            if 'isUrgent' in request.form.keys():
+                primary_need.isUrgent = True if request.form['isUrgent'] == 'true' else False
+
+            if 'affiliateLinkUrl' in request.form.keys():
+                primary_need.affiliateLinkUrl = request.form['affiliateLinkUrl']
+
+            if 'description' in request.form.keys():
+                primary_need.description = request.form['description']
+
+            if 'descriptionSummary' in request.form.keys():
+                primary_need.descriptionSummary = request.form['descriptionSummary']
+
+            if 'name' in request.form.keys():
+                primary_need.name = request.form['name']
+
+            primary_need.lastUpdate = datetime.now()
 
             secondary_need = obj_to_dict(primary_need)
 
             session.commit()
-            resp = Response(json.dumps(secondary_need))
+            resp = Response(utf8_response(secondary_need))
 
         except Exception as e:
             print(e)
@@ -302,29 +450,31 @@ class UpdateNeedById(Resource):
 
 
 class DeleteNeedById(Resource):
-    @swag_from('./apidocs/need/delete.yml')
+    @swag_from('./docs/need/delete.yml')
     def patch(self, need_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            need = session.query(NeedModel).filter_by(Id=need_id).filter_by(IsDeleted=False).first()
-            families = session.query(NeedFamilyModel).filter_by(Id_need=need_id).filter_by(IsDeleted=False).all()
-            children = session.query(ChildNeedModel).filter_by(Id_need=need_id).filter_by(IsDeleted=False).all()
+            need = session.query(NeedModel).filter_by(id=need_id).filter_by(isDeleted=False).first()
+            families = session.query(NeedFamilyModel).filter_by(id_need=need_id).filter_by(isDeleted=False).all()
+            children = session.query(ChildNeedModel).filter_by(id_need=need_id).filter_by(isDeleted=False).all()
 
-            if need.IsConfirmed == 1:
-                if need.Spent != 0:
+            if need.isConfirmed:
+                if need.paid != 0:
                     resp = Response(json.dumps({'msg': 'error in deletion'}))
                     session.close()
                     return resp
 
-            need.IsDeleted = 1
+            need.isDeleted = True
 
             for family in families:
-                family.IsDeleted = 1
+                family.isDeleted = True
 
             for child in children:
-                child.IsDeleted = 1
+                child.isDeleted = True
+                child.child_relation.social_worker_relation.currentNeedCount -= 1
 
             session.commit()
 
@@ -340,27 +490,43 @@ class DeleteNeedById(Resource):
 
 
 class ConfirmNeed(Resource):
-    @swag_from('./apidocs/need/confirm.yml')
-    def patch(self, need_id, user_id):
+    @swag_from('./docs/need/confirm.yml')
+    def patch(self, need_id, social_worker_id, child_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            primary_need = session.query(NeedModel).filter_by(Id=need_id).filter_by(IsDeleted=False).first()
-            # child = session.query(ChildNeedModel).filter_by(IsDeleted=False).get(need_id)
+            primary_need = session.query(NeedModel).filter_by(id=need_id).filter_by(isDeleted=False).first()
 
-            if 'IsConfirmed' in request.form.keys():
-                primary_need.IsConfirmed = True if request.form['IsConfirmed'] == 'true' else False
-            # if 'ConfirmUser' in request.form.keys():
-                # if child.NgoId == request.form['NgoId']
-            primary_need.ConfirmUser = user_id
+            if primary_need.isConfirmed:
+                resp = Response(json.dumps({'message': 'need has already been confirmed!'}))
+                session.close()
+                return resp
 
-            primary_need.ConfirmDate = datetime.now()
+            child = session.query(ChildModel).filter_by(id=child_id).filter_by(isDeleted=False).filter_by(
+                isMigrated=False).filter_by(isConfirmed=True).first()
 
-            secondary_need = obj_to_dict(primary_need)
+            social_worker = session.query(SocialWorkerModel).filter_by(id=child.id_social_worker).filter_by(
+                isDeleted=False).first()
 
+            primary_need.isConfirmed = True
+            primary_need.confirmUser = social_worker_id
+            primary_need.confirmDate = datetime.now()
+
+            new_child_need = ChildNeedModel(
+                id_child=child_id,
+                id_need=primary_need.id,
+            )
+
+            if social_worker:
+                social_worker.needCount += 1
+                social_worker.currentNeedCount += 1
+
+            session.add(new_child_need)
             session.commit()
-            resp = Response(json.dumps(secondary_need))
+
+            resp = Response(json.dumps({'message': 'need confirmed successfully!'}))
 
         except Exception as e:
             print(e)
@@ -372,16 +538,23 @@ class ConfirmNeed(Resource):
 
 
 class AddParticipantToNeed(Resource):
-    @swag_from('./apidocs/need/add_participant.yml')
-    def patch(self, user_id, need_id, family_id):
+    @swag_from('./docs/need/add_participant.yml')
+    def post(self, user_id, need_id, family_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
+            if session.query(UserFamilyModel).filter_by(isDeleted=False).filter_by(id_family=family_id).filter_by(
+                    id_user=user_id).first() is None:
+                resp = Response(json.dumps({'message': "participant must be from the child's family!"}))
+                session.close()
+                return resp
+
             new_participant = NeedFamilyModel(
-                Id_family=family_id,
-                Id_user=user_id,
-                Id_need=need_id
+                id_family=family_id,
+                id_user=user_id,
+                id_need=need_id
             )
 
             session.add(new_participant)
@@ -399,91 +572,118 @@ class AddParticipantToNeed(Resource):
 
 
 class AddNeed(Resource):
-    @swag_from('./apidocs/need/add.yml')
+    @swag_from('./docs/need/add.yml')
     def post(self, child_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'msg': 'shit happened.'}
+        resp = {'message': 'major error occurred!'}
 
         try:
+            child = session.query(ChildModel).filter_by(id=child_id).filter_by(isDeleted=False).filter_by(
+                isMigrated=False).filter_by(isConfirmed=True).first()
+
+            if not child.isConfirmed:
+                resp = Response(json.dumps({'message': 'error: child is not confirmed yet!'}))
+                session.close()
+                return resp
+
             if len(session.query(NeedModel).all()):
-                last_need = session.query(NeedModel).order_by(NeedModel.Id.desc()).first()
-                current_id = last_need.Id + 1
+                last_need = session.query(NeedModel).order_by(NeedModel.id.desc()).first()
+                current_id = last_need.id + 1
+
             else:
                 current_id = 1
 
-            Name = request.form['Name']
-
-            path = 'some wrong url'
-            if 'Image' not in request.files:
-                resp =  Response(json.dumps({'message': 'ERROR OCCURRED IN FILE UPLOADING!'}))
+            image_path, receipt_path = None, None
+            if 'imageUrl' not in request.files:
+                resp = Response(json.dumps({'message': 'ERROR OCCURRED IN FILE UPLOADING!'}))
                 session.close()
                 return resp
-            file = request.files['Image']
+
+            file = request.files['imageUrl']
             if file.filename == '':
                 resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
                 session.close()
                 return resp
+
             if file and allowed_image(file.filename):
-                filename = secure_filename(file.filename)
+                # filename = secure_filename(file.filename)
+                filename = str(current_id) + '.' + file.filename.split('.')[-1]
 
                 temp_need_path = os.path.join(app.config['UPLOAD_FOLDER'], str(child_id) + '-child')
                 temp_need_path = os.path.join(temp_need_path, 'needs')
                 temp_need_path = os.path.join(temp_need_path, str(current_id) + '-need')
+
                 if not os.path.isdir(temp_need_path):
                     os.mkdir(temp_need_path)
 
-                path = os.path.join(temp_need_path, str(current_id) + '-image_' + filename)
-                file.save(path)
+                image_path = os.path.join(temp_need_path, str(current_id) + '-image_' + filename)
+
+                file.save(image_path)
+
                 resp = Response(json.dumps({'message': 'WELL DONE!'}))
 
-            ImageUrl = path
-            CreatedAt = datetime.now()
-            Category = int(request.form['Category'])
-            Cost = (request.form['Cost'])
-            IsUrgent = True if request.form['IsUrgent'] == 'true' else False
-            Type = (request.form['Type'])
-            Description = request.form['Description']
-            DescriptionSummary = request.form['DescriptionSummary']
-            if 'AffiliateLinkUrl' in request.form.keys():
-                AffiliateLinkUrl = request.form['AffiliateLinkUrl']
+            if 'receipts' in request.files.keys():
+                file2 = request.files['receipts']
+                if file2.filename == '':
+                    resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
+                    session.close()
+                    return resp
+
+                if file2 and allowed_image(file2.filename):
+                    # filename = secure_filename(file2.filename)
+                    filename = str(0) + '.' + file2.filename.split('.')[-1]
+
+                    temp_need_path = os.path.join(app.config['UPLOAD_FOLDER'], str(child_id) + '-child')
+                    temp_need_path = os.path.join(temp_need_path, 'needs')
+                    temp_need_path = os.path.join(temp_need_path, str(current_id) + '-need')
+
+                    if not os.path.isdir(temp_need_path):
+                        os.mkdir(temp_need_path)
+
+                    receipt_path = os.path.join(temp_need_path, str(current_id) + '-receipt_' + filename)
+
+                    file2.save(receipt_path)
+
+                    resp = Response(json.dumps({'message': 'WELL DONE!'}))
             else:
-                AffiliateLinkUrl = None
-            if 'Receipts' in request.form.keys():
-                Receipts = request.form['Receipts']
+                receipt_path = None
+
+            image_url = image_path
+            receipts = receipt_path
+
+            category = int(request.form['category'])
+            cost = (request.form['cost'])
+            name = request.form['name']
+            is_urgent = True if request.form['isUrgent'] == 'true' else False
+            need_type = (request.form['type'])
+            description = request.form['description']
+            description_summary = request.form['descriptionSummary']
+
+            created_at = datetime.now()
+            last_update = datetime.now()
+
+            if 'affiliateLinkUrl' in request.form.keys():
+                affiliate_link_url = request.form['affiliateLinkUrl']
             else:
-                Receipts = None
-            LastUpdate = datetime.now()
-            # print(1)
+                affiliate_link_url = None
+
             new_need = NeedModel(
-                ImageUrl=ImageUrl,
-                Name=Name,
-                CreatedAt=CreatedAt,
-                Category=Category,
-                Cost=Cost,
-                IsUrgent=IsUrgent,
-                DescriptionSummary=DescriptionSummary,
-                Description=Description,
-                AffiliateLinkUrl=AffiliateLinkUrl,
-                Receipts=Receipts,
-                Type=Type,
-                LastUpdate=LastUpdate
+                imageUrl=image_url,
+                name=name,
+                createdAt=created_at,
+                category=category,
+                cost=cost,
+                isUrgent=is_urgent,
+                descriptionSummary=description_summary,
+                description=description,
+                affiliateLinkUrl=affiliate_link_url,
+                receipts=receipts,
+                type=need_type,
+                lastUpdate=last_update
             )
 
             session.add(new_need)
-            session.commit()
-
-            new_child_need = ChildNeedModel(
-                Id_child=child_id,
-                Id_need=new_need.Id,
-            )
-
-            child = session.query(ChildModel).filter_by(Id=child_id).filter_by(IsDeleted=False).first()
-            social_worker = session.query(SocialWorkerModel).filter_by(Id=child.SocialWorkerId).filter_by(IsDeleted=False).first()
-            if not social_worker:
-                social_worker.NeedCount += 1
-
-            session.add(new_child_need)
             session.commit()
 
             resp = Response(json.dumps({'message': 'NEED ADDED SUCCESSFULLY!'}))
@@ -501,14 +701,18 @@ class AddNeed(Resource):
 API URLs
 """
 
-api.add_resource(GetNeedById, '/api/v2/need/needId=<need_id>')
+api.add_resource(GetNeedById, '/api/v2/need/needId=<need_id>&confirm=<confirm>')
+api.add_resource(GetAllNeeds, '/api/v2/need/all/confirm=<confirm>')
 api.add_resource(GetNeedByCategory, '/api/v2/need/category=<category>')
-api.add_resource(GetNeedByType, '/api/v2/need/type=<type>')
+api.add_resource(GetNeedByType, '/api/v2/need/type=<need_type>')
 api.add_resource(GetNeedParticipants, '/api/v2/need/participants/needId=<need_id>')
+api.add_resource(GetNeedReceipts, '/api/v2/need/receipts/needId=<need_id>')
 api.add_resource(GetAllUrgentNeeds, '/api/v2/need/urgent/all')
 api.add_resource(AddPaymentForNeed, '/api/v2/need/payment/needId=<need_id>&userId=<user_id>')
 api.add_resource(UpdateNeedById, '/api/v2/need/update/needId=<need_id>')
 api.add_resource(DeleteNeedById, '/api/v2/need/delete/needId=<need_id>')
-api.add_resource(ConfirmNeed, '/api/v2/need/confirm/needId=<need_id>&userId=<user_id>')
-api.add_resource(AddParticipantToNeed, '/api/v2/need/participants/add/needId=<need_id>&userId=<user_id>&familyId=<family_id>')
+api.add_resource(ConfirmNeed,
+                 '/api/v2/need/confirm/needId=<need_id>&socialWorkerId=<social_worker_id>&childId=<child_id>')
+api.add_resource(AddParticipantToNeed,
+                 '/api/v2/need/participants/add/needId=<need_id>&userId=<user_id>&familyId=<family_id>')
 api.add_resource(AddNeed, '/api/v2/need/add/childId=<child_id>')

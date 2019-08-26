@@ -7,22 +7,25 @@ Activity APIs
 
 
 class GetActivityById(Resource):
-    @swag_from('./apidocs/activity/id.yml')
-    def get(self, activityId):
-        Session = sessionmaker(db)
-        session = Session()
+    @swag_from('./docs/activity/id.yml')
+    def get(self, activity_id):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = {'message': 'major error occurred!'}
+
         try:
-            activity = session.query(ActivityModel).filter_by(Id=activityId).first()
+            activity = session.query(ActivityModel).filter_by(id=activity_id).first()
 
             if not activity:
-                resp = Response(json.dumps({'message': 'something is Wrong !!'}))
+                resp = Response(json.dumps({'message': 'there is no activity!'}))
                 session.close()
                 return resp
-            resp = Response(json.dumps(obj_to_dict(activity)), status=200)
+
+            resp = Response(utf8_response(obj_to_dict(activity)), status=200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'something is Wrong !!'}, status=500))
+            resp = Response(json.dumps({'message': 'something is wrong!'}, status=500))
 
         finally:
             session.close()
@@ -30,25 +33,34 @@ class GetActivityById(Resource):
 
 
 class GetActivityBySocialWorker(Resource):
-    @swag_from('./apidocs/activity/socialworker.yml')
-    def get(self, socialworker_id):
-        Session = sessionmaker(db)
-        session = Session()
-        try:
-            activities = session.query(ActivityModel).filter_by(Id_social_worker=socialworker_id).all()
-            r = {}
-            for a in activities:
-                res = {
-                    'Id': a.Id,
-                    'ActivityCode': a.ActivityCode,
-                }
-                r[a.Id] = res
+    @swag_from('./docs/activity/social_worker.yml')
+    def get(self, social_worker_id):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
-            resp = Response(json.dumps(r), status=200)
+        try:
+            activities = session.query(ActivityModel).filter_by(id_social_worker=social_worker_id).all()
+
+            if not activities:
+                resp = Response(json.dumps({'message': 'there is no activity!'}))
+                session.close()
+                return resp
+
+            result = {}
+            for activity in activities:
+                res = {
+                    'Id': activity.id,
+                    'ActivityCode': activity.activityCode,
+                }
+
+                result[str(activity.id)] = res
+
+            resp = Response(utf8_response(result, True), status=200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'something is Wrong !!'}, status=500))
+            resp = Response(json.dumps({'message': 'something is wrong!'}, status=500))
 
         finally:
             session.close()
@@ -56,25 +68,34 @@ class GetActivityBySocialWorker(Resource):
 
 
 class GetActivityByType(Resource):
-    @swag_from('./apidocs/activity/type.yml')
-    def get(self, activityCode):
-        Session = sessionmaker(db)
-        session = Session()
-        try:
-            activities = session.query(ActivityModel).filter_by(ActivityCode=activityCode).all()
-            r = {}
-            for a in activities:
-                res = {
-                    'Id': a.Id,
-                    'Id_social_worker': a.Id_social_worker,
-                }
-                r[a.Id] = res
+    @swag_from('./docs/activity/type.yml')
+    def get(self, activity_code):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
-            resp = Response(json.dumps(r), status=200)
+        try:
+            activities = session.query(ActivityModel).filter_by(activityCode=activity_code).all()
+
+            if not activities:
+                resp = Response(json.dumps({'message': 'there is no activity!'}))
+                session.close()
+                return resp
+
+            result = {}
+            for activity in activities:
+                res = {
+                    'Id': activity.id,
+                    'Id_social_worker': activity.id_social_worker,
+                }
+
+                result[str(activity.id)] = res
+
+            resp = Response(utf8_response(result, True), status=200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'something is Wrong !!'}, status=500))
+            resp = Response(json.dumps({'message': 'something is wrong!'}, status=500))
 
         finally:
             session.close()
@@ -82,49 +103,63 @@ class GetActivityByType(Resource):
 
 
 class GetAllActivities(Resource):
-    @swag_from('./apidocs/activity/all.yml')
+    @swag_from('./docs/activity/all.yml')
     def get(self):
-        Session = sessionmaker(db)
-        session = Session()
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = {'message': 'major error occurred!'}
+
         try:
             activities = session.query(ActivityModel).all()
 
-            r = {}
-            for a in activities:
-                res = {
-                    'Id': a.Id,
-                    'Id_social_worker': a.Id_social_worker,
-                    'ActivityCode': a.ActivityCode
-                }
-                r[a.Id] = res
+            if not activities:
+                resp = Response(json.dumps({'message': 'there is no activity!'}))
+                session.close()
+                return resp
 
-            resp = Response(json.dumps(r), status=200, headers={'Access-Control-Allow-Origin': '*'})
+            result = {}
+            for activity in activities:
+                res = {
+                    'Id': activity.id,
+                    'Id_social_worker': activity.id_social_worker,
+                    'ActivityCode': activity.activityCode
+                }
+
+                result[str(activity.id)] = res
+
+            resp = Response(utf8_response(result, True), status=200, headers={'Access-Control-Allow-Origin': '*'})
+
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'Something is Wrong !!!'}), status=500)
+            resp = Response(json.dumps({'message': 'something is wrong!'}), status=500)
+
         finally:
             session.close()
             return resp
 
 
 class AddActivity(Resource):
-    @swag_from('./apidocs/activity/add.yml')
-    def post(self, socialworker_id):
-        Session = sessionmaker(db)
-        session = Session()
+    @swag_from('./docs/activity/add.yml')
+    def post(self, social_worker_id):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = {'message': 'major error occurred!'}
+
         try:
-            Id_social_worker = socialworker_id
-            ActivityCode = int(request.json['ActivityCode'])
-            new_activity = ActivityModel(Id_social_worker=Id_social_worker, ActivityCode=ActivityCode)
+            id_social_worker = social_worker_id
+            activity_code = int(request.form['activityCode'])
+
+            new_activity = ActivityModel(id_social_worker=id_social_worker, activityCode=activity_code)
+
             session.add(new_activity)
             session.commit()
 
-            res = {'message': 'New Activity is added'}
-            resp = Response(json.dumps(res), status=200, headers={'Access-Control-Allow-Origin': '*'})
+            resp = Response(json.dumps({'message': 'new activity added!'}), status=200,
+                            headers={'Access-Control-Allow-Origin': '*'})
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'Something is Wrong !!!'}), status=500)
+            resp = Response(json.dumps({'message': 'something is wrong!'}), status=500)
 
         finally:
             session.close()
@@ -135,8 +170,8 @@ class AddActivity(Resource):
 API URLs
 """
 
-api.add_resource(GetActivityById, '/api/v2/activity/activityId=<activityId>')
-api.add_resource(GetActivityBySocialWorker, '/api/v2/activity/socialWorker=<socialworker_id>')
-api.add_resource(GetActivityByType, '/api/v2/activity/type=<activityCode>')
+api.add_resource(GetActivityById, '/api/v2/activity/activityId=<activity_id>')
+api.add_resource(GetActivityBySocialWorker, '/api/v2/activity/socialWorker=<social_worker_id>')
+api.add_resource(GetActivityByType, '/api/v2/activity/type=<activity_code>')
 api.add_resource(GetAllActivities, '/api/v2/activity/all')
-api.add_resource(AddActivity, '/api/v2/activity/add/socialWorker=<socialworker_id>')
+api.add_resource(AddActivity, '/api/v2/activity/add/socialWorker=<social_worker_id>')

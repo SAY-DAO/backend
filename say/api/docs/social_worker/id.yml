@@ -1,0 +1,186 @@
+get social worker by id
+Returns information of an social worker with given id as a json object.
+Calling this API only affects social_worker table by selecting a single row from it.
+---
+
+tags:
+  - Social Worker API
+
+parameters:
+  - in: path
+    name: social_worker_id
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: social_worker_model
+
+      properties:
+        id:
+          type: integer
+          description: the social worker's id
+          example: 1
+
+        generatedCode:
+          type: string
+          description: a unique generated code for each social worker
+          example: 001
+
+        id_ngo:
+          type: integer
+          description: id of the ngo that the social worker is at there
+          example: 1
+
+        country:
+          type: integer
+          description: the social worker's country international code
+          example: 98
+
+        city:
+          type: integer
+          description: the social worker's city international code
+          example: 21
+
+        id_type:
+          type: integer
+          description: the social worker's privilege state
+          example: 5
+
+        firstName:
+          type: string
+          description: the social worker's first name
+
+        lastName:
+          type: string
+          description: the social worker's last name
+
+        userName:
+          type: string
+          description: the social worker's username
+
+        password:
+          type: string
+          description: the social worker's hashed password
+
+        birthCertificateNumber:
+          type: string
+          description: the social worker's birth certificate number
+
+        idNumber:
+          type: string
+          description: the social worker's id number
+
+        idCardUrl:
+          type: string
+          description: the social worker's id card photo as file
+
+        passportNumber:
+          type: string
+          description: the social worker's passport number
+
+        passportUrl:
+          type: string
+          description: the social worker's passport photo as file
+
+        gender:
+          type: boolean
+          description: the social worker's gender, true for male and false for female
+          example: false
+
+        birthDate:
+          type: string
+          description: the social worker's birth date
+          example: 1998-7-7
+
+        phoneNumber:
+          type: string
+          description: the social worker's phone number
+          example: 09123456789
+
+        emergencyPhoneNumber:
+          type: string
+          description: the social worker's emergency phone number
+
+        emailAddress:
+          type: string
+          description: the social worker's email address
+          example: sample.sw@mailserver.com
+
+        telegramId:
+          type: string
+          description: the social worker's telegram id
+          example: sample_sw
+
+        postalAddress:
+          type: string
+          description: the social worker's postal address
+          example: Iran, Tehran.
+
+        avatarUrl:
+          type: string
+          description: the social worker's avatar photo as file
+
+        childCount:
+          type: integer
+          default: 0
+          description: count of all chlidren that the social worker have had so far
+
+        currentChildCount:
+          type: integer
+          default: 0
+          description: count of all chlidren that the social worker have right now
+
+        needCount:
+          type: integer
+          default: 0
+          description: count of all needs that the social worker have covered so far
+
+        currentNeedCount:
+          type: integer
+          default: 0
+          description: count of all needs that the social worker have right now
+
+        bankAccountNumber:
+          type: string
+          description: the social worker's bank account number
+
+        bankAccountShebaNumber:
+          type: string
+          description: the social worker's bank account sheba number
+
+        bankAccountCardNumber:
+          type: string
+          description: the social worker's bank account card number
+
+        registerDate:
+          type: string
+          description: the social worker's registeration date
+
+        lastUpdateDate:
+          type: string
+          description: the social worker's last update date
+
+        lastLoginDate:
+          type: string
+          description: the social worker's last login date
+
+        lastLogoutDate:
+          type: string
+          description: the social worker's last log out date
+
+        isActive:
+          type: boolean
+          default: true
+          description: the social worker is active or not
+
+        isDeleted:
+          type: boolean
+          default: false
+          description: the social worker is deleted or not

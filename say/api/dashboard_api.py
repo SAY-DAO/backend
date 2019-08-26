@@ -1,5 +1,6 @@
 from say.api.need_api import get_all_urgent_needs
-from say.api.user_api import get_user_by_something
+from say.api.user_api import get_user_by_id, get_user_needs
+from say.models.user_model import UserModel
 from . import *
 
 """
@@ -8,22 +9,25 @@ Dashboard API
 
 
 class DashboardDataFeed(Resource):
-    @swag_from('./apidocs/dashboard/feed.yml')
+    @swag_from('./docs/dashboard/feed.yml')
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            data = get_user_by_something(session, user_id)
-            needs = get_all_urgent_needs(session)
+            user = session.query(UserModel).filter_by(id=user_id).filter_by(isDeleted=False).first()
 
-            data['GlobalUrgentNeeds'] = needs
+            data = get_user_by_id(session, user_id)
+            needs = get_user_needs(session, user, urgent=True)
 
-            resp = Response(json.dumps(data))
+            data = data[:-1] + ', "GlobalUrgentNeeds": ' + needs + '}'
+
+            resp = Response(data)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'msg': 'ERROR OCCURRED!'}))
+            resp = Response(json.dumps({'message': 'ERROR OCCURRED!'}))
 
         finally:
             session.close()

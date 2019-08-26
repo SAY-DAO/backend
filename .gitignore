@@ -1,6 +1,6 @@
 # PyCache
 #
-.say/__pycache__
-.say/api/__pycache__
-.say/models/__pycache__
-.say.files
+say/__pycache__
+say/api/__pycache__
+say/models/__pycache__
+say.files

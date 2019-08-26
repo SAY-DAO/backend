@@ -1,0 +1,24 @@
+get activity by social worker
+Returns information of all activities with given social worker id as a json object.
+Calling this API only affects activity table by selecting rows from it.
+---
+
+tags:
+  - Activity API
+
+parameters:
+  - in: path
+    name: social_worker_id
+    required: true
+    type: integer
+    description: the social worker id
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: activity_model

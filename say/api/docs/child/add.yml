@@ -1,0 +1,122 @@
+add a child
+Adds a new child.
+Calling this API affects child and social_worker tables.
+Adding firstName, lastName, nationality, birthPlace, address, housingStatus, familyCount, education and status are optional.
+For avatarUrl and voiceUrl you have to upload a file; for avatar in png, jpg or jpeg and for voice in wav, m4a, wma, mp3, aac or ogg format.
+Be aware that city and country are integer fields, so you cannot insert their names in those fields.
+You have to insert the international codes for countries and cities and the same rule is applied for nationality and birthPlace.
+Here is a guide for the codes used in this API:
+gender: [true]male, [false]female
+housingStatus: [0]homeless, [1]rent, [2]has home, [3]with relatives
+education: [-1]uneducated, [0]pre-school, [1]1st grade, [2]2nd grade, ...
+(no code has been assigned to status yet)
+---
+
+tags:
+  - Child API
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - name: avatarUrl
+    in: formData
+    type: file
+    required: true
+
+  - name: voiceUrl
+    in: formData
+    type: file
+    required: true
+
+  - name: firstName
+    in: formData
+    type: string
+
+  - name: lastName
+    in: formData
+    type: string
+
+  - name: sayName
+    in: formData
+    type: string
+    required: true
+
+  - name: phoneNumber
+    in: formData
+    type: string
+    required: true
+
+  - name: nationality
+    in: formData
+    type: integer
+
+  - name: country
+    in: formData
+    type: integer
+    required: true
+
+  - name: city
+    in: formData
+    type: integer
+    required: true
+
+  - name: gender
+    in: formData
+    type: boolean
+    required: true
+
+  - name: bio
+    in: formData
+    type: string
+    required: true
+
+  - name: bioSummary
+    in: formData
+    type: string
+    required: true
+
+  - name: birthPlace
+    in: formData
+    type: integer
+
+  - name: birthDate
+    in: formData
+    type: string
+
+  - name: address
+    in: formData
+    type: string
+
+  - name: housingStatus
+    in: formData
+    type: integer
+
+  - name: familyCount
+    in: formData
+    type: integer
+
+  - name: education
+    in: formData
+    type: integer
+
+  - name: status
+    in: formData
+    type: integer
+
+  - name: ngo_id
+    in: path
+    type: integer
+    required: true
+
+  - name: social_worker_id
+    in: path
+    type: integer
+    required: true
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok

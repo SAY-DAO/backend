@@ -1,0 +1,36 @@
+update privilege
+All the fields are optional.
+You can fill every field you want to change, and it will update the desired privilege.
+Calling this API only affects social_worker_type table by updating a row.
+Be aware that privilege code must be among the list in second row of this table.
+---
+
+tags:
+  - Privilege API
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - name: privilege_id
+    required: true
+    in: path
+    type: integer
+
+  - name: privilege
+    required: true
+    in: formData
+    type: integer
+
+  - name: name
+    required: true
+    in: formData
+    type: string
+
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok

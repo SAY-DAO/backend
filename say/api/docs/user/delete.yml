@@ -1,0 +1,22 @@
+delete a user
+Deletes a user.
+It also delete all impacts and occurrences of this user in whole database.
+Deleting is managed by isDeleted tag everywhere, so we do not fully delete anything.
+Calling this API affects user, need_family and user_family tables.
+---
+
+tags:
+  - User API
+
+parameters:
+  - in: path
+    name: user_id
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok

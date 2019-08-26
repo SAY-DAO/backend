@@ -1,0 +1,29 @@
+get user by full name
+Returns information of all users with given first and last names as a json object.
+Calling this API affects child, need, child_need and need_family and user tables.
+It contains user info, its children and those children's needs.
+---
+
+tags:
+  - User API
+
+parameters:
+  - in: path
+    name: first_name
+    required: true
+    type: string
+
+  - in: path
+    name: last_name
+    required: true
+    type: string
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: user_model

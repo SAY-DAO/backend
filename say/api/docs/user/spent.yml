@@ -1,0 +1,25 @@
+get user spent
+Returns user's spent credit so far.
+Calling this API affects user table only.
+---
+
+tags:
+  - User API
+
+parameters:
+  - in: path
+    name: user_id
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      properties:
+        spentCredit:
+          type: integer

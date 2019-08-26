@@ -1,3 +1,5 @@
+from hashlib import md5
+
 from say.api.child_api import get_child_by_id, get_child_need
 from say.models.family_model import FamilyModel
 from say.models.need_family_model import NeedFamilyModel
@@ -11,71 +13,55 @@ User APIs
 """
 
 
-def get_user_by_something(session, user_id):
-    user = session.query(UserModel).filter_by(Id=user_id).filter_by(IsDeleted=False).first()
+def get_user_by_id(session, user_id):
+    user = session.query(UserModel).filter_by(id=user_id).filter_by(isDeleted=False).first()
 
-    user_data = obj_to_dict(user)
     children = get_user_children(session, user)
-
-    user_data['Children'] = children
+    user_data = utf8_response(obj_to_dict(user))
+    user_data = user_data[:-1] + f', "Children": {children}' + '}'
 
     return user_data
 
 
 def get_user_children(session, user):
-    families = session.query(UserFamilyModel).filter_by(Id_user=user.Id).filter_by(IsDeleted=False).all()
-    print(11)
+    families = session.query(UserFamilyModel).filter_by(id_user=user.id).filter_by(isDeleted=False).all()
 
-    children = {}
+    children = '{'
     for family in families:
-        child = session.query(FamilyModel).filter_by(Id_child=family.family_relation.Id_child).filter_by(IsDeleted=False).first()
-        print(22)
-        child_data = get_child_by_id(session, child.Id_child)
-        print(33)
-        children['child'+str(child.Id)] = child_data
+        child = session.query(FamilyModel).filter_by(id_child=family.family_relation.id_child).filter_by(
+            isDeleted=False).first()
 
-    return children
+        if child.family_child_relation.isConfirmed:
+            children += f'"{str(child.id_child)}": {get_child_by_id(session, child.id_child)}, '
+
+    return children[:-2] + '}' if len(children) != 1 else '{}'
 
 
 def get_user_needs(session, user, urgent=False):
-    families = session.query(UserFamilyModel).filter_by(Id_user=user.Id).all()
+    families = session.query(UserFamilyModel).filter_by(id_user=user.id).filter_by(isDeleted=False).all()
 
-    needs = {}
+    needs = '{'
     for family in families:
-        child = session.query(FamilyModel).filter_by(Id_child=family.family_relation.Id_child).filter_by(IsDeleted=False).first()
-        child_data = get_child_need(session, child.Id_child, urgent)
-        needs['child'+str(child.Id)] = child_data
+        child = session.query(FamilyModel).filter_by(id_child=family.family_relation.id_child).filter_by(
+            isDeleted=False).first()
 
-    return needs
+        needs += f'"{str(child.id_child)}": {get_child_need(session, child.id_child, urgent)}, '
+
+    return needs[:-2] + '}' if len(needs) != 1 else '{}'
 
 
 class GetUserById(Resource):
-    @swag_from('./apidocs/user/by_id.yml')
+    @swag_from('./docs/user/by_id.yml')
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            user = session.query(UserModel).get(user_id)
-            print(0)
-
-            user_data = obj_to_dict(user)
-            print(1)
-            children = get_user_children(session, user)
-            print(2)
-
-            user_data['Children'] = children
-            print(3)
-
-            if not user.IsDeleted:
-                resp = Response(json.dumps(user_data))
-                print(4)
-            else:
-                return {'msg': 'error occurred!'}
+            resp = Response(get_user_by_id(session, user_id))
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -84,27 +70,25 @@ class GetUserById(Resource):
 
 
 class GetUserByFullName(Resource):
-    @swag_from('./apidocs/user/by_fullname.yml')
+    @swag_from('./docs/user/by_fullname.yml')
     def get(self, first_name, last_name):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            users = session.query(UserModel).filter_by(FirstName=first_name).filter_by(LastName=last_name).filter_by(
-                IsDeleted=False).all()
+            users = session.query(UserModel).filter_by(firstName=first_name).filter_by(lastName=last_name).filter_by(
+                isDeleted=False).all()
 
-            res = {}
+            res = '{'
             for user in users:
-                user_data = obj_to_dict(user)
-                children = get_user_children(session, user)
-                user_data['Children'] = children
-                res[user.Id] = user_data
+                user_data = get_user_by_id(session, user.id)
+                res += f'"{str(user.id)}": {user_data}, '
 
-            resp = Response(json.dumps(res))
+            resp = Response(res[:-2] + '}' if len(res) != 1 else '{}')
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -113,26 +97,24 @@ class GetUserByFullName(Resource):
 
 
 class GetUserByBirthPlace(Resource):
-    @swag_from('./apidocs/user/by_birthplace.yml')
+    @swag_from('./docs/user/by_birthplace.yml')
     def get(self, birth_place):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            users = session.query(UserModel).filter_by(BirthPlace=birth_place).filter_by(IsDeleted=False).all()
+            users = session.query(UserModel).filter_by(birthPlace=birth_place).filter_by(isDeleted=False).all()
 
-            res = {}
+            res = '{'
             for user in users:
-                user_data = obj_to_dict(user)
-                children = get_user_children(session, user)
-                user_data['Children'] = children
-                res[user.Id] = user_data
+                user_data = get_user_by_id(session, user.id)
+                res += f'"{str(user.id)}": {user_data}, '
 
-            resp = Response(json.dumps(res))
+            resp = Response(res[:-2] + '}' if len(res) != 1 else '{}')
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -141,31 +123,29 @@ class GetUserByBirthPlace(Resource):
 
 
 class GetUserByBirthDate(Resource):
-    @swag_from('./apidocs/user/by_birthdate.yml')
+    @swag_from('./docs/user/by_birth_date.yml')
     def get(self, birth_date, is_after):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
             if is_after.lower() == 'true':
-                users = session.query(UserModel).filter(UserModel.BirthDate >= birth_date).filter_by(
-                    IsDeleted=False).all()
+                users = session.query(UserModel).filter(UserModel.birthDate >= birth_date).filter_by(
+                    isDeleted=False).all()
             else:
-                users = session.query(UserModel).filter(UserModel.BirthDate <= birth_date).filter_by(
-                    IsDeleted=False).all()
+                users = session.query(UserModel).filter(UserModel.birthDate <= birth_date).filter_by(
+                    isDeleted=False).all()
 
-            res = {}
+            res = '{'
             for user in users:
-                user_data = obj_to_dict(user)
-                children = get_user_children(session, user)
-                user_data['Children'] = children
-                res[user.Id] = user_data
+                user_data = get_user_by_id(session, user.id)
+                res += f'"{str(user.id)}": {user_data}, '
 
-            resp = Response(json.dumps(res))
+            resp = Response(res[:-2] + '}' if len(res) != 1 else '{}')
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -174,26 +154,24 @@ class GetUserByBirthDate(Resource):
 
 
 class GetUserByCountry(Resource):
-    @swag_from('./apidocs/user/by_country.yml')
+    @swag_from('./docs/user/by_country.yml')
     def get(self, country):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            users = session.query(UserModel).filter_by(Country=country).filter_by(IsDeleted=False).all()
+            users = session.query(UserModel).filter_by(country=country).filter_by(isDeleted=False).all()
 
-            res = {}
+            res = '{'
             for user in users:
-                user_data = obj_to_dict(user)
-                children = get_user_children(session, user)
-                user_data['Children'] = children
-                res[user.Id] = user_data
+                user_data = get_user_by_id(session, user.id)
+                res += f'"{str(user.id)}": {user_data}, '
 
-            resp = Response(json.dumps(res))
+            resp = Response(res[:-2] + '}' if len(res) != 1 else '{}')
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -202,26 +180,24 @@ class GetUserByCountry(Resource):
 
 
 class GetUserByCity(Resource):
-    @swag_from('./apidocs/user/by_city.yml')
+    @swag_from('./docs/user/by_city.yml')
     def get(self, city):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            users = session.query(UserModel).filter_by(City=city).filter_by(IsDeleted=False).all()
+            users = session.query(UserModel).filter_by(city=city).filter_by(isDeleted=False).all()
 
-            res = {}
+            res = '{'
             for user in users:
-                user_data = obj_to_dict(user)
-                children = get_user_children(session, user)
-                user_data['Children'] = children
-                res[user.Id] = user_data
+                user_data = get_user_by_id(session, user.id)
+                res += f'"{str(user.id)}": {user_data}, '
 
-            resp = Response(json.dumps(res))
+            resp = Response(res[:-2] + '}' if len(res) != 1 else '{}')
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -230,27 +206,22 @@ class GetUserByCity(Resource):
 
 
 class GetUserByUserName(Resource):
-    @swag_from('./apidocs/user/by_username.yml')
+    @swag_from('./docs/user/by_username.yml')
     def get(self, username):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            user = session.query(UserModel).filter_by(UserName=username).first()
+            user = session.query(UserModel).filter_by(userName=username).first()
 
-            user_data = obj_to_dict(user)
-            children = get_user_children(session, user)
-
-            user_data['Children'] = children
-
-            if not user.IsDeleted:
-                resp = Response(json.dumps(user_data))
+            if not user.isDeleted:
+                resp = Response(get_user_by_id(session, user.id))
             else:
                 return {'msg': 'error occurred!'}
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -259,27 +230,22 @@ class GetUserByUserName(Resource):
 
 
 class GetUserByPhoneNumber(Resource):
-    @swag_from('./apidocs/user/by_phone.yml')
+    @swag_from('./docs/user/by_phone.yml')
     def get(self, phone):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            user = session.query(UserModel).filter_by(PhoneNumber=phone).first()
+            user = session.query(UserModel).filter_by(phoneNumber=phone).first()
 
-            user_data = obj_to_dict(user)
-            children = get_user_children(session, user)
-
-            user_data['Children'] = children
-
-            if not user.IsDeleted:
-                resp = Response(json.dumps(user_data))
+            if not user.isDeleted:
+                resp = Response(get_user_by_id(session, user.id))
             else:
                 return {'msg': 'error occurred!'}
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -288,24 +254,24 @@ class GetUserByPhoneNumber(Resource):
 
 
 class GetAllUsers(Resource):
-    @swag_from('./apidocs/user/all.yml')
+    @swag_from('./docs/user/all.yml')
     def get(self):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            users = session.query(UserModel).filter_by(IsDeleted=False).all()
+            users = session.query(UserModel).filter_by(isDeleted=False).all()
 
-            user_data = {}
+            user_data = '{'
             for user in users:
-                user_dict = get_user_by_something(session, user.Id)
-                user_data[user.Id] = user_dict
+                user_dict = get_user_by_id(session, user.id)
+                user_data += f'"{str(user.id)}": {user_dict}, '
 
-            resp = Response(json.dumps(user_data))
+            resp = Response(user_data[:-2] + '}' if len(user_data) != 1 else '{}')
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -314,22 +280,22 @@ class GetAllUsers(Resource):
 
 
 class GetUserAvatar(Resource):
-    @swag_from('./apidocs/user/avatar.yml')
+    @swag_from('./docs/user/avatar.yml')
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
             user = session.query(UserModel).get(user_id)
 
-            if not user.IsDeleted:
-                resp = Response(json.dumps({'AvatarUrl': user.AvatarUrl}))
+            if not user.isDeleted:
+                resp = Response(utf8_response({'avatarUrl': user.avatarUrl}))
             else:
                 resp = Response(json.dumps({'msg': 'error occurred!'}))
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -338,22 +304,22 @@ class GetUserAvatar(Resource):
 
 
 class GetUserEmailAddress(Resource):
-    @swag_from('./apidocs/user/email.yml')
+    @swag_from('./docs/user/email.yml')
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
             user = session.query(UserModel).get(user_id)
 
-            if not user.IsDeleted:
-                resp = Response(json.dumps({'EmailAddress': user.EmailAddress}))
+            if not user.isDeleted:
+                resp = Response(utf8_response({'emailAddress': user.emailAddress}))
             else:
                 resp = Response(json.dumps({'msg': 'error occurred!'}))
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -362,22 +328,22 @@ class GetUserEmailAddress(Resource):
 
 
 class GetUserPhoneNumber(Resource):
-    @swag_from('./apidocs/user/phone.yml')
+    @swag_from('./docs/user/phone.yml')
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
             user = session.query(UserModel).get(user_id)
 
-            if not user.IsDeleted:
-                resp = Response(json.dumps({'PhoneNumber': user.PhoneNumber}))
+            if not user.isDeleted:
+                resp = Response(utf8_response({'phoneNumber': user.phoneNumber}))
             else:
                 resp = Response(json.dumps({'msg': 'error occurred!'}))
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -386,23 +352,22 @@ class GetUserPhoneNumber(Resource):
 
 
 class GetUserUserName(Resource):
-    @swag_from('./apidocs/user/username.yml')
+    @swag_from('./docs/user/username.yml')
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
             user = session.query(UserModel).get(user_id)
 
-            if not user.IsDeleted:
-                print('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$', os.getcwd())
-                resp = Response(json.dumps({'UserName': user.UserName}))
+            if not user.isDeleted:
+                resp = Response(utf8_response({'userName': user.userName}))
             else:
                 resp = Response(json.dumps({'msg': 'error occurred!'}))
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -411,23 +376,24 @@ class GetUserUserName(Resource):
 
 
 class GetUserFullName(Resource):
-    @swag_from('./apidocs/user/fullname.yml')
+    @swag_from('./docs/user/fullname.yml')
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
             user = session.query(UserModel).get(user_id)
 
-            if not user.IsDeleted:
-                resp = Response(json.dumps({'FirstName': user.FirstName,
-                                            'LastName': user.LastName}))
+            if not user.isDeleted:
+                res = {'firstName': user.firstName,
+                       'lastName': user.lastName}
+                resp = Response(utf8_response(res))
             else:
                 resp = Response(json.dumps({'msg': 'error occurred!'}))
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -436,22 +402,22 @@ class GetUserFullName(Resource):
 
 
 class GetUserCredit(Resource):
-    @swag_from('./apidocs/user/credit.yml')
+    @swag_from('./docs/user/credit.yml')
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
             user = session.query(UserModel).get(user_id)
 
-            if not user.IsDeleted:
-                resp = Response(json.dumps({'Credit': user.Credit}))
+            if not user.isDeleted:
+                resp = Response(utf8_response({'credit': user.credit}))
             else:
                 resp = Response(json.dumps({'msg': 'error occurred!'}))
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -460,22 +426,22 @@ class GetUserCredit(Resource):
 
 
 class GetUserSpentCredit(Resource):
-    @swag_from('./apidocs/user/spent.yml')
+    @swag_from('./docs/user/spent.yml')
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
             user = session.query(UserModel).get(user_id)
 
-            if not user.IsDeleted:
-                resp = Response(json.dumps({'SpentCredit': user.SpentCredit}))
+            if not user.isDeleted:
+                resp = Response(utf8_response({'spentCredit': user.spentCredit}))
             else:
                 resp = Response(json.dumps({'msg': 'error occurred!'}))
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -484,22 +450,22 @@ class GetUserSpentCredit(Resource):
 
 
 class GetUserChildren(Resource):
-    @swag_from('./apidocs/user/children.yml')
+    @swag_from('./docs/user/children.yml')
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
             user = session.query(UserModel).get(user_id)
 
-            if not user.IsDeleted:
-                resp = Response(json.dumps(get_user_children(session, user)))
+            if not user.isDeleted:
+                resp = Response(get_user_children(session, user))
             else:
                 resp = Response(json.dumps({'msg': 'error occurred!'}))
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -508,22 +474,22 @@ class GetUserChildren(Resource):
 
 
 class GetUserNeeds(Resource):
-    @swag_from('./apidocs/user/needs.yml')
+    @swag_from('./docs/user/needs.yml')
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
             user = session.query(UserModel).get(user_id)
 
-            if not user.IsDeleted:
-                resp = Response(json.dumps(get_user_needs(session, user)))
+            if not user.isDeleted:
+                resp = Response(get_user_needs(session, user))
             else:
                 resp = Response(json.dumps({'msg': 'error occurred!'}))
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -532,22 +498,22 @@ class GetUserNeeds(Resource):
 
 
 class GetUserUrgentNeeds(Resource):
-    @swag_from('./apidocs/user/urgents.yml')
+    @swag_from('./docs/user/urgent.yml')
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
             user = session.query(UserModel).get(user_id)
 
-            if not user.IsDeleted:
-                resp = Response(json.dumps(get_user_needs(session, user, True)))
+            if not user.isDeleted:
+                resp = Response(get_user_needs(session, user, True))
             else:
                 resp = Response(json.dumps({'msg': 'error occurred!'}))
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -555,28 +521,24 @@ class GetUserUrgentNeeds(Resource):
             return resp
 
 
-class GetUserTokenById(Resource):
-    pass
-
-
 class GetUserFinancialReport(Resource):
-    @swag_from('./apidocs/user/report.yml')
+    @swag_from('./docs/user/report.yml')
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            payments = session.query(PaymentModel).filter_by(Id_user=user_id).all()
+            payments = session.query(PaymentModel).filter_by(id_user=user_id).all()
 
-            res = {}
+            res = '{'
             for payment in payments:
-                res[payment.Id] = obj_to_dict(payment)
+                res += f'"{str(payment.id)}": {utf8_response(obj_to_dict(payment))}, '
 
-            resp = Response(json.dumps(res))
+            resp = Response(res[:-2] + '}' if len(res) != 1 else '{}')
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -585,24 +547,23 @@ class GetUserFinancialReport(Resource):
 
 
 class GetAllUsersNeeds(Resource):
-    @swag_from('./apidocs/user/all_needs.yml')
+    @swag_from('./docs/user/all_needs.yml')
     def get(self):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            users = session.query(UserModel).filter_by(IsDeleted=False).all()
+            users = session.query(UserModel).filter_by(isDeleted=False).all()
 
-            user_needs = {}
+            user_needs = '{'
             for user in users:
-                need = get_user_needs(session, user)
-                user_needs['user' + str(user.Id)] = need
+                user_needs += f'"{str(user.id)}": {get_user_needs(session, user)}, '
 
-            resp = Response(json.dumps(user_needs))
+            resp = Response(user_needs[:-2] + '}' if len(user_needs) != 1 else '{}')
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -611,57 +572,75 @@ class GetAllUsersNeeds(Resource):
 
 
 class UpdateUserById(Resource):
-    @swag_from('./apidocs/user/update.yml')
+    @swag_from('./docs/user/update.yml')
     def patch(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            primary_user = session.query(UserModel).filter_by(Id=user_id).filter_by(IsDeleted=False).first()
+            primary_user = session.query(UserModel).filter_by(id=user_id).filter_by(isDeleted=False).first()
 
-            if 'AvatarUrl' in request.files.keys():
-                file = request.files['AvatarUrl']
+            if 'avatarUrl' in request.files.keys():
+                file = request.files['avatarUrl']
                 if file.filename == '':
                     resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
                     session.close()
                     return resp
+
                 if file and allowed_image(file.filename):
-                    filename = secure_filename(file.filename)
-                    temp_user_path = os.path.join(app.config['UPLOAD_FOLDER'], str(primary_user.Id) + '-user')
+                    # filename = secure_filename(file.filename)
+                    filename = str(primary_user.phoneNumber) + '.' + file.filename.split('.')[-1]
+
+                    temp_user_path = os.path.join(app.config['UPLOAD_FOLDER'], str(primary_user.id) + '-user')
+
                     for obj in os.listdir(temp_user_path):
-                        check = str(primary_user.Id) + '-avatar'
+                        check = str(primary_user.id) + '-avatar'
                         if obj.split('_')[0] == check:
                             os.remove(os.path.join(temp_user_path, obj))
-                    primary_user.AvatarUrl = os.path.join(temp_user_path, str(primary_user.Id) + '-avatar_' + filename)
-                    file.save(primary_user.AvatarUrl)
-                    resp = Response(json.dumps({'message': 'WELL DONE!'}))
-            if 'UserName' in request.form.keys():
-                primary_user.UserName = request.form['UserName']
-            if 'EmailAddress' in request.form.keys():
-                primary_user.EmailAddress = request.form['EmailAddress']
-            if 'Password' in request.form.keys():
-                primary_user.Password = request.form['Password']
-            if 'FirstName' in request.form.keys():
-                primary_user.FirstName = request.form['FirstName']
-            if 'LastName' in request.form.keys():
-                primary_user.LastName = request.form['LastName']
-            if 'Country' in request.form.keys():
-                primary_user.Country = int(request.form['Country'])
-            if 'City' in request.form.keys():
-                primary_user.City = int(request.form['City'])
-            if 'BirthPlace' in request.form.keys():
-                primary_user.BirthPlace = request.form['BirthPlace']
-            if 'BirthDate' in request.form.keys():
-                primary_user.BirthDate = datetime.strptime(request.form['BirthDate'], '%Y-%m-%d')
-            if 'Gender' in request.form.keys():
-                primary_user.Gender = True if request.form['Gender'] == 'true' else False
 
-            primary_user.LastUpdate = datetime.now()
+                    primary_user.avatarUrl = os.path.join(temp_user_path, str(primary_user.id) + '-avatar_' + filename)
+
+                    file.save(primary_user.avatarUrl)
+
+                    resp = Response(json.dumps({'message': 'WELL DONE!'}))
+
+            if 'userName' in request.json.keys():
+                primary_user.userName = request.json['userName']
+
+            if 'emailAddress' in request.json.keys():
+                primary_user.emailAddress = request.json['emailAddress']
+
+            if 'password' in request.json.keys():
+                primary_user.password = md5(request.json['password'].encode()).hexdigest()
+
+            if 'firstName' in request.json.keys():
+                primary_user.firstName = request.json['firstName']
+
+            if 'lastName' in request.json.keys():
+                primary_user.lastName = request.json['lastName']
+
+            if 'country' in request.json.keys():
+                primary_user.country = int(request.json['country'])
+
+            if 'city' in request.json.keys():
+                primary_user.city = int(request.json['city'])
+
+            if 'birthPlace' in request.json.keys():
+                primary_user.birthPlace = int(request.json['birthPlace'])
+
+            if 'birthDate' in request.json.keys():
+                primary_user.birthDate = datetime.strptime(request.json['birthDate'], '%Y-%m-%d')
+
+            if 'gender' in request.json.keys():
+                primary_user.gender = True if request.json['gender'] == 'true' else False
+
+            primary_user.lastUpdate = datetime.now()
 
             secondary_user = obj_to_dict(primary_user)
 
             session.commit()
-            resp = Response(json.dumps(secondary_user))
+            resp = Response(utf8_response(secondary_user))
 
         except Exception as e:
             print(e)
@@ -673,29 +652,30 @@ class UpdateUserById(Resource):
 
 
 class DeleteUserById(Resource):
-    @swag_from('./apidocs/user/delete.yml')
+    @swag_from('./docs/user/delete.yml')
     def patch(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
             user = session.query(UserModel).get(user_id)
 
-            if user.IsDeleted:
+            if user.isDeleted:
                 resp = Response(json.dumps({'msg': 'user was already deleted!'}))
                 session.close()
                 return resp
 
-            families = session.query(UserFamilyModel).filter_by(Id_user=user_id).filter_by(IsDeleted=False).all()
-            needs = session.query(NeedFamilyModel).filter_by(Id_user=user_id).filter_by(IsDeleted=False).all()
+            families = session.query(UserFamilyModel).filter_by(id_user=user_id).filter_by(isDeleted=False).all()
+            needs = session.query(NeedFamilyModel).filter_by(id_user=user_id).filter_by(isDeleted=False).all()
 
             for family in families:
-                family.IsDeleted = True
+                family.isDeleted = True
 
             for need in needs:
-                need.IsDeleted = True
+                need.isDeleted = True
 
-            user.IsDeleted = True
+            user.isDeleted = True
 
             session.commit()
 
@@ -703,7 +683,6 @@ class DeleteUserById(Resource):
 
         except Exception as e:
             print(e)
-
             resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
 
         finally:
@@ -712,83 +691,114 @@ class DeleteUserById(Resource):
 
 
 class AddUser(Resource):
-    @swag_from('./apidocs/user/add.yml')
+    @swag_from('./docs/user/add.yml')
     def post(self):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
             if len(session.query(UserModel).all()):
-                last_user = session.query(UserModel).order_by(UserModel.Id.desc()).first()
-                current_id = last_user.Id + 1
+                last_user = session.query(UserModel).order_by(UserModel.id.desc()).first()
+                current_id = last_user.id + 1
+
             else:
                 current_id = 1
 
+            if 'emailAddress' in request.json.keys():
+                email_address = request.json['emailAddress']
+            else:
+                email_address = None
+
+            if 'gender' in request.json.keys():
+                gender = True if request.json['gender'] == 'true' else False
+            else:
+                gender = None
+
+            if 'birthDate' in request.json.keys():
+                birth_date = datetime.strptime(request.json['birthDate'], '%Y-%m-%d')
+            else:
+                birth_date = None
+
+            if 'birthPlace' in request.json.keys():
+                birth_place = int(request.json['birthPlace'])
+            else:
+                birth_place = None
+
+            if 'phoneNumber' in request.json.keys():
+                phone_number = request.json['phoneNumber']
+            else:
+                phone_number = None
+
+            # phone_number = request.json['phoneNumber']
+            password = md5(request.json['password'].encode()).hexdigest()
+            first_name = request.json['firstName']
+            last_name = request.json['lastName']
+            city = int(request.json['city'])
+            country = int(request.json['country'])
+
+            username = request.json['userName']
+
+            duplicate_user = session.query(UserModel).filter_by(isDeleted=False).filter_by(userName=username).first()
+            if duplicate_user is not None:
+                resp = Response(json.dumps({'message': 'user has already been registered!'}))
+                session.close()
+                return resp
+
+            created_at = datetime.now()
+            last_update = datetime.now()
+            last_login = datetime.now()
+
+            # avatar_url = path
+            flag_url = os.path.join(FLAGS, str(country) + '.png')
+
             path = None
-            if 'AvatarUrl' in request.files:
-                file = request.files['AvatarUrl']
-                if file.filename == '':
-                    resp =  Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
-                    session.close()
-                    return resp
-                if file and allowed_image(file.filename):
-                    filename = secure_filename(file.filename)
-
-                    temp_user_path = os.path.join(app.config['UPLOAD_FOLDER'], str(current_id) + '-user')
-                    if not os.path.isdir(temp_user_path):
-                        os.mkdir(temp_user_path)
-
-                    path = os.path.join(temp_user_path, str(current_id) + '-avatar_' + filename)
-                    file.save(path)
-                    resp = Response(json.dumps({'message': 'WELL DONE!'}))
-
-            PhoneNumber = request.form['PhoneNumber']
-            if 'EmailAddress' in request.form.keys():
-                EmailAddress = request.form['EmailAddress']
+            if 'avatarUrl' in request.files:
+                # file = request.files['avatarUrl']
+                #
+                # if file.filename == '':
+                #     resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
+                #     session.close()
+                #     return resp
+                #
+                # if file and allowed_image(file.filename):
+                #     # filename = secure_filename(file.filename)
+                #     filename = str(phone_number) + '.' + file.filename.split('.')[-1]
+                #
+                #     temp_user_path = os.path.join(app.config['UPLOAD_FOLDER'], str(current_id) + '-user')
+                #
+                #     if not os.path.isdir(temp_user_path):
+                #         os.mkdir(temp_user_path)
+                #
+                #     path = os.path.join(temp_user_path, str(current_id) + '-avatar_' + filename)
+                #
+                #     file.save(path)
+                #
+                #     resp = Response(json.dumps({'message': 'WELL DONE!'}))
+                #
+                # avatar_url = path
+                avatar_url = request.json['avatarUrl']
             else:
-                EmailAddress = None
-            if 'Gender' in request.form.keys():
-                Gender = True if request.form['Gender'] == 'true' else False
-            else:
-                Gender = None
-            if 'BirthDate' in request.form.keys():
-                BirthDate = datetime.strptime(request.form['BirthDate'], '%Y-%m-%d')
-            else:
-                BirthDate = None
-            if 'BirthPlace' in request.form.keys():
-                BirthPlace = request.form['BirthPlace']
-            else:
-                BirthPlace = None
-            LastLogin = datetime.now()
-            Password = request.form['Password']
-            FirstName = request.form['FirstName']
-            LastName = request.form['LastName']
-            UserName = request.form['UserName']
-            AvatarUrl = path
-            City = int(request.form['City'])
-            Country = int(request.form['Country'])
-            CreatedAt = datetime.now()
-            LastUpdate = datetime.now()
-            FlagUrl = os.path.join(FLAGS, str(Country) + '.png')
+                avatar_url = None
 
             new_user = UserModel(
-                FirstName=FirstName,
-                LastName=LastName,
-                UserName=UserName,
-                AvatarUrl=AvatarUrl,
-                PhoneNumber=PhoneNumber,
-                EmailAddress=EmailAddress,
-                Gender=Gender,
-                City=City,
-                Country=Country,
-                CreatedAt=CreatedAt,
-                LastUpdate=LastUpdate,
-                BirthDate=BirthDate,
-                BirthPlace=BirthPlace,
-                LastLogin=LastLogin,
-                Password=Password,
-                FlagUrl=FlagUrl,
-                # Credit=5000  # TODO: remove it!
+                firstName=first_name,
+                lastName=last_name,
+                userName=username,
+                avatarUrl=avatar_url,
+                phoneNumber=phone_number,
+                emailAddress=email_address,
+                gender=gender,
+                city=city,
+                country=country,
+                createdAt=created_at,
+                lastUpdate=last_update,
+                birthDate=birth_date,
+                birthPlace=birth_place,
+                lastLogin=last_login,
+                password=password,
+                flagUrl=flag_url,
+                # credit=11000  # TODO: remove it!
             )
 
             session.add(new_user)
@@ -827,7 +837,6 @@ api.add_resource(GetUserCredit, '/api/v2/user/credit/userId=<user_id>')
 api.add_resource(GetUserSpentCredit, '/api/v2/user/credit/spent/userId=<user_id>')
 api.add_resource(GetUserChildren, '/api/v2/user/children/userId=<user_id>')
 api.add_resource(GetUserNeeds, '/api/v2/user/needs/userId=<user_id>')
-api.add_resource(GetUserTokenById, '/api/v2/user/token/userId=<user_id>')
 api.add_resource(GetUserFinancialReport, '/api/v2/user/report/userId=<user_id>')
 api.add_resource(GetAllUsersNeeds, '/api/v2/user/needs/all')
 api.add_resource(UpdateUserById, '/api/v2/user/update/userId=<user_id>')

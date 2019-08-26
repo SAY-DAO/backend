@@ -1,0 +1,66 @@
+update need
+All fields are optional.
+You cannot change cost for confirmed needs but it is ok with not confirmed needs.
+It is possible to have multiple receipts, but each time you can upload one receipt, but their addresses will be saved as a comma separated string in db.
+You have to upload a file for receipts and imageUrl.
+Calling this API affects need table only.
+---
+
+tags:
+  - Need API
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - name: need_id
+    in: path
+    type: integer
+    required: true
+
+  - name: imageUrl
+    in: formData
+    type: file
+
+  - name: name
+    in: formData
+    type: string
+
+  - name: category
+    in: formData
+    type: integer
+
+  - name: isUrgent
+    in: formData
+    type: boolean
+
+  - name: description
+    in: formData
+    type: string
+
+  - name: descriptionSummary
+    in: formData
+    type: string
+
+  - name: cost
+    in: formData
+    type: integer
+
+  - name: type
+    in: formData
+    type: integer
+
+  - name: affiliateLinkUrl
+    in: formData
+    type: string
+
+  - name: receipts
+    in: formData
+    type: file
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok

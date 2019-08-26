@@ -1,0 +1,31 @@
+add privilege
+Adds a privilege.
+This API creates a row in social_worker_type table containing a new privilege information.
+privilege must be among these numbers:
+[0]super admin, [1]social worker, [2]coordinator, [3]NGO supervisor, [4]SAY supervisor, [5]admin
+---
+
+tags:
+  - Privilege API
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - name: privilege
+    required: true
+    in: formData
+    type: integer
+
+  - name: name
+    required: true
+    in: formData
+    type: string
+
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok

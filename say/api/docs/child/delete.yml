@@ -1,0 +1,21 @@
+delete a child
+This API deletes a specific child. Only not confirmed children can be deleted.
+Calling this API affects family table by updating a row and set isDeleted tag true, social_worker and ngo table by decreasing their currentChildrenCount field by 1 and child by setting isDeleted tag true for some rows.
+We do not fully delete any rows.
+---
+
+tags:
+  - Child API
+
+parameters:
+  - in: path
+    name: child_id
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok

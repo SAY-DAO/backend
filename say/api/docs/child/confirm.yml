@@ -1,0 +1,31 @@
+confirm a child
+Confirms a child, so you cannot delete it anymore but you can add needs to it.
+Calling this API affect child, ngo, social_worker, child_need and family tables.
+---
+
+tags:
+  - Child API
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - in: path
+    name: child_id
+    required: true
+    type: integer
+
+  - in: path
+    name: social_worker_id
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: child_model

@@ -1,0 +1,19 @@
+get children urgent needs
+Returns information of all children's needs as a json object.
+Json key is child id and json value is need data.
+Calling this API affects on child, need, child_need, need_family and user tables.
+It contains need info and their participants.
+---
+
+tags:
+  - Child API
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: need_model

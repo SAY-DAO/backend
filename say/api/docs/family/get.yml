@@ -1,0 +1,42 @@
+get family by id
+Returns the family with given id as a json object.
+Calling this API affects family and user_family tables.
+---
+
+tags:
+  - Family API
+
+parameters:
+  - in: path
+    name: family_id
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: family_model
+
+      properties:
+        userId:
+          type: integer
+          description: the user's id
+
+        userRole:
+          type: integer
+          description: describes user role in family
+          example: 0
+
+        childId:
+          type: integer
+          description: the child's id
+
+        familyId:
+          type: integer
+          description: the family's id
+

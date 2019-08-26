@@ -1,0 +1,17 @@
+get all urgent needs
+Gets all the urgent needs that exists.
+Calling this API affects need table only.
+---
+
+tags:
+  - Need API
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: need_model

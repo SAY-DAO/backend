@@ -1,0 +1,31 @@
+migrate a child
+This API migrates a child.
+It means that from the moment after migration, another social worker will cover the child's need.
+The records of child will migrate too, so nothing is going to be missed or deleted.
+Calling this API affects on child, social_worker, ngo, child_need, need and family tables.
+It inserts a new record int child table for the migrated child and deactives the previous child's record.
+---
+
+tags:
+  - Child API
+
+parameters:
+  - in: path
+    name: child_id
+    required: true
+    type: integer
+
+  - in: path
+    name: social_worker_id
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: child_model

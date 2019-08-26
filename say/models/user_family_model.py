@@ -10,11 +10,11 @@ User-Family Model
 class UserFamilyModel(base):
     __tablename__ = 'user_family'
 
-    Id = Column(Integer, nullable=False, primary_key=True)
-    Id_user = Column(Integer, ForeignKey(UserModel.Id), nullable=False)
-    Id_family = Column(Integer, ForeignKey(FamilyModel.Id), nullable=False)
-    UserRole = Column(Integer, nullable=False)
-    IsDeleted = Column(Boolean, nullable=False, default=False)
+    id = Column(Integer, nullable=False, primary_key=True)
+    id_user = Column(Integer, ForeignKey(UserModel.id), nullable=False)
+    id_family = Column(Integer, ForeignKey(FamilyModel.id), nullable=False)
+    userRole = Column(Integer, nullable=False)  # 0:father | 1:mother | 2:uncle | 3:aunt
+    isDeleted = Column(Boolean, nullable=False, default=False)
 
-    family_relation = relationship('FamilyModel', foreign_keys='UserFamilyModel.Id_family')
-    user_relation = relationship('UserModel', foreign_keys='UserFamilyModel.Id_user')
+    family_relation = relationship('FamilyModel', foreign_keys='UserFamilyModel.id_family')
+    user_relation = relationship('UserModel', foreign_keys='UserFamilyModel.id_user')

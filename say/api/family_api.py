@@ -8,24 +8,29 @@ Family APIs
 
 
 class GetFamilyById(Resource):
-    @swag_from('./apidocs/family/get.yml')
+    @swag_from('./docs/family/get.yml')
     def get(self, family_id):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            family = session.query(FamilyModel).filter_by(Id=family_id).filter_by(IsDeleted=False).first()
-            members = session.query(UserFamilyModel).filter_by(Id_family=family_id).filter_by(IsDeleted=False).all()
+            family = session.query(FamilyModel).filter_by(id=family_id).filter_by(isDeleted=False).first()
+            members = session.query(UserFamilyModel).filter_by(id_family=family_id).filter_by(isDeleted=False).all()
 
-            family_data = {}
+            family_data, members_data = {}, {}
             for member in members:
-                family_data['UserId'] = member.Id_user
-                family_data['UserRole'] = member.UserRole
+                family_data_temp = {
+                    'UserId': member.id_user,
+                    'UserRole': member.userRole
+                }
+                members_data[str(member.id_user)] = family_data_temp
 
-            family_data['ChildId'] = family.Id_child
-            family_data['FamilyId'] = family.Id
+            family_data['Members'] = members_data
+            family_data['ChildId'] = family.id_child
+            family_data['FamilyId'] = family.id
 
-            resp = Response(json.dumps(family_data))
+            resp = Response(utf8_response(family_data))
 
         except Exception as e:
             print(e)
@@ -38,28 +43,33 @@ class GetFamilyById(Resource):
 
 
 class GetAllFamilies(Resource):
-    @swag_from('./apidocs/family/all.yml')
+    @swag_from('./docs/family/all.yml')
     def get(self):
         session_maker = sessionmaker(db)
         session = session_maker()
+        resp = {'message': 'major error occurred!'}
 
         try:
-            families = session.query(FamilyModel).filter_by(IsDeleted=False).all()
+            families = session.query(FamilyModel).filter_by(isDeleted=False).all()
 
             res = {}
             for family in families:
-                members = session.query(UserFamilyModel).filter_by(Id_family=family.Id).filter_by(IsDeleted=False).all()
+                members = session.query(UserFamilyModel).filter_by(id_family=family.id).filter_by(isDeleted=False).all()
 
-                family_data = {}
+                family_data, members_data = {}, {}
                 for member in members:
-                    family_data['UserId'] = member.Id_user
-                    family_data['UserRole'] = member.UserRole
+                    family_data_temp = {
+                        'UserId': member.id_user,
+                        'UserRole': member.userRole
+                    }
+                    members_data[str(member.id_user)] = family_data_temp
 
-                family_data['ChildId'] = family.Id_child
-                family_data['FamilyId'] = family.Id
-                res[family.Id] = family_data
+                family_data['Members'] = members_data
+                family_data['ChildId'] = family.id_child
+                family_data['FamilyId'] = family.id
+                res[str(family.id)] = family_data
 
-            resp = Response(json.dumps(res))
+            resp = Response(utf8_response(res))
 
         except Exception as e:
             print(e)
@@ -72,34 +82,29 @@ class GetAllFamilies(Resource):
 
 
 class AddUserToFamily(Resource):
-    @swag_from('./apidocs/family/add.yml')
+    @swag_from('./docs/family/add.yml')
     def post(self, user_id, family_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        print(-1)
+        resp = {'message': 'major error occurred!'}
 
         try:
-            Id_user = user_id
-            Id_family = family_id
-            # UserRole = int(request.json['UserRole'])
-            UserRole = int(request.form['UserRole'])
-            print(0)
+            id_user = user_id
+            id_family = family_id
+            # user_role = int(request.json['user_role'])
+            user_role = int(request.json['userRole'])
 
             new_member = UserFamilyModel(
-                Id_user=Id_user,
-                Id_family=Id_family,
-                UserRole=UserRole,
+                id_user=id_user,
+                id_family=id_family,
+                userRole=user_role,
             )
-            print(1)
 
-            child = session.query(FamilyModel).filter_by(Id=Id_family).filter_by(IsDeleted=False).first()
-            child.family_child_relation.SayFamilyCount += 1
-            child.family_child_relation.HasFamily = True
-            print(2)
+            child = session.query(FamilyModel).filter_by(id=id_family).filter_by(isDeleted=False).first()
+            child.family_child_relation.sayFamilyCount += 1
 
             session.add(new_member)
             session.commit()
-            print(3)
 
             resp = Response(json.dumps({'msg': 'user added to family successfully!'}))
 

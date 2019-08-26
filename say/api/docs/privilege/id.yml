@@ -1,0 +1,39 @@
+get privilege by id
+Returns information of a privilege with given id as a json object.
+Calling this API only affects social_worker_type table by selecting a single row from it.
+---
+
+tags:
+  - Privilege API
+
+parameters:
+  - in: path
+    name: privilege_id
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: privilege_model
+
+      properties:
+        id:
+          type: integer
+          description: the privilege id
+          example: 1
+
+        name:
+          type: string
+          description: the privilege name
+          example: admin
+
+        privilege:
+          type: integer
+          description: the privilege code
+          example: 0

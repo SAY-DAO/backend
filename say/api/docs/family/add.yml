@@ -1,0 +1,36 @@
+add user to family
+Adds a user to the family.
+Calling this API affects family and user_family tables.
+Each user has a role in family.
+The roles are listed below:
+[0]father, [1]mother, [2] uncle, [3]aunt
+---
+
+tags:
+  - Family API
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - in: path
+    name: family_id
+    required: true
+    type: integer
+
+  - in: path
+    name: user_id
+    required: true
+    type: integer
+
+  - in: formData
+    name: userRole
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok

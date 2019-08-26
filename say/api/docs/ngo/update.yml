@@ -1,0 +1,70 @@
+update ngo
+All the fields are optional.
+You can fill every field you want to change, and it will update the desired NGO.
+Calling this API only affects ngo table by updating a row.
+Be aware that city and country are integer fields, so you cannot insert their names in those fields.
+You have to insert the international codes for countries and cities.
+For logoUrl you have to upload a file.
+---
+
+tags:
+  - NGO API
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - name: ngo_id
+    in: path
+    type: integer
+    required: true
+
+  - name: country
+    in: formData
+    type: integer
+
+  - name: city
+    in: formData
+    type: integer
+
+  - name: coordinatorId
+    in: formData
+    type: integer
+
+  - name: name
+    in: formData
+    type: string
+
+  - name: website
+    in: formData
+    type: string
+
+  - name: postalAddress
+    in: formData
+    type: string
+
+  - name: emailAddress
+    in: formData
+    type: string
+
+  - name: phoneNumber
+    in: formData
+    type: string
+
+  - name: logoUrl
+    in: formData
+    type: file
+
+  - name: balance
+    in: formData
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: ngo_model

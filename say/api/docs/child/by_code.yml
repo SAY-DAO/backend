@@ -1,0 +1,24 @@
+get children by generated code
+Returns information of a child with given generated code as a json object.
+Calling this API affects on child, need, child_need and need_family and user tables.
+It contains child info, its needs and participants of those needs.
+---
+
+tags:
+  - Child API
+
+parameters:
+  - in: path
+    name: generated_code
+    required: true
+    type: string
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: child_model

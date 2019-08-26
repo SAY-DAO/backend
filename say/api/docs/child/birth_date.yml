@@ -1,0 +1,29 @@
+get children by birth date
+Returns information of all children with given birth date as a json object.
+Calling this API affects on child, need, child_need and need_family and user tables.
+It contains child info, its needs and participants of those needs.
+---
+
+tags:
+  - Child API
+
+parameters:
+  - in: path
+    name: birth_date
+    required: true
+    type: string
+
+  - in: path
+    name: is_after
+    required: true
+    type: boolean
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: child_model
