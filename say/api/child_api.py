@@ -832,6 +832,7 @@ class GetChildByNgoId(Resource):
         session_maker = sessionmaker(db)
         session = session_maker()
         resp = {'message': 'major error occurred!'}
+        
 
         try:
             children = session.query(ChildModel).filter_by(id_ngo=ngo_id).filter_by(isDeleted=False).filter_by(

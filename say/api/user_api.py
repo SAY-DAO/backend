@@ -528,6 +528,8 @@ class GetUserFinancialReport(Resource):
         session = session_maker()
         resp = {'message': 'major error occurred!'}
 
+        
+
         try:
             payments = session.query(PaymentModel).filter_by(id_user=user_id).all()
 
