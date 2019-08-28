@@ -2,6 +2,7 @@ werkzeug
 Flask
 Flask-RESTful
 Flask-SQLAlchemy
+flask-cors
 SQLAlchemy
 psycopg2
 requests
