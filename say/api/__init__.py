@@ -10,6 +10,7 @@ from flasgger.utils import swag_from
 from werkzeug.utils import secure_filename
 # from hazm import *
 import json
+from flask_cors import CORS
 
 
 with open('./config.json') as config_file:
@@ -33,6 +34,7 @@ ALLOWED_VOICE_EXTENSIONS = {'wav', 'm4a', 'wma', 'mp3', 'aac', 'ogg'}
 ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config['DEBUG'] = True
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 

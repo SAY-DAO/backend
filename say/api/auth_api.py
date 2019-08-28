@@ -75,7 +75,7 @@ class RegisterUser(Resource):
                     lastName='',
                     userName=username,
                     avatarUrl=None,
-                    phoneNumber='',
+                    phoneNumber=None,
                     emailAddress=email,
                     gender=None,
                     city=0,
@@ -110,7 +110,9 @@ class Login(Resource):
         session = session_maker()
         resp = {'message' : 'fuck'}
 
+
         try: 
+            
             if 'username' in request.json.keys() :
                 username  = request.json['username']
             else : 
