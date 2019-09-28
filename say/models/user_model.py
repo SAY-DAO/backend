@@ -6,7 +6,7 @@ User Model
 
 
 class UserModel(base):
-    __tablename__ = 'user'
+    __tablename__ = "user"
 
     id = Column(Integer, nullable=False, primary_key=True, unique=True)
     firstName = Column(String, nullable=False)

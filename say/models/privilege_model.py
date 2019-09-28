@@ -6,7 +6,7 @@ Privilege Model
 
 
 class PrivilegeModel(base):
-    __tablename__ = 'social_worker_type'
+    __tablename__ = "social_worker_type"
 
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
     name = Column(String, nullable=False)

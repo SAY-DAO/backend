@@ -8,7 +8,7 @@ User-Family Model
 
 
 class UserFamilyModel(base):
-    __tablename__ = 'user_family'
+    __tablename__ = "user_family"
 
     id = Column(Integer, nullable=False, primary_key=True)
     id_user = Column(Integer, ForeignKey(UserModel.id), nullable=False)
@@ -16,5 +16,7 @@ class UserFamilyModel(base):
     userRole = Column(Integer, nullable=False)  # 0:father | 1:mother | 2:uncle | 3:aunt
     isDeleted = Column(Boolean, nullable=False, default=False)
 
-    family_relation = relationship('FamilyModel', foreign_keys='UserFamilyModel.id_family')
-    user_relation = relationship('UserModel', foreign_keys='UserFamilyModel.id_user')
+    family_relation = relationship(
+        "FamilyModel", foreign_keys="UserFamilyModel.id_family"
+    )
+    user_relation = relationship("UserModel", foreign_keys="UserFamilyModel.id_user")

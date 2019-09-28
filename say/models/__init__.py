@@ -4,4 +4,3 @@ from sqlalchemy.orm import relationship
 
 
 base = declarative_base()
-

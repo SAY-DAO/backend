@@ -9,25 +9,30 @@ Dashboard API
 
 
 class DashboardDataFeed(Resource):
-    @swag_from('./docs/dashboard/feed.yml')
+    @swag_from("./docs/dashboard/feed.yml")
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            user = session.query(UserModel).filter_by(id=user_id).filter_by(isDeleted=False).first()
+            user = (
+                session.query(UserModel)
+                .filter_by(id=user_id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
 
             data = get_user_by_id(session, user_id)
             needs = get_user_needs(session, user, urgent=True)
 
-            data = data[:-1] + ', "GlobalUrgentNeeds": ' + needs + '}'
+            data = data[:-1] + ', "GlobalUrgentNeeds": ' + needs + "}"
 
             resp = Response(data)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'ERROR OCCURRED!'}))
+            resp = Response(json.dumps({"message": "ERROR OCCURRED!"}))
 
         finally:
             session.close()
@@ -38,4 +43,4 @@ class DashboardDataFeed(Resource):
 API URLs 
 """
 
-api.add_resource(DashboardDataFeed, '/api/v2/dashboard/userId=<user_id>')
+api.add_resource(DashboardDataFeed, "/api/v2/dashboard/userId=<user_id>")

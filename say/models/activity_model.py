@@ -7,7 +7,7 @@ Activity Model
 
 
 class ActivityModel(base):
-    __tablename__ = 'activity'
+    __tablename__ = "activity"
 
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
     id_social_worker = Column(Integer, ForeignKey(SocialWorkerModel.id), nullable=False)
@@ -21,4 +21,6 @@ class ActivityModel(base):
     # 17: update need type (category)    27: add receipt                 37: delete receipt
     # 18: update receipt
 
-    social_worker = relationship('SocialWorkerModel', foreign_keys='ActivityModel.id_social_worker')
+    social_worker = relationship(
+        "SocialWorkerModel", foreign_keys="ActivityModel.id_social_worker"
+    )

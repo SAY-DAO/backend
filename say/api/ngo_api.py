@@ -7,11 +7,11 @@ Activity APIs
 
 
 class GetAllNgo(Resource):
-    @swag_from('./docs/ngo/all.yml')
+    @swag_from("./docs/ngo/all.yml")
     def get(self):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
             base_ngos = session.query(NgoModel).filter_by(isDeleted=False).all()
@@ -25,7 +25,7 @@ class GetAllNgo(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'msg': 'sth is wrong!'}))
+            resp = Response(json.dumps({"msg": "sth is wrong!"}))
 
         finally:
             session.close()
@@ -33,11 +33,11 @@ class GetAllNgo(Resource):
 
 
 class AddNgo(Resource):
-    @swag_from('./docs/ngo/add.yml')
+    @swag_from("./docs/ngo/add.yml")
     def post(self):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
             if len(session.query(NgoModel).all()):
@@ -46,45 +46,55 @@ class AddNgo(Resource):
             else:
                 current_id = 1
 
-            path = 'some wrong url'
-            if 'logoUrl' not in request.files:
-                resp = Response(json.dumps({'message': 'ERROR OCCURRED IN FILE UPLOADING!'}))
+            path = "some wrong url"
+            if "logoUrl" not in request.files:
+                resp = Response(
+                    json.dumps({"message": "ERROR OCCURRED IN FILE UPLOADING!"})
+                )
                 session.close()
                 return resp
 
-            file = request.files['logoUrl']
-            if file.filename == '':
-                resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
+            file = request.files["logoUrl"]
+            if file.filename == "":
+                resp = Response(
+                    json.dumps({"message": "ERROR OCCURRED --> EMPTY FILE!"})
+                )
                 session.close()
                 return resp
 
             if file and allowed_image(file.filename):
                 # filename = secure_filename(file.filename)
-                filename = format(current_id, '03d') + '.' + file.filename.split('.')[-1]
+                filename = (
+                    format(current_id, "03d") + "." + file.filename.split(".")[-1]
+                )
 
-                temp_logo_path = os.path.join(app.config['UPLOAD_FOLDER'], str(current_id) + '-ngo')
+                temp_logo_path = os.path.join(
+                    app.config["UPLOAD_FOLDER"], str(current_id) + "-ngo"
+                )
 
                 if not os.path.isdir(temp_logo_path):
                     os.mkdir(temp_logo_path)
 
-                path = os.path.join(temp_logo_path, str(current_id) + '-logo_' + filename)
+                path = os.path.join(
+                    temp_logo_path, str(current_id) + "-logo_" + filename
+                )
 
                 file.save(path)
 
-                resp = Response(json.dumps({'message': 'WELL DONE!'}))
+                resp = Response(json.dumps({"message": "WELL DONE!"}))
 
             logo_url = path
-            country = int(request.form['country'])
-            city = int(request.form['city'])
-            coordinator_id = int(request.form['coordinatorId'])
-            name = request.form['name']
-            postal_address = request.form['postalAddress']
-            email_address = request.form['emailAddress']
-            phone_number = request.form['phoneNumber']
-            balance = int(request.form['balance'])
+            country = int(request.form["country"])
+            city = int(request.form["city"])
+            coordinator_id = int(request.form["coordinatorId"])
+            name = request.form["name"]
+            postal_address = request.form["postalAddress"]
+            email_address = request.form["emailAddress"]
+            phone_number = request.form["phoneNumber"]
+            balance = int(request.form["balance"])
 
-            if 'website' in request.form.keys():
-                website = request.form['website']
+            if "website" in request.form.keys():
+                website = request.form["website"]
             else:
                 website = None
 
@@ -109,12 +119,15 @@ class AddNgo(Resource):
             session.add(new_ngo)
             session.commit()
 
-            resp = Response(json.dumps({'msg': 'ngo is created'}), status=200,
-                            headers={'Access-Control-Allow-Origin': '*'})
+            resp = Response(
+                json.dumps({"msg": "ngo is created"}),
+                status=200,
+                headers={"Access-Control-Allow-Origin": "*"},
+            )
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'msg': 'sth is wrong!'}))
+            resp = Response(json.dumps({"msg": "sth is wrong!"}))
 
         finally:
             session.close()
@@ -122,17 +135,22 @@ class AddNgo(Resource):
 
 
 class GetNgoById(Resource):
-    @swag_from('./docs/ngo/id.yml')
+    @swag_from("./docs/ngo/id.yml")
     def get(self, ngo_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            base_ngo = session.query(NgoModel).filter_by(id=ngo_id).filter_by(isDeleted=False).first()
+            base_ngo = (
+                session.query(NgoModel)
+                .filter_by(id=ngo_id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
 
             if not base_ngo:
-                resp = Response(json.dumps({'msg': 'sth went wrong!'}))
+                resp = Response(json.dumps({"msg": "sth went wrong!"}))
                 session.close()
                 return resp
 
@@ -144,7 +162,7 @@ class GetNgoById(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'msg': 'sth is wrong!'}))
+            resp = Response(json.dumps({"msg": "sth is wrong!"}))
 
         finally:
             session.close()
@@ -152,19 +170,24 @@ class GetNgoById(Resource):
 
 
 class GetNgoByCoordinatorId(Resource):
-    @swag_from('./docs/ngo/coordinator.yml')
+    @swag_from("./docs/ngo/coordinator.yml")
     def get(self, coordinator_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            base_ngos = session.query(NgoModel).filter_by(coordinatorId=coordinator_id).filter_by(isDeleted=False).all()
+            base_ngos = (
+                session.query(NgoModel)
+                .filter_by(coordinatorId=coordinator_id)
+                .filter_by(isDeleted=False)
+                .all()
+            )
 
             fetch = {}
             for n in base_ngos:
                 if not n:
-                    resp = Response(json.dumps({'msg': 'sth went wrong!'}))
+                    resp = Response(json.dumps({"msg": "sth went wrong!"}))
                     session.close()
                     return resp
 
@@ -175,7 +198,7 @@ class GetNgoByCoordinatorId(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'msg': 'sth is wrong!'}), status=500)
+            resp = Response(json.dumps({"msg": "sth is wrong!"}), status=500)
 
         finally:
             session.close()
@@ -183,19 +206,24 @@ class GetNgoByCoordinatorId(Resource):
 
 
 class GetNgoByName(Resource):
-    @swag_from('./docs/ngo/name.yml')
+    @swag_from("./docs/ngo/name.yml")
     def get(self, name):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            base_ngos = session.query(NgoModel).filter_by(name=name).filter_by(isDeleted=False).all()
+            base_ngos = (
+                session.query(NgoModel)
+                .filter_by(name=name)
+                .filter_by(isDeleted=False)
+                .all()
+            )
 
             fetch = {}
             for n in base_ngos:
                 if not n:
-                    resp = Response(json.dumps({'msg': 'sth is wrong!'}), status=500)
+                    resp = Response(json.dumps({"msg": "sth is wrong!"}), status=500)
                     session.close()
                     return resp
 
@@ -206,7 +234,7 @@ class GetNgoByName(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'msg': 'sth is wrong!'}), status=500)
+            resp = Response(json.dumps({"msg": "sth is wrong!"}), status=500)
 
         finally:
             session.close()
@@ -214,19 +242,24 @@ class GetNgoByName(Resource):
 
 
 class GetNgoByWebsite(Resource):
-    @swag_from('./docs/ngo/website.yml')
+    @swag_from("./docs/ngo/website.yml")
     def get(self, website):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            base_ngos = session.query(NgoModel).filter_by(website=website).filter_by(isDeleted=False).all()
+            base_ngos = (
+                session.query(NgoModel)
+                .filter_by(website=website)
+                .filter_by(isDeleted=False)
+                .all()
+            )
 
             fetch = {}
             for n in base_ngos:
                 if not n:
-                    resp = Response(json.dumps({'msg': 'sth is wrong!'}), status=500)
+                    resp = Response(json.dumps({"msg": "sth is wrong!"}), status=500)
                     session.close()
                     return resp
 
@@ -237,7 +270,7 @@ class GetNgoByWebsite(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'msg': 'sth is wrong!'}), status=500)
+            resp = Response(json.dumps({"msg": "sth is wrong!"}), status=500)
 
         finally:
             session.close()
@@ -245,20 +278,24 @@ class GetNgoByWebsite(Resource):
 
 
 class GetNgoByPhoneNumber(Resource):
-    @swag_from('./docs/ngo/phone.yml')
+    @swag_from("./docs/ngo/phone.yml")
     def get(self, phone_number):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            base_ngos = session.query(NgoModel).filter(NgoModel.phoneNumber.contains(phone_number)).filter_by(
-                isDeleted=False).all()
+            base_ngos = (
+                session.query(NgoModel)
+                .filter(NgoModel.phoneNumber.contains(phone_number))
+                .filter_by(isDeleted=False)
+                .all()
+            )
 
             fetch = {}
             for n in base_ngos:
                 if not n:
-                    resp = Response(json.dumps({'msg': 'sth is wrong!'}), status=500)
+                    resp = Response(json.dumps({"msg": "sth is wrong!"}), status=500)
                     session.close()
                     return resp
 
@@ -269,7 +306,7 @@ class GetNgoByPhoneNumber(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'msg': 'sth is wrong!'}), status=500)
+            resp = Response(json.dumps({"msg": "sth is wrong!"}), status=500)
 
         finally:
             session.close()
@@ -277,17 +314,24 @@ class GetNgoByPhoneNumber(Resource):
 
 
 class DeletePhoneNumber(Resource):
-    @swag_from('./docs/ngo/delete_phone.yml')
+    @swag_from("./docs/ngo/delete_phone.yml")
     def patch(self, ngo_id, phone_number):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            base_ngo = session.query(NgoModel).filter_by(id=ngo_id).filter_by(isDeleted=False).first()
+            base_ngo = (
+                session.query(NgoModel)
+                .filter_by(id=ngo_id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
 
-            base_ngo.phoneNumber = base_ngo.phoneNumber.replace(phone_number, '').replace(',,', ',')
-            if base_ngo.phoneNumber[-1] == ',':
+            base_ngo.phoneNumber = base_ngo.phoneNumber.replace(
+                phone_number, ""
+            ).replace(",,", ",")
+            if base_ngo.phoneNumber[-1] == ",":
                 base_ngo.phoneNumber = base_ngo.phoneNumber[:-1]
 
             session.commit()
@@ -296,7 +340,7 @@ class DeletePhoneNumber(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'msg': 'sth is wrong!'}), status=500)
+            resp = Response(json.dumps({"msg": "sth is wrong!"}), status=500)
 
         finally:
             session.close()
@@ -304,66 +348,79 @@ class DeletePhoneNumber(Resource):
 
 
 class UpdateNgo(Resource):
-    @swag_from('./docs/ngo/update.yml')
+    @swag_from("./docs/ngo/update.yml")
     def patch(self, ngo_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            base_ngo = session.query(NgoModel).filter_by(id=ngo_id).filter_by(isDeleted=False).first()
+            base_ngo = (
+                session.query(NgoModel)
+                .filter_by(id=ngo_id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
 
-            if 'country' in request.form.keys():
-                base_ngo.country = int(request.form['country'])
+            if "country" in request.form.keys():
+                base_ngo.country = int(request.form["country"])
 
-            if 'city' in request.form.keys():
-                base_ngo.city = int(request.form['city'])
+            if "city" in request.form.keys():
+                base_ngo.city = int(request.form["city"])
 
-            if 'coordinatorId' in request.form.keys():
-                base_ngo.coordinatorId = int(request.form['coordinatorId'])
+            if "coordinatorId" in request.form.keys():
+                base_ngo.coordinatorId = int(request.form["coordinatorId"])
 
-            if 'name' in request.form.keys():
-                base_ngo.name = request.form['name']
+            if "name" in request.form.keys():
+                base_ngo.name = request.form["name"]
 
-            if 'website' in request.form.keys():
-                base_ngo.website = request.form['website']
+            if "website" in request.form.keys():
+                base_ngo.website = request.form["website"]
 
-            if 'postalAddress' in request.form.keys():
-                base_ngo.postalAddress = request.form['postalAddress']
+            if "postalAddress" in request.form.keys():
+                base_ngo.postalAddress = request.form["postalAddress"]
 
-            if 'emailAddress' in request.form.keys():
-                base_ngo.emailAddress = request.form['emailAddress']
+            if "emailAddress" in request.form.keys():
+                base_ngo.emailAddress = request.form["emailAddress"]
 
-            if 'phoneNumber' in request.form.keys():
-                base_ngo.phoneNumber += ',' + str(request.form['phoneNumber'])
+            if "phoneNumber" in request.form.keys():
+                base_ngo.phoneNumber += "," + str(request.form["phoneNumber"])
 
-            if 'balance' in request.form.keys():
-                base_ngo.balance = request.form['balance']
+            if "balance" in request.form.keys():
+                base_ngo.balance = request.form["balance"]
 
-            if 'logoUrl' in request.files.keys():
-                file = request.files['logoUrl']
+            if "logoUrl" in request.files.keys():
+                file = request.files["logoUrl"]
 
-                if file.filename == '':
-                    resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
+                if file.filename == "":
+                    resp = Response(
+                        json.dumps({"message": "ERROR OCCURRED --> EMPTY FILE!"})
+                    )
                     session.close()
                     return resp
 
                 if file and allowed_image(file.filename):
                     # filename = secure_filename(file.filename)
-                    filename = format(base_ngo.id, '03d') + '.' + file.filename.split('.')[-1]
-                    temp_logo_path = os.path.join(app.config['UPLOAD_FOLDER'], str(base_ngo.id) + '-ngo')
+                    filename = (
+                        format(base_ngo.id, "03d") + "." + file.filename.split(".")[-1]
+                    )
+                    temp_logo_path = os.path.join(
+                        app.config["UPLOAD_FOLDER"], str(base_ngo.id) + "-ngo"
+                    )
 
                     for obj in os.listdir(temp_logo_path):
-                        check = str(base_ngo.id) + '-logo'
+                        check = str(base_ngo.id) + "-logo"
 
-                        if obj.split('_')[0] == check:
+                        if obj.split("_")[0] == check:
                             os.remove(os.path.join(temp_logo_path, obj))
 
-                    base_ngo.logoUrl = os.path.join(temp_logo_path, str(base_ngo.id) + '-logo_' + filename)
+                    base_ngo.logoUrl = os.path.join(
+                        temp_logo_path, str(base_ngo.id) + "-logo_" + filename
+                    )
 
                     file.save(base_ngo.logoUrl)
 
-                    resp = Response(json.dumps({'message': 'WELL DONE!'}))
+                    resp = Response(json.dumps({"message": "WELL DONE!"}))
 
             base_ngo.lastUpdateDate = datetime.now()
 
@@ -374,31 +431,38 @@ class UpdateNgo(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'error'}), status=500)
+            resp = Response(json.dumps({"message": "error"}), status=500)
         finally:
             session.close()
             return resp
 
 
 class DeleteNgo(Resource):
-    @swag_from('./docs/ngo/delete.yml')
+    @swag_from("./docs/ngo/delete.yml")
     def patch(self, ngo_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            base_ngo = session.query(NgoModel).filter_by(id=ngo_id).filter_by(isDeleted=False).first()
+            base_ngo = (
+                session.query(NgoModel)
+                .filter_by(id=ngo_id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
 
             base_ngo.isDeleted = True
 
             session.commit()
 
-            resp = Response(json.dumps({'msg': 'ngo deleted successfully!'}), status=200)
+            resp = Response(
+                json.dumps({"msg": "ngo deleted successfully!"}), status=200
+            )
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'error'}), status=500)
+            resp = Response(json.dumps({"message": "error"}), status=500)
 
         finally:
             session.close()
@@ -406,24 +470,31 @@ class DeleteNgo(Resource):
 
 
 class DeactivateNgo(Resource):
-    @swag_from('./docs/ngo/deactivate.yml')
+    @swag_from("./docs/ngo/deactivate.yml")
     def patch(self, ngo_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            base_ngo = session.query(NgoModel).filter_by(id=ngo_id).filter_by(isActive=True).filter_by(
-                isDeleted=False).first()
+            base_ngo = (
+                session.query(NgoModel)
+                .filter_by(id=ngo_id)
+                .filter_by(isActive=True)
+                .filter_by(isDeleted=False)
+                .first()
+            )
 
             base_ngo.isActive = False
 
             session.commit()
-            resp = Response(json.dumps({'msg': 'ngo deactivated successfully!'}), status=200)
+            resp = Response(
+                json.dumps({"msg": "ngo deactivated successfully!"}), status=200
+            )
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'error'}), status=500)
+            resp = Response(json.dumps({"message": "error"}), status=500)
 
         finally:
             session.close()
@@ -431,24 +502,31 @@ class DeactivateNgo(Resource):
 
 
 class ActivateNgo(Resource):
-    @swag_from('./docs/ngo/activate.yml')
+    @swag_from("./docs/ngo/activate.yml")
     def patch(self, ngo_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            base_ngo = session.query(NgoModel).filter_by(id=ngo_id).filter_by(isActive=False).filter_by(
-                isDeleted=False).first()
+            base_ngo = (
+                session.query(NgoModel)
+                .filter_by(id=ngo_id)
+                .filter_by(isActive=False)
+                .filter_by(isDeleted=False)
+                .first()
+            )
 
             base_ngo.isActive = True
 
             session.commit()
-            resp = Response(json.dumps({'msg': 'ngo activated successfully!'}), status=200)
+            resp = Response(
+                json.dumps({"msg": "ngo activated successfully!"}), status=200
+            )
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'error'}), status=500)
+            resp = Response(json.dumps({"message": "error"}), status=500)
 
         finally:
             session.close()
@@ -459,15 +537,15 @@ class ActivateNgo(Resource):
 API URLs
 """
 
-api.add_resource(GetAllNgo, '/api/v2/ngo/all')
-api.add_resource(AddNgo, '/api/v2/ngo/add')
-api.add_resource(GetNgoById, '/api/v2/ngo/ngoId=<ngo_id>')
-api.add_resource(GetNgoByCoordinatorId, '/api/v2/ngo/coordinatorId=<coordinator_id>')
-api.add_resource(GetNgoByName, '/api/v2/ngo/name=<name>')
-api.add_resource(GetNgoByWebsite, '/api/v2/ngo/website=<website>')
-api.add_resource(GetNgoByPhoneNumber, '/api/v2/ngo/phone=<phone_number>')
-api.add_resource(DeletePhoneNumber, '/api/v2/ngo/ngoId=<ngo_id>&phone=<phone_number>')
-api.add_resource(UpdateNgo, '/api/v2/ngo/update/ngoId=<ngo_id>')
-api.add_resource(DeleteNgo, '/api/v2/ngo/delete/ngoId=<ngo_id>')
-api.add_resource(DeactivateNgo, '/api/v2/ngo/deactivate/ngoId=<ngo_id>')
-api.add_resource(ActivateNgo, '/api/v2/ngo/activate/ngoId=<ngo_id>')
+api.add_resource(GetAllNgo, "/api/v2/ngo/all")
+api.add_resource(AddNgo, "/api/v2/ngo/add")
+api.add_resource(GetNgoById, "/api/v2/ngo/ngoId=<ngo_id>")
+api.add_resource(GetNgoByCoordinatorId, "/api/v2/ngo/coordinatorId=<coordinator_id>")
+api.add_resource(GetNgoByName, "/api/v2/ngo/name=<name>")
+api.add_resource(GetNgoByWebsite, "/api/v2/ngo/website=<website>")
+api.add_resource(GetNgoByPhoneNumber, "/api/v2/ngo/phone=<phone_number>")
+api.add_resource(DeletePhoneNumber, "/api/v2/ngo/ngoId=<ngo_id>&phone=<phone_number>")
+api.add_resource(UpdateNgo, "/api/v2/ngo/update/ngoId=<ngo_id>")
+api.add_resource(DeleteNgo, "/api/v2/ngo/delete/ngoId=<ngo_id>")
+api.add_resource(DeactivateNgo, "/api/v2/ngo/deactivate/ngoId=<ngo_id>")
+api.add_resource(ActivateNgo, "/api/v2/ngo/activate/ngoId=<ngo_id>")

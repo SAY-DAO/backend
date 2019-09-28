@@ -6,7 +6,7 @@ NGO Model
 
 
 class NgoModel(base):
-    __tablename__ = 'ngo'
+    __tablename__ = "ngo"
 
     id = Column(Integer, primary_key=True, nullable=False, unique=True)
     country = Column(Integer, nullable=False)
