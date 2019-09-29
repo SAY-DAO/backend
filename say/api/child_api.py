@@ -1547,7 +1547,7 @@ class GetMigratedChildHistory(Resource):
 
 
 """
-API URLs 
+API URLs
 """
 
 api.add_resource(GetChildById, "/api/v2/child/childId=<child_id>&confirm=<confirm>")

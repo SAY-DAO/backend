@@ -1,5 +1,5 @@
 {
-    "dbUrl" : "postgresql://postgres:admin@localhost:5432/SAY_Test",
+    "dbUrl" : "postgresql://postgres:postgres@localhost/say_test",
 
     "MAIL_SERVER": "smtp.gmail.com",
     "MAIL_USERNAME": "afpp94",

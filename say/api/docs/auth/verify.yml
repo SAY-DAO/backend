@@ -1,0 +1,29 @@
+Verify API
+---
+
+tags:
+  - Auth API
+
+parameters:
+  - in: path
+    name: user_id
+    required: true
+    type: integer
+
+  - in: body
+    name: verify
+    required: true
+    schema:
+      properties:
+        verifyCode: 
+          type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: verify_model

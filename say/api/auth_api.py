@@ -1,4 +1,8 @@
+from datetime import datetime, timedelta
+from random import randint
+
 from say.models.user_model import UserModel
+from say.models.verify_model import VerifyModel
 from hashlib import md5
 from flask_mail import Message
 
@@ -8,6 +12,14 @@ import os
 """
 Authentication APIs
 """
+
+def send_verify_email(email, verify_code):
+
+    verify_mail = Message(
+        recipients=[email],
+        body=str(verify_code),
+    )
+    mail.send(verify_mail)
 
 
 class CheckUser(Resource):
@@ -114,9 +126,16 @@ class RegisterUser(Resource):
                     flagUrl="",
                     token=token,
                 )
-
                 session.add(new_user)
+
+                verify = VerifyModel(
+                    user=new_user,
+                    code=randint(1000, 9999)
+                )
+                session.add(verify)
+
                 session.commit()
+                send_verify_email(new_user.emailAddress, verify.code)
 
                 resp = Response(
                     json.dumps(
@@ -136,10 +155,6 @@ class RegisterUser(Resource):
 
 class Login(Resource):
     def post(self):
-        msg = Message(subject="Hello",
-                      recipients=["fatahzade@gmail.com"], # replace with your email for testing
-                      body="This is a test email I sent with Gmail and Python!")
-        mail.send(msg)
         session_maker = sessionmaker(db)
         session = session_maker()
         resp = {"message": "Something is Wrong!"}
@@ -222,26 +237,91 @@ class Logout(Resource):
             return resp
 
 
-# class Verify(Resource):
-#    def post(self , user_id):
-#        session_maker = sessionmaker(db)
-#        session = session_maker()
-#        resp = {'message': 'Something is Wrong'}
-#
-#        try :
-#            user = session.query(UserModel).filter_by(id = user_id).first()
-#            user.token = ''
-#            session.commit()
-#            resp = Response(json.dumps({'message' : 'user is successfully logged out.'}) , status = 200)
-#
-#        except Exception as e:
-#            print(e)
-#            resp = Response(json.dumps({'message': 'Something is Wrong!'}) , status = 500)
-#
-#        finally :
-#            session.close()
-#            return resp
-#
+class Verify(Resource):
+    decorators = [limiter.limit("5/minute")]
+
+    @swag_from("./docs/auth/verify.yml")
+    def post(self , user_id):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = {"message": "Something is Wrong"}
+
+        try:
+            user = session.query(UserModel).filter_by(id = user_id).first()
+            if user.isVerified:
+                resp = Response(
+                    json.dumps({"message" : "User is already verified."}),
+                    status = 200,
+                )
+                return
+
+            verify = session.query(VerifyModel).filter_by(id_user = user_id).first()
+            if verify is None or "verifyCode" not in request.json.keys() \
+                    or verify.expiredAt < datetime.utcnow() \
+                    or verify.code != request.json["verifyCode"]:
+                resp =  Response(
+                    json.dumps({"message": "Something is Wrong!"}),
+                    status = 500,
+                )
+                return
+
+            user.isVerified = True;
+            session.commit()
+            resp = Response(
+                json.dumps({"message": "User successfully verified."}),
+                status = 200,
+            )
+
+        except Exception as e:
+            print(e)
+            resp = Response(json.dumps({"essage": "Something is Wrong!"}) , status = 500)
+
+        finally :
+            session.close()
+            return resp
+
+
+class VerifyResend(Resource):
+    decorators = [limiter.limit("2/minute")]
+
+    @swag_from("./docs/auth/verify-resend.yml")
+    def post(self , user_id):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = {"message": "Something is Wrong"}
+
+        try:
+            user = session.query(UserModel).filter_by(id = user_id).first()
+            if user.isVerified:
+                resp = Response(
+                    json.dumps({"message" : "User is already verified."}),
+                    status = 200,
+                )
+                return
+
+            verify = session.query(VerifyModel).filter_by(id_user = user_id).first()
+            if verify is None:
+                verify = VerifyModel(
+                    user=user,
+                )
+                session.add(verify)
+            verify.code = randint(1000, 9999)
+            verify.expireAt = datetime.utcnow() + timedelta(minutes=5)
+
+            session.commit()
+            send_verify_email(user.emailAddress, verify.code)
+            resp = Response(
+                json.dumps({"message": "Verify Email Sent."}),
+                status = 200,
+            )
+
+        except Exception as e:
+            print(e)
+            resp = Response(json.dumps({"essage": "Something is Wrong!"}) , status = 500)
+
+        finally :
+            session.close()
+            return resp
 """
 API URLs
 """
@@ -249,5 +329,6 @@ API URLs
 
 api.add_resource(CheckUser, "/api/v2/auth/checkUserName")
 api.add_resource(RegisterUser, "/api/v2/auth/register")
-api.add_resource(Login, "/api/v2/auth/login")
 api.add_resource(Logout, "/api/v2/auth/logout/userid=<user_id>")
+api.add_resource(Verify, "/api/v2/auth/verify/userid=<user_id>")
+api.add_resource(VerifyResend, "/api/v2/auth/verify/resend/userid=<user_id>")

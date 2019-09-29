@@ -21,6 +21,7 @@ class UserModel(base):
     city = Column(Integer, nullable=False)  # 1:tehran | 2:karaj
     country = Column(Integer, nullable=False)
     isDeleted = Column(Boolean, nullable=False, default=False)
+    isVerified = Column(Boolean, nullable=False, default=False)
     createdAt = Column(Date, nullable=False)
     lastUpdate = Column(Date, nullable=False)
     birthDate = Column(Date, nullable=True)
