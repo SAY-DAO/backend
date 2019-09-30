@@ -250,10 +250,11 @@ class Verify(Resource):
                 return
 
             verify = session.query(VerifyModel).filter_by(id_user=user_id).first()
+            from pudb import set_trace; set_trace()
             if (
                 verify is None
                 or "verifyCode" not in request.json.keys()
-                or verify.expiredAt < datetime.utcnow()
+                or verify.expire_at < datetime.utcnow()
                 or verify.code != request.json["verifyCode"]
             ):
                 resp = Response(
