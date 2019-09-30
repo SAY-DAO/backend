@@ -13,12 +13,10 @@ import os
 Authentication APIs
 """
 
+
 def send_verify_email(email, verify_code):
 
-    verify_mail = Message(
-        recipients=[email],
-        body=str(verify_code),
-    )
+    verify_mail = Message(recipients=[email], body=str(verify_code))
     mail.send(verify_mail)
 
 
@@ -128,10 +126,7 @@ class RegisterUser(Resource):
                 )
                 session.add(new_user)
 
-                verify = VerifyModel(
-                    user=new_user,
-                    code=randint(1000, 9999)
-                )
+                verify = VerifyModel(user=new_user, code=randint(100000, 999999))
                 session.add(verify)
 
                 session.commit()
@@ -241,42 +236,42 @@ class Verify(Resource):
     decorators = [limiter.limit("5/minute")]
 
     @swag_from("./docs/auth/verify.yml")
-    def post(self , user_id):
+    def post(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
         resp = {"message": "Something is Wrong"}
 
         try:
-            user = session.query(UserModel).filter_by(id = user_id).first()
+            user = session.query(UserModel).filter_by(id=user_id).first()
             if user.isVerified:
                 resp = Response(
-                    json.dumps({"message" : "User is already verified."}),
-                    status = 200,
+                    json.dumps({"message": "User is already verified."}), status=200
                 )
                 return
 
-            verify = session.query(VerifyModel).filter_by(id_user = user_id).first()
-            if verify is None or "verifyCode" not in request.json.keys() \
-                    or verify.expiredAt < datetime.utcnow() \
-                    or verify.code != request.json["verifyCode"]:
-                resp =  Response(
-                    json.dumps({"message": "Something is Wrong!"}),
-                    status = 500,
+            verify = session.query(VerifyModel).filter_by(id_user=user_id).first()
+            if (
+                verify is None
+                or "verifyCode" not in request.json.keys()
+                or verify.expiredAt < datetime.utcnow()
+                or verify.code != request.json["verifyCode"]
+            ):
+                resp = Response(
+                    json.dumps({"message": "Something is Wrong!"}), status=500
                 )
                 return
 
-            user.isVerified = True;
+            user.isVerified = True
             session.commit()
             resp = Response(
-                json.dumps({"message": "User successfully verified."}),
-                status = 200,
+                json.dumps({"message": "User successfully verified."}), status=200
             )
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"essage": "Something is Wrong!"}) , status = 500)
+            resp = Response(json.dumps({"message": "Something is Wrong!"}), status=500)
 
-        finally :
+        finally:
             session.close()
             return resp
 
@@ -285,43 +280,39 @@ class VerifyResend(Resource):
     decorators = [limiter.limit("2/minute")]
 
     @swag_from("./docs/auth/verify-resend.yml")
-    def post(self , user_id):
+    def post(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
         resp = {"message": "Something is Wrong"}
 
         try:
-            user = session.query(UserModel).filter_by(id = user_id).first()
+            user = session.query(UserModel).filter_by(id=user_id).first()
             if user.isVerified:
                 resp = Response(
-                    json.dumps({"message" : "User is already verified."}),
-                    status = 200,
+                    json.dumps({"message": "User is already verified."}), status=200
                 )
                 return
 
-            verify = session.query(VerifyModel).filter_by(id_user = user_id).first()
+            verify = session.query(VerifyModel).filter_by(id_user=user_id).first()
             if verify is None:
-                verify = VerifyModel(
-                    user=user,
-                )
+                verify = VerifyModel(user=user)
                 session.add(verify)
-            verify.code = randint(1000, 9999)
+            verify.code = randint(100000, 999999)
             verify.expireAt = datetime.utcnow() + timedelta(minutes=5)
 
             session.commit()
             send_verify_email(user.emailAddress, verify.code)
-            resp = Response(
-                json.dumps({"message": "Verify Email Sent."}),
-                status = 200,
-            )
+            resp = Response(json.dumps({"message": "Verify Email Sent."}), status=200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"essage": "Something is Wrong!"}) , status = 500)
+            resp = Response(json.dumps({"message": "Something is Wrong!"}), status=500)
 
-        finally :
+        finally:
             session.close()
             return resp
+
+
 """
 API URLs
 """

@@ -12,6 +12,7 @@ def expire_at():
 Verify Model
 """
 
+
 class VerifyModel(base):
     __tablename__ = "verify"
 
@@ -21,5 +22,3 @@ class VerifyModel(base):
     expire_at = Column(DateTime, nullable=False, default=expire_at)
 
     user = relationship("UserModel", foreign_keys=id_user)
-
-
