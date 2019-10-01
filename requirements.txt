@@ -3,6 +3,8 @@ Flask
 Flask-RESTful
 Flask-SQLAlchemy
 flask-cors
+Flask-Mail
+flask_limiter
 SQLAlchemy
 psycopg2
 requests

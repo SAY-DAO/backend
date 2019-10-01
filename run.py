@@ -1,3 +1,5 @@
+from flask_mail import Mail, Message
+
 from say.api.user_api import *
 from say.api.need_api import *
 from say.api.activity_api import *
@@ -11,4 +13,4 @@ from say.api.social_worker_api import *
 from say.api.child_api import *
 
 if __name__ == "__main__":
-    app.run(debug=True , host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0")

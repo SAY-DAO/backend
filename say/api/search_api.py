@@ -28,40 +28,75 @@ def list_bias(array: list):
 
 
 class GetRandomSearchResult(Resource):
-    @swag_from('./docs/search/random.yml')
+    @swag_from("./docs/search/random.yml")
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = Response(json.dumps({'message': 'major error occurred!'}), status=500)
+        resp = Response(json.dumps({"message": "major error occurred!"}), status=500)
 
         try:
-            other_families = session.query(UserFamilyModel).filter(UserFamilyModel.id_user != user_id).filter_by(
-                isDeleted=False).all()
-            other_children = [family.family_relation.id_child for family in other_families]
+            other_families = (
+                session.query(UserFamilyModel)
+                .filter(UserFamilyModel.id_user != user_id)
+                .filter_by(isDeleted=False)
+                .all()
+            )
+            other_children = [
+                family.family_relation.id_child for family in other_families
+            ]
 
-            children = session.query(ChildModel).filter(
-                or_(ChildModel.id.in_(other_children), ChildModel.sayFamilyCount == 0)).filter_by(
-                isDeleted=False).filter_by(isMigrated=False).all()
+            children = (
+                session.query(ChildModel)
+                .filter(
+                    or_(
+                        ChildModel.id.in_(other_children),
+                        ChildModel.sayFamilyCount == 0,
+                    )
+                )
+                .filter_by(isDeleted=False)
+                .filter_by(isMigrated=False)
+                .all()
+            )
 
             search_data, index = [], []
             for child in children:
                 if not child.isConfirmed:
                     continue
 
-                needs = session.query(ChildNeedModel).filter_by(id_child=child.id).filter_by(isDeleted=False).all()
+                needs = (
+                    session.query(ChildNeedModel)
+                    .filter_by(id_child=child.id)
+                    .filter_by(isDeleted=False)
+                    .all()
+                )
                 need_amount = len(needs)
 
-                family = session.query(FamilyModel).filter_by(isDeleted=False).filter_by(id_child=child.id).first()
-                members = session.query(UserFamilyModel).filter_by(id_family=family.id).filter_by(isDeleted=False).all()
+                family = (
+                    session.query(FamilyModel)
+                    .filter_by(isDeleted=False)
+                    .filter_by(id_child=child.id)
+                    .first()
+                )
+                members = (
+                    session.query(UserFamilyModel)
+                    .filter_by(id_family=family.id)
+                    .filter_by(isDeleted=False)
+                    .all()
+                )
 
-                family_res = '{'
+                family_res = "{"
                 for member in members:
-                    user = session.query(UserModel).filter_by(isDeleted=False).filter_by(id=member.id_user).first()
+                    user = (
+                        session.query(UserModel)
+                        .filter_by(isDeleted=False)
+                        .filter_by(id=member.id_user)
+                        .first()
+                    )
                     user_data = obj_to_dict(user)
-                    user_data['Role'] = member.userRole
+                    user_data["Role"] = member.userRole
                     family_res += f'"{str(user.id)}": {utf8_response(user_data)}, '
 
-                child_family = family_res[:-2] + '}' if len(family_res) != 1 else '{}'
+                child_family = family_res[:-2] + "}" if len(family_res) != 1 else "{}"
 
                 child_data = get_child_by_id(session, child.id)
                 child_data = child_data[:-1] + f', "ChildFamily": {child_family}{"}"}'
@@ -77,13 +112,13 @@ class GetRandomSearchResult(Resource):
             search_range = sum(search_data_temp)
             r = randrange(search_range + 1)
             for i in range(len(search_data_temp)):
-                if r <= sum(search_data_temp[:i + 1]):
+                if r <= sum(search_data_temp[: i + 1]):
                     resp = Response(out[i])
                     break
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
+            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
 
         finally:
             session.close()
@@ -91,40 +126,75 @@ class GetRandomSearchResult(Resource):
 
 
 class GetSayBrainSearchResult(Resource):
-    @swag_from('./docs/search/brain.yml')
+    @swag_from("./docs/search/brain.yml")
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = Response(json.dumps({'message': 'major error occurred!'}), status=500)
+        resp = Response(json.dumps({"message": "major error occurred!"}), status=500)
 
         try:
-            other_families = session.query(UserFamilyModel).filter(UserFamilyModel.id_user != user_id).filter_by(
-                isDeleted=False).all()
-            other_children = [family.family_relation.id_child for family in other_families]
+            other_families = (
+                session.query(UserFamilyModel)
+                .filter(UserFamilyModel.id_user != user_id)
+                .filter_by(isDeleted=False)
+                .all()
+            )
+            other_children = [
+                family.family_relation.id_child for family in other_families
+            ]
 
-            children = session.query(ChildModel).filter(
-                or_(ChildModel.id.in_(other_children), ChildModel.sayFamilyCount == 0)).filter_by(
-                isDeleted=False).filter_by(isMigrated=False).all()
+            children = (
+                session.query(ChildModel)
+                .filter(
+                    or_(
+                        ChildModel.id.in_(other_children),
+                        ChildModel.sayFamilyCount == 0,
+                    )
+                )
+                .filter_by(isDeleted=False)
+                .filter_by(isMigrated=False)
+                .all()
+            )
 
             search_data, index = [], []
             for child in children:
                 if not child.isConfirmed:
                     continue
 
-                needs = session.query(ChildNeedModel).filter_by(id_child=child.id).filter_by(isDeleted=False).all()
+                needs = (
+                    session.query(ChildNeedModel)
+                    .filter_by(id_child=child.id)
+                    .filter_by(isDeleted=False)
+                    .all()
+                )
                 need_amount = len(needs)
 
-                family = session.query(FamilyModel).filter_by(isDeleted=False).filter_by(id_child=child.id).first()
-                members = session.query(UserFamilyModel).filter_by(id_family=family.id).filter_by(isDeleted=False).all()
+                family = (
+                    session.query(FamilyModel)
+                    .filter_by(isDeleted=False)
+                    .filter_by(id_child=child.id)
+                    .first()
+                )
+                members = (
+                    session.query(UserFamilyModel)
+                    .filter_by(id_family=family.id)
+                    .filter_by(isDeleted=False)
+                    .all()
+                )
 
-                family_res = '{'
+                family_res = "{"
                 for member in members:
-                    user = session.query(UserModel).filter_by(isDeleted=False).filter_by(id=member.id_user).first()
+                    user = (
+                        session.query(UserModel)
+                        .filter_by(isDeleted=False)
+                        .filter_by(id=member.id_user)
+                        .first()
+                    )
                     user_data = obj_to_dict(user)
-                    user_data['Role'] = member.userRole
+                    user_data["Role"] = member.userRole
                     family_res += f'"{str(user.id)}": {utf8_response(user_data)}, '
 
-                child_family = family_res[:-2] + '}' if len(family_res) != 1 else '{}'
+                child_family = family_res[:-2] + "}" if len(family_res) != 1 else "{}"
 
                 child_data = get_child_by_id(session, child.id)
                 child_data = child_data[:-1] + f', "ChildFamily": {child_family}{"}"}'
@@ -140,13 +210,13 @@ class GetSayBrainSearchResult(Resource):
             search_range = sum(search_data_temp)
             r = randrange(search_range + 1)
             for i in range(len(search_data_temp)):
-                if r <= sum(search_data_temp[:i + 1]):
+                if r <= sum(search_data_temp[: i + 1]):
                     resp = Response(out[i])
                     break
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'ERROR OCCURRED'}))
+            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
 
         finally:
             session.close()
@@ -157,5 +227,5 @@ class GetSayBrainSearchResult(Resource):
 API URLs
 """
 
-api.add_resource(GetRandomSearchResult, '/api/v2/search/random/userId=<user_id>')
-api.add_resource(GetSayBrainSearchResult, '/api/v2/search/sayBrain/userId=<user_id>')
+api.add_resource(GetRandomSearchResult, "/api/v2/search/random/userId=<user_id>")
+api.add_resource(GetSayBrainSearchResult, "/api/v2/search/sayBrain/userId=<user_id>")

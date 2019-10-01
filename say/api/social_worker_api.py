@@ -10,25 +10,31 @@ Social Worker APIs
 
 
 class GetAllSocialWorkers(Resource):
-    @swag_from('./docs/social_worker/all.yml')
+    @swag_from("./docs/social_worker/all.yml")
     def get(self):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            social_workers = session.query(SocialWorkerModel).filter_by(isDeleted=False).all()
+            social_workers = (
+                session.query(SocialWorkerModel).filter_by(isDeleted=False).all()
+            )
 
             fetch = {}
             for social_worker in social_workers:
                 data = obj_to_dict(social_worker)
                 fetch[str(social_worker.id)] = data
 
-            resp = Response(utf8_response(fetch, True), status=200, headers={'Access-Control-Allow-Origin': '*'})
+            resp = Response(
+                utf8_response(fetch, True),
+                status=200,
+                headers={"Access-Control-Allow-Origin": "*"},
+            )
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'error'}), status=500)
+            resp = Response(json.dumps({"message": "error"}), status=500)
 
         finally:
             session.close()
@@ -38,175 +44,210 @@ class GetAllSocialWorkers(Resource):
 class AddSocialWorker(Resource):
     panel_users = 0
 
-    @swag_from('./docs/social_worker/add.yml')
+    @swag_from("./docs/social_worker/add.yml")
     def post(self):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
             if len(session.query(SocialWorkerModel).all()):
-                last_obj = session.query(SocialWorkerModel).order_by(SocialWorkerModel.id.desc()).first()
+                last_obj = (
+                    session.query(SocialWorkerModel)
+                    .order_by(SocialWorkerModel.id.desc())
+                    .first()
+                )
                 current_id = last_obj.id + 1
 
             else:
                 current_id = 1
 
-            if 'country' in request.form.keys():
-                country = int(request.form['country'])
+            if "country" in request.form.keys():
+                country = int(request.form["country"])
             else:
                 country = None
 
-            if 'city' in request.form.keys():
-                city = int(request.form['city'])
+            if "city" in request.form.keys():
+                city = int(request.form["city"])
             else:
                 city = None
 
-            if 'firstName' in request.form.keys():
-                first_name = request.form['firstName']
+            if "firstName" in request.form.keys():
+                first_name = request.form["firstName"]
             else:
                 first_name = None
 
-            if 'birthCertificateNumber' in request.form.keys():
-                birth_certificate_number = request.form['birthCertificateNumber']
+            if "birthCertificateNumber" in request.form.keys():
+                birth_certificate_number = request.form["birthCertificateNumber"]
             else:
                 birth_certificate_number = None
 
-            if 'passportNumber' in request.form.keys():
-                passport_number = request.form['passportNumber']
+            if "passportNumber" in request.form.keys():
+                passport_number = request.form["passportNumber"]
             else:
                 passport_number = None
 
-            if 'postalAddress' in request.form.keys():
-                postal_address = request.form['postalAddress']
+            if "postalAddress" in request.form.keys():
+                postal_address = request.form["postalAddress"]
             else:
                 postal_address = None
 
-            if 'bankAccountNumber' in request.form.keys():
-                bank_account_number = request.form['bankAccountNumber']
+            if "bankAccountNumber" in request.form.keys():
+                bank_account_number = request.form["bankAccountNumber"]
             else:
                 bank_account_number = None
 
-            if 'bankAccountShebaNumber' in request.form.keys():
-                bank_account_sheba_number = request.form['bankAccountShebaNumber']
+            if "bankAccountShebaNumber" in request.form.keys():
+                bank_account_sheba_number = request.form["bankAccountShebaNumber"]
             else:
                 bank_account_sheba_number = None
 
-            if 'bankAccountCardNumber' in request.form.keys():
-                bank_account_card_number = request.form['bankAccountCardNumber']
+            if "bankAccountCardNumber" in request.form.keys():
+                bank_account_card_number = request.form["bankAccountCardNumber"]
             else:
                 bank_account_card_number = None
 
-            if 'birthDate' in request.form.keys():
-                birth_date = datetime.strptime(request.form['birthDate'], '%Y-%m-%d')
+            if "birthDate" in request.form.keys():
+                birth_date = datetime.strptime(request.form["birthDate"], "%Y-%m-%d")
             else:
                 birth_date = None
 
-            telegram_id = request.form['telegramId']
-            id_number = request.form['idNumber']
-            id_ngo = int(request.form['id_ngo'])
-            id_type = int(request.form['id_type'])
-            last_name = request.form['lastName']
-            gender = True if request.form['gender'] == 'true' else False
-            phone_number = request.form['phoneNumber']
-            emergency_phone_number = request.form['emergencyPhoneNumber']
-            email_address = request.form['emailAddress']
-            username = request.form['userName']
+            telegram_id = request.form["telegramId"]
+            id_number = request.form["idNumber"]
+            id_ngo = int(request.form["id_ngo"])
+            id_type = int(request.form["id_type"])
+            last_name = request.form["lastName"]
+            gender = True if request.form["gender"] == "true" else False
+            phone_number = request.form["phoneNumber"]
+            emergency_phone_number = request.form["emergencyPhoneNumber"]
+            email_address = request.form["emailAddress"]
+            username = request.form["userName"]
 
             register_date = datetime.now()
             last_update_date = datetime.now()
             last_login_date = datetime.now()
 
             if id_ngo != 0:
-                ngo = session.query(NgoModel).filter_by(isDeleted=False).filter_by(id=id_ngo).first()
-                generated_code = format(id_ngo, '03d') + format(ngo.socialWorkerCount + 1, '03d')
+                ngo = (
+                    session.query(NgoModel)
+                    .filter_by(isDeleted=False)
+                    .filter_by(id=id_ngo)
+                    .first()
+                )
+                generated_code = format(id_ngo, "03d") + format(
+                    ngo.socialWorkerCount + 1, "03d"
+                )
 
                 ngo.socialWorkerCount += 1
                 ngo.currentSocialWorkerCount += 1
 
             else:
                 self.panel_users += 1
-                generated_code = format(id_ngo, '03d') + format(self.panel_users, '03d')
+                generated_code = format(id_ngo, "03d") + format(self.panel_users, "03d")
 
             password = md5(("SayPanel" + str(current_id)).encode()).hexdigest()
 
-            id_card, passport, avatar = 'wrong id card', 'wrong passport', 'wrong avatar'
-            if 'avatarUrl' not in request.files:
-                resp = Response(json.dumps({'message': 'ERROR OCCURRED IN FILE UPLOADING!'}))
+            id_card, passport, avatar = (
+                "wrong id card",
+                "wrong passport",
+                "wrong avatar",
+            )
+            if "avatarUrl" not in request.files:
+                resp = Response(
+                    json.dumps({"message": "ERROR OCCURRED IN FILE UPLOADING!"})
+                )
                 session.close()
                 return resp
 
-            file3 = request.files['avatarUrl']
-            if file3.filename == '':
-                resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY AVATAR!'}))
+            file3 = request.files["avatarUrl"]
+            if file3.filename == "":
+                resp = Response(
+                    json.dumps({"message": "ERROR OCCURRED --> EMPTY AVATAR!"})
+                )
                 session.close()
                 return resp
 
             if file3 and allowed_image(file3.filename):
                 # filename = secure_filename(file3.filename)
-                filename3 = generated_code + '.' + file3.filename.split('.')[-1]
+                filename3 = generated_code + "." + file3.filename.split(".")[-1]
 
-                temp_avatar_path = os.path.join(app.config['UPLOAD_FOLDER'], str(current_id) + '-socialworker')
+                temp_avatar_path = os.path.join(
+                    app.config["UPLOAD_FOLDER"], str(current_id) + "-socialworker"
+                )
 
                 if not os.path.isdir(temp_avatar_path):
                     os.mkdir(temp_avatar_path)
 
-                avatar = os.path.join(temp_avatar_path, str(current_id) + '-avatar_' + filename3)
+                avatar = os.path.join(
+                    temp_avatar_path, str(current_id) + "-avatar_" + filename3
+                )
 
                 file3.save(avatar)
 
-                resp = Response(json.dumps({'message': 'WELL DONE!'}))
+                resp = Response(json.dumps({"message": "WELL DONE!"}))
 
-            if 'idCardUrl' in request.files:
-                file1 = request.files['idCardUrl']
+            if "idCardUrl" in request.files:
+                file1 = request.files["idCardUrl"]
 
-                if file1.filename == '':
-                    resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY ID CARD!'}))
+                if file1.filename == "":
+                    resp = Response(
+                        json.dumps({"message": "ERROR OCCURRED --> EMPTY ID CARD!"})
+                    )
                     session.close()
                     return resp
 
                 if file1 and allowed_image(file1.filename):
                     # filename = secure_filename(file1.filename)
-                    filename1 = generated_code + '.' + file1.filename.split('.')[-1]
+                    filename1 = generated_code + "." + file1.filename.split(".")[-1]
 
-                    temp_idcard_path = os.path.join(app.config['UPLOAD_FOLDER'], str(current_id) + '-socialworker')
+                    temp_idcard_path = os.path.join(
+                        app.config["UPLOAD_FOLDER"], str(current_id) + "-socialworker"
+                    )
 
                     if not os.path.isdir(temp_idcard_path):
                         os.mkdir(temp_idcard_path)
 
-                    id_card = os.path.join(temp_idcard_path, str(current_id) + '-idcard_' + filename1)
+                    id_card = os.path.join(
+                        temp_idcard_path, str(current_id) + "-idcard_" + filename1
+                    )
 
                     file1.save(id_card)
 
-                    resp = Response(json.dumps({'message': 'WELL DONE!'}))
+                    resp = Response(json.dumps({"message": "WELL DONE!"}))
 
                 id_card_url = id_card
 
             else:
                 id_card_url = None
 
-            if 'passportUrl' in request.files:
-                file2 = request.files['passportUrl']
+            if "passportUrl" in request.files:
+                file2 = request.files["passportUrl"]
 
-                if file2.filename == '':
-                    resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY PASSPORT!'}))
+                if file2.filename == "":
+                    resp = Response(
+                        json.dumps({"message": "ERROR OCCURRED --> EMPTY PASSPORT!"})
+                    )
                     session.close()
                     return resp
 
                 if file2 and allowed_image(file2.filename):
                     # filename = secure_filename(file2.filename)
-                    filename2 = str(current_id) + '.' + file2.filename.split('.')[-1]
+                    filename2 = str(current_id) + "." + file2.filename.split(".")[-1]
 
-                    temp_passport_path = os.path.join(app.config['UPLOAD_FOLDER'], str(current_id) + '-socialworker')
+                    temp_passport_path = os.path.join(
+                        app.config["UPLOAD_FOLDER"], str(current_id) + "-socialworker"
+                    )
 
                     if not os.path.isdir(temp_passport_path):
                         os.mkdir(temp_passport_path)
 
-                    passport = os.path.join(temp_passport_path, str(current_id) + '-passport_' + filename2)
+                    passport = os.path.join(
+                        temp_passport_path, str(current_id) + "-passport_" + filename2
+                    )
 
                     file2.save(passport)
 
-                    resp = Response(json.dumps({'message': 'WELL DONE!'}))
+                    resp = Response(json.dumps({"message": "WELL DONE!"}))
 
                 passport_url = passport
 
@@ -249,30 +290,37 @@ class AddSocialWorker(Resource):
             session.add(new_social_worker)
             session.commit()
 
-            resp = Response(json.dumps({'msg': 'social_worker is created'}), status=200,
-                            headers={'Access-Control-Allow-Origin': '*'})
+            resp = Response(
+                json.dumps({"msg": "social_worker is created"}),
+                status=200,
+                headers={"Access-Control-Allow-Origin": "*"},
+            )
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'error'}), status=500)
+            resp = Response(json.dumps({"message": "error"}), status=500)
         finally:
             session.close()
             return resp
 
 
 class GetSocialWorkerById(Resource):
-    @swag_from('./docs/social_worker/id.yml')
+    @swag_from("./docs/social_worker/id.yml")
     def get(self, social_worker_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            social_worker = session.query(SocialWorkerModel).filter_by(id=social_worker_id).filter_by(
-                isDeleted=False).first()
+            social_worker = (
+                session.query(SocialWorkerModel)
+                .filter_by(id=social_worker_id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
 
             if not social_worker:
-                resp = Response(json.dumps({'message': 'null error'}))
+                resp = Response(json.dumps({"message": "null error"}))
                 session.close()
                 return resp
 
@@ -281,7 +329,7 @@ class GetSocialWorkerById(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'error'}), status=500)
+            resp = Response(json.dumps({"message": "error"}), status=500)
 
         finally:
             session.close()
@@ -289,18 +337,22 @@ class GetSocialWorkerById(Resource):
 
 
 class GetSocialWorkerByGeneratedCode(Resource):
-    @swag_from('./docs/social_worker/code.yml')
+    @swag_from("./docs/social_worker/code.yml")
     def get(self, generated_code):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            social_worker = session.query(SocialWorkerModel).filter_by(
-                generatedCode=generated_code).filter_by(isDeleted=False).first()
+            social_worker = (
+                session.query(SocialWorkerModel)
+                .filter_by(generatedCode=generated_code)
+                .filter_by(isDeleted=False)
+                .first()
+            )
 
             if not social_worker:
-                resp = Response(json.dumps({'message': 'error'}))
+                resp = Response(json.dumps({"message": "error"}))
                 session.close()
                 return resp
 
@@ -309,7 +361,7 @@ class GetSocialWorkerByGeneratedCode(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'error'}), status=500)
+            resp = Response(json.dumps({"message": "error"}), status=500)
 
         finally:
             session.close()
@@ -317,19 +369,24 @@ class GetSocialWorkerByGeneratedCode(Resource):
 
 
 class GetSocialWorkerByNgoId(Resource):
-    @swag_from('./docs/social_worker/ngo.yml')
+    @swag_from("./docs/social_worker/ngo.yml")
     def get(self, ngo_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            social_workers = session.query(SocialWorkerModel).filter_by(id_ngo=ngo_id).filter_by(isDeleted=False).all()
+            social_workers = (
+                session.query(SocialWorkerModel)
+                .filter_by(id_ngo=ngo_id)
+                .filter_by(isDeleted=False)
+                .all()
+            )
 
             fetch = {}
             for social_worker in social_workers:
                 if not social_worker:
-                    resp = Response(json.dumps({'message': 'error'}))
+                    resp = Response(json.dumps({"message": "error"}))
                     session.close()
                     return resp
 
@@ -341,7 +398,7 @@ class GetSocialWorkerByNgoId(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'error'}), status=500)
+            resp = Response(json.dumps({"message": "error"}), status=500)
 
         finally:
             session.close()
@@ -349,20 +406,24 @@ class GetSocialWorkerByNgoId(Resource):
 
 
 class GetSocialWorkerByIdNumber(Resource):
-    @swag_from('./docs/social_worker/id_number.yml')
+    @swag_from("./docs/social_worker/id_number.yml")
     def get(self, id_number):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            social_workers = session.query(SocialWorkerModel).filter_by(idNumber=id_number).filter_by(
-                isDeleted=False).all()
+            social_workers = (
+                session.query(SocialWorkerModel)
+                .filter_by(idNumber=id_number)
+                .filter_by(isDeleted=False)
+                .all()
+            )
 
             fetch = {}
             for social_worker in social_workers:
                 if not social_worker:
-                    resp = Response(json.dumps({'message': 'error'}))
+                    resp = Response(json.dumps({"message": "error"}))
                     session.close()
                     return resp
 
@@ -374,7 +435,7 @@ class GetSocialWorkerByIdNumber(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'error'}), status=500)
+            resp = Response(json.dumps({"message": "error"}), status=500)
 
         finally:
             session.close()
@@ -382,20 +443,24 @@ class GetSocialWorkerByIdNumber(Resource):
 
 
 class GetSocialWorkerByPhoneNumber(Resource):
-    @swag_from('./docs/social_worker/phone.yml')
+    @swag_from("./docs/social_worker/phone.yml")
     def get(self, phone_number):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            social_workers = session.query(SocialWorkerModel).filter_by(phoneNumber=phone_number).filter_by(
-                isDeleted=False).all()
+            social_workers = (
+                session.query(SocialWorkerModel)
+                .filter_by(phoneNumber=phone_number)
+                .filter_by(isDeleted=False)
+                .all()
+            )
 
             fetch = {}
             for social_worker in social_workers:
                 if not social_worker:
-                    resp = Response(json.dumps({'message': 'error'}))
+                    resp = Response(json.dumps({"message": "error"}))
                     session.close()
                     return resp
 
@@ -407,7 +472,7 @@ class GetSocialWorkerByPhoneNumber(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'error'}), status=500)
+            resp = Response(json.dumps({"message": "error"}), status=500)
 
         finally:
             session.close()
@@ -415,20 +480,24 @@ class GetSocialWorkerByPhoneNumber(Resource):
 
 
 class GetSocialWorkerByPassportNumber(Resource):
-    @swag_from('./docs/social_worker/passport.yml')
+    @swag_from("./docs/social_worker/passport.yml")
     def get(self, passport_number):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            social_workers = session.query(SocialWorkerModel).filter_by(
-                passportNumber=passport_number).filter_by(isDeleted=False).all()
+            social_workers = (
+                session.query(SocialWorkerModel)
+                .filter_by(passportNumber=passport_number)
+                .filter_by(isDeleted=False)
+                .all()
+            )
 
             fetch = {}
             for social_worker in social_workers:
                 if not social_worker:
-                    resp = Response(json.dumps({'message': 'error'}))
+                    resp = Response(json.dumps({"message": "error"}))
                     session.close()
                     return resp
 
@@ -440,7 +509,7 @@ class GetSocialWorkerByPassportNumber(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'error'}), status=500)
+            resp = Response(json.dumps({"message": "error"}), status=500)
 
         finally:
             session.close()
@@ -448,20 +517,24 @@ class GetSocialWorkerByPassportNumber(Resource):
 
 
 class GetSocialWorkerByUserName(Resource):
-    @swag_from('./docs/social_worker/username.yml')
+    @swag_from("./docs/social_worker/username.yml")
     def get(self, username):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            social_workers = session.query(SocialWorkerModel).filter_by(userName=username).filter_by(
-                isDeleted=False).all()
+            social_workers = (
+                session.query(SocialWorkerModel)
+                .filter_by(userName=username)
+                .filter_by(isDeleted=False)
+                .all()
+            )
 
             fetch = {}
             for social_worker in social_workers:
                 if not social_worker:
-                    resp = Response(json.dumps({'message': 'error'}))
+                    resp = Response(json.dumps({"message": "error"}))
                     session.close()
                     return resp
 
@@ -473,7 +546,7 @@ class GetSocialWorkerByUserName(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'error'}), status=500)
+            resp = Response(json.dumps({"message": "error"}), status=500)
 
         finally:
             session.close()
@@ -481,20 +554,24 @@ class GetSocialWorkerByUserName(Resource):
 
 
 class GetSocialWorkerByBirthCertificateNumber(Resource):
-    @swag_from('./docs/social_worker/bc_number.yml')
+    @swag_from("./docs/social_worker/bc_number.yml")
     def get(self, bc_number):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            social_workers = session.query(SocialWorkerModel).filter_by(
-                birthCertificateNumber=bc_number).filter_by(isDeleted=False).all()
+            social_workers = (
+                session.query(SocialWorkerModel)
+                .filter_by(birthCertificateNumber=bc_number)
+                .filter_by(isDeleted=False)
+                .all()
+            )
 
             fetch = {}
             for social_worker in social_workers:
                 if not social_worker:
-                    resp = Response(json.dumps({'message': 'error'}))
+                    resp = Response(json.dumps({"message": "error"}))
                     session.close()
                     return resp
 
@@ -506,7 +583,7 @@ class GetSocialWorkerByBirthCertificateNumber(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'error'}), status=500)
+            resp = Response(json.dumps({"message": "error"}), status=500)
 
         finally:
             session.close()
@@ -514,20 +591,24 @@ class GetSocialWorkerByBirthCertificateNumber(Resource):
 
 
 class GetSocialWorkerByEmailAddress(Resource):
-    @swag_from('./docs/social_worker/email.yml')
+    @swag_from("./docs/social_worker/email.yml")
     def get(self, email):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            social_workers = session.query(SocialWorkerModel).filter_by(emailAddress=email).filter_by(
-                isDeleted=False).all()
+            social_workers = (
+                session.query(SocialWorkerModel)
+                .filter_by(emailAddress=email)
+                .filter_by(isDeleted=False)
+                .all()
+            )
 
             fetch = {}
             for social_worker in social_workers:
                 if not social_worker:
-                    resp = Response(json.dumps({'message': 'error'}))
+                    resp = Response(json.dumps({"message": "error"}))
                     session.close()
                     return resp
 
@@ -539,7 +620,7 @@ class GetSocialWorkerByEmailAddress(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'error'}), status=500)
+            resp = Response(json.dumps({"message": "error"}), status=500)
 
         finally:
             session.close()
@@ -547,20 +628,24 @@ class GetSocialWorkerByEmailAddress(Resource):
 
 
 class GetSocialWorkerByTelegramId(Resource):
-    @swag_from('./docs/social_worker/telegram.yml')
+    @swag_from("./docs/social_worker/telegram.yml")
     def get(self, telegram_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            social_workers = session.query(SocialWorkerModel).filter_by(telegramId=telegram_id).filter_by(
-                isDeleted=False).all()
+            social_workers = (
+                session.query(SocialWorkerModel)
+                .filter_by(telegramId=telegram_id)
+                .filter_by(isDeleted=False)
+                .all()
+            )
 
             fetch = {}
             for social_worker in social_workers:
                 if not social_worker:
-                    resp = Response(json.dumps({'message': 'error'}))
+                    resp = Response(json.dumps({"message": "error"}))
                     session.close()
                     return resp
 
@@ -572,180 +657,237 @@ class GetSocialWorkerByTelegramId(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'error'}), status=500)
+            resp = Response(json.dumps({"message": "error"}), status=500)
         finally:
             session.close()
             return resp
 
 
 class UpdateSocialWorker(Resource):
-    @swag_from('./docs/social_worker/update.yml')
+    @swag_from("./docs/social_worker/update.yml")
     def patch(self, social_worker_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         ngo_change = False
         previous_ngo = None
 
         try:
-            base_social_worker = session.query(SocialWorkerModel).filter_by(id=social_worker_id).filter_by(
-                isDeleted=False).first()
+            base_social_worker = (
+                session.query(SocialWorkerModel)
+                .filter_by(id=social_worker_id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
 
-            if 'idCardUrl' in request.files.keys():
-                file1 = request.files['idCardUrl']
+            if "idCardUrl" in request.files.keys():
+                file1 = request.files["idCardUrl"]
 
-                if file1.filename == '':
-                    resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY VOICE!'}))
+                if file1.filename == "":
+                    resp = Response(
+                        json.dumps({"message": "ERROR OCCURRED --> EMPTY VOICE!"})
+                    )
                     session.close()
                     return resp
 
                 if file1 and allowed_image(file1.filename):
                     # filename = secure_filename(file1.filename)
-                    filename1 = base_social_worker.generatedCode + '.' + file1.filename.split('.')[-1]
+                    filename1 = (
+                        base_social_worker.generatedCode
+                        + "."
+                        + file1.filename.split(".")[-1]
+                    )
 
-                    temp_idcard_path = os.path.join(app.config['UPLOAD_FOLDER'],
-                                                    str(base_social_worker.id) + '-socialworker')
+                    temp_idcard_path = os.path.join(
+                        app.config["UPLOAD_FOLDER"],
+                        str(base_social_worker.id) + "-socialworker",
+                    )
 
                     for obj in os.listdir(temp_idcard_path):
-                        check = str(base_social_worker.id) + '-idcard'
-                        if obj.split('_')[0] == check:
+                        check = str(base_social_worker.id) + "-idcard"
+                        if obj.split("_")[0] == check:
                             os.remove(os.path.join(temp_idcard_path, obj))
 
-                    base_social_worker.idCardUrl = os.path.join(temp_idcard_path,
-                                                                str(base_social_worker.id) + '-idcard_' + filename1)
+                    base_social_worker.idCardUrl = os.path.join(
+                        temp_idcard_path,
+                        str(base_social_worker.id) + "-idcard_" + filename1,
+                    )
 
                     file1.save(base_social_worker.idCardUrl)
 
-                    resp = Response(json.dumps({'message': 'WELL DONE!'}))
+                    resp = Response(json.dumps({"message": "WELL DONE!"}))
 
-            if 'passportUrl' in request.files.keys():
-                file2 = request.files['passportUrl']
+            if "passportUrl" in request.files.keys():
+                file2 = request.files["passportUrl"]
 
-                if file2.filename == '':
-                    resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY VOICE!'}))
+                if file2.filename == "":
+                    resp = Response(
+                        json.dumps({"message": "ERROR OCCURRED --> EMPTY VOICE!"})
+                    )
                     session.close()
                     return resp
 
                 if file2 and allowed_image(file2.filename):
                     # filename = secure_filename(file1.filename)
-                    filename2 = base_social_worker.generatedCode + '.' + file2.filename.split('.')[-1]
+                    filename2 = (
+                        base_social_worker.generatedCode
+                        + "."
+                        + file2.filename.split(".")[-1]
+                    )
 
-                    temp_passport_path = os.path.join(app.config['UPLOAD_FOLDER'],
-                                                      str(base_social_worker.id) + '-socialworker')
+                    temp_passport_path = os.path.join(
+                        app.config["UPLOAD_FOLDER"],
+                        str(base_social_worker.id) + "-socialworker",
+                    )
 
                     for obj in os.listdir(temp_passport_path):
-                        check = str(base_social_worker.id) + '-passport'
-                        if obj.split('_')[0] == check:
+                        check = str(base_social_worker.id) + "-passport"
+                        if obj.split("_")[0] == check:
                             os.remove(os.path.join(temp_passport_path, obj))
 
-                    base_social_worker.passportUrl = os.path.join(temp_passport_path,
-                                                                  str(base_social_worker.id) + '-passport_' + filename2)
+                    base_social_worker.passportUrl = os.path.join(
+                        temp_passport_path,
+                        str(base_social_worker.id) + "-passport_" + filename2,
+                    )
 
                     file2.save(base_social_worker.passportUrl)
 
-                    resp = Response(json.dumps({'message': 'WELL DONE!'}))
+                    resp = Response(json.dumps({"message": "WELL DONE!"}))
 
-            if 'avatarUrl' in request.files.keys():
-                file3 = request.files['avatarUrl']
+            if "avatarUrl" in request.files.keys():
+                file3 = request.files["avatarUrl"]
 
-                if file3.filename == '':
-                    resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY VOICE!'}))
+                if file3.filename == "":
+                    resp = Response(
+                        json.dumps({"message": "ERROR OCCURRED --> EMPTY VOICE!"})
+                    )
                     session.close()
                     return resp
 
                 if file3 and allowed_image(file3.filename):
                     # filename = secure_filename(file1.filename)
-                    filename3 = base_social_worker.generatedCode + '.' + file3.filename.split('.')[-1]
+                    filename3 = (
+                        base_social_worker.generatedCode
+                        + "."
+                        + file3.filename.split(".")[-1]
+                    )
 
-                    temp_avatar_path = os.path.join(app.config['UPLOAD_FOLDER'],
-                                                    str(base_social_worker.id) + '-socialworker')
+                    temp_avatar_path = os.path.join(
+                        app.config["UPLOAD_FOLDER"],
+                        str(base_social_worker.id) + "-socialworker",
+                    )
 
                     for obj in os.listdir(temp_avatar_path):
-                        check = str(base_social_worker.id) + '-avatar'
-                        if obj.split('_')[0] == check:
+                        check = str(base_social_worker.id) + "-avatar"
+                        if obj.split("_")[0] == check:
                             os.remove(os.path.join(temp_avatar_path, obj))
 
-                    base_social_worker.avatarUrl = os.path.join(temp_avatar_path,
-                                                                str(base_social_worker.id) + '-avatar_' + filename3)
+                    base_social_worker.avatarUrl = os.path.join(
+                        temp_avatar_path,
+                        str(base_social_worker.id) + "-avatar_" + filename3,
+                    )
 
                     file3.save(base_social_worker.avatarUrl)
 
-                    resp = Response(json.dumps({'message': 'WELL DONE!'}))
+                    resp = Response(json.dumps({"message": "WELL DONE!"}))
 
-            if 'id_ngo' in request.form.keys():
+            if "id_ngo" in request.form.keys():
                 previous_ngo = base_social_worker.id_ngo
-                base_social_worker.id_ngo = int(request.form['id_ngo'])
+                base_social_worker.id_ngo = int(request.form["id_ngo"])
                 ngo_change = True
 
-            if 'country' in request.form.keys():
-                base_social_worker.country = int(request.form['country'])
+            if "country" in request.form.keys():
+                base_social_worker.country = int(request.form["country"])
 
-            if 'city' in request.form.keys():
-                base_social_worker.city = int(request.form['city'])
+            if "city" in request.form.keys():
+                base_social_worker.city = int(request.form["city"])
 
-            if 'id_type' in request.form.keys():
-                base_social_worker.id_type = int(request.form['id_type'])
+            if "id_type" in request.form.keys():
+                base_social_worker.id_type = int(request.form["id_type"])
 
-            if 'firstName' in request.form.keys():
-                base_social_worker.firstName = request.form['firstName']
+            if "firstName" in request.form.keys():
+                base_social_worker.firstName = request.form["firstName"]
 
-            if 'lastName' in request.form.keys():
-                base_social_worker.lastName = request.form['lastName']
+            if "lastName" in request.form.keys():
+                base_social_worker.lastName = request.form["lastName"]
 
-            if 'userName' in request.form.keys():
-                base_social_worker.userName = request.form['userName']
+            if "userName" in request.form.keys():
+                base_social_worker.userName = request.form["userName"]
 
-            if 'birthCertificateNumber' in request.form.keys():
-                base_social_worker.birthCertificateNumber = request.form['birthCertificateNumber']
+            if "birthCertificateNumber" in request.form.keys():
+                base_social_worker.birthCertificateNumber = request.form[
+                    "birthCertificateNumber"
+                ]
 
-            if 'idNumber' in request.form.keys():
-                base_social_worker.idNumber = request.form['idNumber']
+            if "idNumber" in request.form.keys():
+                base_social_worker.idNumber = request.form["idNumber"]
 
-            if 'passportNumber' in request.form.keys():
-                base_social_worker.passportNumber = request.form['passportNumber']
+            if "passportNumber" in request.form.keys():
+                base_social_worker.passportNumber = request.form["passportNumber"]
 
-            if 'gender' in request.form.keys():
-                base_social_worker.gender = True if request.form['gender'] == 'true' else False
+            if "gender" in request.form.keys():
+                base_social_worker.gender = (
+                    True if request.form["gender"] == "true" else False
+                )
 
-            if 'birthDate' in request.form.keys():
-                base_social_worker.birthDate = datetime.strptime(request.form['birthDate'], '%Y-%m-%d')
+            if "birthDate" in request.form.keys():
+                base_social_worker.birthDate = datetime.strptime(
+                    request.form["birthDate"], "%Y-%m-%d"
+                )
 
-            if 'phoneNumber' in request.form.keys():
-                base_social_worker.phoneNumber = request.form['phoneNumber']
+            if "phoneNumber" in request.form.keys():
+                base_social_worker.phoneNumber = request.form["phoneNumber"]
 
-            if 'emergencyPhoneNumber' in request.form.keys():
-                base_social_worker.emergencyPhoneNumber = request.form['emergencyPhoneNumber']
+            if "emergencyPhoneNumber" in request.form.keys():
+                base_social_worker.emergencyPhoneNumber = request.form[
+                    "emergencyPhoneNumber"
+                ]
 
-            if 'emailAddress' in request.form.keys():
-                base_social_worker.emailAddress = request.form['emailAddress']
+            if "emailAddress" in request.form.keys():
+                base_social_worker.emailAddress = request.form["emailAddress"]
 
-            if 'telegramId' in request.form.keys():
-                base_social_worker.telegramId = request.form['telegramId']
+            if "telegramId" in request.form.keys():
+                base_social_worker.telegramId = request.form["telegramId"]
 
-            if 'postalAddress' in request.form.keys():
-                base_social_worker.postalAddress = request.form['postalAddress']
+            if "postalAddress" in request.form.keys():
+                base_social_worker.postalAddress = request.form["postalAddress"]
 
-            if 'bankAccountNumber' in request.form.keys():
-                base_social_worker.bankAccountNumber = request.form['bankAccountNumber']
+            if "bankAccountNumber" in request.form.keys():
+                base_social_worker.bankAccountNumber = request.form["bankAccountNumber"]
 
-            if 'bankAccountShebaNumber' in request.form.keys():
-                base_social_worker.bankAccountShebaNumber = request.form['bankAccountShebaNumber']
+            if "bankAccountShebaNumber" in request.form.keys():
+                base_social_worker.bankAccountShebaNumber = request.form[
+                    "bankAccountShebaNumber"
+                ]
 
-            if 'bankAccountCardNumber' in request.form.keys():
-                base_social_worker.bankAccountCardNumber = request.form['bankAccountCardNumber']
+            if "bankAccountCardNumber" in request.form.keys():
+                base_social_worker.bankAccountCardNumber = request.form[
+                    "bankAccountCardNumber"
+                ]
 
-            if 'password' in request.form.keys():
-                base_social_worker.password = md5(request.form['password'].encode()).hexdigest()
+            if "password" in request.form.keys():
+                base_social_worker.password = md5(
+                    request.form["password"].encode()
+                ).hexdigest()
 
             base_social_worker.lastUpdateDate = datetime.now()
 
             res = obj_to_dict(base_social_worker)
 
             if ngo_change:
-                that_ngo = session.query(NgoModel).filter_by(id=previous_ngo).filter_by(isDeleted=False).first()
-                this_ngo = session.query(NgoModel).filter_by(id=base_social_worker.id_ngo).filter_by(
-                    isDeleted=False).first()
+                that_ngo = (
+                    session.query(NgoModel)
+                    .filter_by(id=previous_ngo)
+                    .filter_by(isDeleted=False)
+                    .first()
+                )
+                this_ngo = (
+                    session.query(NgoModel)
+                    .filter_by(id=base_social_worker.id_ngo)
+                    .filter_by(isDeleted=False)
+                    .first()
+                )
 
                 that_ngo.currentChildrenCount -= base_social_worker.currentChildCount
                 that_ngo.currentSocialWorkerCount -= 1
@@ -761,7 +903,7 @@ class UpdateSocialWorker(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'error'}), status=500)
+            resp = Response(json.dumps({"message": "error"}), status=500)
 
         finally:
             session.close()
@@ -769,29 +911,39 @@ class UpdateSocialWorker(Resource):
 
 
 class DeleteSocialWorker(Resource):
-    @swag_from('./docs/social_worker/delete.yml')
+    @swag_from("./docs/social_worker/delete.yml")
     def patch(self, social_worker_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            base_social_worker = session.query(SocialWorkerModel).filter_by(id=social_worker_id).filter_by(
-                isDeleted=False).first()
+            base_social_worker = (
+                session.query(SocialWorkerModel)
+                .filter_by(id=social_worker_id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
 
             base_social_worker.isDeleted = True
-            this_ngo = session.query(NgoModel).filter_by(id=base_social_worker.id_ngo).filter_by(
-                isDeleted=False).first()
+            this_ngo = (
+                session.query(NgoModel)
+                .filter_by(id=base_social_worker.id_ngo)
+                .filter_by(isDeleted=False)
+                .first()
+            )
 
             this_ngo.currentChildrenCount -= base_social_worker.currentChildCount
             this_ngo.currentSocialWorkerCount -= 1
 
             session.commit()
-            resp = Response(json.dumps({'msg': 'social worker deleted successfully!'}), status=200)
+            resp = Response(
+                json.dumps({"msg": "social worker deleted successfully!"}), status=200
+            )
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'error'}), status=500)
+            resp = Response(json.dumps({"message": "error"}), status=500)
 
         finally:
             session.close()
@@ -799,24 +951,31 @@ class DeleteSocialWorker(Resource):
 
 
 class DeactivateSocialWorker(Resource):
-    @swag_from('./docs/social_worker/deactivate.yml')
+    @swag_from("./docs/social_worker/deactivate.yml")
     def patch(self, social_worker_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            base_social_worker = session.query(SocialWorkerModel).filter_by(id=social_worker_id).filter_by(
-                isDeleted=False).first()
+            base_social_worker = (
+                session.query(SocialWorkerModel)
+                .filter_by(id=social_worker_id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
 
             base_social_worker.isActive = False
 
             session.commit()
-            resp = Response(json.dumps({'msg': 'social worker deactivated successfully!'}), status=200)
+            resp = Response(
+                json.dumps({"msg": "social worker deactivated successfully!"}),
+                status=200,
+            )
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'error'}), status=500)
+            resp = Response(json.dumps({"message": "error"}), status=500)
 
         finally:
             session.close()
@@ -824,24 +983,31 @@ class DeactivateSocialWorker(Resource):
 
 
 class ActivateSocialWorker(Resource):
-    @swag_from('./docs/social_worker/activate.yml')
+    @swag_from("./docs/social_worker/activate.yml")
     def patch(self, social_worker_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {'message': 'major error occurred!'}
+        resp = {"message": "major error occurred!"}
 
         try:
-            base_social_worker = session.query(SocialWorkerModel).filter_by(id=social_worker_id).filter_by(
-                isDeleted=False).first()
+            base_social_worker = (
+                session.query(SocialWorkerModel)
+                .filter_by(id=social_worker_id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
 
             base_social_worker.isActive = True
 
             session.commit()
-            resp = Response(json.dumps({'msg': 'social worker deactivated successfully!'}), status=200)
+            resp = Response(
+                json.dumps({"msg": "social worker deactivated successfully!"}),
+                status=200,
+            )
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({'message': 'error'}), status=500)
+            resp = Response(json.dumps({"message": "error"}), status=500)
 
         finally:
             session.close()
@@ -852,19 +1018,43 @@ class ActivateSocialWorker(Resource):
 API URLs
 """
 
-api.add_resource(GetAllSocialWorkers, '/api/v2/socialWorker/all')
-api.add_resource(AddSocialWorker, '/api/v2/socialWorker/add')
-api.add_resource(GetSocialWorkerById, '/api/v2/socialWorker/socialWorkerId=<social_worker_id>')
-api.add_resource(GetSocialWorkerByGeneratedCode, '/api/v2/socialWorker/generatedCode=<generated_code>')
-api.add_resource(GetSocialWorkerByNgoId, '/api/v2/socialWorker/ngoId=<ngo_id>')
-api.add_resource(GetSocialWorkerByIdNumber, '/api/v2/socialWorker/idNumber=<id_number>')
-api.add_resource(GetSocialWorkerByPhoneNumber, '/api/v2/socialWorker/phone=<phone_number>')
-api.add_resource(GetSocialWorkerByPassportNumber, '/api/v2/socialWorker/passportNumber=<passport_number>')
-api.add_resource(GetSocialWorkerByUserName, '/api/v2/socialWorker/username=<username>')
-api.add_resource(GetSocialWorkerByBirthCertificateNumber, '/api/v2/socialWorker/bcNumber=<bc_number>')
-api.add_resource(GetSocialWorkerByEmailAddress, '/api/v2/socialWorker/email=<email>')
-api.add_resource(GetSocialWorkerByTelegramId, '/api/v2/socialWorker/telegramId=<telegram_id>')
-api.add_resource(UpdateSocialWorker, '/api/v2/socialWorker/update/socialWorkerId=<social_worker_id>')
-api.add_resource(DeleteSocialWorker, '/api/v2/socialWorker/delete/socialWorkerId=<social_worker_id>')
-api.add_resource(DeactivateSocialWorker, '/api/v2/socialWorker/deactivate/socialWorkerId=<social_worker_id>')
-api.add_resource(ActivateSocialWorker, '/api/v2/socialWorker/activate/socialWorkerId=<social_worker_id>')
+api.add_resource(GetAllSocialWorkers, "/api/v2/socialWorker/all")
+api.add_resource(AddSocialWorker, "/api/v2/socialWorker/add")
+api.add_resource(
+    GetSocialWorkerById, "/api/v2/socialWorker/socialWorkerId=<social_worker_id>"
+)
+api.add_resource(
+    GetSocialWorkerByGeneratedCode,
+    "/api/v2/socialWorker/generatedCode=<generated_code>",
+)
+api.add_resource(GetSocialWorkerByNgoId, "/api/v2/socialWorker/ngoId=<ngo_id>")
+api.add_resource(GetSocialWorkerByIdNumber, "/api/v2/socialWorker/idNumber=<id_number>")
+api.add_resource(
+    GetSocialWorkerByPhoneNumber, "/api/v2/socialWorker/phone=<phone_number>"
+)
+api.add_resource(
+    GetSocialWorkerByPassportNumber,
+    "/api/v2/socialWorker/passportNumber=<passport_number>",
+)
+api.add_resource(GetSocialWorkerByUserName, "/api/v2/socialWorker/username=<username>")
+api.add_resource(
+    GetSocialWorkerByBirthCertificateNumber, "/api/v2/socialWorker/bcNumber=<bc_number>"
+)
+api.add_resource(GetSocialWorkerByEmailAddress, "/api/v2/socialWorker/email=<email>")
+api.add_resource(
+    GetSocialWorkerByTelegramId, "/api/v2/socialWorker/telegramId=<telegram_id>"
+)
+api.add_resource(
+    UpdateSocialWorker, "/api/v2/socialWorker/update/socialWorkerId=<social_worker_id>"
+)
+api.add_resource(
+    DeleteSocialWorker, "/api/v2/socialWorker/delete/socialWorkerId=<social_worker_id>"
+)
+api.add_resource(
+    DeactivateSocialWorker,
+    "/api/v2/socialWorker/deactivate/socialWorkerId=<social_worker_id>",
+)
+api.add_resource(
+    ActivateSocialWorker,
+    "/api/v2/socialWorker/activate/socialWorkerId=<social_worker_id>",
+)

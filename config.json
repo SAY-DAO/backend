@@ -1,3 +1,11 @@
 {
-    "dbUrl" : "postgresql://postgres:admin@localhost:5432/SAY_Test"
+    "dbUrl" : "postgresql://postgres:postgres@localhost/say_test",
+
+    "MAIL_SERVER": "smtp.gmail.com",
+    "MAIL_USERNAME": "afpp94",
+    "MAIL_PASSWORD": "Arash1373",
+    "MAIL_DEFAULT_SENDER": "info@say.company",
+    "MAIL_PORT": 465,
+    "MAIL_USE_TLS": false,
+    "MAIL_USE_SSL": true
 }

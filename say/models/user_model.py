@@ -6,7 +6,7 @@ User Model
 
 
 class UserModel(base):
-    __tablename__ = 'user'
+    __tablename__ = "user"
 
     id = Column(Integer, nullable=False, primary_key=True, unique=True)
     firstName = Column(String, nullable=False)
@@ -21,6 +21,7 @@ class UserModel(base):
     city = Column(Integer, nullable=False)  # 1:tehran | 2:karaj
     country = Column(Integer, nullable=False)
     isDeleted = Column(Boolean, nullable=False, default=False)
+    isVerified = Column(Boolean, nullable=False, default=False)
     createdAt = Column(Date, nullable=False)
     lastUpdate = Column(Date, nullable=False)
     birthDate = Column(Date, nullable=True)

@@ -6,7 +6,7 @@ Need Model
 
 
 class NeedModel(base):
-    __tablename__ = 'need'
+    __tablename__ = "need"
 
     id = Column(Integer, nullable=False, primary_key=True, unique=True)
     name = Column(String, nullable=False)

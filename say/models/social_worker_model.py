@@ -8,7 +8,7 @@ SocialWorker Model
 
 
 class SocialWorkerModel(base):
-    __tablename__ = 'social_worker'
+    __tablename__ = "social_worker"
 
     id = Column(Integer, primary_key=True, nullable=False, unique=True)
     generatedCode = Column(String, nullable=False)
@@ -47,5 +47,5 @@ class SocialWorkerModel(base):
     isActive = Column(Boolean, nullable=False, default=True)
     isDeleted = Column(Boolean, nullable=False, default=False)
 
-    privilege = relationship('PrivilegeModel', foreign_keys='SocialWorkerModel.id_type')
-    ngo = relationship('NgoModel', foreign_keys='SocialWorkerModel.id_ngo')
+    privilege = relationship("PrivilegeModel", foreign_keys="SocialWorkerModel.id_type")
+    ngo = relationship("NgoModel", foreign_keys="SocialWorkerModel.id_ngo")
