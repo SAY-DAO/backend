@@ -18,7 +18,7 @@ Child APis
 """
 
 
-def get_child_by_id(session, child_id, is_migrate=False, confirm=1):  # 2:all | 1:only confirmed | 0:only not confirmed
+def get_child_by_id(session, child_id, is_migrate=False, confirm=1, with_need=False):  # 2:all | 1:only confirmed | 0:only not confirmed
     if is_migrate:
         if int(confirm) == 0:
             child = session.query(ChildModel).filter_by(id=child_id).filter_by(isDeleted=False).filter_by(
@@ -45,39 +45,41 @@ def get_child_by_id(session, child_id, is_migrate=False, confirm=1):  # 2:all | 
 
     child_data = utf8_response(obj_to_dict(child))
 
-    temp = f'"Needs": {get_child_need(session, child_id)}'
+    if with_need:
+        temp = f'"Needs": {get_child_need(session, child_id)}'
+        return child_data[:-1] + ', ' + temp + '}'
 
-    return child_data[:-1] + ', ' + temp + '}'
+    return child_data
 
 
-def get_child_need(session, child_id, urgent=False, done=False):
-    needs = session.query(ChildNeedModel).filter_by(id_child=child_id).filter_by(isDeleted=False).all()
+def get_child_need(session, child_id, urgent=False, done=False, with_participants=False):
+    need_ids = session.query(ChildNeedModel).filter_by(id_child=child_id).filter_by(isDeleted=False).all()
+    ids = [n.id_need for n in need_ids]
+    needs = session.query(NeedModel).filter(NeedModel.id.in_(ids)).filter_by(isDeleted=False).all()
 
     child_needs = '{'
     check = False
     for need in needs:
-        if not need.need_relation.isConfirmed:
+        if not need.isConfirmed:
             continue
+
         if done:
-            if need.need_relation.isDone:
-                need_data = get_need(
-                    session.query(NeedModel).filter_by(id=need.id_need).filter_by(isDeleted=False).first(), session)
-                child_needs += f'"{str(need.id_need)}": {need_data}, '
+            if need.isDone:
+                need_data = get_need(need, session, with_participants=with_participants, with_child_id=False)
+                child_needs += f'"{str(need.id)}": {need_data}, '
 
         elif not urgent:
-            need_data = get_need(
-                session.query(NeedModel).filter_by(id=need.id_need).filter_by(isDeleted=False).first(), session)
-            child_needs += f'"{str(need.id_need)}": {need_data}, '
+            need_data = get_need(need, session, with_participants=with_participants, with_child_id=False)
+            child_needs += f'"{str(need.id)}": {need_data}, '
 
         else:
-            if need.need_relation.isUrgent:
+            if need.isUrgent:
                 check = True
-                need_data = get_need(
-                    session.query(NeedModel).filter_by(id=need.id_need).filter_by(isDeleted=False).first(), session)
-                child_needs += f'"{str(need.id_need)}": {need_data}, '
+                need_data = get_need(need, session, with_participants=with_participants, with_child_id=False)
+                child_needs += f'"{str(need.id)}": {need_data}, '
 
         if not check and urgent:
-            return utf8_response({'message': 'no urgent needs found!'})
+            return utf8_response({'message': 'no urgent need_ids found!'})
 
     return child_needs[:-2] + '}' if len(child_needs) != 1 else '{}'
 
@@ -832,7 +834,6 @@ class GetChildByNgoId(Resource):
         session_maker = sessionmaker(db)
         session = session_maker()
         resp = {'message': 'major error occurred!'}
-        
 
         try:
             children = session.query(ChildModel).filter_by(id_ngo=ngo_id).filter_by(isDeleted=False).filter_by(

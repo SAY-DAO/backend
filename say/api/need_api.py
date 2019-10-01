@@ -25,19 +25,29 @@ def get_all_urgent_needs(session):
     return needs_data[:-2] + '}' if len(needs_data) != 1 else '{}'
 
 
-def get_need(need, session, participants_only=False):
+def get_need(need, session, participants_only=False, with_participants=True, with_child_id=True):
     if need.isConfirmed:
-        child = session.query(ChildNeedModel).filter_by(id_need=need.id).filter_by(isDeleted=False).first()
-        participants = session.query(NeedFamilyModel).filter_by(id_need=need.id).filter_by(isDeleted=False).all()
 
         need_data = obj_to_dict(need)
-        need_data['ChildId'] = child.id_child
         need_data = utf8_response(need_data)
+
+        if not with_participants and not with_child_id:
+            return need_data
+
+        child = session.query(ChildNeedModel).filter_by(id_need=need.id).filter_by(isDeleted=False).first()
+        need_data['ChildId'] = child.id_child
+
+        if not with_participants and with_child_id:
+            return need_data
+
+        participant_ids = session.query(NeedFamilyModel).filter_by(id_need=need.id).filter_by(isDeleted=False).all()
+        ids = [p.id_user for p in participant_ids]
+        participants = session.query(UserModel).filter(UserModel.id.in_(ids)).filter_by(isDeleted=False).all()
 
         users = '{'
         for participant in participants:
-            user = session.query(UserModel).filter_by(isDeleted=False).filter_by(id=participant.id_user).first()
-            users += f'"{str(user.id)}": {utf8_response(obj_to_dict(user))}, '
+            # user = session.query(UserModel).filter_by(isDeleted=False).filter_by(id=participant.id_user).first()
+            users += f'"{str(participant.id)}": {utf8_response(obj_to_dict(participant))}, '
 
         users_data = users[:-2] + "}" if len(users) != 1 else '{}'
 

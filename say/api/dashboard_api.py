@@ -21,7 +21,7 @@ class DashboardDataFeed(Resource):
             data = get_user_by_id(session, user_id)
             needs = get_user_needs(session, user, urgent=True)
 
-            data = data[:-1] + ', "GlobalUrgentNeeds": ' + needs + '}'
+            data = data[:-1] + ', "UserUrgentNeeds": ' + needs + '}'
 
             resp = Response(data)
 

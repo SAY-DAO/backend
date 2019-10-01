@@ -11,64 +11,52 @@ For gender, [true] is male and [false] is female.
 tags:
   - User API
 
-consumes:
-  - multipart/form-data
-
 parameters:
   - name: user_id
     in: path
     type: integer
+
+  - in: body
+    name: update info
     required: true
+    schema:
+      properties:
+        userRole:
+          type: integer
 
-  - name: firstName
-    in: formData
-    type: string
-    required: true
+        firstName:
+          type: string
 
-  - name: lastName
-    in: formData
-    type: string
-    required: true
+        lastName:
+          type: string
 
-  - name: userName
-    in: formData
-    type: string
-    required: true
+        userName:
+          type: string
 
-  - name: avatarUrl
-    in: formData
-    type: file
+        avatarUrl:
+          type: file
 
-  - name: emailAddress
-    in: formData
-    type: string
+        emailAddress:
+          type: string
 
-  - name: password
-    in: formData
-    type: string
-    required: true
+        password:
+          type: string
 
-  - name: gender
-    in: formData
-    type: boolean
+        gender:
+          type: boolean
 
-  - name: country
-    in: formData
-    type: integer
-    required: true
+        country:
+          type: integer
 
-  - name: city
-    in: formData
-    type: integer
-    required: true
+        city:
+          type: integer
 
-  - name: birthPlace
-    in: formData
-    type: integer
+        birthPlace:
+          type: integer
 
-  - name: birthDate
-    in: formData
-    type: string
+        birthDate:
+          type: string
+
 
 responses:
   500:

@@ -14,50 +14,41 @@ consumes:
   - multipart/form-data
 
 parameters:
-  - name: firstName
-    in: formData
-    type: string
+  - in: body
+    name: update info
     required: true
+    schema:
+      properties:
+        firstName:
+          type: string
 
-  - name: lastName
-    in: formData
-    type: string
-    required: true
+        lastName:
+          type: string
 
-  - name: avatarUrl
-    in: formData
-    type: file
+        avatarUrl:
+          type: file
 
-  - name: phoneNumber
-    in: formData
-    type: string
-    required: true
+        phoneNumber:
+          type: string
+          
+        emailAddress:
+          type: string
 
-  - name: emailAddress
-    in: formData
-    type: string
+        gender:
+          type: boolean
 
-  - name: gender
-    in: formData
-    type: boolean
+        country:
+          type: integer
 
-  - name: country
-    in: formData
-    type: integer
-    required: true
+        city:
+          type: integer
 
-  - name: city
-    in: formData
-    type: integer
-    required: true
+        birthPlace:
+          type: string
 
-  - name: birthPlace
-    in: formData
-    type: string
+        birthDate:
+          type: string
 
-  - name: birthDate
-    in: formData
-    type: string
 
 responses:
   500:

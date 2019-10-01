@@ -27,12 +27,12 @@ def get_user_children(session, user):
     families = session.query(UserFamilyModel).filter_by(id_user=user.id).filter_by(isDeleted=False).all()
 
     children = '{'
-    for family in families:
-        child = session.query(FamilyModel).filter_by(id_child=family.family_relation.id_child).filter_by(
-            isDeleted=False).first()
+    for f in families:
+        # child = session.query(FamilyModel).filter_by(id_child=family.family_relation.id_child).filter_by(
+        #     isDeleted=False).first()
 
-        if child.family_child_relation.isConfirmed:
-            children += f'"{str(child.id_child)}": {get_child_by_id(session, child.id_child)}, '
+        if f.family_relation.family_child_relation.isConfirmed:
+            children += f'"{str(f.family_relation.id_child)}": {get_child_by_id(session, f.family_relation.id_child)}, '
 
     return children[:-2] + '}' if len(children) != 1 else '{}'
 
@@ -45,7 +45,7 @@ def get_user_needs(session, user, urgent=False):
         child = session.query(FamilyModel).filter_by(id_child=family.family_relation.id_child).filter_by(
             isDeleted=False).first()
 
-        needs += f'"{str(child.id_child)}": {get_child_need(session, child.id_child, urgent)}, '
+        needs += f'"{str(child.id_child)}": {get_child_need(session, child.id_child, urgent=urgent)}, '
 
     return needs[:-2] + '}' if len(needs) != 1 else '{}'
 
@@ -583,29 +583,31 @@ class UpdateUserById(Resource):
         try:
             primary_user = session.query(UserModel).filter_by(id=user_id).filter_by(isDeleted=False).first()
 
-            if 'avatarUrl' in request.files.keys():
-                file = request.files['avatarUrl']
-                if file.filename == '':
-                    resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
-                    session.close()
-                    return resp
-
-                if file and allowed_image(file.filename):
-                    # filename = secure_filename(file.filename)
-                    filename = str(primary_user.phoneNumber) + '.' + file.filename.split('.')[-1]
-
-                    temp_user_path = os.path.join(app.config['UPLOAD_FOLDER'], str(primary_user.id) + '-user')
-
-                    for obj in os.listdir(temp_user_path):
-                        check = str(primary_user.id) + '-avatar'
-                        if obj.split('_')[0] == check:
-                            os.remove(os.path.join(temp_user_path, obj))
-
-                    primary_user.avatarUrl = os.path.join(temp_user_path, str(primary_user.id) + '-avatar_' + filename)
-
-                    file.save(primary_user.avatarUrl)
-
-                    resp = Response(json.dumps({'message': 'WELL DONE!'}))
+            if 'avatarUrl' in request.json.keys():
+                primary_user.avatarUrl = request.json['avatarUrl']
+                # file = request.files['avatarUrl']
+                # if file.filename == '':
+                #     resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
+                #     session.close()
+                #     return resp
+                #
+                # if file and allowed_image(file.filename):
+                #     # filename = secure_filename(file.filename)
+                #     filename = str(primary_user.phoneNumber) + '.' + file.filename.split('.')[-1]
+                #
+                #     temp_user_path = os.path.join(app.config['UPLOAD_FOLDER'], str(primary_user.id) + '-user')
+                #
+                #     for obj in os.listdir(temp_user_path):
+                #         check = str(primary_user.id) + '-avatar'
+                #         if obj.split('_')[0] == check:
+                #             os.remove(os.path.join(temp_user_path, obj))
+                #
+                #     primary_user.avatarUrl =
+                #     os.path.join(temp_user_path, str(primary_user.id) + '-avatar_' + filename)
+                #
+                #     file.save(primary_user.avatarUrl)
+                #
+                #     resp = Response(json.dumps({'message': 'WELL DONE!'}))
 
             if 'userName' in request.json.keys():
                 primary_user.userName = request.json['userName']
@@ -700,12 +702,12 @@ class AddUser(Resource):
         resp = {'message': 'major error occurred!'}
 
         try:
-            if len(session.query(UserModel).all()):
-                last_user = session.query(UserModel).order_by(UserModel.id.desc()).first()
-                current_id = last_user.id + 1
+            # if len(session.query(UserModel).all()):
+            #     last_user = session.query(UserModel).order_by(UserModel.id.desc()).first()
+            #     current_id = last_user.id + 1
 
-            else:
-                current_id = 1
+            # else:
+            #     current_id = 1
 
             if 'emailAddress' in request.json.keys():
                 email_address = request.json['emailAddress']
@@ -754,8 +756,8 @@ class AddUser(Resource):
             # avatar_url = path
             flag_url = os.path.join(FLAGS, str(country) + '.png')
 
-            path = None
-            if 'avatarUrl' in request.files:
+            # path = None
+            if 'avatarUrl' in request.json:
                 # file = request.files['avatarUrl']
                 #
                 # if file.filename == '':
