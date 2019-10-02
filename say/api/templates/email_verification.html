@@ -1,0 +1,148 @@
+<html>
+    <head>
+        <!-- <link type="text/css" href="resources/font/Roboto/css/roboto.css"></link> -->
+        <link type="text/css" href="http://www.sayapp.company/public/resources/font/iranYekan/css/fontiran.css"></link>
+
+        <!-- <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet"> -->
+
+        <link href="https://fonts.googleapis.com/css?family=Roboto:100,400&display=swap" rel="stylesheet">
+
+        <style>
+            *{
+                margin: 0;
+                padding: 0;
+            }
+
+            #container{
+                position: relative;
+                width: 100%;
+                height: 100%;
+                background-color: #f3f3f3;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                padding-top: 20px;
+                padding-bottom: 20px;
+            }
+
+            #header{
+                width: 70%;
+                height: 80px;
+                margin: 0 auto;
+                /* border: 1px solid #666666; */
+            }
+
+            .helper{
+                display: inline-block;
+                height: 100%;
+                vertical-align: middle;
+            }
+
+            #header>a>img{
+                height: 70%;
+                vertical-align: middle;
+                box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
+            }
+
+            #content{
+                width: 70%;
+                height: 300px;
+                background-color: #ffffff;
+                margin: 0 auto;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
+                text-align: center;
+            }
+
+            #content>img{
+                height: 35%;
+                }
+
+            #footer{
+                width: 70%;
+                min-height: 100px;
+                margin: 0 auto;
+                /* border: 1px solid #666666; */
+                text-align: center;
+                padding: 60px 0;
+            }
+
+            #footer>p{
+                font-weight: 100;
+            }
+
+            #footer>.fa-paragraph{
+                font-size: 14px;
+            }
+
+            .socials{
+                margin: 0 30px 20px;
+            }
+
+            .socials>a{
+                width: 13%;
+                max-width: 30px;;
+                margin: 0 8px;
+                display: inline-block;
+            }
+
+            p{
+                margin: 10px 0;
+                color: #515151;
+            }
+
+            .fa-paragraph{
+                font-family: 'iranyekan';
+            }
+
+            .en-paragraph{
+                /* font-family: 'roboto'; */
+                font-family: 'Roboto';
+                font-size: 12px;
+            }
+
+            .generated{
+                margin-top: 20px;
+                font-size: 42px;
+            }
+
+        </style>
+    </head>
+    <body>
+        <div id="container">
+            <div id="header">
+                <span class="helper"></span><a href="http://www.say.company" target="_blank"><img src="http://www.sayapp.company/public/resources/img/logo.png" /></a>
+            </div>
+            <div id="content">
+                <img src="http://www.sayapp.company/public/resources/img/verification.svg" />
+                <div class="content-paragraph">
+
+                    <p class="fa-paragraph">کد زیر را در اپلیکیشن وارد کنید</p>
+
+                    <p class="en-paragraph">Enter the code below on the App</p>
+
+                    <p class="en-paragraph generated">{{code}}</p>
+
+                </div>
+            </div>
+            <div id="footer">
+
+                <div class="socials">
+                    <a href="https://www.linkedin.com/company/say-company/" target="_blank"><img src="http://www.sayapp.company/public/resources/img/linkdin.svg" /></a>
+
+                    <a href="https://www.instagram.com/say.company/" target="_blank"><img src="http://www.sayapp.company/public/resources/img/instagram.svg" /></a>
+
+                    <a href="https://twitter.com/say_company"  target="_blank"><img src="http://www.sayapp.company/public/resources/img/twitter.svg" /></a>
+
+                    <a href="https://www.facebook.com/say.company/" target="_blank"><img src="http://www.sayapp.company/public/resources/img/facebook.svg" /></a>
+                </div>
+
+                <p class="fa-paragraph">ایران - تهران - ایرانشهر - خیابان آذرشهر - پلاک ۲۲ - واحد ۴</p>
+                <p class="en-paragraph">4th Floor, No 22, Azarshahr St, Iranshahr St, Karimkhan Zand St, Tehran, Iran</p>
+
+            </div>
+        </div>
+    </body>
+</html>

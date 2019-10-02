@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from random import randint
-
+from flask import render_template
 from say.models.user_model import UserModel
 from say.models.verify_model import VerifyModel
 from hashlib import md5
@@ -16,7 +16,10 @@ Authentication APIs
 
 def send_verify_email(email, verify_code):
 
-    verify_mail = Message(recipients=[email], body=str(verify_code))
+    verify_mail = Message(
+        recipients=[email],
+        html=render_template('email_verification.html', code=verify_code),
+    )
     mail.send(verify_mail)
 
 
