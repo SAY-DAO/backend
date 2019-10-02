@@ -8,12 +8,12 @@
         <link href="https://fonts.googleapis.com/css?family=Roboto:100,400&display=swap" rel="stylesheet">
 
         <style>
-            *{
+            /* *{
                 margin: 0;
                 padding: 0;
-            }
+            } */
 
-            #container{
+            /* #container{
                 position: relative;
                 width: 100%;
                 height: 100%;
@@ -23,28 +23,27 @@
                 justify-content: center;
                 padding-top: 20px;
                 padding-bottom: 20px;
-            }
+            } */
 
-            #header{
+            /* #header{
                 width: 70%;
                 height: 80px;
                 margin: 0 auto;
-                /* border: 1px solid #666666; */
-            }
+            } */
 
-            .helper{
+            /* .helper{
                 display: inline-block;
                 height: 100%;
                 vertical-align: middle;
-            }
+            } */
 
-            #header>a>img{
+            /* #header>a>img{
                 height: 70%;
                 vertical-align: middle;
                 box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
-            }
+            } */
 
-            #content{
+            /* #content{
                 width: 70%;
                 height: 300px;
                 background-color: #ffffff;
@@ -54,93 +53,97 @@
                 justify-content: center;
                 box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
                 text-align: center;
-            }
+            } */
 
-            #content>img{
+            /* #content>img{
                 height: 35%;
-                }
+                } */
 
-            #footer{
+            /* #footer{
                 width: 70%;
                 min-height: 100px;
                 margin: 0 auto;
-                /* border: 1px solid #666666; */
                 text-align: center;
                 padding: 60px 0;
-            }
+            } */
 
-            #footer>p{
+            /* #footer>p{
                 font-weight: 100;
-            }
+            } */
 
-            #footer>.fa-paragraph{
+            /* #footer>.fa-paragraph{
                 font-size: 14px;
-            }
+            } */
 
-            .socials{
+            /* .socials{
                 margin: 0 30px 20px;
-            }
+            } */
 
-            .socials>a{
+            /* .socials>a{
                 width: 13%;
                 max-width: 30px;;
                 margin: 0 8px;
                 display: inline-block;
-            }
+            } */
 
-            p{
+            /* p{
                 margin: 10px 0;
                 color: #515151;
-            }
+            } */
 
-            .fa-paragraph{
+            /* .fa-paragraph{
                 font-family: 'iranyekan';
-            }
+            } */
 
-            .en-paragraph{
-                /* font-family: 'roboto'; */
+            /* .en-paragraph{
                 font-family: 'Roboto';
                 font-size: 12px;
-            }
+            } */
 
-            .generated{
+            /* .generated{
                 margin-top: 20px;
                 font-size: 42px;
-            }
+            } */
 
         </style>
+        
     </head>
-    <body>
-        <div id="container">
-            <div id="header">
-                <span class="helper"></span><a href="http://www.say.company" target="_blank"><img src="http://www.sayapp.company/public/resources/img/logo.png" /></a>
+    <body style="margin: 0; padding: 0;">
+        <div id="container" style="position: relative; width: 100%; height: 100%; background-color: #f3f3f3; display: flex; flex-direction: column; justify-content: center; padding-top:20px; padding-bottom:20px;">
+
+            <div id="header" style="width: 70%; height: 80px; margin:0 auto;">
+
+                <span class="helper" style="display: inline-block; height: 100%; vertical-align: middle;"></span><a href="http://www.say.company" target="_blank"><img src="http://www.sayapp.company/public/resources/img/logo.png" style="height: 70%; vertical-align: middle; box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);" /></a>
             </div>
-            <div id="content">
-                <img src="http://www.sayapp.company/public/resources/img/verification.svg" />
+
+            <div id="content" style="width: 70%; height: 300px; background-color: #ffffff; margin: 0 auto; display: flex; flex-direction: column; justify-content: center; box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08); text-align: center;">
+
+                <img src="http://www.sayapp.company/public/resources/img/verification.png" style="height: 35%;" />
                 <div class="content-paragraph">
 
-                    <p class="fa-paragraph">کد زیر را در اپلیکیشن وارد کنید</p>
+                    <p class="fa-paragraph" style="font-family: 'iranyekan'; margin: 10px 0; color: #515151;">کد زیر را در اپلیکیشن وارد کنید</p>
 
-                    <p class="en-paragraph">Enter the code below on the App</p>
+                    <p class="en-paragraph" style="font-family: 'Roboto'; font-size: 12px; margin: 10px 0; color: #515151;">Enter the code below on the App</p>
 
-                    <p class="en-paragraph generated">{{code}}</p>
+                    <p class="en-paragraph generated" style="font-family: 'Roboto'; font-size: 42px; margin-top: 20px; margin: 10px 0; color: #515151;">195-742</p>
 
                 </div>
             </div>
-            <div id="footer">
 
-                <div class="socials">
-                    <a href="https://www.linkedin.com/company/say-company/" target="_blank"><img src="http://www.sayapp.company/public/resources/img/linkdin.svg" /></a>
+            <div id="footer" style="width: 70%; min-height: 100px; margin: 0 auto; text-align: center; padding: 60px 0;">
 
-                    <a href="https://www.instagram.com/say.company/" target="_blank"><img src="http://www.sayapp.company/public/resources/img/instagram.svg" /></a>
+                <div class="socials" style="margin: 0 30px 20px;">
+                    <a href="https://www.linkedin.com/company/say-company/" style="width: 13%; max-width: 30px; margin: 0 8px; display: inline-block;" target="_blank"><img src="http://www.sayapp.company/public/resources/img/linkdin.png" /></a>
 
-                    <a href="https://twitter.com/say_company"  target="_blank"><img src="http://www.sayapp.company/public/resources/img/twitter.svg" /></a>
+                    <a href="https://www.instagram.com/say.company/" style="width: 13%; max-width: 30px; margin: 0 8px; display: inline-block;" target="_blank"><img src="http://www.sayapp.company/public/resources/img/instagram.png" /></a>
 
-                    <a href="https://www.facebook.com/say.company/" target="_blank"><img src="http://www.sayapp.company/public/resources/img/facebook.svg" /></a>
+                    <a href="https://twitter.com/say_company" style="width: 13%; max-width: 30px; margin: 0 8px; display: inline-block;"  target="_blank"><img src="http://www.sayapp.company/public/resources/img/twitter.png" /></a>
+
+                    <a href="https://www.facebook.com/say.company/" style="width: 13%; max-width: 30px; margin: 0 8px; display: inline-block;" target="_blank"><img src="http://www.sayapp.company/public/resources/img/facebook.png" /></a>
                 </div>
 
-                <p class="fa-paragraph">ایران - تهران - ایرانشهر - خیابان آذرشهر - پلاک ۲۲ - واحد ۴</p>
-                <p class="en-paragraph">4th Floor, No 22, Azarshahr St, Iranshahr St, Karimkhan Zand St, Tehran, Iran</p>
+                <p class="fa-paragraph" style="font-family: 'iranyekan'; margin: 10px 0; color: #515151; font-weight: 100; font-size: 14px;">ایران - تهران - ایرانشهر - خیابان آذرشهر - پلاک ۲۲ - واحد ۴</p>
+                <p class="en-paragraph" style="font-family: 'Roboto'; font-size: 12px; margin: 10px 0; color: #515151; font-weight: 100;">4th Floor, No 22, Azarshahr St, Iranshahr St, Karimkhan Zand St, Tehran, Iran</p>
 
             </div>
         </div>
