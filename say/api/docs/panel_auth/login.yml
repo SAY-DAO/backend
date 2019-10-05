@@ -1,0 +1,26 @@
+Panel Login API
+---
+
+tags:
+  - Panel Auth API
+
+parameters:
+  - in: body
+    name: verify
+    required: true
+    schema:
+      properties:
+        username: 
+          type: string
+        password: 
+          type: string
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: social_worker

@@ -1,6 +1,8 @@
 {
     "dbUrl" : "postgresql://postgres:postgres@localhost/say_test",
-
+    "JWT_SECRET_KEY": "6A4FAD52ABC88B144B9A44499A249",
+    "JWT_ACCESS_TOKEN_EXPIRES": 2592000,
+    "JWT_REFRESH_TOKEN_EXPIRES": 25920000, 
     "MAIL_SERVER": "smtp.gmail.com",
     "MAIL_USERNAME": "afpp94",
     "MAIL_PASSWORD": "Arash1373",

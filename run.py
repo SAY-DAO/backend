@@ -4,6 +4,7 @@ from say.api.user_api import *
 from say.api.need_api import *
 from say.api.activity_api import *
 from say.api.auth_api import *
+from say.api.panel_auth_api import *
 from say.api.dashboard_api import *
 from say.api.family_api import *
 from say.api.ngo_api import *

@@ -54,11 +54,10 @@ class CheckUser(Resource):
             return resp
 
 
-class Login(Resource):
+class PanelLogin(Resource):
 
-    #@swag_from("./docs/panel/auth/login.yml")
+    @swag_from("./docs/panel_auth/login.yml")
     def post(self):
-        from pudb import set_trace; set_trace()
         session_maker = sessionmaker(db)
         session = session_maker()
         resp = {"message": "Something is Wrong!"}
@@ -86,9 +85,6 @@ class Login(Resource):
             )
             if social_worker is not None:
                 if social_worker.password == password:
-                    social_worker.token = md5(
-                        (social_workername + social_worker.emailAddress).encode()
-                    ).hexdigest()
                     social_worker.lastLogin = datetime.now()
                     session.commit()
 
@@ -130,6 +126,16 @@ class Login(Resource):
             return resp
 
 
+class PanelTokenRefresh(Resource):
+
+    @jwt_refresh_token_required
+    @swag_from("./docs/panel_auth/refresh.yml")
+    def post(self):
+        current_user = get_jwt_identity()
+        access_token = create_access_token(identity = current_user)
+        return {'access_token': access_token}
+
+
 #class Logout(Resource):
 #
 #    @jwt_required
@@ -153,14 +159,6 @@ class Login(Resource):
 #        finally:
 #            session.close()
 #            return resp
-#
-#
-#class TokenRefresh(Resource):
-#    @jwt_refresh_token_required
-#    def post(self):
-#        current_user = get_jwt_identity()
-#        access_token = create_access_token(identity = current_user)
-#        return {'access_token': access_token}
 #
 #
 #from models import UserModel, RevokedTokenModel
@@ -278,7 +276,8 @@ API URLs
 
 #api.add_resource(CheckUser, "/api/v2/panel/auth/checkUserName")
 #api.add_resource(RegisterUser, "/api/v2/panel/auth/register")
-api.add_resource(Login, "/api/v2/panel/auth/login")
+api.add_resource(PanelLogin, "/api/v2/panel/auth/login")
+api.add_resource(PanelTokenRefresh, "/api/v2/panel/auth/refresh")
 #api.add_resource(Logout, "/api/v2/panel/auth/logout/userid=<user_id>")
 #api.add_resource(Verify, "/api/v2/panel/auth/verify/userid=<user_id>")
 #api.add_resource(VerifyResend, "/api/v2/panel/auth/verify/resend/userid=<user_id>")

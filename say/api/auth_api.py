@@ -253,15 +253,24 @@ class Verify(Resource):
                 return
 
             verify = session.query(VerifyModel).filter_by(id_user=user_id).first()
-            from pudb import set_trace; set_trace()
             if (
                 verify is None
                 or "verifyCode" not in request.json.keys()
-                or verify.expire_at < datetime.utcnow()
-                or verify.code != request.json["verifyCode"]
             ):
                 resp = Response(
                     json.dumps({"message": "Something is Wrong!"}), status=500
+                )
+                return
+
+            sent_verify_code = str(request.json["verifyCode"])
+            sent_verify_code = sent_verify_code.replace('-', '')
+            sent_verify_code = int(sent_verify_code)
+            if (
+                verify.expire_at < datetime.utcnow()
+                or verify.code != sent_verify_code
+            ):
+                resp = Response(
+                    json.dumps({"message": "verifyCode is Invalid!"}), status=500
                 )
                 return
 
@@ -301,8 +310,9 @@ class VerifyResend(Resource):
             if verify is None:
                 verify = VerifyModel(user=user)
                 session.add(verify)
+
             verify.code = randint(100000, 999999)
-            verify.expireAt = datetime.utcnow() + timedelta(minutes=5)
+            verify.expire_at = datetime.utcnow() + timedelta(minutes=60)
 
             session.commit()
             send_verify_email(user.emailAddress, verify.code)
@@ -324,6 +334,7 @@ API URLs
 
 api.add_resource(CheckUser, "/api/v2/auth/checkUserName")
 api.add_resource(RegisterUser, "/api/v2/auth/register")
+api.add_resource(Login, "/api/v2/auth/login")
 api.add_resource(Logout, "/api/v2/auth/logout/userid=<user_id>")
 api.add_resource(Verify, "/api/v2/auth/verify/userid=<user_id>")
 api.add_resource(VerifyResend, "/api/v2/auth/verify/resend/userid=<user_id>")

@@ -19,6 +19,7 @@ from werkzeug.utils import secure_filename
 from flask_mail import Mail
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_jwt_extended import JWTManager
 
 # from hazm import *
 import json
@@ -64,6 +65,8 @@ Swagger(app)
 limiter = Limiter(app, key_func=get_remote_address, default_limits=["100 per minute"])
 
 mail = Mail(app)
+
+jwt = JWTManager(app)
 
 api = Api(app)
 # api_bp = Blueprint('api', __name__)
