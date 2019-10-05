@@ -5,6 +5,7 @@ Flask-SQLAlchemy
 flask-cors
 Flask-Mail
 flask_limiter
+Flask-Migrate
 SQLAlchemy
 psycopg2
 requests

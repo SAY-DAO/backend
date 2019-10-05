@@ -20,6 +20,7 @@ from flask_mail import Mail
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_jwt_extended import JWTManager
+from flask_migrate import Migrate
 
 # from hazm import *
 import json
@@ -48,6 +49,7 @@ ALLOWED_VOICE_EXTENSIONS = {"wav", "m4a", "wma", "mp3", "aac", "ogg"}
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = conf['dbUrl']
 app.config.update(conf)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config["DEBUG"] = True
@@ -66,7 +68,21 @@ limiter = Limiter(app, key_func=get_remote_address, default_limits=["100 per min
 
 mail = Mail(app)
 
+app.config['JWT_BLACKLIST_ENABLED'] = True
+app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 jwt = JWTManager(app)
+
+@jwt.token_in_blacklist_loader
+def check_if_token_in_blacklist(decrypted_token):
+    jti = decrypted_token['jti']
+    from ..models.revoked_token_model import RevokedTokenModel
+    from sqlalchemy.orm import scoped_session, sessionmaker
+    session = scoped_session(
+        sessionmaker(autocommit=False, autoflush=False, bind=db)
+    )
+    return RevokedTokenModel.is_jti_blacklisted(jti, session)
+
+migrate = Migrate(app, db)
 
 api = Api(app)
 # api_bp = Blueprint('api', __name__)

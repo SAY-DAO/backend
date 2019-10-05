@@ -1,10 +1,13 @@
 from datetime import datetime, timedelta
 from hashlib import md5
 from random import randint
-from flask_jwt_extended import (create_access_token, create_refresh_token, jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt)
+from flask_jwt_extended import (
+    create_access_token, create_refresh_token, jwt_required,
+    jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
+)
 from . import *
 from say.models.social_worker_model import SocialWorkerModel
-from say.models.verify_model import VerifyModel
+from say.models.revoked_token_model import RevokedTokenModel
 
 
 """
@@ -100,8 +103,8 @@ class PanelLogin(Resource):
                         json.dumps(
                             {
                                 "message": "Login Successful",
-                                "access_token": access_token,
-                                "refresh_token": refresh_token
+                                "access_token": f"Bearer {access_token}",
+                                "refresh_token": f"Bearer {refresh_token}",
                             }
                         ),
                         status=200,
@@ -133,7 +136,7 @@ class PanelTokenRefresh(Resource):
     def post(self):
         current_user = get_jwt_identity()
         access_token = create_access_token(identity = current_user)
-        return {'access_token': access_token}
+        return {'access_token': f'Bearer {access_token}'}
 
 
 #class Logout(Resource):
@@ -161,30 +164,45 @@ class PanelTokenRefresh(Resource):
 #            return resp
 #
 #
-#from models import UserModel, RevokedTokenModel
 #
-#class LogoutAccess(Resource):
-#    @jwt_required
-#    def post(self):
-#        jti = get_raw_jwt()['jti']
-#        try:
-#            revoked_token = RevokedTokenModel(jti = jti)
-#            revoked_token.add()
-#            return {'message': 'Access token has been revoked'}
-#        except:
-#            return {'message': 'Something went wrong'}, 500
-#
-#
-#class LogoutRefresh(Resource):
-#    @jwt_refresh_token_required
-#    def post(self):
-#        jti = get_raw_jwt()['jti']
-#        try:
-#            revoked_token = RevokedTokenModel(jti = jti)
-#            revoked_token.add()
-#            return {'message': 'Refresh token has been revoked'}
-#        except:
-#           return {'message': 'Something went wrong'}, 500
+class PanelLogoutAccess(Resource):
+    @jwt_required
+    @swag_from("./docs/panel_auth/logout-access.yml")
+    def post(self):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        jti = get_raw_jwt()['jti']
+        msg = None
+        try:
+            revoked_token = RevokedTokenModel(jti = jti)
+            session.add(revoked_token)
+            session.commit()
+            msg = {'message': 'Access token has been revoked'}
+        except:
+            msg = {'message': 'Something went wrong'}, 500
+        finally:
+            session.close()
+            return msg
+
+
+class PanelLogoutRefresh(Resource):
+    @jwt_refresh_token_required
+    @swag_from("./docs/panel_auth/logout-refresh.yml")
+    def post(self):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        jti = get_raw_jwt()['jti']
+        try:
+            revoked_token = RevokedTokenModel(jti = jti)
+            session.add(revoked_token)
+            session.commit()
+            msg = {'message': 'Refresh token has been revoked'}
+        except:
+            msg = {'message': 'Something went wrong'}, 500
+        finally:
+            session.close()
+            return msg
+
 #
 #
 #class Verify(Resource):
@@ -274,10 +292,10 @@ API URLs
 """
 
 
-#api.add_resource(CheckUser, "/api/v2/panel/auth/checkUserName")
-#api.add_resource(RegisterUser, "/api/v2/panel/auth/register")
 api.add_resource(PanelLogin, "/api/v2/panel/auth/login")
 api.add_resource(PanelTokenRefresh, "/api/v2/panel/auth/refresh")
+api.add_resource(PanelLogoutAccess, "/api/v2/panel/auth/logout/token")
+api.add_resource(PanelLogoutRefresh, "/api/v2/panel/auth/logout/refresh")
 #api.add_resource(Logout, "/api/v2/panel/auth/logout/userid=<user_id>")
 #api.add_resource(Verify, "/api/v2/panel/auth/verify/userid=<user_id>")
 #api.add_resource(VerifyResend, "/api/v2/panel/auth/verify/resend/userid=<user_id>")
