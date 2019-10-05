@@ -18,7 +18,7 @@ def send_verify_email(email, verify_code):
 
     verify_mail = Message(
         recipients=[email],
-        html=render_template('email_verification.html', code=verify_code),
+        html=render_template('email_verification.html', code=str(verify_code)),
     )
     mail.send(verify_mail)
 
