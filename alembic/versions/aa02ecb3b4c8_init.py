@@ -18,6 +18,14 @@ depends_on = None
 
 def upgrade():
     op.create_table(
+        'verify',
+        sa.Column('id', sa.Integer, primary_key=True, unique=True, nullable=False),
+        sa.Column('user_id', sa.Integer, sa.ForeignKey('user.id'), nullable=False),
+        sa.Column('code', sa.Integer, nullable=False),
+        sa.Column('expire_at', sa.DateTime, nullable=False),
+    )
+
+    op.create_table(
         'revoked_tokens',
         sa.Column('id', sa.Integer, primary_key=True),
         sa.Column('jti', sa.Unicode(200)),
@@ -26,4 +34,5 @@ def upgrade():
 
 
 def downgrade():
-    pass
+    op.drop_table('verify')
+    op.drop_table('revoked_tokens')

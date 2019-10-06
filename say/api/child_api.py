@@ -124,13 +124,19 @@ class GetAllChildren(Resource):
         resp = {"message": "major error occurred!"}
 
         try:
-            children = (
-                session.query(ChildModel)
-                .filter_by(isDeleted=False)
+            confirm = int(confirm)
+            children_query = session.query(ChildModel) \
+                .filter_by(isDeleted=False) \
                 .filter_by(isMigrated=False)
-                .filter_by(isConfirmed=True)
-                .all()
-            )
+
+            if confirm == 0:
+                children_query = children_query.filter_by(isConfirmed=False)
+            elif confirm == 1:
+                children_query = children_query.filter_by(isConfirmed=True)
+
+            children = children_query.all()
+            if len(children) == 0:
+                resp = {}
 
             result = "{"
             for child in children:
