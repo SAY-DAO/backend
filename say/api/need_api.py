@@ -34,13 +34,13 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
     if need.isConfirmed:
 
         need_data = obj_to_dict(need)
-        need_data = utf8_response(need_data)
 
         if not with_participants and not with_child_id:
             return need_data
 
         child = session.query(ChildNeedModel).filter_by(id_need=need.id).filter_by(isDeleted=False).first()
         need_data['ChildId'] = child.id_child
+        need_data = utf8_response(need_data)
 
         if not with_participants and with_child_id:
             return need_data
