@@ -156,7 +156,7 @@ class GetChildById(Resource):
         resp = {"message": "major error occurred!"}
 
         try:
-            resp = Response(get_child_by_id(session, child_id, confirm=confirm))
+            resp = Response(get_child_by_id(session, child_id, confirm=confirm, with_need=True))
 
         except Exception as e:
             print(e)
