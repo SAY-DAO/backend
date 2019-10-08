@@ -10,7 +10,7 @@ from flask import (
     send_from_directory,
 )
 from flask_restful import Api, Resource
-from sqlalchemy import create_engine, inspect, or_, not_, and_
+from sqlalchemy import create_engine, inspect, or_, not_, and_, func
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 from flasgger import Swagger

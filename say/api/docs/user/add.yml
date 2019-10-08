@@ -10,9 +10,6 @@ For gender, [true] is male and [false] is female.
 tags:
   - User API
 
-consumes:
-  - multipart/form-data
-
 parameters:
   - in: body
     name: update info
@@ -44,9 +41,15 @@ parameters:
           type: integer
 
         birthPlace:
-          type: string
+          type: integer
 
         birthDate:
+          type: string
+
+        userName:
+          type: string
+
+        password:
           type: string
 
 
