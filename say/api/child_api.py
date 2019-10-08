@@ -475,15 +475,16 @@ class AddChild(Resource):
                 return resp
 
             if file1 and allowed_voice(file1.filename):
-                # filename1 = secure_filename(file1.filename)
-                filename1 = code + "." + file1.filename.split(".")[-1]
+                filename1 = secure_filename(file1.filename)
+                #filename1 = code + "." + file1.filename.split(".")[-1]
 
                 temp_voice_path = os.path.join(
-                    app.config["UPLOAD_FOLDER"], str(current_id) + "-child"
+                    app.config["UPLOAD_FOLDER"],
+                    str(current_id) + "-child"
                 )
 
                 if not os.path.isdir(temp_voice_path):
-                    os.mkdir(temp_voice_path)
+                    os.makedirs(temp_voice_path, exist_ok=True)
 
                 voice_path = os.path.join(
                     temp_voice_path, str(current_id) + "-voice_" + filename1
@@ -607,6 +608,9 @@ class AddChild(Resource):
             )
 
             session.add(new_child)
+            session.flush()
+            new_child.ngo_relation.childrenCount += 1
+            new_child.social_worker_relation.childCount += 1
             session.commit()
 
             resp = Response(json.dumps({"message": "CHILD ADDED SUCCESSFULLY!"}))
@@ -1190,10 +1194,8 @@ class ConfirmChild(Resource):
                 primary_child.confirmUser = social_worker_id
                 primary_child.confirmDate = datetime.now()
 
-                primary_child.ngo_relation.childrenCount += 1
                 primary_child.ngo_relation.currentChildrenCount += 1
 
-                primary_child.social_worker_relation.childCount += 1
                 primary_child.social_worker_relation.currentChildCount += 1
 
                 new_family = FamilyModel(id_child=primary_child.id)

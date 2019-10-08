@@ -224,7 +224,6 @@ class PanelLogoutRefresh(Resource):
 #                return
 #
 #            verify = session.query(VerifyModel).filter_by(id_user=user_id).first()
-#            from pudb import set_trace; set_trace()
 #            if (
 #                verify is None
 #                or "verifyCode" not in request.json.keys()

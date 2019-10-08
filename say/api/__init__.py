@@ -37,8 +37,9 @@ db = create_engine(conf["dbUrl"])
 
 BASE_FOLDER = os.getcwd()
 
-UPLOAD_FOLDER = os.path.join(BASE_FOLDER, "say")
-UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, "files")
+#UPLOAD_FOLDER = os.path.join(BASE_FOLDER, "say")
+UPLOAD_FOLDER = "files"
+#UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, "files")
 
 if not os.path.isdir(UPLOAD_FOLDER):
     os.mkdir(UPLOAD_FOLDER)
@@ -73,22 +74,11 @@ app.config['JWT_BLACKLIST_ENABLED'] = True
 app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 jwt = JWTManager(app)
 
-@jwt.token_in_blacklist_loader
-def check_if_token_in_blacklist(decrypted_token):
-    jti = decrypted_token['jti']
-    from ..models.revoked_token_model import RevokedTokenModel
-    from sqlalchemy.orm import scoped_session, sessionmaker
-    session = scoped_session(
-        sessionmaker(autocommit=False, autoflush=False, bind=db)
-    )
-    return RevokedTokenModel.is_jti_blacklisted(jti, session)
-
 migrate = Migrate(app, db)
 
 api = Api(app)
 # api_bp = Blueprint('api', __name__)
 # api = Api(api_bp)
-
 
 # this function converts an object to a python dictionary
 def obj_to_dict(obj):
@@ -171,3 +161,15 @@ def utf8_response(response: dict, is_deep=False):
         out = out.replace(": True", ": true")
 
         return out
+
+
+@jwt.token_in_blacklist_loader
+def check_if_token_in_blacklist(decrypted_token):
+    jti = decrypted_token['jti']
+    from ..models.revoked_token_model import RevokedTokenModel
+    from sqlalchemy.orm import scoped_session, sessionmaker
+    session = scoped_session(
+        sessionmaker(autocommit=False, autoflush=False, bind=db)
+    )
+    return RevokedTokenModel.is_jti_blacklisted(jti, session)
+
