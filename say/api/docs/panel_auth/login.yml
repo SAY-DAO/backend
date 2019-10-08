@@ -5,15 +5,12 @@ tags:
   - Panel Auth API
 
 parameters:
-  - in: body
-    name: verify
+  - in: formData
+    name: username
     required: true
-    schema:
-      properties:
-        username: 
-          type: string
-        password: 
-          type: string
+  - in: formData
+    name: password
+    required: true
 
 responses:
   500:

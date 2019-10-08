@@ -114,3 +114,4 @@ data
 *.swo
 *~
 
+files/*
