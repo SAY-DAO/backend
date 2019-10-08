@@ -84,6 +84,7 @@ class PanelLogin(Resource):
             social_worker = (
                 session.query(SocialWorkerModel)
                 .filter_by(isDeleted=False)
+                .filter_by(userName=username)
                 .first()
             )
             if social_worker is not None:
