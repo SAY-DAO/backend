@@ -24,7 +24,6 @@ class PanelLogin(Resource):
         resp = {"message": "Something is Wrong!"}
 
         try:
-            from pudb import set_trace; set_trace()
 
             if "username" in request.form.keys():
                 username = request.form["username"]
