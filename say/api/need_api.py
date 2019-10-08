@@ -47,12 +47,30 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
 
         participant_ids = session.query(NeedFamilyModel).filter_by(id_need=need.id).filter_by(isDeleted=False).all()
         ids = [p.id_user for p in participant_ids]
-        participants = session.query(UserModel).filter(UserModel.id.in_(ids)).filter_by(isDeleted=False).all()
+        participants = session.query(UserFamilyModel).filter(UserFamilyModel.id_user.in_(ids)).filter_by(isDeleted=False).all()
 
         users = '{'
         for participant in participants:
             # user = session.query(UserModel).filter_by(isDeleted=False).filter_by(id=participant.id_user).first()
-            users += f'"{str(participant.id)}": {utf8_response(obj_to_dict(participant))}, '
+            temp_participant = obj_to_dict(participant)
+
+            temp_participant['Contribution'] = (
+                (session.query(func.sum(PaymentModel.amount))
+                .filter_by(id_user=participant.id_user)
+                .filter_by(id_need=need.id)
+                # .group_by(PaymentModel.id)
+                .group_by(PaymentModel.id_user, PaymentModel.id_need)
+                .first())[0]
+            )
+            
+            temp_participant['userAvatar'] = (
+                (session.query(UserModel.avatarUrl)
+                .filter_by(id=participant.id_user)
+                .filter_by(isDeleted=False)
+                .first())[0]
+            )
+
+            users += f'"{str(participant.id_user)}": {utf8_response(temp_participant)}, '
 
         users_data = users[:-2] + "}" if len(users) != 1 else "{}"
 
@@ -305,7 +323,7 @@ class AddPaymentForNeed(Resource):
         resp = {"message": "major error occurred!"}
 
         try:
-            amount = int(request.json["amount"])
+            amount = int(request.form["amount"])
             created_at = datetime.now()
 
             need = (

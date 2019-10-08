@@ -794,7 +794,7 @@ class AddUser(Resource):
             else:
                 phone_number = None
 
-            # phone_number = request.json['phoneNumber']
+            phone_number = request.json['phoneNumber']
             password = md5(request.json["password"].encode()).hexdigest()
             first_name = request.json["firstName"]
             last_name = request.json["lastName"]
