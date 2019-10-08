@@ -47,5 +47,6 @@ class SocialWorkerModel(base):
     isActive = Column(Boolean, nullable=False, default=True)
     isDeleted = Column(Boolean, nullable=False, default=False)
 
+
     privilege = relationship("PrivilegeModel", foreign_keys="SocialWorkerModel.id_type")
     ngo = relationship("NgoModel", foreign_keys="SocialWorkerModel.id_ngo")

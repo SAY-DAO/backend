@@ -51,17 +51,6 @@ class AddSocialWorker(Resource):
         resp = {"message": "major error occurred!"}
 
         try:
-            if len(session.query(SocialWorkerModel).all()):
-                last_obj = (
-                    session.query(SocialWorkerModel)
-                    .order_by(SocialWorkerModel.id.desc())
-                    .first()
-                )
-                current_id = last_obj.id + 1
-
-            else:
-                current_id = 1
-
             if "country" in request.form.keys():
                 country = int(request.form["country"])
             else:
@@ -144,6 +133,41 @@ class AddSocialWorker(Resource):
             else:
                 self.panel_users += 1
                 generated_code = format(id_ngo, "03d") + format(self.panel_users, "03d")
+
+            new_social_worker = SocialWorkerModel(
+                id_ngo=id_ngo,
+                country=country,
+                city=city,
+                id_type=id_type,
+                firstName=first_name,
+                lastName=last_name,
+                userName=username,
+                birthCertificateNumber=birth_certificate_number,
+                idNumber=id_number,
+                gender=gender,
+                birthDate=birth_date,
+                phoneNumber=phone_number,
+                emergencyPhoneNumber=emergency_phone_number,
+                emailAddress=email_address,
+                telegramId=telegram_id,
+                postalAddress=postal_address,
+                bankAccountNumber=bank_account_number,
+                bankAccountShebaNumber=bank_account_sheba_number,
+                bankAccountCardNumber=bank_account_card_number,
+                registerDate=register_date,
+                lastUpdateDate=last_update_date,
+                lastLoginDate=last_login_date,
+                passportNumber=passport_number,
+                generatedCode=generated_code,
+                password='',
+                passportUrl='',
+                avatarUrl='',
+                idCardUrl='',
+            )
+
+            session.add(new_social_worker)
+            session.flush()
+            current_id = new_social_worker.id
 
             password = md5(("SayPanel" + str(current_id)).encode()).hexdigest()
 
@@ -256,38 +280,11 @@ class AddSocialWorker(Resource):
 
             avatar_url = avatar
 
-            new_social_worker = SocialWorkerModel(
-                id_ngo=id_ngo,
-                country=country,
-                city=city,
-                id_type=id_type,
-                firstName=first_name,
-                lastName=last_name,
-                userName=username,
-                password=password,
-                birthCertificateNumber=birth_certificate_number,
-                idNumber=id_number,
-                idCardUrl=id_card_url,
-                passportNumber=passport_number,
-                passportUrl=passport_url,
-                gender=gender,
-                birthDate=birth_date,
-                phoneNumber=phone_number,
-                emergencyPhoneNumber=emergency_phone_number,
-                emailAddress=email_address,
-                telegramId=telegram_id,
-                postalAddress=postal_address,
-                avatarUrl=avatar_url,
-                bankAccountNumber=bank_account_number,
-                bankAccountShebaNumber=bank_account_sheba_number,
-                bankAccountCardNumber=bank_account_card_number,
-                registerDate=register_date,
-                lastUpdateDate=last_update_date,
-                lastLoginDate=last_login_date,
-                generatedCode=generated_code,
-            )
 
-            session.add(new_social_worker)
+            new_social_worker.password=password,
+            new_social_worker.passportUrl=passport_url,
+            new_social_worker.avatarUrl=avatar_url,
+            new_social_worker.idCardUrl=id_card_url,
             session.commit()
 
             resp = Response(
@@ -898,6 +895,7 @@ class UpdateSocialWorker(Resource):
                 this_ngo.childrenCount += base_social_worker.childCount
                 this_ngo.socialWorkerCount += 1
 
+            session.add(base_social_worker)
             session.commit()
             resp = Response(utf8_response(res), status=200)
 
