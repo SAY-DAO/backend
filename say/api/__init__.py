@@ -33,6 +33,7 @@ with open("./config.json") as config_file:
 # db = create_engine('postgresql://postgres:13771998@localhost:5432/postgres')
 db = create_engine(conf["dbUrl"])
 # db = create_engine('postgresql://postgres:postgres@5.253.27.219:5432/postgres')
+# "dbUrl" : "postgresql://postgres:13771998@localhost:5432/say",
 
 BASE_FOLDER = os.getcwd()
 
