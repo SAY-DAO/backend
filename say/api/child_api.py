@@ -44,7 +44,7 @@ def get_child_by_id(session, child_id, is_migrate=False, confirm=1, with_need=Fa
                 .first()
             )
         else:
-            return "{wrong input}"
+            return {'message': 'wrong input'}
     else:
         if int(confirm) == 0:
             child = (
@@ -73,13 +73,12 @@ def get_child_by_id(session, child_id, is_migrate=False, confirm=1, with_need=Fa
                 .first()
             )
         else:
-            return "{wrong input}"
+            return {'message': 'wrong input'}
 
-    child_data = utf8_response(obj_to_dict(child))
+    child_data = obj_to_dict(child)
 
     if with_need:
-        temp = f'"Needs": {get_child_need(session, child_id)}'
-        return child_data[:-1] + ', ' + temp + '}'
+        child_data['Needs'] = get_child_need(session, child_id)
 
     return child_data
 
@@ -89,7 +88,6 @@ def get_child_need(session, child_id, urgent=False, done=False, with_participant
     ids = [n.id_need for n in need_ids]
     needs = session.query(NeedModel).filter(NeedModel.id.in_(ids)).filter_by(isDeleted=False).all()
 
-    child_needs = '{'
     check = False
     for need in needs:
         if not need.isConfirmed:
@@ -98,22 +96,22 @@ def get_child_need(session, child_id, urgent=False, done=False, with_participant
         if done:
             if need.isDone:
                 need_data = get_need(need, session, with_participants=with_participants, with_child_id=False)
-                child_needs += f'"{str(need.id)}": {need_data}, '
+                child_needs[str(need.id)] = need_data
 
         elif not urgent:
             need_data = get_need(need, session, with_participants=with_participants, with_child_id=False)
-            child_needs += f'"{str(need.id)}": {need_data}, '
+            child_needs[str(need.id)] = need_data
 
         else:
             if need.isUrgent:
                 check = True
                 need_data = get_need(need, session, with_participants=with_participants, with_child_id=False)
-                child_needs += f'"{str(need.id)}": {need_data}, '
+                child_needs[str(need.id)] = need_data
 
         if not check and urgent:
-            return utf8_response({'message': 'no urgent need_ids found!'})
+            return {'message': 'no urgent needs'}
 
-    return child_needs[:-2] + "}" if len(child_needs) != 1 else "{}"
+    return child_needs
 
 
 class GetAllChildren(Resource):
@@ -121,33 +119,33 @@ class GetAllChildren(Resource):
     def get(self, confirm):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             confirm = int(confirm)
-            children_query = session.query(ChildModel) \
-                .filter_by(isDeleted=False) \
+            children_query = (
+                session.query(ChildModel)
+                .filter_by(isDeleted=False)
                 .filter_by(isMigrated=False)
+            )
 
-            if confirm == 0:
+            if int(confirm) == 0:
                 children_query = children_query.filter_by(isConfirmed=False)
-            elif confirm == 1:
+            elif int(confirm) == 1:
                 children_query = children_query.filter_by(isConfirmed=True)
 
             children = children_query.all()
             if len(children) == 0:
-                resp = {}
+                resp = jsonify({})
 
-            result = "{"
             for child in children:
-                result += f'"{str(child.id)}": {get_child_by_id(session, child.id, confirm=confirm)}, '
+                result[str(child.id)] = get_child_by_id(session, child.id, confirm=confirm)
 
-            resp = Response(result[:-2] + "}" if len(result) != 1 else "{}")
+            resp = jsonify(result)
 
         except Exception as e:
             print(e)
-
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -159,15 +157,15 @@ class GetChildById(Resource):
     def get(self, child_id, confirm):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
-            resp = Response(get_child_by_id(session, child_id, confirm=confirm, with_need=True))
+            resp = jsonify(get_child_by_id(session, child_id, confirm=confirm, with_need=True))
 
         except Exception as e:
             print(e)
 
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -179,7 +177,7 @@ class GetChildrenOfUserByUserId(Resource):
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             users = (
@@ -189,7 +187,6 @@ class GetChildrenOfUserByUserId(Resource):
                 .all()
             )
 
-            child_res = "{"
             for user in users:
                 families = (
                     session.query(FamilyModel)
@@ -202,14 +199,13 @@ class GetChildrenOfUserByUserId(Resource):
                     child_data = get_child_by_id(
                         session, family.family_child_relation.id
                     )
-                    child_res += f'"{str(family.id_child)}": {child_data}, '
+                    child_res[str(family.id_child)] = child_data
 
-            resp = Response(child_res[:-2] + "}" if len(child_res) != 1 else "{}")
+            resp = jsonify(child_res)
 
         except Exception as e:
             print(e)
-
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -221,15 +217,14 @@ class GetChildNeeds(Resource):
     def get(self, child_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
-            resp = Response(get_child_need(session, child_id, with_participants=True))
+            resp = jsonify(get_child_need(session, child_id, with_participants=True))
 
         except Exception as e:
             print(e)
-
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -241,15 +236,14 @@ class GetChildDoneNeeds(Resource):
     def get(self, child_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
-            resp = Response(get_child_need(session, child_id, done=True))
+            resp = jsonify(get_child_need(session, child_id, done=True))
 
         except Exception as e:
             print(e)
-
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -261,7 +255,7 @@ class GetChildNeedsByCategory(Resource):
     def get(self, child_id, category):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             needs = (
@@ -271,7 +265,6 @@ class GetChildNeedsByCategory(Resource):
                 .all()
             )
 
-            res = "{"
             for need in needs:
                 if need.need_relation.category == int(category):
                     need_data = (
@@ -281,14 +274,13 @@ class GetChildNeedsByCategory(Resource):
                         .filter_by(isConfirmed=True)
                         .first()
                     )
-                    res += f'"{str(need.id_need)}": {get_need(need_data, session)}, '
+                    res[str(need.id_need)] = get_need(need_data, session)
 
-            resp = Response(res[:-2] + "}" if len(res) != 1 else "{}")
+            resp = jsonify(res)
 
         except Exception as e:
             print(e)
-
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -300,7 +292,7 @@ class GetChildSayName(Resource):
     def get(self, child_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             child = (
@@ -312,12 +304,11 @@ class GetChildSayName(Resource):
                 .first()
             )
 
-            resp = Response(utf8_response({"ChildSayName": child.sayName}))
+            resp = jsonify({"ChildSayName": child.sayName})
 
         except Exception as e:
             print(e)
-
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -329,7 +320,7 @@ class GetChildFamilyId(Resource):
     def get(self, child_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             family = (
@@ -339,12 +330,11 @@ class GetChildFamilyId(Resource):
                 .first()
             )
 
-            resp = Response(utf8_response({"ChildFamilyId": family.id}))
+            resp = jsonify({"ChildFamilyId": family.id})
 
         except Exception as e:
             print(e)
-
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -356,7 +346,7 @@ class GetChildAvatarUrl(Resource):
     def get(self, child_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             child = (
@@ -368,12 +358,11 @@ class GetChildAvatarUrl(Resource):
                 .first()
             )
 
-            resp = Response(utf8_response({"ChildAvatarUrl": child.avatarUrl}))
+            resp = jsonify({"ChildAvatarUrl": child.avatarUrl})
 
         except Exception as e:
             print(e)
-
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -385,7 +374,7 @@ class GetChildCreditSpent(Resource):
     def get(self, child_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             child = (
@@ -397,12 +386,11 @@ class GetChildCreditSpent(Resource):
                 .first()
             )
 
-            resp = Response(utf8_response({"ChildCreditSpent": child.spentCredit}))
+            resp = jsonify({"ChildCreditSpent": child.spentCredit})
 
         except Exception as e:
             print(e)
-
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -414,7 +402,7 @@ class AddChild(Resource):
     def post(self, social_worker_id, ngo_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             sw = (
@@ -436,85 +424,11 @@ class AddChild(Resource):
             )
 
             if len(children):
-                resp = Response(json.dumps({"message": "child was already here!"}))
+                resp = jsonify({"message": "child was already here!"})
                 session.close()
                 return resp
-
-            if len(session.query(ChildModel).all()):
-                last_child = (
-                    session.query(ChildModel).order_by(ChildModel.id.desc()).first()
-                )
-                current_id = last_child.id + 1
-
-            else:
-                current_id = 1
 
             avatar_path, voice_path = "wrong avatar", "wrong voice"
-            if "voiceUrl" not in request.files or "avatarUrl" not in request.files:
-                resp = Response(
-                    json.dumps({"message": "ERROR OCCURRED IN FILE UPLOADING!"})
-                )
-                session.close()
-                return resp
-
-            file1 = request.files["voiceUrl"]
-            file2 = request.files["avatarUrl"]
-
-            if file1.filename == "":
-                resp = Response(
-                    json.dumps({"message": "ERROR OCCURRED --> EMPTY VOICE!"})
-                )
-                session.close()
-                return resp
-
-            if file2.filename == "":
-                resp = Response(
-                    json.dumps({"message": "ERROR OCCURRED --> EMPTY AVATAR!"})
-                )
-                session.close()
-                return resp
-
-            if file1 and allowed_voice(file1.filename):
-                filename1 = secure_filename(file1.filename)
-                #filename1 = code + "." + file1.filename.split(".")[-1]
-
-                temp_voice_path = os.path.join(
-                    app.config["UPLOAD_FOLDER"],
-                    str(current_id) + "-child"
-                )
-
-                if not os.path.isdir(temp_voice_path):
-                    os.makedirs(temp_voice_path, exist_ok=True)
-
-                voice_path = os.path.join(
-                    temp_voice_path, str(current_id) + "-voice_" + filename1
-                )
-                file1.save(voice_path)
-
-                resp = Response(json.dumps({"message": "WELL DONE!"}))
-
-            if file2 and allowed_image(file2.filename):
-                # filename2 = secure_filename(file2.filename)
-                filename2 = code + "." + file2.filename.split(".")[-1]
-
-                temp_avatar_path = os.path.join(
-                    app.config["UPLOAD_FOLDER"], str(current_id) + "-child"
-                )
-
-                if not os.path.isdir(temp_avatar_path):
-                    os.mkdir(temp_avatar_path)
-
-                temp_need_path = os.path.join(temp_avatar_path, "needs")
-
-                if not os.path.isdir(temp_need_path):
-                    os.mkdir(temp_need_path)
-
-                avatar_path = os.path.join(
-                    temp_avatar_path, str(current_id) + "-avatar_" + filename2
-                )
-                file2.save(avatar_path)
-
-                resp = Response(json.dumps({"message": "WELL DONE!"}))
 
             if "nationality" in request.form.keys():
                 nationality = int(request.form["nationality"])
@@ -609,15 +523,77 @@ class AddChild(Resource):
 
             session.add(new_child)
             session.flush()
+
+            if "voiceUrl" not in request.files or "avatarUrl" not in request.files:
+                resp = jsonify({"message": "error occured in file uploading!"})
+                session.close()
+                return resp
+
+            file1 = request.files["voiceUrl"]
+            file2 = request.files["avatarUrl"]
+
+            if file1.filename == "":
+                resp = jsonify({"message": "ERROR OCCURRED --> EMPTY VOICE!"})
+                
+                session.close()
+                return resp
+
+            if file2.filename == "":
+                resp = jsonify({"message": "ERROR OCCURRED --> EMPTY AVATAR!"})
+                
+                session.close()
+                return resp
+
+            if file1 and allowed_voice(file1.filename):
+                filename1 = secure_filename(file1.filename)
+                #filename1 = code + "." + file1.filename.split(".")[-1]
+
+                temp_voice_path = os.path.join(
+                    app.config["UPLOAD_FOLDER"],
+                    str(new_child.id) + "-child"
+                )
+
+                if not os.path.isdir(temp_voice_path):
+                    os.makedirs(temp_voice_path, exist_ok=True)
+
+                voice_path = os.path.join(
+                    temp_voice_path, str(new_child.id) + "-voice_" + filename1
+                )
+                file1.save(voice_path)
+
+            if file2 and allowed_image(file2.filename):
+                # filename2 = secure_filename(file2.filename)
+                filename2 = code + "." + file2.filename.split(".")[-1]
+
+                temp_avatar_path = os.path.join(
+                    app.config["UPLOAD_FOLDER"], str(new_child.id) + "-child"
+                )
+
+                if not os.path.isdir(temp_avatar_path):
+                    os.mkdir(temp_avatar_path)
+
+                temp_need_path = os.path.join(temp_avatar_path, "needs")
+
+                if not os.path.isdir(temp_need_path):
+                    os.mkdir(temp_need_path)
+
+                avatar_path = os.path.join(
+                    temp_avatar_path, str(new_child.id) + "-avatar_" + filename2
+                )
+                file2.save(avatar_path)
+            
+            new_child.avatarUrl = avatar_path
+            new_child.voiceUrl = voice_path
+
             new_child.ngo_relation.childrenCount += 1
             new_child.social_worker_relation.childCount += 1
             session.commit()
 
-            resp = Response(json.dumps({"message": "CHILD ADDED SUCCESSFULLY!"}))
+            resp = jsonify({"message": "CHILD ADDED SUCCESSFULLY!"})
 
         except Exception as e:
-            resp = Response(json.dumps({"message": "ERROR OCCURRED!"}))
             print(e)
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -629,7 +605,7 @@ class GetChildFamilyMembers(Resource):
     def get(self, child_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             family = (
@@ -645,7 +621,6 @@ class GetChildFamilyMembers(Resource):
                 .all()
             )
 
-            family_res = "{"
             for member in members:
                 user = (
                     session.query(UserModel)
@@ -655,13 +630,13 @@ class GetChildFamilyMembers(Resource):
                 )
                 user_data = obj_to_dict(user)
                 user_data["Role"] = member.userRole
-                family_res += f'"{str(user.id)}": {utf8_response(user_data)}, '
+                family_res[str(user.id)] = user_data
 
-            resp = Response(family_res[:-2] + "}" if len(family_res) != 1 else "{}")
+            resp = jsonify(family_res)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -673,7 +648,7 @@ class DeleteUserFromChildFamily(Resource):
     def patch(self, user_id, child_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             family = (
@@ -705,11 +680,11 @@ class DeleteUserFromChildFamily(Resource):
 
             session.commit()
 
-            resp = Response(json.dumps({"message": "DELETED SUCCESSFULLY!"}))
+            resp = jsonify{"message": "DELETED SUCCESSFULLY!"})
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -721,7 +696,7 @@ class UpdateChildById(Resource):
     def patch(self, child_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             primary_child = (
@@ -736,9 +711,8 @@ class UpdateChildById(Resource):
                 file2 = request.files["avatarUrl"]
 
                 if file2.filename == "":
-                    resp = Response(
-                        json.dumps({"message": "ERROR OCCURRED --> EMPTY AVATAR!"})
-                    )
+                    resp = jsonify({"message": "ERROR OCCURRED --> EMPTY AVATAR!"})
+                    
                     session.close()
                     return resp
 
@@ -766,15 +740,14 @@ class UpdateChildById(Resource):
 
                     file2.save(primary_child.avatarUrl)
 
-                    resp = Response(json.dumps({"message": "WELL DONE!"}))
+                    resp = jsonify({"message": "WELL DONE!"})
 
             if "voiceUrl" in request.files.keys():
                 file1 = request.files["voiceUrl"]
 
                 if file1.filename == "":
-                    resp = Response(
-                        json.dumps({"message": "ERROR OCCURRED --> EMPTY VOICE!"})
-                    )
+                    resp = jsonify({"message": "ERROR OCCURRED --> EMPTY VOICE!"})
+                    
                     session.close()
                     return resp
 
@@ -802,7 +775,7 @@ class UpdateChildById(Resource):
 
                     file1.save(primary_child.voiceUrl)
 
-                    resp = Response(json.dumps({"message": "WELL DONE!"}))
+                    resp = jsonify({"message": "WELL DONE!"})
 
             if "phoneNumber" in request.form.keys():
                 primary_child.phoneNumber = request.form["phoneNumber"]
@@ -866,11 +839,11 @@ class UpdateChildById(Resource):
 
             session.commit()
 
-            resp = Response(secondary_child)
+            resp = jsonify(secondary_child)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED!"}))
+            resp = jsonify({"message": "ERROR OCCURRED!"})
 
         finally:
             session.close()
@@ -882,7 +855,7 @@ class DeleteChildById(Resource):
     def patch(self, child_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             child = (
@@ -917,15 +890,13 @@ class DeleteChildById(Resource):
 
                 session.commit()
 
-                resp = Response(json.dumps({"message": "child deleted successfully!"}))
+                resp = jsonify({"message": "child deleted successfully!"})
             else:
-                resp = Response(
-                    json.dumps({"message": "error: confirmed child cannot be deleted!"})
-                )
+                resp = jsonify({"message": "error: confirmed child cannot be deleted!"})
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED!"}))
+            resp = jsonify({"message": "ERROR OCCURRED!"})
 
         finally:
             session.close()
@@ -937,7 +908,7 @@ class GetChildrenByBirthPlace(Resource):
     def get(self, birth_place):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             children = (
@@ -949,17 +920,15 @@ class GetChildrenByBirthPlace(Resource):
                 .all()
             )
 
-            res = "{"
             for child in children:
                 if child.isConfirmed:
-                    child_data = get_child_by_id(session, child.id)
-                    res += f'"{str(child.id)}": {child_data}, '
+                    res[str(child.id)] = get_child_by_id(session, child.id)
 
-            resp = Response(res[:-2] + "}" if len(res) != 1 else "{}")
+            resp = jsonify(res)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -971,7 +940,7 @@ class GetChildrenByBirthDate(Resource):
     def get(self, birth_date, is_after):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             if is_after.lower() == "true":
@@ -994,17 +963,15 @@ class GetChildrenByBirthDate(Resource):
                     .all()
                 )
 
-            res = "{"
             for child in children:
                 if child.isConfirmed:
-                    child_data = get_child_by_id(session, child.id)
-                    res += f'"{str(child.id)}": {child_data}, '
+                    res[str(child.id)] = get_child_by_id(session, child.id)
 
-            resp = Response(res[:-2] + "}" if len(res) != 1 else "{}")
+            resp = jsonify(res)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -1016,7 +983,7 @@ class GetChildrenByNationality(Resource):
     def get(self, nationality):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             children = (
@@ -1028,17 +995,15 @@ class GetChildrenByNationality(Resource):
                 .all()
             )
 
-            res = "{"
             for child in children:
                 if child.isConfirmed:
-                    child_data = get_child_by_id(session, child.id)
-                    res += f'"{str(child.id)}": {child_data}, '
+                    res[str(child.id)] = get_child_by_id(session, child.id)
 
-            resp = Response(res[:-2] + "}" if len(res) != 1 else "{}")
+            resp = jsonify(res)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -1062,17 +1027,15 @@ class GetChildByNgoId(Resource):
                 .all()
             )
 
-            res = "{"
             for child in children:
                 if child.isConfirmed:
-                    child_data = get_child_by_id(session, child.id)
-                    res += f'"{str(child.id)}": {child_data}, '
+                    res[str(child.id)] = get_child_by_id(session, child.id)
 
-            resp = Response(res[:-2] + "}" if len(res) != 1 else "{}")
+            resp = jsonify(res)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -1084,7 +1047,7 @@ class GetChildBySocialWorkerId(Resource):
     def get(self, social_worker_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             children = (
@@ -1096,17 +1059,15 @@ class GetChildBySocialWorkerId(Resource):
                 .all()
             )
 
-            res = "{"
             for child in children:
                 if child.isConfirmed:
-                    child_data = get_child_by_id(session, child.id)
-                    res += f'"{str(child.id)}": {child_data}, '
+                    res[str(child.id)] = get_child_by_id(session, child.id)
 
-            resp = Response(res[:-2] + "}" if len(res) != 1 else "{}")
+            resp = jsonify(res)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -1118,14 +1079,14 @@ class GetChildUrgentNeedsById(Resource):
     def get(self, child_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
-            resp = Response(get_child_need(session, child_id, urgent=True))
+            resp = jsonify(get_child_need(session, child_id, urgent=True))
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -1137,7 +1098,7 @@ class GetAllChildrenUrgentNeeds(Resource):
     def get(self):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             children = (
@@ -1147,15 +1108,14 @@ class GetAllChildrenUrgentNeeds(Resource):
                 .all()
             )
 
-            result = "{"
             for child in children:
-                result += f'"{str(child.id)}": {get_child_need(session, child.id, urgent=True)}, '
+                result[str(child.id)] = get_child_need(session, child.id, urgent=True)
 
-            resp = Response(result[:-2] + "}" if len(result) != 1 else "{}")
+            resp = jsonify(result)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -1167,7 +1127,7 @@ class ConfirmChild(Resource):
     def patch(self, child_id, social_worker_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             child = (
@@ -1177,16 +1137,14 @@ class ConfirmChild(Resource):
                 .filter_by(isMigrated=False)
                 .first()
             )
-            print(child.migratedId)
-            print(type(child.migratedId))
+            # print(child.migratedId)
+            # print(type(child.migratedId))
 
             if child.migratedId is None:
                 primary_child = child
 
                 if primary_child.isConfirmed:
-                    resp = Response(
-                        json.dumps({"message": "child has already been confirmed!"})
-                    )
+                    resp = jsonify({"message": "child has already been confirmed!"})
                     session.close()
                     return resp
 
@@ -1207,9 +1165,7 @@ class ConfirmChild(Resource):
                 secondary_child = child
 
                 if secondary_child.isConfirmed:
-                    resp = Response(
-                        json.dumps({"message": "child has already been confirmed!"})
-                    )
+                    resp = jsonify({"message": "child has already been confirmed!"})
                     session.close()
                     return resp
 
@@ -1316,11 +1272,11 @@ class ConfirmChild(Resource):
 
                 session.commit()
 
-            resp = Response(json.dumps({"message": "child confirmed successfully!"}))
+            resp = jsonify({"message": "child confirmed successfully!"})
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -1332,7 +1288,7 @@ class GetChildGeneratedCode(Resource):
     def get(self, child_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             child = (
@@ -1344,11 +1300,11 @@ class GetChildGeneratedCode(Resource):
                 .first()
             )
 
-            resp = Response(utf8_response({"ChildGeneratedCode": child.generatedCode}))
+            resp = jsonify{"ChildGeneratedCode": child.generatedCode})
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -1360,7 +1316,7 @@ class GetChildByGeneratedCode(Resource):
     def get(self, generated_code):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             child = (
@@ -1373,11 +1329,11 @@ class GetChildByGeneratedCode(Resource):
             )
 
             res = get_child_by_id(session, child.id, confirm=2)
-            resp = Response(res)
+            resp = jsonify(res)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -1389,7 +1345,7 @@ class MigrateChild(Resource):
     def patch(self, child_id, social_worker_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             child = (
@@ -1402,22 +1358,14 @@ class MigrateChild(Resource):
             )
 
             if not child:
-                resp = Response(
-                    json.dumps(
-                        {"message": "child is already migrated or doesn't exist!"}
-                    )
-                )
+                resp = jsonify({"message": "child is already migrated or doesn't exist!"})
                 session.close()
                 return resp
 
             elif int(social_worker_id) == child.id_social_worker:
-                resp = Response(
-                    json.dumps(
-                        {
-                            "message": "child cannot be migrated to its current social worker!"
-                        }
+                resp = jsonify(
+                    {"message": "child cannot be migrated to its current social worker!"}
                     )
-                )
                 session.close()
                 return resp
 
@@ -1468,11 +1416,11 @@ class MigrateChild(Resource):
             session.add(new_child)
             session.commit()
 
-            resp = Response(json.dumps({"message": "child migrated successfully!"}))
+            resp = jsonify({"message": "child migrated successfully!"})
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
@@ -1480,7 +1428,7 @@ class MigrateChild(Resource):
 
 
 class GetMigratedChildHistory(Resource):
-    cache = "{"
+    cache = {}
 
     def migrate_history(self, child, session):
         if child.migratedId is not None:
@@ -1492,7 +1440,7 @@ class GetMigratedChildHistory(Resource):
                 .filter_by(isConfirmed=True)
                 .first()
             )
-            self.cache += f'"{str(previous.id)}": {get_child_by_id(session, previous.id, is_migrate=True, confirm=2)}, '
+            self.cache[str(previous.id)] = get_child_by_id(session, previous.id, is_migrate=True, confirm=2)
             self.migrate_history(previous, session)
         else:
             return
@@ -1503,7 +1451,7 @@ class GetMigratedChildHistory(Resource):
     def get(self, child_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = jsonify({"message": "major error occurred!"})
 
         try:
             child = (
@@ -1516,18 +1464,18 @@ class GetMigratedChildHistory(Resource):
             )
 
             if not child:
-                resp = Response(json.dumps({"message": "no such child exist!"}))
+                resp = jsonify({"message": "no such child exist!"})
                 session.close()
                 return resp
 
             self.migrate_history(child, session)
 
-            resp = Response(self.cache[:-2] + "}" if len(self.cache) != 1 else "{}")
-            self.cache = "{"
+            resp = jsonify(self.cache)
+            self.cache = {}
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = jsonify({"message": "ERROR OCCURRED"})
 
         finally:
             session.close()
