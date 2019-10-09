@@ -32,7 +32,7 @@ class DashboardDataFeed(Resource):
 
         except Exception as e:
             print(e)
-            resp = jsonify{"message": "ERROR OCCURRED!"})
+            resp = jsonify({"message": "ERROR OCCURRED!"})
 
         finally:
             session.close()
