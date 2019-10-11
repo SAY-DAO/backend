@@ -11,7 +11,7 @@ class GetAllNgo(Resource):
     def get(self):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             base_ngos = session.query(NgoModel).filter_by(isDeleted=False).all()
@@ -21,11 +21,11 @@ class GetAllNgo(Resource):
                 data = obj_to_dict(n)
                 fetch[str(n.id)] = data
 
-            resp = Response(utf8_response(fetch, True), status=200)
+            resp = make_response(jsonify(fetch), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"msg": "sth is wrong!"}))
+            resp = make_response(make_response(jsonify({"msg": "sth is wrong!"}), 500))
 
         finally:
             session.close()
@@ -37,7 +37,7 @@ class AddNgo(Resource):
     def post(self):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             if len(session.query(NgoModel).all()):
@@ -48,17 +48,13 @@ class AddNgo(Resource):
 
             path = "some wrong url"
             if "logoUrl" not in request.files:
-                resp = Response(
-                    json.dumps({"message": "ERROR OCCURRED IN FILE UPLOADING!"})
-                )
+                resp = make_response(jsonify({"message": "ERROR OCCURRED IN FILE UPLOADING!"}), 500)
                 session.close()
                 return resp
 
             file = request.files["logoUrl"]
             if file.filename == "":
-                resp = Response(
-                    json.dumps({"message": "ERROR OCCURRED --> EMPTY FILE!"})
-                )
+                resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY FILE!"}), 500)
                 session.close()
                 return resp
 
@@ -80,8 +76,6 @@ class AddNgo(Resource):
                 )
 
                 file.save(path)
-
-                resp = Response(json.dumps({"message": "WELL DONE!"}))
 
             logo_url = path
             country = int(request.form["country"])
@@ -119,15 +113,12 @@ class AddNgo(Resource):
             session.add(new_ngo)
             session.commit()
 
-            resp = Response(
-                json.dumps({"msg": "ngo is created"}),
-                status=200,
-                headers={"Access-Control-Allow-Origin": "*"},
-            )
+            resp = make_response(jsonify({"msg": "ngo is created"}), 200)
+            resp.headers["Access-Control-Allow-Origin"] = "*"
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"msg": "sth is wrong!"}))
+            resp = make_response(make_response(jsonify({"msg": "sth is wrong!"}), 500))
 
         finally:
             session.close()
@@ -139,7 +130,7 @@ class GetNgoById(Resource):
     def get(self, ngo_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             base_ngo = (
@@ -150,7 +141,7 @@ class GetNgoById(Resource):
             )
 
             if not base_ngo:
-                resp = Response(json.dumps({"msg": "sth went wrong!"}))
+                resp = make_response(jsonify({"msg": "sth went wrong!"}), 500)
                 session.close()
                 return resp
 
@@ -158,11 +149,11 @@ class GetNgoById(Resource):
             # rd = ', "registerDate": ' + str(res.pop('registerDate'))
             # lu = ', "lastUpdateDate": ' + str(res.pop('lastUpdateDate'))
             # out = str(eval(str(res).encode('utf-8'))).replace("'", '"').replace('}', rd + lu + '}')
-            resp = Response(utf8_response(res), status=200)
+            resp = make_response(jsonify(res), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"msg": "sth is wrong!"}))
+            resp = make_response(make_response(jsonify({"msg": "sth is wrong!"}), 500))
 
         finally:
             session.close()
@@ -174,7 +165,7 @@ class GetNgoByCoordinatorId(Resource):
     def get(self, coordinator_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             base_ngos = (
@@ -187,18 +178,18 @@ class GetNgoByCoordinatorId(Resource):
             fetch = {}
             for n in base_ngos:
                 if not n:
-                    resp = Response(json.dumps({"msg": "sth went wrong!"}))
+                    resp = make_response(jsonify({"msg": "sth went wrong!"}), 500)
                     session.close()
                     return resp
 
                 data = obj_to_dict(n)
                 fetch[str(n.id)] = data
 
-            resp = Response(utf8_response(fetch, True), status=200)
+            resp = make_response(jsonify(fetch), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"msg": "sth is wrong!"}), status=500)
+            resp = make_response(jsonify({"msg": "sth is wrong!"}), 500)
 
         finally:
             session.close()
@@ -210,7 +201,7 @@ class GetNgoByName(Resource):
     def get(self, name):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             base_ngos = (
@@ -223,18 +214,18 @@ class GetNgoByName(Resource):
             fetch = {}
             for n in base_ngos:
                 if not n:
-                    resp = Response(json.dumps({"msg": "sth is wrong!"}), status=500)
+                    resp = make_response(jsonify({"msg": "sth is wrong!"}), 500)
                     session.close()
                     return resp
 
                 data = obj_to_dict(n)
                 fetch[str(n.id)] = data
 
-            resp = Response(utf8_response(fetch, True), status=200)
+            resp = make_response(jsonify(fetch), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"msg": "sth is wrong!"}), status=500)
+            resp = make_response(jsonify({"msg": "sth is wrong!"}), 500)
 
         finally:
             session.close()
@@ -246,7 +237,7 @@ class GetNgoByWebsite(Resource):
     def get(self, website):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             base_ngos = (
@@ -259,18 +250,18 @@ class GetNgoByWebsite(Resource):
             fetch = {}
             for n in base_ngos:
                 if not n:
-                    resp = Response(json.dumps({"msg": "sth is wrong!"}), status=500)
+                    resp = make_response(jsonify({"msg": "sth is wrong!"}), 500)
                     session.close()
                     return resp
 
                 data = obj_to_dict(n)
                 fetch[str(n.id)] = data
 
-            resp = Response(utf8_response(fetch, True), status=200)
+            resp = make_response(jsonify(fetch), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"msg": "sth is wrong!"}), status=500)
+            resp = make_response(jsonify({"msg": "sth is wrong!"}), 500)
 
         finally:
             session.close()
@@ -282,7 +273,7 @@ class GetNgoByPhoneNumber(Resource):
     def get(self, phone_number):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             base_ngos = (
@@ -295,18 +286,18 @@ class GetNgoByPhoneNumber(Resource):
             fetch = {}
             for n in base_ngos:
                 if not n:
-                    resp = Response(json.dumps({"msg": "sth is wrong!"}), status=500)
+                    resp = make_response(jsonify({"msg": "sth is wrong!"}), 500)
                     session.close()
                     return resp
 
                 data = obj_to_dict(n)
                 fetch[str(n.id)] = data
 
-            resp = Response(utf8_response(fetch, True), status=200)
+            resp = make_response(jsonify(fetch), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"msg": "sth is wrong!"}), status=500)
+            resp = make_response(jsonify({"msg": "sth is wrong!"}), 500)
 
         finally:
             session.close()
@@ -318,7 +309,7 @@ class DeletePhoneNumber(Resource):
     def patch(self, ngo_id, phone_number):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             base_ngo = (
@@ -336,11 +327,11 @@ class DeletePhoneNumber(Resource):
 
             session.commit()
 
-            resp = Response(utf8_response(obj_to_dict(base_ngo)), status=200)
+            resp = make_response(jsonify(obj_to_dict(base_ngo)), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"msg": "sth is wrong!"}), status=500)
+            resp = make_response(jsonify({"msg": "sth is wrong!"}), 500)
 
         finally:
             session.close()
@@ -352,7 +343,7 @@ class UpdateNgo(Resource):
     def patch(self, ngo_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             base_ngo = (
@@ -393,9 +384,7 @@ class UpdateNgo(Resource):
                 file = request.files["logoUrl"]
 
                 if file.filename == "":
-                    resp = Response(
-                        json.dumps({"message": "ERROR OCCURRED --> EMPTY FILE!"})
-                    )
+                    resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY FILE!"}), 500)
                     session.close()
                     return resp
 
@@ -420,18 +409,18 @@ class UpdateNgo(Resource):
 
                     file.save(base_ngo.logoUrl)
 
-                    resp = Response(json.dumps({"message": "WELL DONE!"}))
+                    
 
             base_ngo.lastUpdateDate = datetime.now()
 
             res = obj_to_dict(base_ngo)
 
-            resp = Response(utf8_response(res), status=200)
+            resp = make_response(jsonify(res), 200)
             session.commit()
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "error"}), status=500)
+            resp = make_response(jsonify({"message": "error"}), 500)
         finally:
             session.close()
             return resp
@@ -442,7 +431,7 @@ class DeleteNgo(Resource):
     def patch(self, ngo_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             base_ngo = (
@@ -456,13 +445,11 @@ class DeleteNgo(Resource):
 
             session.commit()
 
-            resp = Response(
-                json.dumps({"msg": "ngo deleted successfully!"}), status=200
-            )
+            resp = make_response(jsonify({"msg": "ngo deleted successfully!"}), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "error"}), status=500)
+            resp = make_response(jsonify({"message": "error"}), 500)
 
         finally:
             session.close()
@@ -474,7 +461,7 @@ class DeactivateNgo(Resource):
     def patch(self, ngo_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             base_ngo = (
@@ -488,13 +475,11 @@ class DeactivateNgo(Resource):
             base_ngo.isActive = False
 
             session.commit()
-            resp = Response(
-                json.dumps({"msg": "ngo deactivated successfully!"}), status=200
-            )
+            resp = make_response(jsonify({"msg": "ngo deactivated successfully!"}), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "error"}), status=500)
+            resp = make_response(jsonify({"message": "error"}), 500)
 
         finally:
             session.close()
@@ -506,7 +491,7 @@ class ActivateNgo(Resource):
     def patch(self, ngo_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             base_ngo = (
@@ -520,13 +505,11 @@ class ActivateNgo(Resource):
             base_ngo.isActive = True
 
             session.commit()
-            resp = Response(
-                json.dumps({"msg": "ngo activated successfully!"}), status=200
-            )
+            resp = make_response(jsonify({"msg": "ngo activated successfully!"}), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "error"}), status=500)
+            resp = make_response(jsonify({"message": "error"}), 500)
 
         finally:
             session.close()

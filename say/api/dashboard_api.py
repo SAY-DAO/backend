@@ -13,7 +13,7 @@ class DashboardDataFeed(Resource):
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = jsonify({"message": "major error occurred!"})
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             user = (
@@ -28,11 +28,11 @@ class DashboardDataFeed(Resource):
 
             data["UserUrgentNeeds"] = needs
 
-            resp = jsonify(data)
+            resp = make_response(jsonify(data), 200)
 
         except Exception as e:
             print(e)
-            resp = jsonify({"message": "ERROR OCCURRED!"})
+            resp = make_response(jsonify({"message": "ERROR OCCURRED!"}), 500)
 
         finally:
             session.close()

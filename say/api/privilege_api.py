@@ -11,7 +11,7 @@ class GetAllPrivileges(Resource):
     def get(self):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             privileges = session.query(PrivilegeModel).all()
@@ -25,13 +25,11 @@ class GetAllPrivileges(Resource):
                 }
                 result[str(privilege.id)] = res
 
-            resp = Response(utf8_response(result, True), status=200)
+            resp = make_response(jsonify(result), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(
-                json.dumps({"message": "Something is Wrong !!!"}), status=500
-            )
+            resp = make_response(jsonify({"message": "Something is Wrong !!!"}), 500)
 
         finally:
             session.close()
@@ -43,7 +41,7 @@ class AddPrivilege(Resource):
     def post(self):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             name = request.form["name"]
@@ -53,13 +51,11 @@ class AddPrivilege(Resource):
             session.add(new_privilege)
             session.commit()
 
-            resp = Response(
-                json.dumps({"message": "new Privilege is added"}), status=200
-            )
+            resp = make_response(jsonify({"message": "new Privilege is added"}), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "something is wrong"}), status=200)
+            resp = make_response(jsonify({"message": "something is wrong"}), 500)
 
         finally:
             session.close()
@@ -71,7 +67,7 @@ class GetPrivilegeByName(Resource):
     def get(self, name):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             privilege_list = session.query(PrivilegeModel).filter_by(name=name).all()
@@ -81,13 +77,11 @@ class GetPrivilegeByName(Resource):
                 res = {"Id": privilege.id, "Privilege": privilege.privilege}
                 result[str(privilege.id)] = res
 
-            resp = Response(utf8_response(result, True), status=200)
+            resp = make_response(jsonify(result), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(
-                json.dumps({"message": "something is Wrong !!"}, status=500)
-            )
+            resp = make_response(jsonify({"message": "something is Wrong !!"}), 500)
 
         finally:
             session.close()
@@ -99,26 +93,22 @@ class GetPrivilegeById(Resource):
     def get(self, privilege_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             privilege = session.query(PrivilegeModel).filter_by(id=privilege_id).first()
 
             if not privilege:
-                resp = Response(
-                    json.dumps({"message": "something is Wrong !!"}, status=500)
-                )
+                resp = make_response(jsonify({"message": "something is Wrong !!"}), 500)
                 session.close()
                 return resp
 
             result = obj_to_dict(privilege)
-            resp = Response(utf8_response(result), status=200)
+            resp = make_response(jsonify(result), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(
-                json.dumps({"message": "something is Wrong !!"}, status=500)
-            )
+            resp = make_response(jsonify({"message": "something is Wrong !!"}), 500)
 
         finally:
             session.close()
@@ -130,7 +120,7 @@ class GetPrivilegeByPrivilege(Resource):
     def get(self, privilege_type):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             privilege_list = (
@@ -142,13 +132,11 @@ class GetPrivilegeByPrivilege(Resource):
                 res = {"Id": privilege.id, "Name": privilege.name}
                 result[str(privilege.id)] = res
 
-            resp = Response(utf8_response(result, True), status=200)
+            resp = make_response(jsonify(result), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(
-                json.dumps({"message": "something is Wrong !!"}, status=500)
-            )
+            resp = make_response(jsonify({"message": "something is Wrong !!"}), 500)
 
         finally:
             session.close()
@@ -160,7 +148,7 @@ class UpdatePrivilege(Resource):
     def patch(self, privilege_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             base_privilege = (
@@ -181,13 +169,11 @@ class UpdatePrivilege(Resource):
 
             session.commit()
 
-            resp = Response(utf8_response(res), status=200)
+            resp = make_response(jsonify(res), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(
-                json.dumps({"message": "something is Wrong !!"}, status=500)
-            )
+            resp = make_response(jsonify({"message": "something is Wrong !!"}), 500)
 
         finally:
             session.close()

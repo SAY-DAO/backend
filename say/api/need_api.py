@@ -23,11 +23,11 @@ def get_all_urgent_needs(session):
         .all()
     )
 
-    needs_data = "{"
+    needs_data = {}
     for need in needs:
-        needs_data += f'"{str(need.id)}": {get_need(need, session)}, '
+        needs_data[str(need.id)] = get_need(need, session)
 
-    return needs_data[:-2] + "}" if len(needs_data) != 1 else "{}"
+    return needs_data
 
 
 def get_need(need, session, participants_only=False, with_participants=True, with_child_id=True):
@@ -36,13 +36,11 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
         need_data = obj_to_dict(need)
 
         if not with_participants and not with_child_id:
-            need_data = utf8_response(need_data)
             return need_data
 
         child = session.query(ChildNeedModel).filter_by(id_need=need.id).filter_by(isDeleted=False).first()
         need_data['ChildId'] = child.id_child
         need_data['ChildName'] = child.child_relation.sayName
-        need_data = utf8_response(need_data)
 
         if not with_participants and with_child_id:
             return need_data
@@ -51,9 +49,8 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
         ids = [p.id_user for p in participant_ids]
         participants = session.query(UserFamilyModel).filter(UserFamilyModel.id_user.in_(ids)).filter_by(isDeleted=False).all()
 
-        users = '{'
+        users = {}
         for participant in participants:
-            # user = session.query(UserModel).filter_by(isDeleted=False).filter_by(id=participant.id_user).first()
             temp_participant = obj_to_dict(participant)
 
             temp_participant['Contribution'] = (
@@ -71,19 +68,16 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
                 .filter_by(isDeleted=False)
                 .first())[0]
             )
-
-            users += f'"{str(participant.id_user)}": {utf8_response(temp_participant)}, '
-
-        users_data = users[:-2] + "}" if len(users) != 1 else "{}"
+            
+            users[str(participant.id_user)] = temp_participant
 
         if participants_only:
-            return users_data
+            return users
 
-        need_data = need_data[:-1] + f', "Participants": {users_data}' + "}"
+        need_data["Participants"] = users
 
     else:
         need_data = obj_to_dict(need)
-        need_data = utf8_response(need_data)
 
     return need_data
 
@@ -93,7 +87,7 @@ class GetNeedById(Resource):
     def get(self, need_id, confirm):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             if int(confirm) == 2:
@@ -120,14 +114,13 @@ class GetNeedById(Resource):
                     .first()
                 )
             else:
-                return "{wrong input}"
+                return make_response(jsonify({"message": "wrong input"}), 500)
 
-            resp = Response(get_need(need, session))
+            resp = make_response(jsonify(get_need(need, session)), 200)
 
         except Exception as e:
             print(e)
-
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -139,7 +132,7 @@ class GetAllNeeds(Resource):
     def get(self, confirm):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message1": "major error occurred!", "message2": str(datetime.now())}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             if int(confirm) == 2:
@@ -159,18 +152,17 @@ class GetAllNeeds(Resource):
                     .all()
                 )
             else:
-                return "{wrong input}"
+                return make_response(jsonify({"message": "wrong input"}), 500)
 
-            res = "{"
+            res = {}
             for need in needs:
-                res += f'"{str(need.id)}": {get_need(need, session)}, '
+                res[str(need.id)] = get_need(need, session)
 
-            resp = Response(res[:-2] + "}" if len(res) != 1 else "{}")
+            resp = make_response(jsonify(res), 200)
 
         except Exception as e:
             print(e)
-
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -182,7 +174,7 @@ class GetNeedByCategory(Resource):
     def get(self, category):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             needs = (
@@ -193,16 +185,16 @@ class GetNeedByCategory(Resource):
                 .all()
             )
 
-            res = "{"
+            res = {}
             for need in needs:
-                res += f'"{str(need.id)}": {get_need(need, session)}, '
+                res[str(need.id)] = get_need(need, session)
 
-            resp = Response(res[:-2] + "}" if len(res) != 1 else "{}")
+            resp = make_response(jsonify(res), 200)
 
         except Exception as e:
             print(e)
 
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -214,7 +206,7 @@ class GetNeedByType(Resource):
     def get(self, need_type):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             needs = (
@@ -225,16 +217,16 @@ class GetNeedByType(Resource):
                 .all()
             )
 
-            res = "{"
+            res = {}
             for need in needs:
-                res += f'"{str(need.id)}": {get_need(need, session)}, '
+                res[str(need.id)] = get_need(need, session)
 
-            resp = Response(res[:-2] + "}" if len(res) != 1 else "{}")
+            resp = make_response(jsonify(res), 200)
 
         except Exception as e:
             print(e)
 
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -246,7 +238,7 @@ class GetNeedParticipants(Resource):
     def get(self, need_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             need = (
@@ -257,12 +249,12 @@ class GetNeedParticipants(Resource):
                 .first()
             )
 
-            resp = Response(get_need(need, session, participants_only=True))
+            resp = make_response(jsonify(get_need(need, session, participants_only=True)), 200)
 
         except Exception as e:
             print(e)
 
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -274,7 +266,7 @@ class GetNeedReceipts(Resource):
     def get(self, need_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             need = (
@@ -285,12 +277,12 @@ class GetNeedReceipts(Resource):
                 .first()
             )
 
-            resp = Response(utf8_response({"NeedReceipts": need.receipts}))
+            resp = make_response(jsonify({"NeedReceipts": need.receipts}), 200)
 
         except Exception as e:
             print(e)
 
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -302,15 +294,15 @@ class GetAllUrgentNeeds(Resource):
     def get(self):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            resp = Response(get_all_urgent_needs(session))
+            resp = make_response(jsonify(get_all_urgent_needs(session)), 200)
 
         except Exception as e:
             print(e)
 
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -322,7 +314,7 @@ class AddPaymentForNeed(Resource):
     def post(self, need_id, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             amount = int(request.form["amount"])
@@ -336,9 +328,7 @@ class AddPaymentForNeed(Resource):
             )
 
             if not need.isConfirmed:
-                resp = Response(
-                    json.dumps({"msg": "error: need is not confirmed yet!"})
-                )
+                resp = make_response(jsonify({"message": "error: need is not confirmed yet!"}), 500)
                 session.close()
                 return resp
 
@@ -369,34 +359,22 @@ class AddPaymentForNeed(Resource):
                 .first()
                 is None
             ):
-                resp = Response(
-                    json.dumps(
-                        {"message": "payment must be added by the child's family!"}
-                    )
-                )
+                resp = make_response(jsonify({"message": "payment must be added by the child's family!"}), 500)
                 session.close()
                 return resp
 
             if amount > need.cost - need.paid:
-                resp = Response(
-                    json.dumps({"msg": f"you can pay {need.cost - need.paid} at most!"})
-                )
+                resp = make_response(jsonify({"message": f"you can pay {need.cost - need.paid} at most!"}), 500)
                 session.close()
                 return resp
 
             elif amount > user.credit:
-                resp = Response(
-                    json.dumps(
-                        {
-                            "msg": f"your credit is less than {amount}! you have {user.credit}."
-                        }
-                    )
-                )
+                resp = make_response(jsonify({"message": f"your credit is less than {amount}! you have {user.credit}."}), 500)
                 session.close()
                 return resp
 
             elif amount <= 0:
-                resp = Response(json.dumps({"msg": "amount can not be 0 or less!"}))
+                resp = make_response(jsonify({"message": "amount can not be 0 or less!"}), 500)
                 session.close()
                 return resp
 
@@ -450,11 +428,11 @@ class AddPaymentForNeed(Resource):
 
                 session.commit()
 
-                resp = Response(json.dumps({"msg": "payment added successfully!"}))
+                resp = make_response(jsonify({"message": "payment added successfully!"}), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"msg": "ERROR OCCURRED!"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -466,7 +444,7 @@ class UpdateNeedById(Resource):
     def patch(self, need_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             primary_need = (
@@ -487,11 +465,7 @@ class UpdateNeedById(Resource):
                     primary_need.cost = int(request.form["cost"])
 
                 else:
-                    resp = Response(
-                        json.dumps(
-                            {"msg": "error: cannot change cost for confirmed need!"}
-                        )
-                    )
+                    resp = make_response(jsonify({"message": "error: cannot change cost for confirmed need!"}), 500)
                     session.close()
                     return resp
 
@@ -499,9 +473,7 @@ class UpdateNeedById(Resource):
                 file = request.files["imageUrl"]
 
                 if file.filename == "":
-                    resp = Response(
-                        json.dumps({"message": "ERROR OCCURRED --> EMPTY FILE!"})
-                    )
+                    resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY FILE!"}), 500)
                     session.close()
                     return resp
 
@@ -529,15 +501,11 @@ class UpdateNeedById(Resource):
 
                     file.save(primary_need.imageUrl)
 
-                    resp = Response(json.dumps({"message": "WELL DONE!"}))
-
             if "receipts" in request.files.keys():
                 file2 = request.files["receipts"]
 
                 if file2.filename == "":
-                    resp = Response(
-                        json.dumps({"message": "ERROR OCCURRED --> EMPTY FILE!"})
-                    )
+                    resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY FILE!"}), 500)
                     session.close()
                     return resp
 
@@ -571,8 +539,6 @@ class UpdateNeedById(Resource):
 
                     file2.save(receipt_path)
 
-                    resp = Response(json.dumps({"message": "WELL DONE!"}))
-
             if "category" in request.form.keys():
                 primary_need.category = int(request.form["category"])
 
@@ -601,11 +567,11 @@ class UpdateNeedById(Resource):
             secondary_need = obj_to_dict(primary_need)
 
             session.commit()
-            resp = Response(utf8_response(secondary_need))
+            resp = make_response(jsonify(secondary_need), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"msg": "ERROR OCCURRED!"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -617,7 +583,7 @@ class DeleteNeedById(Resource):
     def patch(self, need_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             need = (
@@ -641,7 +607,7 @@ class DeleteNeedById(Resource):
 
             if need.isConfirmed:
                 if need.paid != 0:
-                    resp = Response(json.dumps({"msg": "error in deletion"}))
+                    resp = make_response(jsonify({"message": "error in deletion"}), 500)
                     session.close()
                     return resp
 
@@ -656,11 +622,11 @@ class DeleteNeedById(Resource):
 
             session.commit()
 
-            resp = Response(json.dumps({"msg": "need deleted successfully!"}))
+            resp = make_response(jsonify({"message": "need deleted successfully!"}), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -672,7 +638,7 @@ class ConfirmNeed(Resource):
     def patch(self, need_id, social_worker_id, child_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             primary_need = (
@@ -683,9 +649,7 @@ class ConfirmNeed(Resource):
             )
 
             if primary_need.isConfirmed:
-                resp = Response(
-                    json.dumps({"message": "need has already been confirmed!"})
-                )
+                resp = make_response(jsonify({"message": "need has already been confirmed!"}), 500)
                 session.close()
                 return resp
 
@@ -718,11 +682,11 @@ class ConfirmNeed(Resource):
             session.add(new_child_need)
             session.commit()
 
-            resp = Response(json.dumps({"message": "need confirmed successfully!"}))
+            resp = make_response(jsonify({"message": "need confirmed successfully!"}), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -734,7 +698,7 @@ class AddParticipantToNeed(Resource):
     def post(self, user_id, need_id, family_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             if (
@@ -745,11 +709,7 @@ class AddParticipantToNeed(Resource):
                 .first()
                 is None
             ):
-                resp = Response(
-                    json.dumps(
-                        {"message": "participant must be from the child's family!"}
-                    )
-                )
+                resp = make_response(jsonify({"message": "participant must be from the child's family!"}), 500)
                 session.close()
                 return resp
 
@@ -760,11 +720,11 @@ class AddParticipantToNeed(Resource):
             session.add(new_participant)
             session.commit()
 
-            resp = Response(json.dumps({"msg": "participant added successfully!"}))
+            resp = make_response(jsonify({"message": "participant added successfully!"}), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED!"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -776,7 +736,7 @@ class AddNeed(Resource):
     def post(self, child_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             child = (
@@ -789,92 +749,12 @@ class AddNeed(Resource):
             )
 
             if not child.isConfirmed:
-                resp = Response(
-                    json.dumps({"message": "error: child is not confirmed yet!"})
-                )
+                resp = make_response(jsonify({"message": "error: child is not confirmed yet!"}), 500)
                 session.close()
                 return resp
 
-            if len(session.query(NeedModel).all()):
-                last_need = (
-                    session.query(NeedModel).order_by(NeedModel.id.desc()).first()
-                )
-                current_id = last_need.id + 1
-
-            else:
-                current_id = 1
-
-            image_path, receipt_path = None, None
-            if "imageUrl" not in request.files:
-                resp = Response(
-                    json.dumps({"message": "ERROR OCCURRED IN FILE UPLOADING!"})
-                )
-                session.close()
-                return resp
-
-            file = request.files["imageUrl"]
-            if file.filename == "":
-                resp = Response(
-                    json.dumps({"message": "ERROR OCCURRED --> EMPTY FILE!"})
-                )
-                session.close()
-                return resp
-
-            if file and allowed_image(file.filename):
-                # filename = secure_filename(file.filename)
-                filename = str(current_id) + "." + file.filename.split(".")[-1]
-
-                temp_need_path = os.path.join(
-                    app.config["UPLOAD_FOLDER"], str(child_id) + "-child"
-                )
-                temp_need_path = os.path.join(temp_need_path, "needs")
-                temp_need_path = os.path.join(temp_need_path, str(current_id) + "-need")
-
-                if not os.path.isdir(temp_need_path):
-                    os.mkdir(temp_need_path)
-
-                image_path = os.path.join(
-                    temp_need_path, str(current_id) + "-image_" + filename
-                )
-
-                file.save(image_path)
-
-                resp = Response(json.dumps({"message": "WELL DONE!"}))
-
-            if "receipts" in request.files.keys():
-                file2 = request.files["receipts"]
-                if file2.filename == "":
-                    resp = Response(
-                        json.dumps({"message": "ERROR OCCURRED --> EMPTY FILE!"})
-                    )
-                    session.close()
-                    return resp
-
-                if file2 and allowed_image(file2.filename):
-                    # filename = secure_filename(file2.filename)
-                    filename = str(0) + "." + file2.filename.split(".")[-1]
-
-                    temp_need_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(child_id) + "-child"
-                    )
-                    temp_need_path = os.path.join(temp_need_path, "needs")
-                    temp_need_path = os.path.join(
-                        temp_need_path, str(current_id) + "-need"
-                    )
-
-                    if not os.path.isdir(temp_need_path):
-                        os.mkdir(temp_need_path)
-
-                    receipt_path = os.path.join(
-                        temp_need_path, str(current_id) + "-receipt_" + filename
-                    )
-
-                    file2.save(receipt_path)
-
-                    resp = Response(json.dumps({"message": "WELL DONE!"}))
-            else:
-                receipt_path = None
-
+            image_path, receipt_path = "wrong path", "wrong path"
+            
             image_url = image_path
             receipts = receipt_path
 
@@ -910,12 +790,77 @@ class AddNeed(Resource):
             )
 
             session.add(new_need)
+            session.flush()
+
+            if "imageUrl" not in request.files:
+                resp = make_response(jsonify({"message": "ERROR OCCURRED IN FILE UPLOADING!"}), 500)
+                session.close()
+                return resp
+
+            file = request.files["imageUrl"]
+            if file.filename == "":
+                resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY FILE!"}), 500)
+                session.close()
+                return resp
+
+            if file and allowed_image(file.filename):
+                # filename = secure_filename(file.filename)
+                filename = str(new_need.id) + "." + file.filename.split(".")[-1]
+
+                temp_need_path = os.path.join(
+                    app.config["UPLOAD_FOLDER"], str(child_id) + "-child"
+                )
+                temp_need_path = os.path.join(temp_need_path, "needs")
+                temp_need_path = os.path.join(temp_need_path, str(new_need.id) + "-need")
+
+                if not os.path.isdir(temp_need_path):
+                    os.mkdir(temp_need_path)
+
+                image_path = os.path.join(
+                    temp_need_path, str(new_need.id) + "-image_" + filename
+                )
+
+                file.save(image_path)
+
+            if "receipts" in request.files.keys():
+                file2 = request.files["receipts"]
+                if file2.filename == "":
+                    resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY FILE!"}), 500)
+                    session.close()
+                    return resp
+
+                if file2 and allowed_image(file2.filename):
+                    filename = secure_filename(file2.filename)
+                    # filename = str(0) + "." + file2.filename.split(".")[-1]
+
+                    temp_need_path = os.path.join(
+                        app.config["UPLOAD_FOLDER"], str(child_id) + "-child"
+                    )
+                    temp_need_path = os.path.join(temp_need_path, "needs")
+                    temp_need_path = os.path.join(
+                        temp_need_path, str(new_need.id) + "-need"
+                    )
+
+                    if not os.path.isdir(temp_need_path):
+                        os.mkdir(temp_need_path)
+
+                    receipt_path = os.path.join(
+                        temp_need_path, str(new_need.id) + "-receipt_" + filename
+                    )
+
+                    file2.save(receipt_path)
+
+            else:
+                receipt_path = None
+
+            new_need.image_url = image_path
+            new_need.receipts = receipt_path
             session.commit()
 
-            resp = Response(json.dumps({"message": "NEED ADDED SUCCESSFULLY!"}))
+            resp = make_response(jsonify({"message": "NEED ADDED SUCCESSFULLY!"}), 200)
 
         except Exception as e:
-            resp = Response(json.dumps({"message": "ERROR OCCURRED!"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
             print(e)
 
         finally:

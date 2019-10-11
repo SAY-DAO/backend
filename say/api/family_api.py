@@ -12,7 +12,7 @@ class GetFamilyById(Resource):
     def get(self, family_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             family = (
@@ -40,12 +40,12 @@ class GetFamilyById(Resource):
             family_data["ChildId"] = family.id_child
             family_data["FamilyId"] = family.id
 
-            resp = Response(utf8_response(family_data))
+            resp = make_response(jsonify(family_data), 200)
 
         except Exception as e:
             print(e)
 
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -57,7 +57,7 @@ class GetAllFamilies(Resource):
     def get(self):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             families = session.query(FamilyModel).filter_by(isDeleted=False).all()
@@ -84,12 +84,12 @@ class GetAllFamilies(Resource):
                 family_data["FamilyId"] = family.id
                 res[str(family.id)] = family_data
 
-            resp = Response(utf8_response(res))
+            resp = make_response(jsonify(res), 200)
 
         except Exception as e:
             print(e)
 
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -101,13 +101,13 @@ class AddUserToFamily(Resource):
     def post(self, user_id, family_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             id_user = user_id
             id_family = family_id
             # user_role = int(request.json['user_role'])
-            user_role = int(request.json["userRole"])
+            user_role = int(request.form["userRole"])
 
             new_member = UserFamilyModel(
                 id_user=id_user, id_family=id_family, userRole=user_role
@@ -124,11 +124,11 @@ class AddUserToFamily(Resource):
             session.add(new_member)
             session.commit()
 
-            resp = Response(json.dumps({"msg": "user added to family successfully!"}))
+            resp = make_response(jsonify({"msg": "user added to family successfully!"}), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED!"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED!"}), 500)
 
         finally:
             session.close()

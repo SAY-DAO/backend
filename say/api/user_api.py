@@ -22,8 +22,8 @@ def get_user_by_id(session, user_id):
     )
 
     children = get_user_children(session, user)
-    user_data = utf8_response(obj_to_dict(user))
-    user_data = user_data[:-1] + f', "Children": {children}' + "}"
+    user_data = obj_to_dict(user)
+    user_data["Children"] = children
 
     return user_data
 
@@ -31,15 +31,12 @@ def get_user_by_id(session, user_id):
 def get_user_children(session, user):
     families = session.query(UserFamilyModel).filter_by(id_user=user.id).filter_by(isDeleted=False).all()
 
-    children = '{'
+    children = {}
     for f in families:
-        # child = session.query(FamilyModel).filter_by(id_child=family.family_relation.id_child).filter_by(
-        #     isDeleted=False).first()
-
         if f.family_relation.family_child_relation.isConfirmed:
-            children += f'"{str(f.family_relation.id_child)}": {get_child_by_id(session, f.family_relation.id_child)}, '
+            children[str(f.family_relation.id_child)] = get_child_by_id(session, f.family_relation.id_child)
 
-    return children[:-2] + "}" if len(children) != 1 else "{}"
+    return children
 
 
 def get_user_needs(session, user, urgent=False):
@@ -50,7 +47,7 @@ def get_user_needs(session, user, urgent=False):
         .all()
     )
 
-    needs = "{"
+    needs = {}
     for family in families:
         child = (
             session.query(FamilyModel)
@@ -59,9 +56,9 @@ def get_user_needs(session, user, urgent=False):
             .first()
         )
 
-        needs += f'"{str(child.id_child)}": {get_child_need(session, child.id_child, urgent=urgent)}, '
+        needs[str(child.id_child)] = get_child_need(session, child.id_child, urgent=urgent)
 
-    return needs[:-2] + "}" if len(needs) != 1 else "{}"
+    return needs
 
 
 class GetUserById(Resource):
@@ -69,14 +66,14 @@ class GetUserById(Resource):
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            resp = Response(get_user_by_id(session, user_id))
+            resp = make_response(jsonify(get_user_by_id(session, user_id)), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -88,7 +85,7 @@ class GetUserByFullName(Resource):
     def get(self, first_name, last_name):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             users = (
@@ -99,16 +96,15 @@ class GetUserByFullName(Resource):
                 .all()
             )
 
-            res = "{"
+            res = {}
             for user in users:
-                user_data = get_user_by_id(session, user.id)
-                res += f'"{str(user.id)}": {user_data}, '
+                res[str(user.id)] = get_user_by_id(session, user.id)
 
-            resp = Response(res[:-2] + "}" if len(res) != 1 else "{}")
+            resp = make_response(jsonify(res), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -120,7 +116,7 @@ class GetUserByBirthPlace(Resource):
     def get(self, birth_place):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             users = (
@@ -130,16 +126,15 @@ class GetUserByBirthPlace(Resource):
                 .all()
             )
 
-            res = "{"
+            res = {}
             for user in users:
-                user_data = get_user_by_id(session, user.id)
-                res += f'"{str(user.id)}": {user_data}, '
+                res[str(user.id)] = get_user_by_id(session, user.id)
 
-            resp = Response(res[:-2] + "}" if len(res) != 1 else "{}")
+            resp = make_response(jsonify(res), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -151,7 +146,7 @@ class GetUserByBirthDate(Resource):
     def get(self, birth_date, is_after):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             if is_after.lower() == "true":
@@ -169,16 +164,15 @@ class GetUserByBirthDate(Resource):
                     .all()
                 )
 
-            res = "{"
+            res = {}
             for user in users:
-                user_data = get_user_by_id(session, user.id)
-                res += f'"{str(user.id)}": {user_data}, '
+                res[str(user.id)] = get_user_by_id(session, user.id)
 
-            resp = Response(res[:-2] + "}" if len(res) != 1 else "{}")
+            resp = make_response(jsonify(res), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -190,7 +184,7 @@ class GetUserByCountry(Resource):
     def get(self, country):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             users = (
@@ -200,16 +194,15 @@ class GetUserByCountry(Resource):
                 .all()
             )
 
-            res = "{"
+            res = {}
             for user in users:
-                user_data = get_user_by_id(session, user.id)
-                res += f'"{str(user.id)}": {user_data}, '
+                res[str(user.id)] = get_user_by_id(session, user.id)
 
-            resp = Response(res[:-2] + "}" if len(res) != 1 else "{}")
+            resp = make_response(jsonify(res), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -221,7 +214,7 @@ class GetUserByCity(Resource):
     def get(self, city):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             users = (
@@ -231,16 +224,15 @@ class GetUserByCity(Resource):
                 .all()
             )
 
-            res = "{"
+            res = {}
             for user in users:
-                user_data = get_user_by_id(session, user.id)
-                res += f'"{str(user.id)}": {user_data}, '
+                res[str(user.id)] = get_user_by_id(session, user.id)
 
-            resp = Response(res[:-2] + "}" if len(res) != 1 else "{}")
+            resp = make_response(jsonify(res), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -252,19 +244,19 @@ class GetUserByUserName(Resource):
     def get(self, username):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             user = session.query(UserModel).filter_by(userName=username).first()
 
             if not user.isDeleted:
-                resp = Response(get_user_by_id(session, user.id))
+                resp = make_response(jsonify(get_user_by_id(session, user.id)), 200)
             else:
-                return {"msg": "error occurred!"}
+                return make_response(jsonify({"message": "error occurred!"}), 500)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -276,19 +268,19 @@ class GetUserByPhoneNumber(Resource):
     def get(self, phone):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             user = session.query(UserModel).filter_by(phoneNumber=phone).first()
 
             if not user.isDeleted:
-                resp = Response(get_user_by_id(session, user.id))
+                resp = make_response(jsonify(get_user_by_id(session, user.id)), 200)
             else:
-                return {"msg": "error occurred!"}
+                return make_response(jsonify({"message": "error occurred!"}), 500)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -300,21 +292,20 @@ class GetAllUsers(Resource):
     def get(self):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             users = session.query(UserModel).filter_by(isDeleted=False).all()
 
-            user_data = "{"
+            user_data = {}
             for user in users:
-                user_dict = get_user_by_id(session, user.id)
-                user_data += f'"{str(user.id)}": {user_dict}, '
+                user_data[str(user.id)] = get_user_by_id(session, user.id)
 
-            resp = Response(user_data[:-2] + "}" if len(user_data) != 1 else "{}")
+            resp = make_response(jsonify(user_data), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -326,19 +317,19 @@ class GetUserAvatar(Resource):
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             user = session.query(UserModel).get(user_id)
 
             if not user.isDeleted:
-                resp = Response(utf8_response({"avatarUrl": user.avatarUrl}))
+                resp = make_response(jsonify({"avatarUrl": user.avatarUrl}), 200)
             else:
-                resp = Response(json.dumps({"msg": "error occurred!"}))
+                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -350,19 +341,19 @@ class GetUserEmailAddress(Resource):
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             user = session.query(UserModel).get(user_id)
 
             if not user.isDeleted:
-                resp = Response(utf8_response({"emailAddress": user.emailAddress}))
+                resp = make_response(jsonify({"emailAddress": user.emailAddress}), 200)
             else:
-                resp = Response(json.dumps({"msg": "error occurred!"}))
+                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -374,19 +365,19 @@ class GetUserPhoneNumber(Resource):
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             user = session.query(UserModel).get(user_id)
 
             if not user.isDeleted:
-                resp = Response(utf8_response({"phoneNumber": user.phoneNumber}))
+                resp = make_response(jsonify({"phoneNumber": user.phoneNumber}), 200)
             else:
-                resp = Response(json.dumps({"msg": "error occurred!"}))
+                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -398,19 +389,19 @@ class GetUserUserName(Resource):
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             user = session.query(UserModel).get(user_id)
 
             if not user.isDeleted:
-                resp = Response(utf8_response({"userName": user.userName}))
+                resp = make_response(jsonify({"userName": user.userName}), 200)
             else:
-                resp = Response(json.dumps({"msg": "error occurred!"}))
+                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -422,20 +413,19 @@ class GetUserFullName(Resource):
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             user = session.query(UserModel).get(user_id)
 
             if not user.isDeleted:
-                res = {"firstName": user.firstName, "lastName": user.lastName}
-                resp = Response(utf8_response(res))
+                resp = make_response(jsonify({"firstName": user.firstName, "lastName": user.lastName}), 200)
             else:
-                resp = Response(json.dumps({"msg": "error occurred!"}))
+                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -447,19 +437,19 @@ class GetUserCredit(Resource):
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             user = session.query(UserModel).get(user_id)
 
             if not user.isDeleted:
-                resp = Response(utf8_response({"credit": user.credit}))
+                resp = make_response(jsonify({"credit": user.credit}), 200)
             else:
-                resp = Response(json.dumps({"msg": "error occurred!"}))
+                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -471,19 +461,19 @@ class GetUserSpentCredit(Resource):
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             user = session.query(UserModel).get(user_id)
 
             if not user.isDeleted:
-                resp = Response(utf8_response({"spentCredit": user.spentCredit}))
+                resp = make_response(jsonify({"spentCredit": user.spentCredit}), 200)
             else:
-                resp = Response(json.dumps({"msg": "error occurred!"}))
+                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -495,19 +485,19 @@ class GetUserChildren(Resource):
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             user = session.query(UserModel).get(user_id)
 
             if not user.isDeleted:
-                resp = Response(get_user_children(session, user))
+                resp = make_response(jsonify(get_user_children(session, user)), 200)
             else:
-                resp = Response(json.dumps({"msg": "error occurred!"}))
+                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -519,19 +509,19 @@ class GetUserNeeds(Resource):
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             user = session.query(UserModel).get(user_id)
 
             if not user.isDeleted:
-                resp = Response(get_user_needs(session, user))
+                resp = make_response(jsonify(get_user_needs(session, user)), 200)
             else:
-                resp = Response(json.dumps({"msg": "error occurred!"}))
+                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -543,19 +533,19 @@ class GetUserUrgentNeeds(Resource):
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             user = session.query(UserModel).get(user_id)
 
             if not user.isDeleted:
-                resp = Response(get_user_needs(session, user, True))
+                resp = make_response(jsonify(get_user_needs(session, user, True)), 200)
             else:
-                resp = Response(json.dumps({"msg": "error occurred!"}))
+                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -567,20 +557,20 @@ class GetUserFinancialReport(Resource):
     def get(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             payments = session.query(PaymentModel).filter_by(id_user=user_id).all()
 
-            res = "{"
+            res = {}
             for payment in payments:
-                res += f'"{str(payment.id)}": {utf8_response(obj_to_dict(payment))}, '
+                res[str(payment.id)] = obj_to_dict(payment)
 
-            resp = Response(res[:-2] + "}" if len(res) != 1 else "{}")
+            resp = make_response(jsonify(res), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -592,20 +582,20 @@ class GetAllUsersNeeds(Resource):
     def get(self):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             users = session.query(UserModel).filter_by(isDeleted=False).all()
 
-            user_needs = "{"
+            user_needs = {}
             for user in users:
-                user_needs += f'"{str(user.id)}": {get_user_needs(session, user)}, '
+                user_needs[str(user.id)] = get_user_needs(session, user)
 
-            resp = Response(user_needs[:-2] + "}" if len(user_needs) != 1 else "{}")
+            resp = make_response(jsonify(user_needs), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -617,7 +607,7 @@ class UpdateUserById(Resource):
     def patch(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             primary_user = (
@@ -627,66 +617,63 @@ class UpdateUserById(Resource):
                 .first()
             )
 
-            if 'avatarUrl' in request.json.keys():
-                primary_user.avatarUrl = request.json['avatarUrl']
-                # file = request.files['avatarUrl']
-                # if file.filename == '':
-                #     resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
-                #     session.close()
-                #     return resp
-                #
-                # if file and allowed_image(file.filename):
-                #     # filename = secure_filename(file.filename)
-                #     filename = str(primary_user.phoneNumber) + '.' + file.filename.split('.')[-1]
-                #
-                #     temp_user_path = os.path.join(app.config['UPLOAD_FOLDER'], str(primary_user.id) + '-user')
-                #
-                #     for obj in os.listdir(temp_user_path):
-                #         check = str(primary_user.id) + '-avatar'
-                #         if obj.split('_')[0] == check:
-                #             os.remove(os.path.join(temp_user_path, obj))
-                #
-                #     primary_user.avatarUrl =
-                #     os.path.join(temp_user_path, str(primary_user.id) + '-avatar_' + filename)
-                #
-                #     file.save(primary_user.avatarUrl)
-                #
-                #     resp = Response(json.dumps({'message': 'WELL DONE!'}))
+            if 'avatarUrl' in request.files.keys():
+                # primary_user.avatarUrl = request.files['avatarUrl']
+                file = request.files['avatarUrl']
+                if file.filename == '':
+                    resp = make_response(jsonify({'message': 'ERROR OCCURRED --> EMPTY FILE!'}), 500)
+                    session.close()
+                    return resp
 
-            if "userName" in request.json.keys():
-                primary_user.userName = request.json["userName"]
+                if file and allowed_image(file.filename):
+                    # filename = secure_filename(file.filename)
+                    filename = str(primary_user.phoneNumber) + '.' + file.filename.split('.')[-1]
 
-            if "emailAddress" in request.json.keys():
-                primary_user.emailAddress = request.json["emailAddress"]
+                    temp_user_path = os.path.join(app.config['UPLOAD_FOLDER'], str(primary_user.id) + '-user')
 
-            if "password" in request.json.keys():
+                    for obj in os.listdir(temp_user_path):
+                        check = str(primary_user.id) + '-avatar'
+                        if obj.split('_')[0] == check:
+                            os.remove(os.path.join(temp_user_path, obj))
+
+                    primary_user.avatarUrl = os.path.join(temp_user_path, str(primary_user.id) + '-avatar_' + filename)
+
+                    file.save(primary_user.avatarUrl)
+
+            if "userName" in request.form.keys():
+                primary_user.userName = request.form["userName"]
+
+            if "emailAddress" in request.form.keys():
+                primary_user.emailAddress = request.form["emailAddress"]
+
+            if "password" in request.form.keys():
                 primary_user.password = md5(
-                    request.json["password"].encode()
+                    request.form["password"].encode()
                 ).hexdigest()
 
-            if "firstName" in request.json.keys():
-                primary_user.firstName = request.json["firstName"]
+            if "firstName" in request.form.keys():
+                primary_user.firstName = request.form["firstName"]
 
-            if "lastName" in request.json.keys():
-                primary_user.lastName = request.json["lastName"]
+            if "lastName" in request.form.keys():
+                primary_user.lastName = request.form["lastName"]
 
-            if "country" in request.json.keys():
-                primary_user.country = int(request.json["country"])
+            if "country" in request.form.keys():
+                primary_user.country = int(request.form["country"])
 
-            if "city" in request.json.keys():
-                primary_user.city = int(request.json["city"])
+            if "city" in request.form.keys():
+                primary_user.city = int(request.form["city"])
 
-            if "birthPlace" in request.json.keys():
-                primary_user.birthPlace = int(request.json["birthPlace"])
+            if "birthPlace" in request.form.keys():
+                primary_user.birthPlace = int(request.form["birthPlace"])
 
-            if "birthDate" in request.json.keys():
+            if "birthDate" in request.form.keys():
                 primary_user.birthDate = datetime.strptime(
-                    request.json["birthDate"], "%Y-%m-%d"
+                    request.form["birthDate"], "%Y-%m-%d"
                 )
 
-            if "gender" in request.json.keys():
+            if "gender" in request.form.keys():
                 primary_user.gender = (
-                    True if request.json["gender"] == "true" else False
+                    True if request.form["gender"] == "true" else False
                 )
 
             primary_user.lastUpdate = datetime.now()
@@ -694,11 +681,11 @@ class UpdateUserById(Resource):
             secondary_user = obj_to_dict(primary_user)
 
             session.commit()
-            resp = Response(utf8_response(secondary_user))
+            resp = make_response(jsonify(secondary_user), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"msg": "ERROR OCCURRED!"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -710,13 +697,13 @@ class DeleteUserById(Resource):
     def patch(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             user = session.query(UserModel).get(user_id)
 
             if user.isDeleted:
-                resp = Response(json.dumps({"msg": "user was already deleted!"}))
+                resp = make_response(jsonify({"message": "user was already deleted!"}), 500)
                 session.close()
                 return resp
 
@@ -743,11 +730,11 @@ class DeleteUserById(Resource):
 
             session.commit()
 
-            resp = Response(json.dumps({"msg": "user deleted successfully!"}))
+            resp = make_response(jsonify({"message": "user deleted successfully!"}), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()
@@ -759,7 +746,7 @@ class AddUser(Resource):
     def post(self):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             # if len(session.query(UserModel).all()):
@@ -769,39 +756,39 @@ class AddUser(Resource):
             # else:
             #     current_id = 1
 
-            if "emailAddress" in request.json.keys():
-                email_address = request.json["emailAddress"]
+            if "emailAddress" in request.form.keys():
+                email_address = request.form["emailAddress"]
             else:
                 email_address = None
 
-            if "gender" in request.json.keys():
-                gender = True if request.json["gender"] == "true" else False
+            if "gender" in request.form.keys():
+                gender = True if request.form["gender"] == "true" else False
             else:
                 gender = None
 
-            if "birthDate" in request.json.keys():
-                birth_date = datetime.strptime(request.json["birthDate"], "%Y-%m-%d")
+            if "birthDate" in request.form.keys():
+                birth_date = datetime.strptime(request.form["birthDate"], "%Y-%m-%d")
             else:
                 birth_date = None
 
-            if "birthPlace" in request.json.keys():
-                birth_place = int(request.json["birthPlace"])
+            if "birthPlace" in request.form.keys():
+                birth_place = int(request.form["birthPlace"])
             else:
                 birth_place = None
 
-            if "phoneNumber" in request.json.keys():
-                phone_number = request.json["phoneNumber"]
+            if "phoneNumber" in request.form.keys():
+                phone_number = request.form["phoneNumber"]
             else:
                 phone_number = None
 
-            phone_number = request.json['phoneNumber']
-            password = md5(request.json["password"].encode()).hexdigest()
-            first_name = request.json["firstName"]
-            last_name = request.json["lastName"]
-            city = int(request.json["city"])
-            country = int(request.json["country"])
+            phone_number = request.form['phoneNumber']
+            password = md5(request.form["password"].encode()).hexdigest()
+            first_name = request.form["firstName"]
+            last_name = request.form["lastName"]
+            city = int(request.form["city"])
+            country = int(request.form["country"])
 
-            username = request.json["userName"]
+            username = request.form["userName"]
 
             duplicate_user = (
                 session.query(UserModel)
@@ -810,9 +797,7 @@ class AddUser(Resource):
                 .first()
             )
             if duplicate_user is not None:
-                resp = Response(
-                    json.dumps({"message": "user has already been registered!"})
-                )
+                resp = make_response(jsonify({"message": "user has already been registered!"}), 500)
                 session.close()
                 return resp
 
@@ -822,35 +807,6 @@ class AddUser(Resource):
 
             # avatar_url = path
             flag_url = os.path.join(FLAGS, str(country) + ".png")
-
-            # path = None
-            if 'avatarUrl' in request.json:
-                # file = request.files['avatarUrl']
-                #
-                # if file.filename == '':
-                #     resp = Response(json.dumps({'message': 'ERROR OCCURRED --> EMPTY FILE!'}))
-                #     session.close()
-                #     return resp
-                #
-                # if file and allowed_image(file.filename):
-                #     # filename = secure_filename(file.filename)
-                #     filename = str(phone_number) + '.' + file.filename.split('.')[-1]
-                #
-                #     temp_user_path = os.path.join(app.config['UPLOAD_FOLDER'], str(current_id) + '-user')
-                #
-                #     if not os.path.isdir(temp_user_path):
-                #         os.mkdir(temp_user_path)
-                #
-                #     path = os.path.join(temp_user_path, str(current_id) + '-avatar_' + filename)
-                #
-                #     file.save(path)
-                #
-                #     resp = Response(json.dumps({'message': 'WELL DONE!'}))
-                #
-                # avatar_url = path
-                avatar_url = request.json["avatarUrl"]
-            else:
-                avatar_url = None
 
             new_user = UserModel(
                 firstName=first_name,
@@ -873,13 +829,44 @@ class AddUser(Resource):
             )
 
             session.add(new_user)
+            session.flush()
+
+            # path = None
+            if 'avatarUrl' in request.files:
+                file = request.files['avatarUrl']
+
+                if file.filename == '':
+                    resp = make_response(jsonify({'message': 'ERROR OCCURRED --> EMPTY FILE!'}), 500)
+                    session.close()
+                    return resp
+
+                if file and allowed_image(file.filename):
+                    # filename = secure_filename(file.filename)
+                    filename = str(phone_number) + '.' + file.filename.split('.')[-1]
+
+                    temp_user_path = os.path.join(app.config['UPLOAD_FOLDER'], str(current_id) + '-user')
+
+                    if not os.path.isdir(temp_user_path):
+                        os.mkdir(temp_user_path)
+
+                    path = os.path.join(temp_user_path, str(current_id) + '-avatar_' + filename)
+
+                    file.save(path)
+
+                avatar_url = path
+            #     avatar_url = request.files["avatarUrl"]
+            else:
+                avatar_url = None
+
+            new_user.avatarUrl = path
+
             session.commit()
 
-            resp = Response(json.dumps({"message": "USER ADDED SUCCESSFULLY!"}))
+            resp = make_response(jsonify({"message": "USER ADDED SUCCESSFULLY!"}), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
         finally:
             session.close()

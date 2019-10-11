@@ -1,6 +1,5 @@
 from say.models.activity_model import ActivityModel
 from . import *
-
 """
 Activity APIs
 """
@@ -11,21 +10,25 @@ class GetActivityById(Resource):
     def get(self, activity_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}),
+                             503)
 
         try:
-            activity = session.query(ActivityModel).filter_by(id=activity_id).first()
+            activity = session.query(ActivityModel).filter_by(
+                id=activity_id).first()
 
             if not activity:
-                resp = Response(json.dumps({"message": "there is no activity!"}))
+                resp = make_response(
+                    jsonify({"message": "there is no activity!"}), 200)
                 session.close()
                 return resp
 
-            resp = Response(utf8_response(obj_to_dict(activity)), status=200)
+            resp = make_response(jsonify(obj_to_dict(activity)), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "something is wrong!"}, status=500))
+            resp = make_response(jsonify({"message": "something is wrong!"}),
+                                 500)
 
         finally:
             session.close()
@@ -37,31 +40,34 @@ class GetActivityBySocialWorker(Resource):
     def get(self, social_worker_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}),
+                             503)
 
         try:
-            activities = (
-                session.query(ActivityModel)
-                .filter_by(id_social_worker=social_worker_id)
-                .all()
-            )
+            activities = (session.query(ActivityModel).filter_by(
+                id_social_worker=social_worker_id).all())
 
             if not activities:
-                resp = Response(json.dumps({"message": "there is no activity!"}))
+                resp = make_response(
+                    jsonify({"message": "there is no activity!"}), 200)
                 session.close()
                 return resp
 
             result = {}
             for activity in activities:
-                res = {"Id": activity.id, "ActivityCode": activity.activityCode}
+                res = {
+                    "Id": activity.id,
+                    "ActivityCode": activity.activityCode
+                }
 
                 result[str(activity.id)] = res
 
-            resp = Response(utf8_response(result, True), status=200)
+            resp = make_response(jsonify(result), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "something is wrong!"}, status=500))
+            resp = make_response(jsonify({"message": "something is wrong!"}),
+                                 500)
 
         finally:
             session.close()
@@ -73,29 +79,34 @@ class GetActivityByType(Resource):
     def get(self, activity_code):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}),
+                             503)
 
         try:
-            activities = (
-                session.query(ActivityModel).filter_by(activityCode=activity_code).all()
-            )
+            activities = (session.query(ActivityModel).filter_by(
+                activityCode=activity_code).all())
 
             if not activities:
-                resp = Response(json.dumps({"message": "there is no activity!"}))
+                resp = make_response(
+                    jsonify({"message": "there is no activity!"}), 200)
                 session.close()
                 return resp
 
             result = {}
             for activity in activities:
-                res = {"Id": activity.id, "Id_social_worker": activity.id_social_worker}
+                res = {
+                    "Id": activity.id,
+                    "Id_social_worker": activity.id_social_worker
+                }
 
                 result[str(activity.id)] = res
 
-            resp = Response(utf8_response(result, True), status=200)
+            resp = make_response(jsonify(result), 200)
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "something is wrong!"}, status=500))
+            resp = make_response(jsonify({"message": "something is wrong!"}),
+                                 500)
 
         finally:
             session.close()
@@ -107,13 +118,15 @@ class GetAllActivities(Resource):
     def get(self):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}),
+                             503)
 
         try:
             activities = session.query(ActivityModel).all()
 
             if not activities:
-                resp = Response(json.dumps({"message": "there is no activity!"}))
+                resp = make_response(
+                    jsonify({"message": "there is no activity!"}), 200)
                 session.close()
                 return resp
 
@@ -127,15 +140,13 @@ class GetAllActivities(Resource):
 
                 result[str(activity.id)] = res
 
-            resp = Response(
-                utf8_response(result, True),
-                status=200,
-                headers={"Access-Control-Allow-Origin": "*"},
-            )
+            resp = make_response(jsonify(result), 200)
+            resp.headers["Access-Control-Allow-Origin"] = "*"
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "something is wrong!"}), status=500)
+            resp = make_response(jsonify({"message": "something is wrong!"}),
+                                 500)
 
         finally:
             session.close()
@@ -147,28 +158,27 @@ class AddActivity(Resource):
     def post(self, social_worker_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "major error occurred!"}
+        resp = make_response(jsonify({"message": "major error occurred!"}),
+                             503)
 
         try:
             id_social_worker = social_worker_id
             activity_code = int(request.form["activityCode"])
 
-            new_activity = ActivityModel(
-                id_social_worker=id_social_worker, activityCode=activity_code
-            )
+            new_activity = ActivityModel(id_social_worker=id_social_worker,
+                                         activityCode=activity_code)
 
             session.add(new_activity)
             session.commit()
 
-            resp = Response(
-                json.dumps({"message": "new activity added!"}),
-                status=200,
-                headers={"Access-Control-Allow-Origin": "*"},
-            )
+            resp = make_response(jsonify({"message": "new activity added!"}),
+                                 200)
+            resp.headers["Access-Control-Allow-Origin"] = "*"
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "something is wrong!"}), status=500)
+            resp = make_response(jsonify({"message": "something is wrong!"}),
+                                 500)
 
         finally:
             session.close()
@@ -180,9 +190,9 @@ API URLs
 """
 
 api.add_resource(GetActivityById, "/api/v2/activity/activityId=<activity_id>")
-api.add_resource(
-    GetActivityBySocialWorker, "/api/v2/activity/socialWorker=<social_worker_id>"
-)
+api.add_resource(GetActivityBySocialWorker,
+                 "/api/v2/activity/socialWorker=<social_worker_id>")
 api.add_resource(GetActivityByType, "/api/v2/activity/type=<activity_code>")
 api.add_resource(GetAllActivities, "/api/v2/activity/all")
-api.add_resource(AddActivity, "/api/v2/activity/add/socialWorker=<social_worker_id>")
+api.add_resource(AddActivity,
+                 "/api/v2/activity/add/socialWorker=<social_worker_id>")
