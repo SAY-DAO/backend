@@ -11,51 +11,101 @@ For gender, [true] is male and [false] is female.
 tags:
   - User API
 
+consumes:
+  - multipart/form-data
+
 parameters:
   - name: user_id
     in: path
     type: integer
 
-  - in: body
-    name: update info
-    required: true
-    schema:
-      properties:
-        userRole:
-          type: integer
+  - name: firstName
+    in: formData
+    type: string
 
-        firstName:
-          type: string
+  - name: lastName
+    in: formData
+    type: string
 
-        lastName:
-          type: string
+  - name: avatarUrl
+    in: formData
+    type: file
 
-        userName:
-          type: string
+  - name: phoneNumber
+    in: formData
+    type: string
+    
+  - name: emailAddress
+    in: formData
+    type: string
 
-        avatarUrl:
-          type: file
+  - name: gender
+    in: formData
+    type: boolean
 
-        emailAddress:
-          type: string
+  - name: country
+    in: formData
+    type: integer
 
-        password:
-          type: string
+  - name: city
+    in: formData
+    type: integer
 
-        gender:
-          type: boolean
+  - name: birthPlace
+    in: formData
+    type: integer
 
-        country:
-          type: integer
+  - name: birthDate
+    in: formData
+    type: string
 
-        city:
-          type: integer
+  - name: userName
+    in: formData
+    type: string
 
-        birthPlace:
-          type: integer
+  - name: password
+    in: formData
+    type: string
 
-        birthDate:
-          type: string
+  # - in: body
+  #   name: update info
+  #   schema:
+  #     properties:
+  #       userRole:
+  #         type: integer
+
+  #       firstName:
+  #         type: string
+
+  #       lastName:
+  #         type: string
+
+  #       userName:
+  #         type: string
+
+  #       avatarUrl:
+  #         type: file
+
+  #       emailAddress:
+  #         type: string
+
+  #       password:
+  #         type: string
+
+  #       gender:
+  #         type: boolean
+
+  #       country:
+  #         type: integer
+
+  #       city:
+  #         type: integer
+
+  #       birthPlace:
+  #         type: integer
+
+  #       birthDate:
+  #         type: string
 
 
 responses:

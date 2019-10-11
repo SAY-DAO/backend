@@ -11,46 +11,59 @@ tags:
   - User API
 
 parameters:
-  - in: body
-    name: update info
+  - name: firstName
+    in: formData
     required: true
-    schema:
-      properties:
-        firstName:
-          type: string
+    type: string
 
-        lastName:
-          type: string
+  - name: lastName
+    in: formData
+    required: true
+    type: string
 
-        avatarUrl:
-          type: file
+  - name: avatarUrl
+    in: formData
+    type: file
 
-        phoneNumber:
-          type: string
-          
-        emailAddress:
-          type: string
+  - name: phoneNumber
+    in: formData
+    type: string
+    
+  - name: emailAddress
+    in: formData
+    type: string
 
-        gender:
-          type: boolean
+  - name: gender
+    in: formData
+    type: boolean
 
-        country:
-          type: integer
+  - name: country
+    in: formData
+    required: true
+    type: integer
 
-        city:
-          type: integer
+  - name: city
+    in: formData
+    required: true
+    type: integer
 
-        birthPlace:
-          type: integer
+  - name: birthPlace
+    in: formData
+    type: integer
 
-        birthDate:
-          type: string
+  - name: birthDate
+    in: formData
+    type: string
 
-        userName:
-          type: string
+  - name: userName
+    in: formData
+    required: true
+    type: string
 
-        password:
-          type: string
+  - name: password
+    in: formData
+    required: true
+    type: string
 
 
 responses:
