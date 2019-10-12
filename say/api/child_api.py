@@ -457,7 +457,7 @@ class AddChild(Resource):
                 last_name = None
 
             if "birthPlace" in request.form.keys():
-                birth_place = int(request.form["birthPlace"])
+                birth_place = request.form["birthPlace"]
             else:
                 birth_place = None
 
@@ -817,7 +817,7 @@ class UpdateChildById(Resource):
                 primary_child.education = int(request.form["education"])
 
             if "birthPlace" in request.form.keys():
-                primary_child.birthPlace = int(request.form["birthPlace"])
+                primary_child.birthPlace = request.form["birthPlace"]
 
             if "birthDate" in request.form.keys():
                 primary_child.birthDate = datetime.strptime(

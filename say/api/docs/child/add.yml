@@ -78,7 +78,7 @@ parameters:
 
   - name: birthPlace
     in: formData
-    type: integer
+    type: string
 
   - name: birthDate
     in: formData

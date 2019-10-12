@@ -25,7 +25,7 @@ class ChildModel(base):
     bio = Column(Text, nullable=False)
     bioSummary = Column(Text, nullable=False)
     voiceUrl = Column(String, nullable=False)
-    birthPlace = Column(Integer, nullable=True)  # 1:tehran | 2:karaj
+    birthPlace = Column(Text, nullable=True)  # 1:tehran | 2:karaj
     birthDate = Column(Date, nullable=True)
     address = Column(Text, nullable=True)
     housingStatus = Column(
