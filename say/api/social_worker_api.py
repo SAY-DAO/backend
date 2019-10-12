@@ -111,7 +111,6 @@ class AddSocialWorker(Resource):
             phone_number = request.form["phoneNumber"]
             emergency_phone_number = request.form["emergencyPhoneNumber"]
             email_address = request.form["emailAddress"]
-            username = request.form["userName"]
 
             register_date = datetime.now()
             last_update_date = datetime.now()
@@ -130,6 +129,8 @@ class AddSocialWorker(Resource):
                 self.panel_users += 1
                 generated_code = format(id_ngo, "03d") + format(
                     self.panel_users, "03d")
+
+            username = f'{ngo.name}-sw{generated_code}'
 
             new_social_worker = SocialWorkerModel(
                 id_ngo=id_ngo,

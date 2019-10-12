@@ -41,11 +41,6 @@ parameters:
     type: string
     required: true
 
-  - name: userName
-    in: formData
-    type: string
-    required: true
-
   - name: birthCertificateNumber
     in: formData
     type: string
