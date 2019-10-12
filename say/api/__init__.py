@@ -8,7 +8,8 @@ from flask import (
     request,
     Blueprint,
     send_from_directory,
-    make_response
+    make_response,
+    redirect,
 )
 from flask_restful import Api, Resource
 from sqlalchemy import create_engine, inspect, or_, not_, and_, func
@@ -26,6 +27,8 @@ from flask_migrate import Migrate
 # from hazm import *
 import json
 from flask_cors import CORS
+
+from ..payment import IDPay
 
 
 with open("./config.json") as config_file:
@@ -53,6 +56,8 @@ ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = conf['dbUrl']
+app.config['SANDBOX'] = True
+app.config['IDPAY_API_KEY'] = "83bdbfa4-04e6-4593-ba07-3e0652ae726d"
 app.config.update(conf)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config["DEBUG"] = True
@@ -76,6 +81,8 @@ app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 jwt = JWTManager(app)
 
 migrate = Migrate(app, db)
+
+idpay = IDPay(app.config['IDPAY_API_KEY'], app.config['SANDBOX'])
 
 api = Api(app)
 # api_bp = Blueprint('api', __name__)
