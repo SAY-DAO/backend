@@ -18,11 +18,7 @@ class GetAllPrivileges(Resource):
 
             result = {}
             for privilege in privileges:
-                res = {
-                    "Id": privilege.id,
-                    "Name": privilege.name,
-                    "Privilege": privilege.privilege,
-                }
+                res =  obj_to_dict(privilege)
                 result[str(privilege.id)] = res
 
             resp = make_response(jsonify(result), 200)
@@ -129,7 +125,7 @@ class GetPrivilegeByPrivilege(Resource):
 
             result = {}
             for privilege in privilege_list:
-                res = {"Id": privilege.id, "Name": privilege.name}
+                res = obj_to_dict(privilege)
                 result[str(privilege.id)] = res
 
             resp = make_response(jsonify(result), 200)
@@ -161,12 +157,7 @@ class UpdatePrivilege(Resource):
             if "privilege" in request.form.keys():
                 base_privilege.privilege = int(request.form["privilege"])
 
-            res = {
-                "Id": int(privilege_id),
-                "Name": base_privilege.name,
-                "Privilege": base_privilege.privilege,
-            }
-
+            res = obj_to_dict(base_privilege)
             session.commit()
 
             resp = make_response(jsonify(res), 200)
