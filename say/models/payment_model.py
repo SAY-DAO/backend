@@ -27,5 +27,9 @@ class PaymentModel(base):
     track_id = Column(String, nullable=True)
     verfied_date = Column(Date, nullable=True)
 
-    need_relation = relationship("NeedModel", foreign_keys="PaymentModel.id_need")
+    need = relationship(
+        "NeedModel",
+        foreign_keys="PaymentModel.id_need",
+        uselist=False
+    )
     user_relation = relationship("UserModel", foreign_keys="PaymentModel.id_user")

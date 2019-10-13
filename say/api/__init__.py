@@ -10,6 +10,7 @@ from flask import (
     send_from_directory,
     make_response,
     redirect,
+    render_template,
 )
 from flask_restful import Api, Resource
 from sqlalchemy import create_engine, inspect, or_, not_, and_, func
@@ -55,6 +56,7 @@ ALLOWED_VOICE_EXTENSIONS = {"wav", "m4a", "wma", "mp3", "aac", "ogg"}
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
 
 app = Flask(__name__)
+app.config['BASE_URL'] = 'sayapp.company'
 app.config['SQLALCHEMY_DATABASE_URI'] = conf['dbUrl']
 app.config['SANDBOX'] = True
 app.config['IDPAY_API_KEY'] = "83bdbfa4-04e6-4593-ba07-3e0652ae726d"

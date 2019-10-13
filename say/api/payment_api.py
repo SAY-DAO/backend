@@ -4,6 +4,7 @@ import random
 from wtforms import Form, IntegerField, StringField, DecimalField, validators
 from say.models.need_model import NeedModel
 from say.models.user_model import UserModel
+from say.models.child_need_model import ChildNeedModel
 from say.models.payment_model import PaymentModel
 from . import *
 
@@ -95,7 +96,7 @@ class Payment(Resource):
                 "phone": user.phoneNumber,
                 "mail": 'info@say.company',
                 "desc": need.name,
-                "callback": "http://sayapp.company/payment/callback"
+                "callback": f"{app.config['BASE_URL']}/api/v2/payment/verify"
             }
 
             new_transaction = idpay.new_transaction(**api_data)
@@ -112,7 +113,12 @@ class Payment(Resource):
             )
             session.add(new_payment)
             session.commit()
-            resp = redirect(new_payment.link, code=302)
+            resp = jsonify(obj_to_dict(new_payment))
+            resp.headers.add("Access-Control-Allow-Origin", "*")
+            resp.headers.add(
+                "Access-Control-Allow-Headers",
+                "Origin, X-Requested-With, Content-Type, Accept",
+            )
 
         except Exception as ex:
             resp = str(ex)
@@ -121,41 +127,52 @@ class Payment(Resource):
             session.close()
             return resp
 
-#
-#@app.route('/verify' , methods = ['POST'])
-#def verify():
-#    id = request.form['id']
-#    orderId = request.form['orderId']
-#
-#    api_url = 'https://api.idpay.ir/v1.1/payment/verify'
-#    api_headers = { 'Content-Type': 'application/json' , 'X-API-KEY':'c999970e-64d2-477b-8852-447594fb730b', 'X-SANDBOX': '1'}
-#    api_data = {'id' : id , 'order_id' : orderId}
-#
-#    api_respond = requests.post(api_url , headers = api_headers , json= api_data)
-#    api_respond = api_respond.json()
-#
-#    resp = Response(json.dumps(api_respond), status=200, mimetype='application/json')
-#
-#    print(api_respond)
-#
-#    Session = sessionmaker(db)
-#    session = Session()
-#
-#    base.metadata.create_all(db)
-#
-#    pending_payment = session.query(PaymentDB).filter_by(orderId = orderId).first()
-#    pending_payment.is_verified = True
-#    pending_payment.data = api_respond['date']
-#    pending_payment.track_id = api_respond['track_id']
-#    pending_payment.verified_date = api_respond['verify']['date']
-#    pending_payment.card_no = api_respond['payment']['card_no']
-#    pending_payment.hashed_card_no = api_respond['payment']['hashed_card_no']
-#    session.commit()
-#    session.close()
-#
-#
-#    return resp
-#
+
+class VerifyPayment(Resource):
+    def post(self):
+        paymentId = request.form['id']
+        orderId = request.form['order_id']
+
+        response = idpay.verify(paymentId, orderId)
+        if response['status'] != 100:
+            from pudb import set_trace; set_trace()
+            resp = make_response(
+                jsonify(dict(message=idpay.RESPONSES[response['status']]))
+            )
+            return resp
+
+        session_maker = sessionmaker(db)
+        session = session_maker()
+
+        pending_payment = session.query(PaymentModel) \
+            .filter_by(paymentId = paymentId) \
+            .first()
+
+        if pending_payment is None:
+            resp = dict(message='Invalid orderId')
+            return resp
+
+        pending_payment.is_verified = True
+        pending_payment.date = datetime.fromtimestamp(int(
+            response['date']
+        ))
+        pending_payment.track_id = response['track_id']
+        pending_payment.verified_date = datetime.fromtimestamp(int(
+            response['verify']['date']
+        ))
+        pending_payment.card_no = response['payment']['card_no']
+        pending_payment.hashed_card_no = response['payment']['hashed_card_no']
+        session.commit()
+
+        child_id = session.query(ChildNeedModel) \
+            .filter_by(id_need = pending_payment.need.id) \
+            .first() \
+            .id_child
+        resp = jsonify(obj_to_dict(pending_payment))
+        return render_template(
+            'succesful_payment.html',
+            payment=pending_payment,
+        )
 #
 #@app.route('/payment/user/<int:user_id>' , methods =  ['GET'])
 #def getPaymentByUserId(user_id):
@@ -199,5 +216,6 @@ class Payment(Resource):
 #        return resp
 #
 
-
 api.add_resource(Payment, "/api/v2/payment")
+api.add_resource(VerifyPayment, "/api/v2/payment/verify")
+
