@@ -32,4 +32,4 @@ class PaymentModel(base):
         foreign_keys="PaymentModel.id_need",
         uselist=False
     )
-    user_relation = relationship("UserModel", foreign_keys="PaymentModel.id_user")
+    user = relationship("UserModel", foreign_keys="PaymentModel.id_user")

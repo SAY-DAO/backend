@@ -52,13 +52,13 @@ class Payment(Resource):
     def post(self):
         resp = {"message": "Something is Wrong!"}
         if 'needId' not in request.form:
-            return jsonify({"message": "needId الزامیست!"})
+            return jsonify({"message": "needId is required"})
 
         if 'userId' not in request.form:
-            return jsonify({"message": "userId الزامیست!"})
+            return jsonify({"message": "userId is required"})
 
         if 'amount' not in request.form:
-            return jsonify({"message": "amount الزامیست!"})
+            return jsonify({"message": "amount is required"})
 
         amount = request.form['amount']
         userId = request.form['userId']
@@ -168,11 +168,13 @@ class VerifyPayment(Resource):
             .first() \
             .id_child
         resp = jsonify(obj_to_dict(pending_payment))
+
         return make_response(render_template(
             'succesful_payment.html',
             payment=pending_payment,
+            user=pending_payment.user,
         ))
-#
+
 #@app.route('/payment/user/<int:user_id>' , methods =  ['GET'])
 #def getPaymentByUserId(user_id):
 #    try :
