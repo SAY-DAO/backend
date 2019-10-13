@@ -1,0 +1,28 @@
+Create a paymnet for a need
+---
+
+tags:
+  - Payment API
+
+parameters:
+  - name: needId
+    in: formData
+    type: integer
+    required: true
+
+  - name: userId
+    in: formData
+    type: integer
+    required: true
+
+  - name: amount
+    in: formData
+    type: integer
+    required: true
+
+responses:
+  200:
+    description: Error occurred somewhere!
+
+  302:
+    description: Ok

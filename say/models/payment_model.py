@@ -13,8 +13,23 @@ class PaymentModel(base):
     id = Column(Integer, nullable=False, primary_key=True)
     id_need = Column(Integer, ForeignKey(NeedModel.id), nullable=False)
     id_user = Column(Integer, ForeignKey(UserModel.id), nullable=False)
-    amount = Column(Integer, nullable=False)
-    createdAt = Column(Date, nullable=False)
 
-    need_relation = relationship("NeedModel", foreign_keys="PaymentModel.id_need")
+    createdAt = Column(Date, nullable=False)
+    orderId = Column(String, nullable=True)
+    paymentId = Column(String, nullable=True)
+    link = Column(String, nullable=True)
+    amount = Column(Integer, nullable=True)
+    desc = Column(String, nullable=True)
+    is_verified = Column(Boolean, nullable=True)
+    date = Column(Date, nullable=True)
+    card_no = Column(String, nullable=True)
+    hashed_card_no = Column(String, nullable=True)
+    track_id = Column(String, nullable=True)
+    verfied_date = Column(Date, nullable=True)
+
+    need = relationship(
+        "NeedModel",
+        foreign_keys="PaymentModel.id_need",
+        uselist=False
+    )
     user_relation = relationship("UserModel", foreign_keys="PaymentModel.id_user")

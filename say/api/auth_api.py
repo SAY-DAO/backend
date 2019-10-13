@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 from random import randint
-from flask import render_template
 from say.models.user_model import UserModel
 from say.models.verify_model import VerifyModel
 from hashlib import md5

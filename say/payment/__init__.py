@@ -1,0 +1,2 @@
+from .idpay import IDPay
+

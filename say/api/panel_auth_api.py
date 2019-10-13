@@ -29,14 +29,14 @@ class PanelLogin(Resource):
                 username = request.form["username"]
             else:
                 return Response(
-                    json.dumps({"message": "username is needed !!!"}), status=500
+                    json.dumps({"message": "username is needed!!!"}), status=500
                 )
 
             if "password" in request.form.keys():
                 password = md5(request.form["password"].encode()).hexdigest()
             else:
                 return Response(
-                    json.dumps({"message": "password is needed !!!"}), status=500
+                    json.dumps({"message": "password is needed!!!"}), status=500
                 )
 
             social_worker = (
