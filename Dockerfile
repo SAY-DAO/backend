@@ -14,6 +14,6 @@ RUN pip install -r requirements.txt
 
 COPY . /app
 
-CMD [ "alembic", "upgrade head" ]
+RUN alembic upgrade head
 CMD [ "python", "run.py" ]
 

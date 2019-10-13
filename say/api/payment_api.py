@@ -135,7 +135,6 @@ class VerifyPayment(Resource):
 
         response = idpay.verify(paymentId, orderId)
         if response['status'] != 100:
-            from pudb import set_trace; set_trace()
             resp = make_response(
                 jsonify(dict(message=idpay.RESPONSES[response['status']]))
             )
@@ -169,10 +168,10 @@ class VerifyPayment(Resource):
             .first() \
             .id_child
         resp = jsonify(obj_to_dict(pending_payment))
-        return render_template(
+        return make_response(render_template(
             'succesful_payment.html',
             payment=pending_payment,
-        )
+        ))
 #
 #@app.route('/payment/user/<int:user_id>' , methods =  ['GET'])
 #def getPaymentByUserId(user_id):
