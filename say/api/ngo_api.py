@@ -397,6 +397,9 @@ class UpdateNgo(Resource):
                         app.config["UPLOAD_FOLDER"], str(base_ngo.id) + "-ngo"
                     )
 
+                    if not os.path.isdir(temp_logo_path):
+                        os.mkdir(temp_logo_path)
+
                     for obj in os.listdir(temp_logo_path):
                         check = str(base_ngo.id) + "-logo"
 
@@ -409,7 +412,7 @@ class UpdateNgo(Resource):
 
                     file.save(base_ngo.logoUrl)
 
-                    
+
 
             base_ngo.lastUpdateDate = datetime.now()
 
