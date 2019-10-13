@@ -11,7 +11,7 @@ class NeedModel(base):
     id = Column(Integer, nullable=False, primary_key=True, unique=True)
     name = Column(String, nullable=False)
     imageUrl = Column(String, nullable=False)
-    category = Column(Integer, nullable=False)  # 0:growth | 1:joy | 2:health
+    category = Column(Integer, nullable=False)  # 0:Growth | 1:Joy | 2:Health | 3:Surroundings
     isUrgent = Column(Boolean, nullable=False)
     description = Column(Text, nullable=False)
     descriptionSummary = Column(Text, nullable=False)
