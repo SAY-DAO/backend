@@ -61,14 +61,14 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
                 .group_by(PaymentModel.id_user, PaymentModel.id_need)
                 .first())[0]
             )
-            
+
             temp_participant['userAvatar'] = (
                 (session.query(UserModel.avatarUrl)
                 .filter_by(id=participant.id_user)
                 .filter_by(isDeleted=False)
                 .first())[0]
             )
-            
+
             users[str(participant.id_user)] = temp_participant
 
         if participants_only:
@@ -489,6 +489,10 @@ class UpdateNeedById(Resource):
                         temp_need_path, str(primary_need.id) + "-need"
                     )
 
+                    if not os.path.isdir(temp_need_path):
+                        os.mkdir(temp_need_path)
+
+
                     for obj in os.listdir(temp_need_path):
                         check = str(primary_need.id) + "-image"
 
@@ -527,6 +531,9 @@ class UpdateNeedById(Resource):
                     temp_need_path = os.path.join(
                         temp_need_path, str(primary_need.id) + "-need"
                     )
+                    if not os.path.isdir(temp_need_path):
+                        os.mkdir(temp_need_path)
+
                     receipt_path = os.path.join(
                         temp_need_path, str(primary_need.id) + "-receipt_" + filename
                     )
@@ -754,7 +761,7 @@ class AddNeed(Resource):
                 return resp
 
             image_path, receipt_path = "wrong path", "wrong path"
-            
+
             image_url = image_path
             receipts = receipt_path
 
