@@ -97,8 +97,8 @@ class AddNgo(Resource):
             else:
                 website = None
 
-            register_date = datetime.now()
-            last_update_date = datetime.now()
+            register_date = datetime.utcnow()
+            last_update_date = datetime.utcnow()
 
             new_ngo = NgoModel(
                 name=name,
