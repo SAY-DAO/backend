@@ -64,7 +64,7 @@ parameters:
   - name: balance
     in: formData
     type: integer
-    required: true
+    required: false
 
 responses:
   500:

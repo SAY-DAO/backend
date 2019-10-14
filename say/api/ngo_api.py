@@ -87,7 +87,10 @@ class AddNgo(Resource):
             postal_address = request.form["postalAddress"]
             email_address = request.form["emailAddress"]
             phone_number = request.form["phoneNumber"]
-            balance = int(request.form["balance"])
+            if "balance" in request.form.keys():
+                balance = request.form["balance"]
+            else:
+                balance = 0
 
             if "website" in request.form.keys():
                 website = request.form["website"]
