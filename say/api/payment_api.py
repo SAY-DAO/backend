@@ -97,7 +97,7 @@ class Payment(Resource):
 
             api_data = {
                 "order_id": order_id,
-                "amount": amount,
+                "amount": amount * 10, # Converting Toman to Rial
                 "name": user.lastName,
                 "phone": user.phoneNumber,
                 "mail": 'info@say.company',
