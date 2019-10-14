@@ -1,3 +1,5 @@
+import traceback
+
 from say.models.ngo_model import NgoModel
 from . import *
 
@@ -118,7 +120,13 @@ class AddNgo(Resource):
 
         except Exception as e:
             print(e)
-            resp = make_response(make_response(jsonify({"msg": "sth is wrong!"}), 500))
+            resp = make_response(
+                jsonify({
+                    "msg": "sth is wrong!",
+                    "stack_trace": traceback.format_exc()
+                }),
+                500,
+            )
 
         finally:
             session.close()
