@@ -107,7 +107,7 @@ class AddUserToFamily(Resource):
             id_user = user_id
             id_family = family_id
             # user_role = int(request.json['user_role'])
-            user_role = int(request.form["userRole"])
+            user_role = int(request.json["userRole"])
 
             new_member = UserFamilyModel(
                 id_user=id_user, id_family=id_family, userRole=user_role
