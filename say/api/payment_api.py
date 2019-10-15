@@ -218,8 +218,7 @@ class VerifyPayment(Resource):
         session.commit()
 
         resp = jsonify(obj_to_dict(pending_payment))
-        need_url = f"{app.config['BASE_URL']}/needPage/{need.id}/{child.id}" \
-            "/{pending_payment.id_user}"
+        need_url = f"/needPage/{need.id}/{child.id}/{pending_payment.id_user}"
 
         return make_response(render_template(
             'succesful_payment.html',
