@@ -588,8 +588,8 @@ class AddChild(Resource):
                 )
                 file2.save(avatar_path)
 
-            new_child.avatarUrl = avatar_path
-            new_child.voiceUrl = voice_path
+            new_child.avatarUrl = '/' + avatar_path
+            new_child.voiceUrl = '/' + voice_path
 
             new_child.ngo_relation.childrenCount += 1
             new_child.social_worker_relation.childCount += 1
@@ -747,6 +747,7 @@ class UpdateChildById(Resource):
                     )
 
                     file2.save(primary_child.avatarUrl)
+                    primary_child.avatarUrl = '/' + primary_child.avatarUrl
 
             if "voiceUrl" in request.files.keys():
                 file1 = request.files["voiceUrl"]
@@ -780,6 +781,7 @@ class UpdateChildById(Resource):
                     )
 
                     file1.save(primary_child.voiceUrl)
+                    primary_child.voiceUrl = '/' + primary_child.voiceUrl
 
             if "phoneNumber" in request.form.keys():
                 primary_child.phoneNumber = request.form["phoneNumber"]

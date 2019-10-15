@@ -78,6 +78,7 @@ class AddNgo(Resource):
                 )
 
                 file.save(path)
+                path = '/' + path
 
             logo_url = path
             country = int(request.form["country"])
@@ -422,8 +423,7 @@ class UpdateNgo(Resource):
                     )
 
                     file.save(base_ngo.logoUrl)
-
-
+                    base_ngo.logoUrl = '/' + base_ngo.logoUrl
 
             base_ngo.lastUpdateDate = datetime.now()
 

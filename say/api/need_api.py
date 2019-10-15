@@ -502,8 +502,8 @@ class UpdateNeedById(Resource):
                     primary_need.imageUrl = os.path.join(
                         temp_need_path, str(primary_need.id) + "-image_" + filename
                     )
-
                     file.save(primary_need.imageUrl)
+                    primary_need.imageUrl = '/' + primary_need.imageUrl
 
             if "receipts" in request.files.keys():
                 file2 = request.files["receipts"]
@@ -545,6 +545,7 @@ class UpdateNeedById(Resource):
                         primary_need.receipts += "," + str(receipt_path)
 
                     file2.save(receipt_path)
+                    receipt_path = '/' + receipt_path
 
             if "category" in request.form.keys():
                 primary_need.category = int(request.form["category"])
@@ -860,8 +861,8 @@ class AddNeed(Resource):
             else:
                 receipt_path = None
 
-            new_need.image_url = image_path
-            new_need.receipts = receipt_path
+            new_need.image_url = '/' + image_path
+            new_need.receipts = '/' + receipt_path
             session.commit()
 
             resp = make_response(jsonify({"message": "NEED ADDED SUCCESSFULLY!"}), 200)

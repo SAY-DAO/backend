@@ -198,6 +198,7 @@ class VerifyPayment(Resource):
             session.add(new_participant)
 
         need.paid += amount
+        child.spentCredit += amount
         need.progress = need.paid / need.cost * 100
 
         if need.paid == need.cost:
@@ -217,11 +218,14 @@ class VerifyPayment(Resource):
         session.commit()
 
         resp = jsonify(obj_to_dict(pending_payment))
+        need_url = f"{app.config['BASE_URL']}/needPage/{need.id}/{child.id}" \
+            "/{pending_payment.id_user}"
 
         return make_response(render_template(
             'succesful_payment.html',
             payment=pending_payment,
             user=pending_payment.user,
+            need_url=need_url,
         ))
 
 #@app.route('/payment/user/<int:user_id>' , methods =  ['GET'])
