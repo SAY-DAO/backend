@@ -98,6 +98,7 @@ class GetRandomSearchResult(Resource):
 
                 child_data = get_child_by_id(session, child.id)
                 child_data["ChildFamily"] = family_res
+                child_data["FamilyId"] = family.id
 
                 index.append(3 * need_amount - 2 * child.sayFamilyCount)
                 search_data.append(child_data)
