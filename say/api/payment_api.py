@@ -16,8 +16,8 @@ def validate_amount(need, amount):
     need_unpaid = need.cost - need.paid
     if int(amount) > need_unpaid:
         raise ValueError(f"Amount can not be greater that {need_unpaid}")
-    if int(amount) < 1000:
-        raise ValueError("Amount can not be smaller than 1000")
+    if int(amount) < 100:
+        raise ValueError("Amount can not be smaller than 100")
     return amount
 
 
