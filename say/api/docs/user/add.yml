@@ -6,9 +6,11 @@ You have to insert the international codes for countries and cities and the same
 Calling this API only affects on user table.
 For gender, [true] is male and [false] is female.
 ---
-
 tags:
   - User API
+
+consumes:
+  - multipart/form-data
 
 parameters:
   - name: firstName
@@ -28,7 +30,7 @@ parameters:
   - name: phoneNumber
     in: formData
     type: string
-    
+
   - name: emailAddress
     in: formData
     type: string
@@ -64,7 +66,6 @@ parameters:
     in: formData
     required: true
     type: string
-
 
 responses:
   500:

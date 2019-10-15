@@ -805,7 +805,7 @@ class AddUser(Resource):
             last_update = datetime.now()
             last_login = datetime.now()
 
-            # avatar_url = path
+            avatar_url = "wrong url"
             flag_url = os.path.join(FLAGS, str(country) + ".png")
 
             new_user = UserModel(
@@ -858,7 +858,7 @@ class AddUser(Resource):
             else:
                 avatar_url = None
 
-            new_user.avatarUrl = path
+            new_user.avatarUrl = avatar_url
 
             session.commit()
 

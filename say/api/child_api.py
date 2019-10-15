@@ -108,8 +108,8 @@ def get_child_need(session, child_id, urgent=False, done=False, with_participant
                 need_data = get_need(need, session, with_participants=with_participants, with_child_id=False)
                 child_needs[str(need.id)] = need_data
 
-        if not check and urgent:
-            return {'message': 'no urgent needs'}
+    if not check and urgent:
+        return {'message': 'no urgent needs'}
 
     return child_needs
 
