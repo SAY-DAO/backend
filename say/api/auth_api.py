@@ -269,6 +269,7 @@ class Verify(Resource):
         resp = {"message": "Something is Wrong"}
 
         try:
+            user_id = int(user_id)
             user = session.query(UserModel).filter_by(id=user_id).first()
             if user.isVerified:
                 resp = Response(
@@ -276,13 +277,13 @@ class Verify(Resource):
                 )
                 return
 
-            verify = session.query(VerifyModel).filter_by(id_user=user_id).first()
+            verify = session.query(VerifyModel).filter_by(user_id=user_id).first()
             if (
                 verify is None
                 or "verifyCode" not in request.form.keys()
             ):
                 resp = Response(
-                    json.dumps({"message": "Something is Wrong!"}), status=500
+                    json.dumps({"message": "Something is Wrong!"}), status=400
                 )
                 return
 
@@ -306,7 +307,10 @@ class Verify(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "Something is Wrong!"}), status=500)
+            resp = Response(
+                json.dumps({"message": "Something is Wrong!", "error": str(e)}),
+                status=500,
+            )
 
         finally:
             session.close()
@@ -330,7 +334,7 @@ class VerifyResend(Resource):
                 )
                 return
 
-            verify = session.query(VerifyModel).filter_by(id_user=user_id).first()
+            verify = session.query(VerifyModel).filter_by(user_id=user_id).first()
             if verify is None:
                 verify = VerifyModel(user=user)
                 session.add(verify)

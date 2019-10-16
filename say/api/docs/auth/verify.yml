@@ -10,10 +10,10 @@ parameters:
     required: true
     type: integer
 
-  - in: form
-    name: verify
+  - in: formData
+    name: verifyCode
     required: true
-    type: integer
+    type: string
 
 responses:
   500:
