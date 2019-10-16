@@ -92,8 +92,8 @@ class RegisterUser(Resource):
 #                    json.dumps({"message": "password is needed !!!"}), status=500
 #                )
 
-            if "email" in request.form.keys():
-                email = request.form["email"]
+            if "email" in request.json.keys():
+                email = request.json["email"]
             else:
                 resp =  Response(json.dumps({"message": "email is needed"}), status=500)
                 return
