@@ -1,16 +1,22 @@
 from datetime import datetime, timedelta
-from random import randint
-from say.models.user_model import UserModel
-from say.models.verify_model import VerifyModel
 from hashlib import md5
+from random import randint
+
+from flask_jwt_extended import create_access_token, create_refresh_token
 from flask_mail import Message
 
 from . import *
-import os
+from say.models.user_model import UserModel
+from say.models.verify_model import VerifyModel
+
 
 """
 Authentication APIs
 """
+
+def datetime_converter(o):
+    if isinstance(o, datetime):
+        return o.__str__()
 
 
 def send_verify_email(email, verify_code):
@@ -29,8 +35,8 @@ class CheckUser(Resource):
         resp = {"message": "major error occurred!"}
 
         try:
-            if "username" in request.json.keys():
-                username = request.json["username"]
+            if "username" in request.form.keys():
+                username = request.form["username"]
             else:
                 return Response(
                     json.dumps({"message": "userName is needed !!!"}), status=500
@@ -65,34 +71,37 @@ class CheckUser(Resource):
 
 
 class RegisterUser(Resource):
+
+    @swag_from("./docs/auth/register.yml")
     def post(self):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "fucked"}
+        resp = {"message": "something is wrong"}
         try:
-            if "username" in request.json.keys():
-                username = request.json["username"]
-            else:
-                return Response(
-                    json.dumps({"message": "userName is needed !!!"}), status=500
-                )
+#            if "username" in request.form.keys():
+#                username = request.form["username"]
+#            else:
+#                return Response(
+#                    json.dumps({"message": "userName is needed !!!"}), status=500
+#                )
+#
+#            if "password" in request.form.keys():
+#                password = md5(request.form["password"].encode()).hexdigest()
+#            else:
+#                return Response(
+#                    json.dumps({"message": "password is needed !!!"}), status=500
+#                )
 
-            if "password" in request.json.keys():
-                password = md5(request.json["password"].encode()).hexdigest()
+            if "email" in request.form.keys():
+                email = request.form["email"]
             else:
-                return Response(
-                    json.dumps({"message": "password is needed !!!"}), status=500
-                )
-
-            if "email" in request.json.keys():
-                email = request.json["email"]
-            else:
-                return Response(json.dumps({"message": "email is needed"}), status=500)
+                resp =  Response(json.dumps({"message": "email is needed"}), status=500)
+                return
 
             alreadyExist = (
                 session.query(UserModel)
                 .filter_by(isDeleted=False)
-                .filter_by(userName=username)
+                .filter_by(emailAddress=email)
                 .first()
             )
             if alreadyExist is not None:
@@ -101,16 +110,14 @@ class RegisterUser(Resource):
                     status=200,
                 )
             else:
-                token = md5((username + email).encode()).hexdigest()
-
-                created_at = datetime.now()
-                last_update = datetime.now()
-                last_login = datetime.now()
-
+                created_at = datetime.utcnow()
+                last_update = datetime.utcnow()
+                last_login = datetime.utcnow()
+                password = randint(100000, 999999)
                 new_user = UserModel(
                     firstName="",
                     lastName="",
-                    userName=username,
+                    userName=email,
                     avatarUrl=None,
                     phoneNumber=None,
                     emailAddress=email,
@@ -124,26 +131,44 @@ class RegisterUser(Resource):
                     lastLogin=last_login,
                     password=password,
                     flagUrl="",
-                    token=token,
                 )
                 session.add(new_user)
+                session.flush()
 
-                verify = VerifyModel(user=new_user, code=randint(100000, 999999))
+                access_token = create_access_token(
+                    identity=new_user.id,
+                    headers=dict(email=email),
+                )
+
+                refresh_token = create_refresh_token(
+                    identity=new_user.id,
+                    headers=dict(email=email),
+                )
+
+                verify = VerifyModel(user=new_user, code=password)
                 session.add(verify)
 
-                session.commit()
                 send_verify_email(new_user.emailAddress, verify.code)
 
-                resp = Response(
-                    json.dumps(
-                        {"message": "USER Registered SUCCESSFULLY!", "userToken": token}
+                resp = make_response(
+                    jsonify(
+                        {
+                            "message": "Register Successful",
+                            "accessToken": f"Bearer {access_token}",
+                            "refreshToken": f"Bearer {refresh_token}",
+                            "user": obj_to_dict(new_user),
+                        },
                     ),
-                    status=200,
+                    200,
                 )
+                session.commit()
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "Something is Wrong!"}), status=500)
+            resp = Response(
+                json.dumps({"message": "Something is Wrong!", "error": str(e)}),
+                status=500,
+            )
 
         finally:
             session.close()
@@ -158,15 +183,15 @@ class Login(Resource):
 
         try:
 
-            if "username" in request.json.keys():
-                username = request.json["username"]
+            if "username" in request.form.keys():
+                username = request.form["username"]
             else:
                 return Response(
                     json.dumps({"message": "userName is needed !!!"}), status=500
                 )
 
-            if "password" in request.json.keys():
-                password = md5(request.json["password"].encode()).hexdigest()
+            if "password" in request.form.keys():
+                password = md5(request.form["password"].encode()).hexdigest()
             else:
                 return Response(
                     json.dumps({"message": "password is needed !!!"}), status=500
@@ -247,21 +272,21 @@ class Verify(Resource):
             user = session.query(UserModel).filter_by(id=user_id).first()
             if user.isVerified:
                 resp = Response(
-                    json.dumps({"message": "User is already verified."}), status=200
+                    json.dumps({"message": "User is already verified"}), status=200
                 )
                 return
 
             verify = session.query(VerifyModel).filter_by(id_user=user_id).first()
             if (
                 verify is None
-                or "verifyCode" not in request.json.keys()
+                or "verifyCode" not in request.form.keys()
             ):
                 resp = Response(
                     json.dumps({"message": "Something is Wrong!"}), status=500
                 )
                 return
 
-            sent_verify_code = str(request.json["verifyCode"])
+            sent_verify_code = str(request.form["verifyCode"])
             sent_verify_code = sent_verify_code.replace('-', '')
             sent_verify_code = int(sent_verify_code)
             if (
@@ -310,6 +335,7 @@ class VerifyResend(Resource):
                 verify = VerifyModel(user=user)
                 session.add(verify)
 
+            user.password = verify.code
             verify.code = randint(100000, 999999)
             verify.expire_at = datetime.utcnow() + timedelta(minutes=60)
 

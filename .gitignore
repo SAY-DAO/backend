@@ -117,4 +117,4 @@ data
 files/*
 
 # Local config file
-./config.json
+config.json

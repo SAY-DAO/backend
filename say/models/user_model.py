@@ -1,4 +1,8 @@
+import os
+from hashlib import sha256
+
 from . import *
+
 
 """
 User Model
@@ -27,7 +31,41 @@ class UserModel(base):
     birthDate = Column(Date, nullable=True)
     birthPlace = Column(Integer, nullable=True)  # 1:tehran | 2:karaj
     lastLogin = Column(Date, nullable=False)
-    password = Column(String, nullable=False)
-    token = Column(String, nullable=True)
+    _password = Column(String, nullable=False)
     spentCredit = Column(Integer, nullable=False, default=0)
     doneNeedCount = Column(Integer, nullable=False, default=0)
+
+
+    def _hash_password(cls, password):
+        password = str(password)
+        salt = sha256()
+        salt.update(os.urandom(60))
+        salt = salt.hexdigest()
+
+        hashed_pass = sha256()
+        # Make sure password is a str because we cannot hash unicode objects
+        hashed_pass.update((password + salt).encode('utf-8'))
+        hashed_pass = hashed_pass.hexdigest()
+
+        password = salt + hashed_pass
+        return password
+
+    def _set_password(self, password):
+        """Hash ``password`` on the fly and store its hashed version."""
+        self._password = self._hash_password(password)
+
+    def _get_password(self):
+        """Return the hashed version of the password."""
+        return self._password
+
+    password = synonym(
+        '_password',
+        descriptor=property(_get_password, _set_password),
+        info=dict(protected=True)
+    )
+
+    def validate_password(self, password):
+        hashed_pass = sha256()
+        hashed_pass.update((password + self.password[:64]).encode('utf-8'))
+        return self.password[64:] == hashed_pass.hexdigest()
+

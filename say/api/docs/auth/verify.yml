@@ -10,13 +10,10 @@ parameters:
     required: true
     type: integer
 
-  - in: body
+  - in: form
     name: verify
     required: true
-    schema:
-      properties:
-        verifyCode: 
-          type: integer
+    type: integer
 
 responses:
   500:

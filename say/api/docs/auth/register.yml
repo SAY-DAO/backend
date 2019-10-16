@@ -1,0 +1,28 @@
+Register API
+---
+
+tags:
+  - Auth API
+
+parameters:
+  - in: formData
+    name: email
+    required: true
+    type: string
+    format: email
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      type: object
+      additionalProperties:
+        type: string
+      example:
+        accessToken: string
+        refreshToken: string
+        user: user_model
