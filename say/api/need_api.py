@@ -31,90 +31,65 @@ def get_all_urgent_needs(session):
 
 
 def get_need(need, session, participants_only=False, with_participants=True, with_child_id=True):
-    if need.isConfirmed:
+    need_data = obj_to_dict(need)
 
-        need_data = obj_to_dict(need)
+    if not with_participants and not with_child_id:
+        return need_data
 
-        if not with_participants and not with_child_id:
-            return need_data
+    child = need.child
+    need_data['ChildName'] = child.sayName
 
-        child = session.query(ChildNeedModel).filter_by(id_need=need.id).filter_by(isDeleted=False).first()
-        need_data['ChildId'] = child.id_child
-        need_data['ChildName'] = child.child_relation.sayName
+    if not with_participants and with_child_id:
+        return need_data
 
-        if not with_participants and with_child_id:
-            return need_data
+    participant_ids = session.query(NeedFamilyModel).filter_by(id_need=need.id).filter_by(isDeleted=False).all()
+    ids = [p.id_user for p in participant_ids]
+    participants = session.query(UserFamilyModel).filter(UserFamilyModel.id_user.in_(ids)).filter_by(isDeleted=False).all()
 
-        participant_ids = session.query(NeedFamilyModel).filter_by(id_need=need.id).filter_by(isDeleted=False).all()
-        ids = [p.id_user for p in participant_ids]
-        participants = session.query(UserFamilyModel).filter(UserFamilyModel.id_user.in_(ids)).filter_by(isDeleted=False).all()
+    users = {}
+    for participant in participants:
+        temp_participant = obj_to_dict(participant)
 
-        users = {}
-        for participant in participants:
-            temp_participant = obj_to_dict(participant)
+        temp_participant['Contribution'] = (
+            (session.query(func.sum(PaymentModel.amount))
+            .filter_by(id_user=participant.id_user)
+            .filter_by(id_need=need.id)
+            # .group_by(PaymentModel.id)
+            .group_by(PaymentModel.id_user, PaymentModel.id_need)
+            .first())[0]
+        )
 
-            temp_participant['Contribution'] = (
-                (session.query(func.sum(PaymentModel.amount))
-                .filter_by(id_user=participant.id_user)
-                .filter_by(id_need=need.id)
-                # .group_by(PaymentModel.id)
-                .group_by(PaymentModel.id_user, PaymentModel.id_need)
-                .first())[0]
-            )
+        temp_participant['userAvatar'] = (
+            (session.query(UserModel.avatarUrl)
+            .filter_by(id=participant.id_user)
+            .filter_by(isDeleted=False)
+            .first())[0]
+        )
 
-            temp_participant['userAvatar'] = (
-                (session.query(UserModel.avatarUrl)
-                .filter_by(id=participant.id_user)
-                .filter_by(isDeleted=False)
-                .first())[0]
-            )
+        users[str(participant.id_user)] = temp_participant
 
-            users[str(participant.id_user)] = temp_participant
+    if participants_only:
+        return users
 
-        if participants_only:
-            return users
-
-        need_data["Participants"] = users
-
-    else:
-        need_data = obj_to_dict(need)
+    need_data["Participants"] = users
 
     return need_data
 
 
 class GetNeedById(Resource):
     @swag_from("./docs/need/id.yml")
-    def get(self, need_id, confirm):
+    def get(self, need_id):
         session_maker = sessionmaker(db)
         session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            if int(confirm) == 2:
-                need = (
-                    session.query(NeedModel)
-                    .filter_by(isDeleted=False)
-                    .filter_by(id=need_id)
-                    .first()
-                )
-            elif int(confirm) == 1:
-                need = (
-                    session.query(NeedModel)
-                    .filter_by(isDeleted=False)
-                    .filter_by(id=need_id)
-                    .filter_by(isConfirmed=True)
-                    .first()
-                )
-            elif int(confirm) == 0:
-                need = (
-                    session.query(NeedModel)
-                    .filter_by(isDeleted=False)
-                    .filter_by(id=need_id)
-                    .filter_by(isConfirmed=False)
-                    .first()
-                )
-            else:
-                return make_response(jsonify({"message": "wrong input"}), 500)
+            need = (
+                session.query(NeedModel)
+                .filter_by(isDeleted=False)
+                .filter_by(id=need_id)
+                .first()
+            )
 
             resp = make_response(jsonify(get_need(need, session)), 200)
 
@@ -181,7 +156,6 @@ class GetNeedByCategory(Resource):
                 session.query(NeedModel)
                 .filter_by(isDeleted=False)
                 .filter_by(category=category)
-                .filter_by(isConfirmed=True)
                 .all()
             )
 
@@ -213,7 +187,6 @@ class GetNeedByType(Resource):
                 session.query(NeedModel)
                 .filter_by(isDeleted=False)
                 .filter_by(type=need_type)
-                .filter_by(isConfirmed=True)
                 .all()
             )
 
@@ -245,7 +218,6 @@ class GetNeedParticipants(Resource):
                 session.query(NeedModel)
                 .filter_by(id=need_id)
                 .filter_by(isDeleted=False)
-                .filter_by(isConfirmed=True)
                 .first()
             )
 
@@ -273,7 +245,6 @@ class GetNeedReceipts(Resource):
                 session.query(NeedModel)
                 .filter_by(id=need_id)
                 .filter_by(isDeleted=False)
-                .filter_by(isConfirmed=True)
                 .first()
             )
 
@@ -338,12 +309,7 @@ class AddPaymentForNeed(Resource):
                 .filter_by(id=user_id)
                 .first()
             )
-            child = (
-                session.query(ChildNeedModel)
-                .filter_by(id_need=need_id)
-                .filter_by(isDeleted=False)
-                .first()
-            )
+            child = need.child
             family = (
                 session.query(FamilyModel)
                 .filter_by(id_child=child.id_child)
@@ -409,7 +375,7 @@ class AddPaymentForNeed(Resource):
                 need.paid += amount
                 need.progress = need.paid / need.cost * 100
 
-                child.child_relation.spentCredit += amount
+                child.spentCredit += amount
                 if need.paid == need.cost:
                     need.isDone = True
                     # user.doneNeedCount += 1  # TODO: which one is correct?
@@ -424,7 +390,7 @@ class AddPaymentForNeed(Resource):
                     for participate in participants:
                         participate.user_relation.doneNeedCount += 1
 
-                    child.child_relation.doneNeedCount += 1
+                    child.doneNeedCount += 1
 
                 session.commit()
 
@@ -453,13 +419,7 @@ class UpdateNeedById(Resource):
                 .filter_by(isDeleted=False)
                 .first()
             )
-            child = (
-                session.query(ChildNeedModel)
-                .filter_by(id_need=need_id)
-                .filter_by(isDeleted=False)
-                .first()
-            )
-
+            child = primary_need.child
             if "cost" in request.form.keys():
                 if not primary_need.isConfirmed:
                     primary_need.cost = int(request.form["cost"])
@@ -482,7 +442,7 @@ class UpdateNeedById(Resource):
                     filename = str(primary_need.id) + "." + file.filename.split(".")[-1]
 
                     temp_need_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(child.id_child) + "-child"
+                        app.config["UPLOAD_FOLDER"], str(child.id) + "-child"
                     )
                     temp_need_path = os.path.join(temp_need_path, "needs")
                     temp_need_path = os.path.join(
@@ -525,7 +485,7 @@ class UpdateNeedById(Resource):
                         filename = str(0) + "." + file2.filename.split(".")[-1]
 
                     temp_need_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(child.id_child) + "-child"
+                        app.config["UPLOAD_FOLDER"], str(child.id) + "-child"
                     )
                     temp_need_path = os.path.join(temp_need_path, "needs")
                     temp_need_path = os.path.join(
@@ -537,15 +497,14 @@ class UpdateNeedById(Resource):
                     receipt_path = os.path.join(
                         temp_need_path, str(primary_need.id) + "-receipt_" + filename
                     )
+                    file2.save(receipt_path)
 
+                    receipt_path = '/' + receipt_path
                     if primary_need.receipts is None:
                         primary_need.receipts = str(receipt_path)
-
                     else:
                         primary_need.receipts += "," + str(receipt_path)
 
-                    file2.save(receipt_path)
-                    receipt_path = '/' + receipt_path
 
             if "category" in request.form.keys():
                 primary_need.category = int(request.form["category"])
@@ -600,12 +559,6 @@ class DeleteNeedById(Resource):
                 .filter_by(isDeleted=False)
                 .first()
             )
-            families = (
-                session.query(NeedFamilyModel)
-                .filter_by(id_need=need_id)
-                .filter_by(isDeleted=False)
-                .all()
-            )
             children = (
                 session.query(ChildNeedModel)
                 .filter_by(id_need=need_id)
@@ -620,14 +573,6 @@ class DeleteNeedById(Resource):
                     return resp
 
             need.isDeleted = True
-
-            for family in families:
-                family.isDeleted = True
-
-            for child in children:
-                child.isDeleted = True
-                child.child_relation.social_worker_relation.currentNeedCount -= 1
-
             session.commit()
 
             resp = make_response(jsonify({"message": "need deleted successfully!"}), 200)
@@ -761,7 +706,7 @@ class AddNeed(Resource):
                 session.close()
                 return resp
 
-            image_path, receipt_path = "wrong path", "wrong path"
+            image_path, receipt_path = "wrong path", None
 
             image_url = image_path
             receipts = receipt_path
@@ -795,6 +740,7 @@ class AddNeed(Resource):
                 receipts=receipts,
                 type=need_type,
                 lastUpdate=last_update,
+                child=child,
             )
 
             session.add(new_need)
@@ -829,6 +775,7 @@ class AddNeed(Resource):
                 )
 
                 file.save(image_path)
+                new_need.image_url = '/' + image_path
 
             if "receipts" in request.files.keys():
                 file2 = request.files["receipts"]
@@ -857,15 +804,14 @@ class AddNeed(Resource):
                     )
 
                     file2.save(receipt_path)
+                    new_need.receipts = '/' + receipt_path
 
             else:
                 receipt_path = None
 
-            new_need.image_url = '/' + image_path
-            new_need.receipts = '/' + receipt_path
             session.commit()
 
-            resp = make_response(jsonify({"message": "NEED ADDED SUCCESSFULLY!"}), 200)
+            resp = make_response(jsonify(obj_to_dict(new_need)), 200)
 
         except Exception as e:
             resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
@@ -880,7 +826,7 @@ class AddNeed(Resource):
 API URLs
 """
 
-api.add_resource(GetNeedById, "/api/v2/need/needId=<need_id>&confirm=<confirm>")
+api.add_resource(GetNeedById, "/api/v2/need/needId=<need_id>")
 api.add_resource(GetAllNeeds, "/api/v2/need/all/confirm=<confirm>")
 api.add_resource(GetNeedByCategory, "/api/v2/need/category=<category>")
 api.add_resource(GetNeedByType, "/api/v2/need/type=<need_type>")

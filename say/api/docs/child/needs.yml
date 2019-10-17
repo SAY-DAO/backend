@@ -3,7 +3,9 @@ Returns information of all child's needs as a json object.
 Json key is need id and json value is need data.
 Calling this API affects on child, need, child_need, need_family and user tables.
 It contains need info and their participants.
----
+Confirm tag determines the type of output:
+[0]for not confirmed needs only, [1]for confirmed needs only, [2]for both confirmed and not confirmed needs
+----
 
 tags:
   - Child API
@@ -13,6 +15,12 @@ parameters:
     name: child_id
     required: true
     type: integer
+
+  - in: path
+    name: confirm
+    required: true
+    type: integer
+
 
 responses:
   500:

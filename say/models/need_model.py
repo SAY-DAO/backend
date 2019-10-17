@@ -9,6 +9,9 @@ class NeedModel(base):
     __tablename__ = "need"
 
     id = Column(Integer, nullable=False, primary_key=True, unique=True)
+
+    child_id = Column(Integer, ForeignKey('child.id'))
+
     name = Column(String, nullable=False)
     imageUrl = Column(String, nullable=False)
     category = Column(Integer, nullable=False)  # 0:Growth | 1:Joy | 2:Health | 3:Surroundings
@@ -28,3 +31,5 @@ class NeedModel(base):
     confirmUser = Column(Integer, nullable=True)
     type = Column(Integer, nullable=False)  # 0:donate | 1:affiliate
     lastUpdate = Column(Date, nullable=False)
+
+    child = relationship('ChildModel', foreign_keys=child_id, uselist=False)

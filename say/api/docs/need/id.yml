@@ -14,11 +14,6 @@ parameters:
     required: true
     type: integer
 
-  - in: path
-    name: confirm
-    required: true
-    type: integer
-
 responses:
   500:
     description: Error occurred somewhere!
