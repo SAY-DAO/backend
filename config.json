@@ -1,6 +1,6 @@
 {
-  "dbUrl2": "postgresql://postgres:postgres@localhost/say_en",
-  "dbUrl": "postgresql://postgres:13771998@localhost:5432/say",
+  "dbUrl": "postgresql://postgres:postgres@localhost/say_en",
+  "dbUrl2": "postgresql://postgres:13771998@localhost:5432/say",
   "JWT_SECRET_KEY": "6A4FAD52ABC88B144B9A44499A249",
   "JWT_ACCESS_TOKEN_EXPIRES": 2592000,
   "JWT_REFRESH_TOKEN_EXPIRES": 25920000,
