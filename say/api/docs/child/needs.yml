@@ -13,11 +13,6 @@ parameters:
     required: true
     type: integer
 
-  - in: path
-    name: confirm
-    required: true
-    type: boolean
-
 responses:
   500:
     description: Error occurred somewhere!

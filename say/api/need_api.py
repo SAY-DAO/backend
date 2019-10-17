@@ -78,9 +78,9 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
 
     else:
         need_data = obj_to_dict(need)
-        child = session.query(ChildNeedModel).filter_by(id_need=need.id).filter_by(isDeleted=False).first()
-        need_data['ChildId'] = child.id_child
-        need_data['ChildName'] = child.child_relation.sayName
+        # child = session.query(ChildNeedModel).filter_by(id_need=need.id).filter_by(isDeleted=False).first()
+        # need_data['ChildId'] = child.id_child
+        # need_data['ChildName'] = child.child_relation.sayName
 
     return need_data
 
