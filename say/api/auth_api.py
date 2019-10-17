@@ -21,6 +21,7 @@ def datetime_converter(o):
 def send_verify_email(email, verify_code):
 
     verify_mail = Message(
+        subject='SAY Email Verification',
         recipients=[email],
         html=render_template('email_verification.html', code=str(verify_code)),
     )
@@ -93,8 +94,8 @@ class RegisterUser(Resource):
                 )
                 return
 
-            if "email" in request.json.keys():
-                email = request.json["email"]
+            if "email" in request.form.keys():
+                email = request.form["email"]
             else:
                 resp =  Response(json.dumps({"message": "email is needed"}), status=500)
                 return
