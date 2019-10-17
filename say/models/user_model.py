@@ -66,7 +66,6 @@ class UserModel(base):
 
     def validate_password(self, password):
         hashed_pass = sha256()
-        from pudb import set_trace; set_trace()
         hashed_pass.update((password + self.password[:64]).encode('utf-8'))
         return self.password[64:] == hashed_pass.hexdigest()
 

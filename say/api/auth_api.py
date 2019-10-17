@@ -34,8 +34,8 @@ class CheckUser(Resource):
         resp = {"message": "major error occurred!"}
 
         try:
-            if "username" in request.form.keys():
-                username = request.form["username"]
+            if "username" in request.json.keys():
+                username = request.json["username"]
             else:
                 return Response(
                     json.dumps({"message": "userName is needed !!!"}), status=500
@@ -83,6 +83,7 @@ class RegisterUser(Resource):
                 resp = Response(
                     json.dumps({"message": "userName is needed !!!"}), status=500
                 )
+                return
 
             if "password" in request.form.keys():
                 password = request.form["password"]
@@ -91,10 +92,9 @@ class RegisterUser(Resource):
                     json.dumps({"message": "password is needed !!!"}), status=500
                 )
                 return
-            from pudb import set_trace; set_trace()
 
-            if "email" in request.form.keys():
-                email = request.form["email"]
+            if "email" in request.json.keys():
+                email = request.json["email"]
             else:
                 resp =  Response(json.dumps({"message": "email is needed"}), status=500)
                 return
@@ -202,7 +202,6 @@ class Login(Resource):
 
         try:
 
-            from pudb import set_trace; set_trace()
             if "username" in request.form.keys():
                 username = request.form["username"]
             else:
@@ -315,14 +314,14 @@ class Verify(Resource):
             verify = session.query(VerifyModel).filter_by(user_id=user_id).first()
             if (
                 verify is None
-                or "verifyCode" not in request.form.keys()
+                or "verifyCode" not in request.json.keys()
             ):
                 resp = Response(
                     json.dumps({"message": "Something is Wrong!"}), status=400
                 )
                 return
 
-            sent_verify_code = str(request.form["verifyCode"])
+            sent_verify_code = str(request.json["verifyCode"])
             sent_verify_code = sent_verify_code.replace('-', '')
             sent_verify_code = int(sent_verify_code)
             if (
