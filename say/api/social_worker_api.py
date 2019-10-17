@@ -23,13 +23,13 @@ class GetAllSocialWorkers(Resource):
             fetch = {}
             for social_worker in social_workers:
                 data = obj_to_dict(social_worker)
-                # data['typeName'] = social_worker.privilege.name
+                data['typeName'] = social_worker.privilege.name
+                data['ngoName'] = social_worker.ngo.name
                 # data['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
                 fetch[str(social_worker.id)] = data
 
             resp = make_response(jsonify(fetch), 200)
             resp.headers["Access-Control-Allow-Origin"] = "*"
-            resp.headers["debug"] = str(social_worker.privilege.name) + str(social_worker.ngo.name) + str(social_worker.id_ngo)
 
         except Exception as e:
             print(e)
