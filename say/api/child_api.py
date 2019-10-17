@@ -80,6 +80,9 @@ def get_child_by_id(session, child_id, is_migrate=False, confirm=1, with_need=Fa
     if with_need:
         child_data['Needs'] = get_child_need(session, child_id)
 
+    child_data['ngoName'] = child.ngo_relation.name
+    child_data['socialWorkerName'] = child.social_worker_relation.name
+
     return child_data
 
 
@@ -95,7 +98,7 @@ def get_child_need(session, child_id, urgent=False, done=False,
     child_needs, check = {}, False
     for need in needs:
         if done:
-            if need.isDone:
+           if need.isDone:
                 need_data = get_need(need, session, with_participants=with_participants, with_child_id=False)
                 child_needs[str(need.id)] = need_data
 
