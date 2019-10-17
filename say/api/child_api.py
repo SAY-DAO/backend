@@ -81,7 +81,8 @@ def get_child_by_id(session, child_id, is_migrate=False, confirm=1, with_need=Fa
         child_data['Needs'] = get_child_need(session, child_id)
 
     child_data['ngoName'] = child.ngo_relation.name
-    child_data['socialWorkerName'] = child.social_worker_relation.name
+    child_data['socialWorkerFirstName'] = child.social_worker_relation.firstName
+    child_data['socialWorkerLastName'] = child.social_worker_relation.lastName
 
     return child_data
 
