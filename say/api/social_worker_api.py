@@ -24,7 +24,7 @@ class GetAllSocialWorkers(Resource):
             for social_worker in social_workers:
                 data = obj_to_dict(social_worker)
                 data['typeName'] = social_worker.privilege.name
-                data['ngoName'] = social_worker.ngo.name
+                data['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
                 fetch[str(social_worker.id)] = data
 
             resp = make_response(jsonify(fetch), 200)
@@ -316,7 +316,7 @@ class GetSocialWorkerById(Resource):
 
             res = obj_to_dict(social_worker)
             res['typeName'] = social_worker.privilege.name
-            res['ngoName'] = social_worker.ngo.name
+            res['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
             resp = make_response(jsonify(res), 200)
 
         except Exception as e:
@@ -348,7 +348,7 @@ class GetSocialWorkerByGeneratedCode(Resource):
 
             res = obj_to_dict(social_worker)
             res['typeName'] = social_worker.privilege.name
-            res['ngoName'] = social_worker.ngo.name
+            res['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
             resp = make_response(jsonify(res), 200)
 
         except Exception as e:
@@ -381,7 +381,7 @@ class GetSocialWorkerByNgoId(Resource):
 
                 data = obj_to_dict(social_worker)
                 data['typeName'] = social_worker.privilege.name
-                data['ngoName'] = social_worker.ngo.name
+                data['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
 
                 fetch[str(social_worker.id)] = data
 
@@ -417,7 +417,7 @@ class GetSocialWorkerByIdNumber(Resource):
 
                 data = obj_to_dict(social_worker)
                 data['typeName'] = social_worker.privilege.name
-                data['ngoName'] = social_worker.ngo.name
+                data['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
 
                 fetch[str(social_worker.id)] = data
 
@@ -453,7 +453,7 @@ class GetSocialWorkerByPhoneNumber(Resource):
 
                 data = obj_to_dict(social_worker)
                 data['typeName'] = social_worker.privilege.name
-                data['ngoName'] = social_worker.ngo.name
+                data['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
 
                 fetch[str(social_worker.id)] = data
 
@@ -490,7 +490,7 @@ class GetSocialWorkerByPassportNumber(Resource):
 
                 data = obj_to_dict(social_worker)
                 data['typeName'] = social_worker.privilege.name
-                data['ngoName'] = social_worker.ngo.name
+                data['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
 
                 fetch[str(social_worker.id)] = data
 
@@ -526,7 +526,7 @@ class GetSocialWorkerByUserName(Resource):
 
                 data = obj_to_dict(social_worker)
                 data['typeName'] = social_worker.privilege.name
-                data['ngoName'] = social_worker.ngo.name
+                data['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
 
                 fetch[str(social_worker.id)] = data
 
@@ -597,7 +597,7 @@ class GetSocialWorkerByEmailAddress(Resource):
 
                 data = obj_to_dict(social_worker)
                 data['typeName'] = social_worker.privilege.name
-                data['ngoName'] = social_worker.ngo.name
+                data['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
 
                 fetch[str(social_worker.id)] = data
 
@@ -633,7 +633,7 @@ class GetSocialWorkerByTelegramId(Resource):
 
                 data = obj_to_dict(social_worker)
                 data['typeName'] = social_worker.privilege.name
-                data['ngoName'] = social_worker.ngo.name
+                data['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
 
                 fetch[str(social_worker.id)] = data
 

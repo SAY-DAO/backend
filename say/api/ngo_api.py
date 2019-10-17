@@ -8,6 +8,13 @@ from . import *
 Activity APIs
 """
 
+def sw_list(social_worker_list):
+    res = {}
+    for sw in social_worker_list:
+        res[str(sw.id)] = obj_to_dict(sw)
+
+    return res
+
 
 class GetAllNgo(Resource):
     @swag_from("./docs/ngo/all.yml")
@@ -22,21 +29,20 @@ class GetAllNgo(Resource):
             fetch = {}
             for n in base_ngos:
                 data = obj_to_dict(n)
-                data['coordinatorName'] = (
-                    (
-                        session.query(SocialWorkerModel.name)
-                        .filter_by(id=n.coordinatorId)
-                        .filter_by(isDeleted=False)
-                        .first()
-                    )[0]
+                coordinator = (
+                    session.query(SocialWorkerModel.firstName, SocialWorkerModel.lastName)
+                    .filter_by(id=n.coordinatorId)
+                    .filter_by(isDeleted=False)
+                    .first()
                 )
-                data['socialWorkers'] = (
-                    obj_to_dict(
-                        session.query(SocialWokerModel)
-                        .filter_by(id_ngo=n.id)
-                        .filter_by(isDeleted=False)
-                        .all()
-                    )
+                
+                data['coordinatorFirstName'] = coordinator[0]
+                data['coordinatorLastName'] = coordinator[1]
+                data['socialWorkers'] = sw_list(
+                    session.query(SocialWorkerModel)
+                    .filter_by(id_ngo=n.id)
+                    .filter_by(isDeleted=False)
+                    .all()
                 )
                 fetch[str(n.id)] = data
 
@@ -175,21 +181,20 @@ class GetNgoById(Resource):
                 return resp
 
             res = obj_to_dict(base_ngo)
-            res['coordinatorName'] = (
-                (
-                    session.query(SocialWorkerModel.name)
-                    .filter_by(id=base_ngo.coordinatorId)
-                    .filter_by(isDeleted=False)
-                    .first()
-                )[0]
+            coordinator = (
+                session.query(SocialWorkerModel.firstName, SocialWorkerModel.lastName)
+                .filter_by(id=base_ngo.coordinatorId)
+                .filter_by(isDeleted=False)
+                .first()
             )
-            res['socialWorkers'] = (
-                obj_to_dict(
-                    session.query(SocialWokerModel)
-                    .filter_by(id_ngo=base_ngo.id)
-                    .filter_by(isDeleted=False)
-                    .all()
-                )
+            
+            res['coordinatorFirstName'] = coordinator[0]
+            res['coordinatorLastName'] = coordinator[1]
+            res['socialWorkers'] = sw_list(
+                session.query(SocialWorkerModel)
+                .filter_by(id_ngo=base_ngo.id)
+                .filter_by(isDeleted=False)
+                .all()
             )
             # rd = ', "registerDate": ' + str(res.pop('registerDate'))
             # lu = ', "lastUpdateDate": ' + str(res.pop('lastUpdateDate'))
@@ -228,21 +233,20 @@ class GetNgoByCoordinatorId(Resource):
                     return resp
 
                 data = obj_to_dict(n)
-                data['coordinatorName'] = (
-                    (
-                        session.query(SocialWorkerModel.name)
-                        .filter_by(id=n.coordinatorId)
-                        .filter_by(isDeleted=False)
-                        .first()
-                    )[0]
+                coordinator = (
+                    session.query(SocialWorkerModel.firstName, SocialWorkerModel.lastName)
+                    .filter_by(id=n.coordinatorId)
+                    .filter_by(isDeleted=False)
+                    .first()
                 )
-                data['socialWorkers'] = (
-                    obj_to_dict(
-                        session.query(SocialWokerModel)
-                        .filter_by(id_ngo=n.id)
-                        .filter_by(isDeleted=False)
-                        .all()
-                    )
+                
+                data['coordinatorFirstName'] = coordinator[0]
+                data['coordinatorLastName'] = coordinator[1]
+                data['socialWorkers'] = sw_list(
+                    session.query(SocialWorkerModel)
+                    .filter_by(id_ngo=n.id)
+                    .filter_by(isDeleted=False)
+                    .all()
                 )
                 fetch[str(n.id)] = data
 
@@ -280,21 +284,20 @@ class GetNgoByName(Resource):
                     return resp
 
                 data = obj_to_dict(n)
-                data['coordinatorName'] = (
-                    (
-                        session.query(SocialWorkerModel.name)
-                        .filter_by(id=n.coordinatorId)
-                        .filter_by(isDeleted=False)
-                        .first()
-                    )[0]
+                coordinator = (
+                    session.query(SocialWorkerModel.firstName, SocialWorkerModel.lastName)
+                    .filter_by(id=n.coordinatorId)
+                    .filter_by(isDeleted=False)
+                    .first()
                 )
-                data['socialWorkers'] = (
-                    obj_to_dict(
-                        session.query(SocialWokerModel)
-                        .filter_by(id_ngo=n.id)
-                        .filter_by(isDeleted=False)
-                        .all()
-                    )
+                
+                data['coordinatorFirstName'] = coordinator[0]
+                data['coordinatorLastName'] = coordinator[1]
+                data['socialWorkers'] = sw_list(
+                    session.query(SocialWorkerModel)
+                    .filter_by(id_ngo=n.id)
+                    .filter_by(isDeleted=False)
+                    .all()
                 )
                 fetch[str(n.id)] = data
 
@@ -332,21 +335,20 @@ class GetNgoByWebsite(Resource):
                     return resp
 
                 data = obj_to_dict(n)
-                data['coordinatorName'] = (
-                    (
-                        session.query(SocialWorkerModel.name)
-                        .filter_by(id=n.coordinatorId)
-                        .filter_by(isDeleted=False)
-                        .first()
-                    )[0]
+                coordinator = (
+                    session.query(SocialWorkerModel.firstName, SocialWorkerModel.lastName)
+                    .filter_by(id=n.coordinatorId)
+                    .filter_by(isDeleted=False)
+                    .first()
                 )
-                data['socialWorkers'] = (
-                    obj_to_dict(
-                        session.query(SocialWokerModel)
-                        .filter_by(id_ngo=n.id)
-                        .filter_by(isDeleted=False)
-                        .all()
-                    )
+                
+                data['coordinatorFirstName'] = coordinator[0]
+                data['coordinatorLastName'] = coordinator[1]
+                data['socialWorkers'] = sw_list(
+                    session.query(SocialWorkerModel)
+                    .filter_by(id_ngo=n.id)
+                    .filter_by(isDeleted=False)
+                    .all()
                 )
                 fetch[str(n.id)] = data
 
@@ -384,21 +386,20 @@ class GetNgoByPhoneNumber(Resource):
                     return resp
 
                 data = obj_to_dict(n)
-                data['coordinatorName'] = (
-                    (
-                        session.query(SocialWorkerModel.name)
-                        .filter_by(id=n.coordinatorId)
-                        .filter_by(isDeleted=False)
-                        .first()
-                    )[0]
+                coordinator = (
+                    session.query(SocialWorkerModel.firstName, SocialWorkerModel.lastName)
+                    .filter_by(id=n.coordinatorId)
+                    .filter_by(isDeleted=False)
+                    .first()
                 )
-                data['socialWorkers'] = (
-                    obj_to_dict(
-                        session.query(SocialWokerModel)
-                        .filter_by(id_ngo=n.id)
-                        .filter_by(isDeleted=False)
-                        .all()
-                    )
+                
+                data['coordinatorFirstName'] = coordinator[0]
+                data['coordinatorLastName'] = coordinator[1]
+                data['socialWorkers'] = sw_list(
+                    session.query(SocialWorkerModel)
+                    .filter_by(id_ngo=n.id)
+                    .filter_by(isDeleted=False)
+                    .all()
                 )
                 fetch[str(n.id)] = data
 
