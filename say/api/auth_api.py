@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from hashlib import md5
 from random import randint
 
 from flask_jwt_extended import create_access_token, create_refresh_token
@@ -78,24 +77,42 @@ class RegisterUser(Resource):
         session = session_maker()
         resp = {"message": "something is wrong"}
         try:
-#            if "username" in request.form.keys():
-#                username = request.form["username"]
-#            else:
-#                return Response(
-#                    json.dumps({"message": "userName is needed !!!"}), status=500
-#                )
-#
-#            if "password" in request.form.keys():
-#                password = md5(request.form["password"].encode()).hexdigest()
-#            else:
-#                return Response(
-#                    json.dumps({"message": "password is needed !!!"}), status=500
-#                )
+            if "username" in request.form.keys():
+                username = request.form["username"]
+            else:
+                resp = Response(
+                    json.dumps({"message": "userName is needed !!!"}), status=500
+                )
+
+            if "password" in request.form.keys():
+                password = request.form["password"]
+            else:
+                resp = Response(
+                    json.dumps({"message": "password is needed !!!"}), status=500
+                )
+                return
+            from pudb import set_trace; set_trace()
 
             if "email" in request.form.keys():
                 email = request.form["email"]
             else:
                 resp =  Response(json.dumps({"message": "email is needed"}), status=500)
+                return
+
+            if "firstName" in request.form.keys():
+                first_name = request.form["firstName"]
+            else:
+                resp = Response(
+                    json.dumps({"message": "firstName is needed !!!"}), status=500
+                )
+                return
+
+            if "lastName" in request.form.keys():
+                last_name = request.form["lastName"]
+            else:
+                resp = Response(
+                    json.dumps({"message": "lastName is needed !!!"}), status=500
+                )
                 return
 
             alreadyExist = (
@@ -113,11 +130,10 @@ class RegisterUser(Resource):
                 created_at = datetime.utcnow()
                 last_update = datetime.utcnow()
                 last_login = datetime.utcnow()
-                password = randint(100000, 999999)
                 new_user = UserModel(
-                    firstName="",
-                    lastName="",
-                    userName=email,
+                    firstName=first_name,
+                    lastName=last_name,
+                    userName=username,
                     avatarUrl=None,
                     phoneNumber=None,
                     emailAddress=email,
@@ -145,7 +161,8 @@ class RegisterUser(Resource):
                     headers=dict(email=email),
                 )
 
-                verify = VerifyModel(user=new_user, code=password)
+                code = randint(100000, 999999)
+                verify = VerifyModel(user=new_user, code=code)
                 session.add(verify)
 
                 send_verify_email(new_user.emailAddress, verify.code)
@@ -176,6 +193,8 @@ class RegisterUser(Resource):
 
 
 class Login(Resource):
+
+    @swag_from("./docs/auth/login.yml")
     def post(self):
         session_maker = sessionmaker(db)
         session = session_maker()
@@ -183,19 +202,22 @@ class Login(Resource):
 
         try:
 
+            from pudb import set_trace; set_trace()
             if "username" in request.form.keys():
                 username = request.form["username"]
             else:
-                return Response(
+                resp = Response(
                     json.dumps({"message": "userName is needed !!!"}), status=500
                 )
+                return
 
             if "password" in request.form.keys():
-                password = md5(request.form["password"].encode()).hexdigest()
+                password = request.form["password"]
             else:
-                return Response(
+                resp = Response(
                     json.dumps({"message": "password is needed !!!"}), status=500
                 )
+                return
 
             user = (
                 session.query(UserModel)
@@ -204,21 +226,34 @@ class Login(Resource):
                 .first()
             )
             if user is not None:
-                if user.password == password:
-                    user.token = md5(
-                        (username + user.emailAddress).encode()
-                    ).hexdigest()
+                if user.validate_password(password):
                     user.lastLogin = datetime.now()
                     session.commit()
-                    resp = Response(
-                        json.dumps(
-                            {"message": "Login Successful", "userToken": user.token}
+
+                    access_token = create_access_token(
+                        identity=user.id,
+                        headers=dict(email=user.emailAddress),
+                    )
+
+                    refresh_token = create_refresh_token(
+                        identity=user.id,
+                        headers=dict(email=user.emailAddress),
+                    )
+
+                    resp = make_response(
+                        jsonify(
+                            {
+                                "message": "Login Successful",
+                                "accessToken": f"Bearer {access_token}",
+                                "refreshToken": f"Bearer {refresh_token}",
+                                "user": obj_to_dict(user),
+                            },
                         ),
-                        status=200,
+                        200,
                     )
                 else:
                     resp = Response(
-                        json.dumps({"message": "UserName or Password is Wrong"}),
+                        json.dumps({"message": "Username or Password is Wrong"}),
                         status=303,
                     )
 

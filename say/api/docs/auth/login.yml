@@ -1,4 +1,4 @@
-Register API
+Login API
 ---
 
 tags:
@@ -6,22 +6,7 @@ tags:
 
 parameters:
   - in: formData
-    name: firstName
-    required: true
-    type: string
-
-  - in: formData
-    name: lastName
-    required: true
-    type: string
-
-  - in: formData
     name: username
-    required: true
-    type: string
-
-  - in: formData
-    name: email
     required: true
     type: string
 
