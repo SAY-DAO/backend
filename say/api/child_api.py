@@ -80,20 +80,27 @@ def get_child_by_id(session, child_id, is_migrate=False, confirm=1, with_need=Fa
     if with_need:
         child_data['Needs'] = get_child_need(session, child_id)
 
+    child_data['ngoName'] = child.ngo_relation.name
+    child_data['socialWorkerName'] = child.social_worker_relation.name
+
     return child_data
 
 
-def get_child_need(session, child_id, urgent=False, done=False, with_participants=False):
+def get_child_need(session, child_id, urgent=False, done=False, with_participants=False, confirm=True):
     need_ids = session.query(ChildNeedModel).filter_by(id_child=child_id).filter_by(isDeleted=False).all()
     ids = [n.id_need for n in need_ids]
     needs = session.query(NeedModel).filter(NeedModel.id.in_(ids)).filter_by(isDeleted=False).all()
 
     child_needs, check = {}, False
     for need in needs:
-        if not need.isConfirmed:
+        if confirm and not need.isConfirmed:
             continue
 
-        if done:
+        if not confirm and not need.isConfirmed:
+            need_data = get_need(need, session, with_participants=with_participants, with_child_id=False)
+            child_needs[str(need.id)] = need_data
+
+        elif done:
             if need.isDone:
                 need_data = get_need(need, session, with_participants=with_participants, with_child_id=False)
                 child_needs[str(need.id)] = need_data
@@ -219,13 +226,13 @@ class GetChildrenOfUserByUserId(Resource):
 
 class GetChildNeeds(Resource):
     @swag_from("./docs/child/needs.yml")
-    def get(self, child_id):
+    def get(self, child_id, confirm):
         session_maker = sessionmaker(db)
         session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            resp = make_response(jsonify(get_child_need(session, child_id, with_participants=True)), 200)
+            resp = make_response(jsonify(get_child_need(session, child_id, with_participants=True, confirm=confirm)), 200)
 
         except Exception as e:
             print(e)
@@ -1499,7 +1506,7 @@ API URLs
 api.add_resource(GetChildById, "/api/v2/child/childId=<child_id>&confirm=<confirm>")
 api.add_resource(GetChildrenOfUserByUserId, "/api/v2/child/user/userId=<user_id>")
 api.add_resource(GetAllChildren, "/api/v2/child/all/confirm=<confirm>")
-api.add_resource(GetChildNeeds, "/api/v2/child/need/childId=<child_id>")
+api.add_resource(GetChildNeeds, "/api/v2/child/need/childId=<child_id>&confirm=<confirm>")
 api.add_resource(GetChildDoneNeeds, "/api/v2/child/need/done/childId=<child_id>")
 api.add_resource(
     GetChildNeedsByCategory, "/api/v2/child/need/childId=<child_id>&category=<category>"

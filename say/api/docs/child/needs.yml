@@ -4,7 +4,6 @@ Json key is need id and json value is need data.
 Calling this API affects on child, need, child_need, need_family and user tables.
 It contains need info and their participants.
 ---
-
 tags:
   - Child API
 
@@ -13,6 +12,11 @@ parameters:
     name: child_id
     required: true
     type: integer
+
+  - in: path
+    name: confirm
+    required: true
+    type: boolean
 
 responses:
   500:

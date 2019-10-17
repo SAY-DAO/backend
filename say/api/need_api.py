@@ -78,6 +78,9 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
 
     else:
         need_data = obj_to_dict(need)
+        child = session.query(ChildNeedModel).filter_by(id_need=need.id).filter_by(isDeleted=False).first()
+        need_data['ChildId'] = child.id_child
+        need_data['ChildName'] = child.child_relation.sayName
 
     return need_data
 
@@ -857,12 +860,13 @@ class AddNeed(Resource):
                     )
 
                     file2.save(receipt_path)
+                    receipt_path = '/' + receipt_path
 
             else:
                 receipt_path = None
 
-            new_need.image_url = '/' + image_path
-            new_need.receipts = '/' + receipt_path
+            new_need.imageUrl = '/' + image_path
+            new_need.receipts = receipt_path
             session.commit()
 
             resp = make_response(jsonify({"message": "NEED ADDED SUCCESSFULLY!"}), 200)
