@@ -35,9 +35,19 @@ class GetRandomSearchResult(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
+            my_families = (
+                session.query(UserFamilyModel)
+                .filter_by(id_user=user-id)
+                .filter_by(isDeleted=False)
+                .all()
+            )
+            my_children = [
+                childfamily_relation.id for child in my_families
+            ]
             other_families = (
                 session.query(UserFamilyModel)
                 .filter(UserFamilyModel.id_user != int(user_id))
+                .filter(not_(UserFamilyModel.id_family.in_(my_children)))
                 .filter_by(isDeleted=False)
                 .all()
             )
@@ -58,6 +68,7 @@ class GetRandomSearchResult(Resource):
                 .filter_by(isMigrated=False)
                 .all()
             )
+            debug(f'result chidren --> {children}')
 
             search_data, index = [], []
             for child in children:
