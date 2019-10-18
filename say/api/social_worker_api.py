@@ -24,7 +24,8 @@ class GetAllSocialWorkers(Resource):
             for social_worker in social_workers:
                 data = obj_to_dict(social_worker)
                 data['typeName'] = social_worker.privilege.name
-                data['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
+                data['ngoName'] = social_worker.ngo.name
+                # data['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
                 fetch[str(social_worker.id)] = data
 
             resp = make_response(jsonify(fetch), 200)

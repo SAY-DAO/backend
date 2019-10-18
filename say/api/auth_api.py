@@ -78,38 +78,38 @@ class RegisterUser(Resource):
         session = session_maker()
         resp = {"message": "something is wrong"}
         try:
-            if "username" in request.form.keys():
-                username = request.form["username"]
+            if "username" in request.json.keys():
+                username = request.json["username"]
             else:
                 resp = Response(
                     json.dumps({"message": "userName is needed !!!"}), status=500
                 )
                 return
 
-            if "password" in request.form.keys():
-                password = request.form["password"]
+            if "password" in request.json.keys():
+                password = request.json["password"]
             else:
                 resp = Response(
                     json.dumps({"message": "password is needed !!!"}), status=500
                 )
                 return
 
-            if "email" in request.form.keys():
-                email = request.form["email"]
+            if "email" in request.json.keys():
+                email = request.json["email"]
             else:
                 resp =  Response(json.dumps({"message": "email is needed"}), status=500)
                 return
 
-            if "firstName" in request.form.keys():
-                first_name = request.form["firstName"]
+            if "firstName" in request.json.keys():
+                first_name = request.json["firstName"]
             else:
                 resp = Response(
                     json.dumps({"message": "firstName is needed !!!"}), status=500
                 )
                 return
 
-            if "lastName" in request.form.keys():
-                last_name = request.form["lastName"]
+            if "lastName" in request.json.keys():
+                last_name = request.json["lastName"]
             else:
                 resp = Response(
                     json.dumps({"message": "lastName is needed !!!"}), status=500
@@ -119,7 +119,7 @@ class RegisterUser(Resource):
             alreadyExist = (
                 session.query(UserModel)
                 .filter_by(isDeleted=False)
-                .filter_by(emailAddress=email)
+                .filter_by(userName=username)
                 .first()
             )
             if alreadyExist is not None:
@@ -203,16 +203,16 @@ class Login(Resource):
 
         try:
 
-            if "username" in request.form.keys():
-                username = request.form["username"]
+            if "username" in request.json.keys():
+                username = request.json["username"]
             else:
                 resp = Response(
                     json.dumps({"message": "userName is needed !!!"}), status=500
                 )
                 return
 
-            if "password" in request.form.keys():
-                password = request.form["password"]
+            if "password" in request.json.keys():
+                password = request.json["password"]
             else:
                 resp = Response(
                     json.dumps({"message": "password is needed !!!"}), status=500
