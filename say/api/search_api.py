@@ -44,6 +44,7 @@ class GetRandomSearchResult(Resource):
             other_children = [
                 family.family_relation.id_child for family in other_families
             ]
+            debug(f'other chidren for user {user_id} --> {other_children}')
 
             children = (
                 session.query(ChildModel)
