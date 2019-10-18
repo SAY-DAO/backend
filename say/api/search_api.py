@@ -37,7 +37,7 @@ class GetRandomSearchResult(Resource):
         try:
             other_families = (
                 session.query(UserFamilyModel)
-                .filter(UserFamilyModel.id_user != user_id)
+                .filter(UserFamilyModel.id_user != int(user_id))
                 .filter_by(isDeleted=False)
                 .all()
             )

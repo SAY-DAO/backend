@@ -775,7 +775,7 @@ class AddNeed(Resource):
                 )
 
                 file.save(image_path)
-                new_need.image_url = '/' + image_path
+                new_need.imageUrl = '/' + image_path
 
             if "receipts" in request.files.keys():
                 file2 = request.files["receipts"]
@@ -806,8 +806,8 @@ class AddNeed(Resource):
                     file2.save(receipt_path)
                     new_need.receipts = '/' + receipt_path
 
-            else:
-                receipt_path = None
+            # else:
+            #     receipt_path = None
 
             session.commit()
 
