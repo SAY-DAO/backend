@@ -11,9 +11,9 @@ class PrivilegeModel(base):
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
     name = Column(String, nullable=False)
     privilege = Column(Integer, nullable=False)
-    # 0:super admin
-    # 1:social worker
-    # 2:coordinator
-    # 3:NGO supervisor
-    # 4:SAY supervisor
-    # 5:admin
+    # 1:super admin
+    # 2:social worker
+    # 3:coordinator
+    # 4:NGO supervisor
+    # 5:SAY supervisor
+    # 6:admin

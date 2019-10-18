@@ -24,6 +24,6 @@ cd $CI_PROJECT_NAME &&
 docker build -t $REPO_UPLOAD_ADD . &&
 cd /home/server/say-installer &&
 docker-compose up -d &&
-docker image prune -a 
+docker image prune -af
 "
 echo 'DONE'
