@@ -1,6 +1,7 @@
+from . import *
 from say.models.ngo_model import NgoModel
 from say.models.social_worker_model import SocialWorkerModel
-from . import *
+
 
 """
 Child Model
@@ -52,6 +53,7 @@ class ChildModel(base):
     migratedId = Column(Integer, nullable=True)
     migrateDate = Column(Date, nullable=True)
 
+    families = relationship('FamilyModel', back_populates='child')
     ngo_relation = relationship("NgoModel", foreign_keys="ChildModel.id_ngo")
     social_worker_relation = relationship(
         "SocialWorkerModel", foreign_keys="ChildModel.id_social_worker"

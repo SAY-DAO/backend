@@ -17,6 +17,12 @@ class UserFamilyModel(base):
     isDeleted = Column(Boolean, nullable=False, default=False)
 
     family_relation = relationship(
-        "FamilyModel", foreign_keys="UserFamilyModel.id_family"
+        "FamilyModel",
+        foreign_keys="UserFamilyModel.id_family",
+        uselist=False,
     )
-    user_relation = relationship("UserModel", foreign_keys="UserFamilyModel.id_user")
+    user_relation = relationship(
+        "UserModel",
+        foreign_keys="UserFamilyModel.id_user",
+        uselist=False,
+    )

@@ -11,11 +11,13 @@ parameters:
     type: integer
 
 responses:
+  499:
+    description: No more child is avaliable
+
   500:
     description: Error occurred somewhere!
 
   200:
     description: Ok
-
     schema:
       id: child_model

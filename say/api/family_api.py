@@ -113,13 +113,13 @@ class AddUserToFamily(Resource):
                 id_user=id_user, id_family=id_family, userRole=user_role
             )
 
-            child = (
+            family = (
                 session.query(FamilyModel)
                 .filter_by(id=id_family)
                 .filter_by(isDeleted=False)
                 .first()
             )
-            child.family_child_relation.sayFamilyCount += 1
+            family.child.sayFamilyCount += 1
 
             session.add(new_member)
             session.commit()
@@ -136,7 +136,7 @@ class AddUserToFamily(Resource):
 
 
 """
-API URLs 
+API URLs
 """
 
 api.add_resource(GetFamilyById, "/api/v2/family/familyId=<family_id>")

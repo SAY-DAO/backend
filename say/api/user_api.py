@@ -33,7 +33,7 @@ def get_user_children(session, user):
 
     children = {}
     for f in families:
-        if f.family_relation.family_child_relation.isConfirmed:
+        if f.family_relation.child.isConfirmed:
             children[str(f.family_relation.id_child)] = get_child_by_id(session, f.family_relation.id_child)
 
     return children

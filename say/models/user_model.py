@@ -35,7 +35,11 @@ class UserModel(base):
     spentCredit = Column(Integer, nullable=False, default=0)
     doneNeedCount = Column(Integer, nullable=False, default=0)
 
-
+    families = relationship(
+        'FamilyModel',
+        secondary='user_family',
+        back_populates='users',
+    )
     def _hash_password(cls, password):
         password = str(password)
         salt = sha256()

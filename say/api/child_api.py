@@ -207,7 +207,7 @@ class GetChildrenOfUserByUserId(Resource):
 
                 for family in families:
                     child_data = get_child_by_id(
-                        session, family.family_child_relation.id
+                        session, family.child.id
                     )
                     child_res[str(family.id_child)] = child_data
 
@@ -697,7 +697,7 @@ class DeleteUserFromChildFamily(Resource):
             for participate in participation:
                 participate.isDeleted = True
 
-            family.family_child_relation.sayFamilyCount -= 1
+            family.child.sayFamilyCount -= 1
             user.isDeleted = True
 
             session.commit()

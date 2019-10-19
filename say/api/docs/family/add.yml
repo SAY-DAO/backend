@@ -9,9 +9,6 @@ The roles are listed below:
 tags:
   - Family API
 
-consumes:
-  - multipart/form-data
-
 parameters:
   - in: path
     name: family_id
@@ -23,18 +20,18 @@ parameters:
     required: true
     type: integer
 
-  - in: formData
-    name: userRole
-    required: true
-    type: integer
+#  - in: body
+#    name: userRole
+#    required: true
+#    type: integer
 
-  # - in: body
-  #   name: role
-  #   required: true
-  #   schema:
-  #     properties:
-  #       userRole:
-  #         type: integer
+  - in: body
+    name: role
+    required: true
+    schema:
+      properties:
+        userRole:
+          type: integer
 
 responses:
   500:

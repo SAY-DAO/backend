@@ -13,6 +13,14 @@ class FamilyModel(base):
     id_child = Column(Integer, ForeignKey(ChildModel.id), nullable=False)
     isDeleted = Column(Boolean, nullable=False, default=False)
 
-    family_child_relation = relationship(
-        "ChildModel", foreign_keys="FamilyModel.id_child"
+    child = relationship(
+        "ChildModel",
+        foreign_keys=id_child,
+        back_populates="families",
+        uselist=False,
+    )
+    users = relationship(
+        'UserModel',
+        secondary='user_family',
+        back_populates='families',
     )
