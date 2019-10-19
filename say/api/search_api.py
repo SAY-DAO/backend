@@ -94,7 +94,7 @@ class GetRandomSearchResult(Resource):
                     search_data.append(child_data)
 
             if len(search_data) == 0:
-                resp = dict(message='Unfortunately our database is not big as your heart'), 499
+                resp = make_response(dict(message='Unfortunately our database is not big as your heart'), 499)
                 return
 
             search_data_temp = index.copy()
@@ -115,7 +115,7 @@ class GetRandomSearchResult(Resource):
 
         finally:
             session.close()
-            return make_response(resp)
+            return resp
 
 
 class GetSayBrainSearchResult(Resource):
