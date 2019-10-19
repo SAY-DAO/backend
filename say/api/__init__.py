@@ -1,4 +1,4 @@
-import os, shutil, copy
+import os, shutil, copy, json
 
 from flask import (
     Flask,
@@ -24,13 +24,16 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
+from logging import debug, basicConfig, DEBUG
 
 # from hazm import *
-import json
 from flask_cors import CORS
+
 
 from ..payment import IDPay
 
+
+basicConfig(level=DEBUG)
 
 with open("./config.json") as config_file:
     conf = json.load(config_file)
