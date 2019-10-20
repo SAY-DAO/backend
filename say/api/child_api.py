@@ -800,6 +800,40 @@ class UpdateChildById(Resource):
                     file2.save(primary_child.avatarUrl)
                     primary_child.avatarUrl = '/' + primary_child.avatarUrl
 
+            if "sleptAvatarUrl" in request.files.keys():
+                file3 = request.files["sleptAvatarUrl"]
+
+                if file3.filename == "":
+                    resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY SLEPT AVATAR!"}), 500)
+
+                    session.close()
+                    return resp
+
+                if file3 and allowed_image(file3.filename):
+                    # filename2 = secure_filename(file3.filename)
+                    filename2 = (
+                        primary_child.generatedCode
+                        + "."
+                        + file3.filename.split(".")[-1]
+                    )
+
+                    temp_sleptAvatar_path = os.path.join(
+                        app.config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
+                    )
+
+                    for obj in os.listdir(temp_sleptAvatar_path):
+                        check = str(primary_child.id) + "-sleptAvatar"
+
+                        if obj.split("_")[0] == check:
+                            os.remove(os.path.join(temp_sleptAvatar_path, obj))
+
+                    primary_child.sleptAvatarUrl = os.path.join(
+                        temp_sleptAvatar_path, str(primary_child.id) + "-sleptAvatar_" + filename2
+                    )
+
+                    file3.save(primary_child.sleptAvatarUrl)
+                    primary_child.sleptAvatarUrl = '/' + primary_child.sleptAvatarUrl
+
             if "voiceUrl" in request.files.keys():
                 file1 = request.files["voiceUrl"]
 
