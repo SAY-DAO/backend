@@ -115,9 +115,9 @@ class AddSocialWorker(Resource):
             emergency_phone_number = request.form["emergencyPhoneNumber"]
             email_address = request.form["emailAddress"]
 
-            register_date = datetime.now()
-            last_update_date = datetime.now()
-            last_login_date = datetime.now()
+            register_date = datetime.utcnow()
+            last_update_date = datetime.utcnow()
+            last_login_date = datetime.utcnow()
 
             if id_ngo != 0:
                 ngo = (session.query(NgoModel).filter_by(
@@ -842,7 +842,7 @@ class UpdateSocialWorker(Resource):
                 base_social_worker.password = md5(
                     request.form["password"].encode()).hexdigest()
 
-            base_social_worker.lastUpdateDate = datetime.now()
+            base_social_worker.lastUpdateDate = datetime.utcnow()
 
             res = obj_to_dict(base_social_worker)
 

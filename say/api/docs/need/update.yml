@@ -58,6 +58,10 @@ parameters:
     in: formData
     type: file
 
+  - name: doing_duration
+    in: formData
+    type: integer
+
 responses:
   500:
     description: Error occurred somewhere!

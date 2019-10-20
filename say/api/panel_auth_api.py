@@ -47,7 +47,7 @@ class PanelLogin(Resource):
             )
             if social_worker is not None:
                 if social_worker.password == password:
-                    social_worker.lastLogin = datetime.now()
+                    social_worker.lastLogin = datetime.utcnow()
                     session.commit()
 
                     access_token = create_access_token(

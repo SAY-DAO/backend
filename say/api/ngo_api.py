@@ -523,7 +523,7 @@ class UpdateNgo(Resource):
                     file.save(base_ngo.logoUrl)
                     base_ngo.logoUrl = '/' + base_ngo.logoUrl
 
-            base_ngo.lastUpdateDate = datetime.now()
+            base_ngo.lastUpdateDate = datetime.utcnow()
 
             res = obj_to_dict(base_ngo)
 

@@ -676,7 +676,7 @@ class UpdateUserById(Resource):
                     True if request.form["gender"] == "true" else False
                 )
 
-            primary_user.lastUpdate = datetime.now()
+            primary_user.lastUpdate = datetime.utcnow()
 
             secondary_user = obj_to_dict(primary_user)
 
@@ -801,9 +801,9 @@ class AddUser(Resource):
                 session.close()
                 return resp
 
-            created_at = datetime.now()
-            last_update = datetime.now()
-            last_login = datetime.now()
+            created_at = datetime.utcnow()
+            last_update = datetime.utcnow()
+            last_login = datetime.utcnow()
 
             avatar_url = "wrong url"
             flag_url = os.path.join(FLAGS, str(country) + ".png")
