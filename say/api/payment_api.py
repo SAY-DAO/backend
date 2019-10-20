@@ -43,6 +43,14 @@ class Payment(Resource):
         session = session_maker()
 
         try:
+            donate = 0
+            if 'donate' in request.form:
+                donate = int(request.form['donate'])
+
+            if donate < 0:
+                resp = {"message": "Donation Can Not Be Negetive"}
+                return
+
             need = session.query(NeedModel).get(needId)
             if need is None:
                 resp = {"message": "Need Not Found"}
@@ -95,9 +103,11 @@ class Payment(Resource):
                 + str(need.id) \
                 + str(random.randint(100 , 1000))
 
+            total_amount = amount + donate
+
             api_data = {
                 "order_id": order_id,
-                "amount": amount * 10, # Converting Toman to Rial
+                "amount": total_amount * 10, # Converting Toman to Rial
                 "name": user.lastName,
                 "phone": user.phoneNumber,
                 "mail": 'info@say.company',
@@ -116,6 +126,7 @@ class Payment(Resource):
                 link=new_transaction['link'],
                 amount=amount,
                 desc=api_data['desc'],
+                donate=donate,
             )
             session.add(new_payment)
 
