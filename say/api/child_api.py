@@ -511,8 +511,8 @@ class AddChild(Resource):
             avatar_url = avatar_path
             voice_url = voice_path
 
-            created_at = datetime.now()
-            last_update = datetime.now()
+            created_at = datetime.utcnow()
+            last_update = datetime.utcnow()
 
             new_child = ChildModel(
                 phoneNumber=phone_number,
@@ -852,7 +852,7 @@ class UpdateChildById(Resource):
             if "sayName" in request.form.keys():
                 primary_child.sayName = request.form["sayName"]
 
-            primary_child.lastUpdate = datetime.now()
+            primary_child.lastUpdate = datetime.utcnow()
 
             # secondary_child = obj_to_dict(primary_child)
             secondary_child = get_child_by_id(session, primary_child.id, confirm=2)
@@ -1426,7 +1426,7 @@ class MigrateChild(Resource):
                 id_social_worker=social_worker_id,
                 spentCredit=child.spentCredit,
                 createdAt=child.createdAt,
-                lastUpdate=datetime.now(),
+                lastUpdate=datetime.utcnow(),
                 isConfirmed=False,
                 generatedCode=social_worker.generatedCode
                 + format(social_worker.childCount + 1, "04d"),
