@@ -22,6 +22,7 @@ class ChildModel(base):
     )  # 98:iran | 93:afghanistan | ... (real country codes) / [must be change after using real country/city api]
     city = Column(Integer, nullable=False)  # 1:tehran | 2:karaj / [must be change after using real country/city api]
     avatarUrl = Column(String, nullable=False)
+    sleptAvatarUrl = Column(String, nullable=False)
     gender = Column(Boolean, nullable=False)  # true:male | false:female
     bio = Column(Text, nullable=False)
     bioSummary = Column(Text, nullable=False)

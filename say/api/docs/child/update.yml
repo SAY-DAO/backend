@@ -19,6 +19,10 @@ parameters:
     in: formData
     type: file
 
+  - name: sleptAvatarUrl
+    in: formData
+    type: file
+
   - name: voiceUrl
     in: formData
     type: file

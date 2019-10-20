@@ -448,7 +448,8 @@ class AddChild(Resource):
                 session.close()
                 return resp
 
-            avatar_path, voice_path = "wrong avatar", "wrong voice"
+            avatar_path, slept_avatar_path, voice_path = \
+                "wrong avatar", "wrong avatar", "wrong voice"
 
             if "nationality" in request.form.keys():
                 nationality = int(request.form["nationality"])
@@ -509,6 +510,7 @@ class AddChild(Resource):
             gender = True if request.form["gender"] == "true" else False
 
             avatar_url = avatar_path
+            slept_avatar_url = slept_avatar_path
             voice_url = voice_path
 
             created_at = datetime.utcnow()
@@ -518,6 +520,7 @@ class AddChild(Resource):
                 phoneNumber=phone_number,
                 nationality=nationality,
                 avatarUrl=avatar_url,
+                sleptAvatarUrl=avatar_url,
                 housingStatus=housing_status,
                 firstName=first_name,
                 lastName=last_name,
@@ -551,6 +554,7 @@ class AddChild(Resource):
 
             file1 = request.files["voiceUrl"]
             file2 = request.files["avatarUrl"]
+            file3 = request.files["sleptAvatarUrl"]
 
             if file1.filename == "":
                 resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY VOICE!"}), 500)
@@ -559,7 +563,18 @@ class AddChild(Resource):
                 return resp
 
             if file2.filename == "":
-                resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY AVATAR!"}), 500)
+                resp = make_response(jsonify({"message": "error occurred --> empty avatar!"}), 500)
+
+                session.close()
+                return resp
+
+            if file3.filename == "":
+                resp = make_response(
+                    jsonify(
+                        {"message": "error occurred --> empty slept avatar!"}
+                    ),
+                    500,
+                )
 
                 session.close()
                 return resp
@@ -580,6 +595,7 @@ class AddChild(Resource):
                     temp_voice_path, str(new_child.id) + "-voice_" + filename1
                 )
                 file1.save(voice_path)
+                new_child.voiceUrl = '/' + voice_path
 
             if file2 and allowed_image(file2.filename):
                 # filename2 = secure_filename(file2.filename)
@@ -601,16 +617,37 @@ class AddChild(Resource):
                     temp_avatar_path, str(new_child.id) + "-avatar_" + filename2
                 )
                 file2.save(avatar_path)
+                new_child.avatarUrl = '/' + avatar_path
 
-            new_child.avatarUrl = '/' + avatar_path
-            new_child.voiceUrl = '/' + voice_path
+            if file3 and allowed_image(file3.filename):
+                # filename3 = secure_filename(file3.filename)
+                filename3 = code + "." + file3.filename.split(".")[-1]
+
+                temp_slept_avatar_path = os.path.join(
+                    app.config["UPLOAD_FOLDER"], str(new_child.id) + "-child"
+                )
+
+                if not os.path.isdir(temp_slept_avatar_path):
+                    os.mkdir(temp_slept_avatar_path)
+
+                temp_need_path = os.path.join(temp_slept_avatar_path, "needs")
+
+                if not os.path.isdir(temp_need_path):
+                    os.mkdir(temp_need_path)
+
+                slept_avatar_path = os.path.join(
+                    temp_slept_avatar_path,
+                    str(new_child.id) + "-slept-avatar_" + filename3
+                )
+                file3.save(slept_avatar_path)
+                new_child.sleptAvatarUrl = '/' + slept_avatar_path
 
             new_child.ngo_relation.childrenCount += 1
             new_child.social_worker_relation.childCount += 1
 
             session.commit()
 
-            resp = make_response(jsonify({"message": "CHILD ADDED SUCCESSFULLY!"}), 200)
+            resp = make_response(jsonify(obj_to_dict(new_child)), 200)
 
         except Exception as e:
             print(e)

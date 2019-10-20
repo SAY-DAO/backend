@@ -24,6 +24,11 @@ parameters:
     type: file
     required: true
 
+  - name: sleptAvatarUrl
+    in: formData
+    type: file
+    required: true
+
   - name: voiceUrl
     in: formData
     type: file
