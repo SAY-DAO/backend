@@ -61,6 +61,10 @@ class GetRandomSearchResult(Resource):
                     )
                     need_amount = len(needs)
 
+                    if need_amount == 0:
+                        resp = make_response(dict(message='This child has no needs yet.'), 499)
+                        return
+
                     family = (
                         session.query(FamilyModel)
                         .filter_by(isDeleted=False)
