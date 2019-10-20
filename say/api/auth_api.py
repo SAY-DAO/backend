@@ -227,7 +227,7 @@ class Login(Resource):
             )
             if user is not None:
                 if user.validate_password(password):
-                    user.lastLogin = datetime.now()
+                    user.lastLogin = datetime.utcnow()
                     session.commit()
 
                     access_token = create_access_token(

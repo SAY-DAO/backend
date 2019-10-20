@@ -1247,7 +1247,7 @@ class ConfirmChild(Resource):
 
                 primary_child.isConfirmed = True
                 primary_child.confirmUser = social_worker_id
-                primary_child.confirmDate = datetime.now()
+                primary_child.confirmDate = datetime.utcnow()
 
                 primary_child.ngo_relation.currentChildrenCount += 1
 
@@ -1268,7 +1268,7 @@ class ConfirmChild(Resource):
 
                 secondary_child.isConfirmed = True
                 secondary_child.confirmUser = social_worker_id
-                secondary_child.confirmDate = datetime.now()
+                secondary_child.confirmDate = datetime.utcnow()
 
                 primary_child = (
                     session.query(ChildModel)
@@ -1503,7 +1503,7 @@ class MigrateChild(Resource):
                 + format(social_worker.childCount + 1, "04d"),
                 isMigrated=False,
                 migratedId=child.id,
-                migrateDate=datetime.now(),
+                migrateDate=datetime.utcnow(),
             )
 
             child.isMigrated = True

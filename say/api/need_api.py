@@ -289,7 +289,7 @@ class AddPaymentForNeed(Resource):
 
         try:
             amount = int(request.form["amount"])
-            created_at = datetime.now()
+            created_at = datetime.utcnow()
 
             need = (
                 session.query(NeedModel)
@@ -529,7 +529,10 @@ class UpdateNeedById(Resource):
             if "name" in request.form.keys():
                 primary_need.name = request.form["name"]
 
-            primary_need.lastUpdate = datetime.now()
+            if "doing_duration" in request.form.keys():
+                primary_need.doing_duration = int(request.form["doing_duration"])
+
+            primary_need.lastUpdate = datetime.utcnow()
 
             secondary_need = obj_to_dict(primary_need)
 
@@ -624,7 +627,7 @@ class ConfirmNeed(Resource):
 
             primary_need.isConfirmed = True
             primary_need.confirmUser = social_worker_id
-            primary_need.confirmDate = datetime.now()
+            primary_need.confirmDate = datetime.utcnow()
 
             new_child_need = ChildNeedModel(id_child=child_id, id_need=primary_need.id)
 
@@ -719,13 +722,18 @@ class AddNeed(Resource):
             description = request.form["description"]
             description_summary = request.form["descriptionSummary"]
 
-            created_at = datetime.now()
-            last_update = datetime.now()
+            created_at = datetime.utcnow()
+            last_update = datetime.utcnow()
 
             if "affiliateLinkUrl" in request.form.keys():
                 affiliate_link_url = request.form["affiliateLinkUrl"]
             else:
                 affiliate_link_url = None
+
+            if "doing_duration" in request.form.keys():
+                doing_duration = int(request.form["doing_duration"])
+            else:
+                doing_duration = 5
 
             new_need = NeedModel(
                 imageUrl=image_url,
@@ -741,6 +749,7 @@ class AddNeed(Resource):
                 type=need_type,
                 lastUpdate=last_update,
                 child=child,
+                doing_duration=doing_duration,
             )
 
             session.add(new_need)

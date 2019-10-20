@@ -31,5 +31,6 @@ class NeedModel(base):
     confirmUser = Column(Integer, nullable=True)
     type = Column(Integer, nullable=False)  # 0:donate | 1:affiliate
     lastUpdate = Column(Date, nullable=False)
+    doing_duration = Column(Integer, nullable=False, default=5)
 
     child = relationship('ChildModel', foreign_keys=child_id, uselist=False)
