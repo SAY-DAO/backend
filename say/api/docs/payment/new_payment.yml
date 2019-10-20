@@ -23,6 +23,7 @@ parameters:
   - name: donate
     in: formData
     type: integer
+    description: amount in TOMAN
 
 responses:
   200:
