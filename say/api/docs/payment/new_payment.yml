@@ -20,6 +20,11 @@ parameters:
     type: integer
     required: true
 
+  - name: donate
+    in: formData
+    type: integer
+    description: amount in TOMAN
+
 responses:
   200:
     description: Error occurred somewhere!
