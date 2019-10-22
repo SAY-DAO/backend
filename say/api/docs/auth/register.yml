@@ -4,32 +4,29 @@ Register API
 tags:
   - Auth API
 
+consumes:
+  - application/json
+
 parameters:
-  - in: formData
-    name: firstName
+  - in: body
+    name: register
     required: true
-    type: string
+    schema:
+      properties:
+        username:
+          type: string
 
-  - in: formData
-    name: lastName
-    required: true
-    type: string
+        email:
+          type: string
 
-  - in: formData
-    name: username
-    required: true
-    type: string
+        firstName:
+          type: string
 
-  - in: formData
-    name: email
-    required: true
-    type: string
+        lastName:
+          type: string
 
-  - in: formData
-    name: password
-    required: true
-    type: string
-    format: email
+        password:
+          type: string
 
 responses:
   500:
