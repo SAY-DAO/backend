@@ -125,7 +125,7 @@ class RegisterUser(Resource):
             if alreadyExist is not None:
                 resp = Response(
                     json.dumps({"status": False, "Message": "User is Already existed"}),
-                    status=200,
+                    status=500,
                 )
             else:
                 created_at = datetime.utcnow()
