@@ -48,7 +48,7 @@ class GetRandomSearchResult(Resource):
                 debug(f'child {child.id} families --> {child.families}')
                 for family in child.families:
                     debug(f'child {child.id} family --> {family}')
-                    debug(f'child {child.id} family users --> {family.users}')
+                    debug(f'child {child.id} family users --> {[u.id for u in family.users]}')
                     if user in family.users:
                         continue
 
