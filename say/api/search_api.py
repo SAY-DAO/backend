@@ -37,30 +37,33 @@ class GetRandomSearchResult(Resource):
         try:
             children = (session.query(ChildModel).filter_by(
                 isConfirmed=True).filter_by(isDeleted=False).filter_by(
-                    isMigrated=False))
-            debug(f'result chidren --> {children}')
-
+                    isMigrated=False)).all()
+            
             user_id = int(user_id)
             user = session.query(UserModel).get(user_id)
 
             search_data, index = [], []
             for child in children:
+                debug(f'all chidren --> {child.id}')
+                debug(f'child {child.id} families --> {child.families}')
                 for family in child.families:
+                    debug(f'child {c.id} family --> {family}')
+                    debug(f'child {c.id} family users --> {family.users}')
                     if user in family.users:
                         continue
 
                     needs = (session.query(ChildNeedModel).filter_by(
                         id_child=child.id).filter_by(isDeleted=False).all())
                     need_amount = len(needs)
-                    debug(f'{child.id} --> {needs}')
+                    debug(f'child {child.id} needs --> {need_amount}')
 
                     if need_amount == 0:
                         continue
 
-                    family = (session.query(FamilyModel).filter_by(
+                    family1 = (session.query(FamilyModel).filter_by(
                         isDeleted=False).filter_by(id_child=child.id).first())
                     members = (session.query(UserFamilyModel).filter_by(
-                        id_family=family.id).filter_by(isDeleted=False).all())
+                        id_family=family1.id).filter_by(isDeleted=False).all())
 
                     family_res = {}
                     for member in members:
@@ -73,11 +76,14 @@ class GetRandomSearchResult(Resource):
 
                     child_data = get_child_by_id(session, child.id)
                     child_data["ChildFamily"] = family_res
-                    child_data["FamilyId"] = family.id
+                    child_data["FamilyId"] = family1.id
 
                     index.append(3 * need_amount - 2 * child.sayFamilyCount)
                     search_data.append(child_data)
+                    debug(f'one of the search data is --> {child_data["id"]}')
 
+            debug(f'final search data is --> {[s["id"] for s in search_data]}')
+            debug(f'final index is --> {index}')
             if len(search_data) == 0:
                 resp = make_response(
                     dict(
@@ -89,6 +95,7 @@ class GetRandomSearchResult(Resource):
             search_data_temp = index.copy()
             search_data_temp.sort(reverse=True)
             out = [search_data[index.index(i)] for i in search_data_temp]
+            debug(f'out is --> {out}')
             list_bias(search_data_temp)
 
             search_range = sum(search_data_temp)
