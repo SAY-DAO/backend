@@ -39,16 +39,16 @@ class GetRandomSearchResult(Resource):
                 isConfirmed=True).filter_by(isDeleted=False).filter_by(
                     isMigrated=False)).all()
             
+            debug(f'all chidren --> {children.__len__()}')
             user_id = int(user_id)
             user = session.query(UserModel).get(user_id)
 
             search_data, index = [], []
             for child in children:
-                debug(f'all chidren --> {child.id}')
                 debug(f'child {child.id} families --> {child.families}')
                 for family in child.families:
-                    debug(f'child {c.id} family --> {family}')
-                    debug(f'child {c.id} family users --> {family.users}')
+                    debug(f'child {child.id} family --> {family}')
+                    debug(f'child {child.id} family users --> {family.users}')
                     if user in family.users:
                         continue
 
