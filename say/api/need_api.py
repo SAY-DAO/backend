@@ -42,9 +42,16 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
     if not with_participants and with_child_id:
         return need_data
 
-    participant_ids = session.query(NeedFamilyModel).filter_by(id_need=need.id).filter_by(isDeleted=False).all()
-    ids = [p.id_user for p in participant_ids]
-    participants = session.query(UserFamilyModel).filter(UserFamilyModel.id_user.in_(ids)).filter_by(isDeleted=False).all()
+    users_family = session.query(NeedFamilyModel) \
+        .filter_by(id_need=need.id) \
+        .filter_by(isDeleted=False)
+
+    family_id = users_family[0].id_family
+    ids = [user_family.id_user for user_family in users_family]
+    participants = session.query(UserFamilyModel) \
+        .filter(UserFamilyModel.id_user.in_(ids)) \
+        .filter_by(id_family=family_id) \
+        .filter_by(isDeleted=False)
 
     users = {}
     for participant in participants:
@@ -54,6 +61,7 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
             (session.query(func.sum(PaymentModel.amount))
             .filter_by(id_user=participant.id_user)
             .filter_by(id_need=need.id)
+            .filter_by(is_verified=True)
             # .group_by(PaymentModel.id)
             .group_by(PaymentModel.id_user, PaymentModel.id_need)
             .first())[0]

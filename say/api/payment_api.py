@@ -222,7 +222,6 @@ class VerifyPayment(Resource):
                 session.query(NeedFamilyModel)
                 .filter_by(id_need=need.id)
                 .filter_by(isDeleted=False)
-                .all()
             )
 
             for participate in participants:
