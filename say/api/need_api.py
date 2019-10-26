@@ -54,6 +54,7 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
             (session.query(func.sum(PaymentModel.amount))
             .filter_by(id_user=participant.id_user)
             .filter_by(id_need=need.id)
+            .filter_by(is_verified=True)
             # .group_by(PaymentModel.id)
             .group_by(PaymentModel.id_user, PaymentModel.id_need)
             .first())[0]
