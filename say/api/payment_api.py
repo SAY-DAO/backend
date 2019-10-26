@@ -1,14 +1,14 @@
-from datetime import datetime
 import random
+from datetime import datetime
 
-from say.models.need_model import NeedModel
-from say.models.user_model import UserModel
+from . import *
 from say.models.child_need_model import ChildNeedModel
 from say.models.family_model import FamilyModel
 from say.models.need_family_model import NeedFamilyModel
-from say.models.user_family_model import UserFamilyModel
+from say.models.need_model import NeedModel
 from say.models.payment_model import PaymentModel
-from . import *
+from say.models.user_family_model import UserFamilyModel
+from say.models.user_model import UserModel
 
 
 def validate_amount(need, amount):
@@ -26,26 +26,26 @@ class Payment(Resource):
     @swag_from("./docs/payment/new_payment.yml")
     def post(self):
         resp = {"message": "Something is Wrong!"}
-        if 'needId' not in request.form:
+        if 'needId' not in request.json:
             return jsonify({"message": "needId is required"})
 
-        if 'userId' not in request.form:
+        if 'userId' not in request.json:
             return jsonify({"message": "userId is required"})
 
-        if 'amount' not in request.form:
+        if 'amount' not in request.json:
             return jsonify({"message": "amount is required"})
 
-        amount = request.form['amount']
-        userId = request.form['userId']
-        needId = request.form['needId']
+        amount = request.json['amount']
+        userId = request.json['userId']
+        needId = request.json['needId']
 
         session_maker = sessionmaker(db)
         session = session_maker()
 
         try:
             donate = 0
-            if 'donate' in request.form:
-                donate = int(request.form['donate'])
+            if 'donate' in request.json:
+                donate = int(request.json['donate'])
 
             if donate < 0:
                 resp = {"message": "Donation Can Not Be Negetive"}
@@ -148,8 +148,8 @@ class Payment(Resource):
 
 class VerifyPayment(Resource):
     def post(self):
-        paymentId = request.form['id']
-        orderId = request.form['order_id']
+        paymentId = request.json['id']
+        orderId = request.json['order_id']
 
         response = idpay.verify(paymentId, orderId)
         if response['status'] != 100:

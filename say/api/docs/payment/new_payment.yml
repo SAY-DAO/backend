@@ -5,25 +5,25 @@ tags:
   - Payment API
 
 parameters:
-  - name: needId
-    in: formData
-    type: integer
+  - in: body
+    name: register
     required: true
+    schema:
+      properties:
+        needId:
+          type: integer
+          required: true
 
-  - name: userId
-    in: formData
-    type: integer
-    required: true
+        userId:
+          type: integer
+          required: true
 
-  - name: amount
-    in: formData
-    type: integer
-    required: true
+        amount:
+          type: integer
+          required: true
 
-  - name: donate
-    in: formData
-    type: integer
-    description: amount in TOMAN
+        donate:
+          type: integer
 
 responses:
   200:
