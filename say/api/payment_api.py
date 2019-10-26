@@ -148,14 +148,8 @@ class Payment(Resource):
 
 class VerifyPayment(Resource):
     def post(self):
-        need_url = f"/needPage/{need.id}/{child.id}/{pending_payment.id_user}"
         paymentId = request.form['id']
         orderId = request.form['order_id']
-
-        response = idpay.verify(paymentId, orderId)
-        if response['status'] != 100:
-            #  TODO: what happens after unsusscesful payment
-            return redirect(need_url, 302)
 
         session_maker = sessionmaker(db)
         session = session_maker()
@@ -170,6 +164,12 @@ class VerifyPayment(Resource):
 
         need = pending_payment.need
         amount = pending_payment.amount
+
+        need_url = f"/needPage/{need.id}/{child.id}/{pending_payment.id_user}"
+        response = idpay.verify(paymentId, orderId)
+        if response['status'] != 100:
+            #  TODO: what happens after unsusscesful payment
+            return redirect(need_url, 302)
 
         pending_payment.is_verified = True
         pending_payment.date = datetime.fromtimestamp(int(
