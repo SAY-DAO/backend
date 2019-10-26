@@ -148,13 +148,14 @@ class Payment(Resource):
 
 class VerifyPayment(Resource):
     def post(self):
-        paymentId = request.json['id']
-        orderId = request.json['order_id']
+        need_url = f"/needPage/{need.id}/{child.id}/{pending_payment.id_user}"
+        paymentId = request.form['id']
+        orderId = request.form['order_id']
 
         response = idpay.verify(paymentId, orderId)
         if response['status'] != 100:
             #  TODO: what happens after unsusscesful payment
-            return redirect(app.config['BASE_URL'], 302)
+            return redirect(need_url, 302)
 
         session_maker = sessionmaker(db)
         session = session_maker()
@@ -229,7 +230,6 @@ class VerifyPayment(Resource):
         session.commit()
 
         resp = jsonify(obj_to_dict(pending_payment))
-        need_url = f"/needPage/{need.id}/{child.id}/{pending_payment.id_user}"
 
         return make_response(render_template(
             'succesful_payment.html',
