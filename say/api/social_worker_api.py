@@ -737,7 +737,7 @@ class UpdateSocialWorker(Resource):
 
                     file2.save(base_social_worker.passportUrl)
 
-                    base_social_worker.passportUrl = '/' + ase_social_worker.passportUrl
+                    base_social_worker.passportUrl = '/' + base_social_worker.passportUrl
 
             if "avatarUrl" in request.files.keys():
                 file3 = request.files["avatarUrl"]
@@ -774,7 +774,7 @@ class UpdateSocialWorker(Resource):
 
                     file3.save(base_social_worker.avatarUrl)
                     base_social_worker.avatarUrl = \
-                        '/' + ase_social_worker.avatarUrl
+                        '/' + base_social_worker.avatarUrl
 
             if "id_ngo" in request.form.keys():
                 previous_ngo = base_social_worker.id_ngo
