@@ -162,12 +162,18 @@ class VerifyPayment(Resource):
             resp = dict(message='Invalid Payment ID')
             return make_response(resp, 422)
 
+
+        child_need = session.query(ChildNeedModel) \
+            .filter_by(id_need = pending_payment.need.id) \
+            .first()
+
         need = pending_payment.need
         amount = pending_payment.amount
 
+        child = child_need.child_relation
         need_url = f"/needPage/{need.id}/{child.id}/{pending_payment.id_user}"
         response = idpay.verify(paymentId, orderId)
-        if response['status'] != 100:
+        if 'error_code' in response or response['status'] != 100:
             #  TODO: what happens after unsusscesful payment
             return redirect(need_url, 302)
 
@@ -182,11 +188,6 @@ class VerifyPayment(Resource):
         pending_payment.card_no = response['payment']['card_no']
         pending_payment.hashed_card_no = response['payment']['hashed_card_no']
 
-        child_need = session.query(ChildNeedModel) \
-            .filter_by(id_need = pending_payment.need.id) \
-            .first()
-
-        child = child_need.child_relation
         family = (
             session.query(FamilyModel)
             .filter_by(id_child=child.id)
