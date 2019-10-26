@@ -684,6 +684,9 @@ class UpdateSocialWorker(Resource):
                         str(base_social_worker.id) + "-socialworker",
                     )
 
+                    if not os.path.isdir(temp_idcard_path):
+                        os.mkdir(temp_idcard_path)
+
                     for obj in os.listdir(temp_idcard_path):
                         check = str(base_social_worker.id) + "-idcard"
                         if obj.split("_")[0] == check:
@@ -696,7 +699,7 @@ class UpdateSocialWorker(Resource):
 
                     file1.save(base_social_worker.idCardUrl)
                     base_social_worker.idCardUrl = \
-                        '/' + ase_social_worker.idCardUrl
+                        '/' + base_social_worker.idCardUrl
 
 
             if "passportUrl" in request.files.keys():
@@ -718,6 +721,9 @@ class UpdateSocialWorker(Resource):
                         app.config["UPLOAD_FOLDER"],
                         str(base_social_worker.id) + "-socialworker",
                     )
+
+                    if not os.path.isdir(temp_passport_path):
+                        os.mkdir(temp_passport_path)
 
                     for obj in os.listdir(temp_passport_path):
                         check = str(base_social_worker.id) + "-passport"
@@ -752,6 +758,9 @@ class UpdateSocialWorker(Resource):
                         app.config["UPLOAD_FOLDER"],
                         str(base_social_worker.id) + "-socialworker",
                     )
+
+                    if not os.path.isdir(temp_avatar_path):
+                        os.mkdir(temp_avatar_path)
 
                     for obj in os.listdir(temp_avatar_path):
                         check = str(base_social_worker.id) + "-avatar"
