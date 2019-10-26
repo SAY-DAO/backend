@@ -12,7 +12,7 @@ chmod 700 ~/.ssh
 ssh-keyscan $SERVER >> ~/.ssh/known_hosts
 
 cd /builds/$CI_PROJECT_NAMESPACE/
-tar -zcvf /tmp/$CI_PROJECT_NAME.tar.gz $CI_PROJECT_NAME
+tar -zcvf /tmp/$CI_PROJECT_NAME.tar.gz --exclude=.git $CI_PROJECT_NAME
 
 cd /tmp
 scp $CI_PROJECT_NAME.tar.gz $SERVER_USER@$SERVER:/tmp
