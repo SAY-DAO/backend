@@ -247,7 +247,7 @@ class GetUserByUserName(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            user = session.query(UserModel).filter_by(userName=username).first()
+            user = session.query(UserModel).filter_by(userName=username.lower()).first()
 
             if not user.isDeleted:
                 resp = make_response(jsonify(get_user_by_id(session, user.id)), 200)
@@ -641,7 +641,7 @@ class UpdateUserById(Resource):
                     file.save(primary_user.avatarUrl)
 
             if "userName" in request.form.keys():
-                primary_user.userName = request.form["userName"]
+                primary_user.userName = request.form["userName"].lower()
 
             if "emailAddress" in request.form.keys():
                 primary_user.emailAddress = request.form["emailAddress"]
@@ -788,7 +788,7 @@ class AddUser(Resource):
             city = int(request.form["city"])
             country = int(request.form["country"])
 
-            username = request.form["userName"]
+            username = request.form["userName"].lower()
 
             duplicate_user = (
                 session.query(UserModel)
@@ -805,7 +805,7 @@ class AddUser(Resource):
             last_update = datetime.utcnow()
             last_login = datetime.utcnow()
 
-            avatar_url = "wrong url"
+            avatar_url = "wrong url".
             flag_url = os.path.join(FLAGS, str(country) + ".png")
 
             new_user = UserModel(

@@ -40,6 +40,7 @@ class UserModel(base):
         secondary='user_family',
         back_populates='users',
     )
+    
     def _hash_password(cls, password):
         password = str(password)
         salt = sha256()
