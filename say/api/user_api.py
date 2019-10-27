@@ -149,7 +149,7 @@ class GetUserByBirthDate(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            if is_after.lower() == "true":
+            if is_after == "true":
                 users = (
                     session.query(UserModel)
                     .filter(UserModel.birthDate >= birth_date)
@@ -247,7 +247,7 @@ class GetUserByUserName(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            user = session.query(UserModel).filter_by(userName=username.lower()).first()
+            user = session.query(UserModel).filter_by(userName=username).first()
 
             if not user.isDeleted:
                 resp = make_response(jsonify(get_user_by_id(session, user.id)), 200)
@@ -641,7 +641,7 @@ class UpdateUserById(Resource):
                     file.save(primary_user.avatarUrl)
 
             if "userName" in request.form.keys():
-                primary_user.userName = request.form["userName"].lower()
+                primary_user.userName = request.form["userName"]
 
             if "emailAddress" in request.form.keys():
                 primary_user.emailAddress = request.form["emailAddress"]
@@ -788,7 +788,7 @@ class AddUser(Resource):
             city = int(request.form["city"])
             country = int(request.form["country"])
 
-            username = request.form["userName"].lower()
+            username = request.form["userName"]
 
             duplicate_user = (
                 session.query(UserModel)
