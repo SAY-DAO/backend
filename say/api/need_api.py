@@ -60,12 +60,16 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
             .first())[0]
         )
 
-        temp_participant['userAvatar'] = (
-            (session.query(UserModel.avatarUrl)
+        user_info = (
+            session.query(UserModel.avatarUrl, UserModel.firstName, UserModel.lastName)
             .filter_by(id=participant.id_user)
             .filter_by(isDeleted=False)
-            .first())[0]
+            .first()
         )
+        temp_participant['userAvatar'] = user_info[0]
+        temp_participant['userFirstName'] = user_info[1]
+        temp_participant['userLastName'] = user_info[2]
+        
 
         users[str(participant.id_user)] = temp_participant
 
