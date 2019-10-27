@@ -805,7 +805,7 @@ class AddUser(Resource):
             last_update = datetime.utcnow()
             last_login = datetime.utcnow()
 
-            avatar_url = "wrong url".
+            avatar_url = "wrong url"
             flag_url = os.path.join(FLAGS, str(country) + ".png")
 
             new_user = UserModel(
