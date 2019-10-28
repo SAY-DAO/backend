@@ -708,7 +708,7 @@ class AddNeed(Resource):
                 .filter_by(isConfirmed=True)
                 .first()
             )
-            debug(f'child: {child}')
+            debug(f'child: {obj_to_dict(child)}')
 
             if not child.isConfirmed:
                 resp = make_response(jsonify({"message": "error: child is not confirmed yet!"}), 500)
@@ -758,8 +758,8 @@ class AddNeed(Resource):
                 doing_duration=doing_duration,
             )
 
-            debug(f'new need: {new_need}')
-            
+            debug(f'new need: {obj_to_dict(new_need)}')
+
             session.add(new_need)
             session.flush()
 
