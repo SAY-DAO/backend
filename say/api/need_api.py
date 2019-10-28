@@ -8,7 +8,6 @@ from say.models.social_worker_model import SocialWorkerModel
 from say.models.user_family_model import UserFamilyModel
 from say.models.user_model import UserModel
 from . import *
-from say.api.child_api import get_child_by_id
 
 """
 Need APIs
@@ -844,6 +843,7 @@ class Foo(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
+            from say.api.child_api import get_child_by_id
             children = (
                 session.query(ChildModel)
                 .filter_by(isDeleted=False)
