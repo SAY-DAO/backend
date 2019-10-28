@@ -767,18 +767,27 @@ class AddNeed(Resource):
                 session.close()
                 return resp
 
+            child_path = os.path.join(
+                app.config["UPLOAD_FOLDER"],
+                str(child.id) + "-child",
+            )
+
+            if not os.path.isdir(child_path):
+                os.makedirs(child_path, exist_ok=True)
+
+            needs_path = os.path.join(child_path, "needs")
+            if not os.path.isdir(needs_path):
+                os.makedirs(needs_path, exist_ok=True)
+
+            need_dir = str(new_need.id) + "-need"
+
             if file and allowed_image(file.filename):
                 # filename = secure_filename(file.filename)
                 filename = str(new_need.id) + "." + file.filename.split(".")[-1]
-
-                temp_need_path = os.path.join(
-                    app.config["UPLOAD_FOLDER"], str(child_id) + "-child"
-                )
-                temp_need_path = os.path.join(temp_need_path, "needs")
-                temp_need_path = os.path.join(temp_need_path, str(new_need.id) + "-need")
+                temp_need_path = os.path.join(needs_path, need_dir)
 
                 if not os.path.isdir(temp_need_path):
-                    os.mkdir(temp_need_path)
+                    os.makedirs(temp_need_path, exist_ok=True)
 
                 image_path = os.path.join(
                     temp_need_path, str(new_need.id) + "-image_" + filename
@@ -799,15 +808,11 @@ class AddNeed(Resource):
                     # filename = str(0) + "." + file2.filename.split(".")[-1]
 
                     temp_need_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(child_id) + "-child"
-                    )
-                    temp_need_path = os.path.join(temp_need_path, "needs")
-                    temp_need_path = os.path.join(
                         temp_need_path, str(new_need.id) + "-need"
                     )
 
                     if not os.path.isdir(temp_need_path):
-                        os.mkdir(temp_need_path)
+                        os.makedirs(temp_need_path, exist_ok=True)
 
                     receipt_path = os.path.join(
                         temp_need_path, str(new_need.id) + "-receipt_" + filename

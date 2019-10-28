@@ -99,17 +99,23 @@ def obj_to_dict(obj):
 
 
 def allowed_voice(filename):
-    return (
+    if (
         "." in filename
         and filename.rsplit(".", 1)[1].lower() in ALLOWED_VOICE_EXTENSIONS
-    )
+    ):
+        return True
+
+    raise TypeError('Wrong voice format')
 
 
 def allowed_image(filename):
-    return (
+    if (
         "." in filename
         and filename.rsplit(".", 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
-    )
+    ):
+        return True
+
+    raise TypeError('Wrong image format')
 
 
 def utf8_response(response: dict, is_deep=False):

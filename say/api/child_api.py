@@ -579,20 +579,25 @@ class AddChild(Resource):
                 session.close()
                 return resp
 
+            child_path = os.path.join(
+                app.config["UPLOAD_FOLDER"],
+                str(new_child.id) + "-child",
+            )
+
+            if not os.path.isdir(child_path):
+                os.makedirs(child_path, exist_ok=True)
+
+            need_path = os.path.join(child_path, "needs")
+            if not os.path.isdir(need_path):
+                os.makedirs(need_path, exist_ok=True)
+
             if file1 and allowed_voice(file1.filename):
                 # filename1 = secure_filename(file1.filename)
                 filename1 = code + "." + file1.filename.split(".")[-1]
 
-                temp_voice_path = os.path.join(
-                    app.config["UPLOAD_FOLDER"],
-                    str(new_child.id) + "-child"
-                )
-
-                if not os.path.isdir(temp_voice_path):
-                    os.makedirs(temp_voice_path, exist_ok=True)
-
                 voice_path = os.path.join(
-                    temp_voice_path, str(new_child.id) + "-voice_" + filename1
+                    child_path,
+                    str(new_child.id) + "-voice_" + filename1,
                 )
                 file1.save(voice_path)
                 new_child.voiceUrl = '/' + voice_path
@@ -601,20 +606,9 @@ class AddChild(Resource):
                 # filename2 = secure_filename(file2.filename)
                 filename2 = code + "." + file2.filename.split(".")[-1]
 
-                temp_avatar_path = os.path.join(
-                    app.config["UPLOAD_FOLDER"], str(new_child.id) + "-child"
-                )
-
-                if not os.path.isdir(temp_avatar_path):
-                    os.mkdir(temp_avatar_path)
-
-                temp_need_path = os.path.join(temp_avatar_path, "needs")
-
-                if not os.path.isdir(temp_need_path):
-                    os.mkdir(temp_need_path)
-
                 avatar_path = os.path.join(
-                    temp_avatar_path, str(new_child.id) + "-avatar_" + filename2
+                    child_path,
+                    str(new_child.id) + "-avatar_" + filename2,
                 )
                 file2.save(avatar_path)
                 new_child.avatarUrl = '/' + avatar_path
@@ -623,24 +617,13 @@ class AddChild(Resource):
                 # filename3 = secure_filename(file3.filename)
                 filename3 = code + "." + file3.filename.split(".")[-1]
 
-                temp_slept_avatar_path = os.path.join(
-                    app.config["UPLOAD_FOLDER"], str(new_child.id) + "-child"
-                )
-
-                if not os.path.isdir(temp_slept_avatar_path):
-                    os.mkdir(temp_slept_avatar_path)
-
-                temp_need_path = os.path.join(temp_slept_avatar_path, "needs")
-
-                if not os.path.isdir(temp_need_path):
-                    os.mkdir(temp_need_path)
-
                 slept_avatar_path = os.path.join(
-                    temp_slept_avatar_path,
-                    str(new_child.id) + "-slept-avatar_" + filename3
+                    child_path,
+                    str(new_child.id) + "-slept-avatar_" + filename3,
                 )
                 file3.save(slept_avatar_path)
                 new_child.sleptAvatarUrl = '/' + slept_avatar_path
+
 
             new_child.ngo_relation.childrenCount += 1
             new_child.social_worker_relation.childCount += 1
@@ -651,7 +634,7 @@ class AddChild(Resource):
 
         except Exception as e:
             print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
+            resp = make_response(jsonify({"message": str(e)}), 500)
 
         finally:
             session.close()
