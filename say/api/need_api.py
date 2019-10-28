@@ -756,7 +756,6 @@ class AddNeed(Resource):
                 type=need_type,
                 lastUpdate=last_update,
                 child=child,
-                child=child,
                 doing_duration=doing_duration,
             )
 
