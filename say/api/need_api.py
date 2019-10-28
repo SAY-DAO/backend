@@ -837,6 +837,7 @@ class AddNeed(Resource):
 
 
 class Foo(Resource):
+    # @swag_from("./docs/need/foo.yml")
     def get(self):
         session_maker = sessionmaker(db)
         session = session_maker()
@@ -886,7 +887,7 @@ class Foo(Resource):
 API URLs
 """
 
-api.add_resource(Foo, "/api/v2/need/foo")
+api.add_resource(Foo, "/api/v2/foo")
 api.add_resource(GetNeedById, "/api/v2/need/needId=<need_id>")
 api.add_resource(GetAllNeeds, "/api/v2/need/all/confirm=<confirm>")
 api.add_resource(GetNeedByCategory, "/api/v2/need/category=<category>")
