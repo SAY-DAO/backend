@@ -210,7 +210,6 @@ class VerifyPayment(Resource):
             )
             session.add(new_participant)
 
-        pending_payment.user_relation.spentCredit += amount
         need.paid += amount
         child.spentCredit += amount
         need.progress = need.paid / need.cost * 100
@@ -228,8 +227,6 @@ class VerifyPayment(Resource):
 
             for participate in participants:
                 participate.user_relation.doneNeedCount += 1
-
-            child.doneNeedCount += 1
 
         session.commit()
 
