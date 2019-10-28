@@ -871,7 +871,7 @@ class Foo(Resource):
                 for p in payments:
                     u.spentCredit += p.amount
 
-            resp = make_response(dict(message='lorem'), 200)
+            resp = make_response(dict(message="ماست‌مالی انجام شد :)")), 200)
 
         except Exception as e:
             print(e)
