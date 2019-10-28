@@ -36,7 +36,7 @@ class CheckUser(Resource):
 
         try:
             if "username" in request.json.keys():
-                username = request.json["username"]
+                username = request.json["username"].lower()
             else:
                 return Response(
                     json.dumps({"message": "userName is needed !!!"}), status=500
@@ -79,7 +79,7 @@ class RegisterUser(Resource):
         resp = {"message": "something is wrong"}
         try:
             if "username" in request.json.keys():
-                username = request.json["username"]
+                username = request.json["username"].lower()
             else:
                 resp = Response(
                     json.dumps({"message": "userName is needed !!!"}), status=500
@@ -204,7 +204,7 @@ class Login(Resource):
         try:
 
             if "username" in request.json.keys():
-                username = request.json["username"]
+                username = request.json["username"].lower()
             else:
                 resp = Response(
                     json.dumps({"message": "userName is needed !!!"}), status=500

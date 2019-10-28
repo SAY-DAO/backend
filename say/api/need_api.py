@@ -1,3 +1,4 @@
+from say.api.child_api import get_child_by_id
 from say.models.child_model import ChildModel
 from say.models.child_need_model import ChildNeedModel
 from say.models.family_model import FamilyModel
@@ -755,6 +756,7 @@ class AddNeed(Resource):
                 type=need_type,
                 lastUpdate=last_update,
                 child=child,
+                child=child,
                 doing_duration=doing_duration,
             )
 
@@ -823,6 +825,8 @@ class AddNeed(Resource):
                     file2.save(receipt_path)
                     new_need.receipts = '/' + receipt_path
 
+            debug(f'final need: {obj_to_dict(new_need)}')
+
             # else:
             #     receipt_path = None
 
@@ -839,10 +843,56 @@ class AddNeed(Resource):
             return resp
 
 
+class Foo(Resource):
+    def get(self):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+
+        try:
+            children = (
+                session.query(ChildModel)
+                .filter_by(isDeleted=False)
+                .filter_by(isMigrated=False)
+                .filter_by(isConfirmed=True)
+                .all()
+            )
+            users = (
+                session.query(UserModel)
+                .filter_by(isDeleted=False)
+                .all()
+            )
+            for c in children:
+                child = get_child_by_id(session, c.id, with_need=True)
+                for n in child["Needs"].keys():
+                    if child["Needs"][n].isDone:
+                        c.doneNeedCount += 1
+
+            for u in users:
+                payments = (
+                    session.query(PaymentModel)
+                    .filter_by(id_user=u.id)
+                    .all()
+                )
+                for p in payments:
+                    u.spentCredit += p.amount
+
+            resp = make_response(dict(message="ماست‌مالی انجام شد :)"), 200)
+
+        except Exception as e:
+            print(e)
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
+
+        finally:
+            session.close()
+            return resp
+
+
 """
 API URLs
 """
 
+api.add_resource(Foo, "/api/v2/need/foo")
 api.add_resource(GetNeedById, "/api/v2/need/needId=<need_id>")
 api.add_resource(GetAllNeeds, "/api/v2/need/all/confirm=<confirm>")
 api.add_resource(GetNeedByCategory, "/api/v2/need/category=<category>")
