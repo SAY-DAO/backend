@@ -45,7 +45,17 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
 
     participant_ids = session.query(NeedFamilyModel).filter_by(id_need=need.id).filter_by(isDeleted=False).all()
     ids = [p.id_user for p in participant_ids]
-    participants = session.query(UserFamilyModel).filter(UserFamilyModel.id_user.in_(ids)).filter_by(isDeleted=False).all()
+    
+    if len(participant_ids) > 0:
+        family = list(participant_ids)[0].id_family
+
+    participants = (
+        session.query(UserFamilyModel)
+        .filter(UserFamilyModel.id_user.in_(ids))
+        .filter_by(id_family=family)
+        .filter_by(isDeleted=False)
+        .all()
+    )
 
     users = {}
     for participant in participants:
