@@ -1,4 +1,4 @@
-FROM python:3
+FROM python:3.7
 
 #MAINTANER Your Name "qarekhani@gmail.com"
 
@@ -14,5 +14,6 @@ RUN pip install -r requirements.txt
 
 COPY . /app
 
-CMD [ "python", "run.py" ]
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "run:app"]
+
 
