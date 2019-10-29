@@ -51,12 +51,16 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
         .filter(UserFamilyModel.id_user.in_(ids))
         .filter_by(isDeleted=False)
     )
-    
-    if len(participant_ids) > 0:
-        family = list(participant_ids)[0].id_family
-        participants = participants.filter_by(id_family=family)
 
-    participants = participants.all()
+#    if len(participant_ids) > 0:
+#        family = list(participant_ids)[0].id_family
+#        participants = participants.filter_by(id_family=family)
+#
+#    participants = participants.all()
+
+    if len(participant_ids) > 0:
+        family_id = list(participant_ids)[0].id_family
+        participants = participants.filter_by(id_family=family_id)
 
     users = {}
     for participant in participants:
@@ -81,7 +85,7 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
         temp_participant['userAvatar'] = user_info[0]
         temp_participant['userFirstName'] = user_info[1]
         temp_participant['userLastName'] = user_info[2]
-        
+
 
         users[str(participant.id_user)] = temp_participant
 
