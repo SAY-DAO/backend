@@ -457,6 +457,40 @@ class GetUserCredit(Resource):
             return resp
 
 
+class GetUserRole(Resource):
+    @swag_from("./docs/user/role.yml")
+    def get(self, user_id, child_id):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+
+        try:
+            family = (
+                session.query(FamilyModel)
+                .filter_by(id_child=child_id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
+
+            user = (
+                session.query(UserFamilyModel)
+                .filter_by(id_user=user_id)
+                .filter_by(id_family=family.id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
+            
+            resp = make_response(jsonify({"role": user.userRole}), 200)
+
+        except Exception as e:
+            print(e)
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
+
+        finally:
+            session.close()
+            return resp
+
+
 class GetUserSpentCredit(Resource):
     @swag_from("./docs/user/spent.yml")
     def get(self, user_id):
@@ -874,82 +908,82 @@ class AddUser(Resource):
             return resp
 
 
-class Foo(Resource):
-    def get(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+# class Foo(Resource):
+#     def get(self):
+#         session_maker = sessionmaker(db)
+#         session = session_maker()
+#         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
-        try:
-            children = (
-                session.query(ChildModel)
-                .filter_by(isDeleted=False)
-                .filter_by(isMigrated=False)
-                .filter_by(isConfirmed=True)
-                .all()
-            )
-            users = (
-                session.query(UserModel)
-                .filter_by(isDeleted=False)
-                .all()
-            )
-            for c in children:
-                ids = []
-                child = get_child_by_id(session, c.id, with_need=True)
-                pay = 0
+#         try:
+#             children = (
+#                 session.query(ChildModel)
+#                 .filter_by(isDeleted=False)
+#                 .filter_by(isMigrated=False)
+#                 .filter_by(isConfirmed=True)
+#                 .all()
+#             )
+#             users = (
+#                 session.query(UserModel)
+#                 .filter_by(isDeleted=False)
+#                 .all()
+#             )
+#             for c in children:
+#                 ids = []
+#                 child = get_child_by_id(session, c.id, with_need=True)
+#                 pay = 0
 
-                for n in child["Needs"].keys():
-                    if str(child["Needs"][n]["isDone"]).lower() == 'true':
-                        c.doneNeedCount += 1
+#                 for n in child["Needs"].keys():
+#                     if str(child["Needs"][n]["isDone"]).lower() == 'true':
+#                         c.doneNeedCount += 1
 
-                    ids.append(n)
+#                     ids.append(n)
 
-                payments = (
-                    session.query(PaymentModel)
-                    .filter(PaymentModel.id_need.in_(ids))
-                    .filter_by(is_verified=True)
-                )
+#                 payments = (
+#                     session.query(PaymentModel)
+#                     .filter(PaymentModel.id_need.in_(ids))
+#                     .filter_by(is_verified=True)
+#                 )
                 
-                for p in payments:
-                    pay += p.amount
+#                 for p in payments:
+#                     pay += p.amount
                 
-                c.spentCredit = pay
+#                 c.spentCredit = pay
 
-            for u in users:
-                payments = (
-                    session.query(PaymentModel)
-                    .filter_by(id_user=u.id)
-                )
-                for p in payments:
-                    u.spentCredit += p.amount
+#             for u in users:
+#                 payments = (
+#                     session.query(PaymentModel)
+#                     .filter_by(id_user=u.id)
+#                 )
+#                 for p in payments:
+#                     u.spentCredit += p.amount
 
-            tag = (
-                session.query(NeedFamilyModel)
-                .filter_by(id_need=6)
-                .filter_by(isDeleted=True)
-                .first()
-            )
-            if tag is not None:
-                tag.isDeleted = False
+#             tag = (
+#                 session.query(NeedFamilyModel)
+#                 .filter_by(id_need=6)
+#                 .filter_by(isDeleted=True)
+#                 .first()
+#             )
+#             if tag is not None:
+#                 tag.isDeleted = False
 
-            session.commit()
+#             session.commit()
 
-            resp = make_response(dict(message="children done need counts and user spent credit fixed"), 200)
+#             resp = make_response(dict(message="children done need counts and user spent credit fixed"), 200)
 
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
+#         except Exception as e:
+#             print(e)
+#             resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
-        finally:
-            session.close()
-            return resp
+#         finally:
+#             session.close()
+#             return resp
 
 
 """
 API URLs
 """
 
-api.add_resource(Foo, "/api/v2/foo")
+# api.add_resource(Foo, "/api/v2/foo")
 api.add_resource(GetUserById, "/api/v2/user/userId=<user_id>")
 api.add_resource(GetUserByFullName, "/api/v2/user/name=<first_name>&<last_name>")
 api.add_resource(GetUserByBirthPlace, "/api/v2/user/birthPlace=<birth_place>")
@@ -967,6 +1001,7 @@ api.add_resource(GetUserPhoneNumber, "/api/v2/user/phone/userId=<user_id>")
 api.add_resource(GetUserUserName, "/api/v2/user/username/userId=<user_id>")
 api.add_resource(GetUserFullName, "/api/v2/user/fullName/userId=<user_id>")
 api.add_resource(GetUserCredit, "/api/v2/user/credit/userId=<user_id>")
+api.add_resource(GetUserRole, "/api/v2/user/role/userId=<user_id>&childId=<child_id>")
 api.add_resource(GetUserSpentCredit, "/api/v2/user/credit/spent/userId=<user_id>")
 api.add_resource(GetUserChildren, "/api/v2/user/children/userId=<user_id>")
 api.add_resource(GetUserNeeds, "/api/v2/user/needs/userId=<user_id>")
