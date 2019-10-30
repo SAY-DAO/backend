@@ -894,19 +894,45 @@ class Foo(Resource):
                 .all()
             )
             for c in children:
+                ids = []
                 child = get_child_by_id(session, c.id, with_need=True)
+                pay = 0
+
                 for n in child["Needs"].keys():
-                    if child["Needs"][n].isDone:
+                    if str(child["Needs"][n]["isDone"]).lower() == 'true':
                         c.doneNeedCount += 1
+
+                    ids.append(n)
+
+                payments = (
+                    session.query(PaymentModel)
+                    .filter(PaymentModel.id_need.in_(ids))
+                    .filter_by(is_verified=True)
+                )
+                
+                for p in payments:
+                    pay += p.amount
+                
+                c.spentCredit = pay
 
             for u in users:
                 payments = (
                     session.query(PaymentModel)
                     .filter_by(id_user=u.id)
-                    .all()
                 )
                 for p in payments:
                     u.spentCredit += p.amount
+
+            tag = (
+                session.query(NeedFamilyModel)
+                .filter_by(id_need=6)
+                .filter_by(isDeleted=True)
+                .first()
+            )
+            if tag is not None:
+                tag.isDeleted = False
+
+            session.commit()
 
             resp = make_response(dict(message="children done need counts and user spent credit fixed"), 200)
 
