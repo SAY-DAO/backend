@@ -951,14 +951,16 @@ class DeleteChildById(Resource):
                     session.query(ChildNeedModel)
                     .filter_by(isDeleted=False)
                     .filter_by(id_child=child_id)
-                    .all()
                 )
 
                 for need in needs:
                     need.isDeleted = True
 
                 child.isDeleted = True
-                family.isDeleted = True
+
+                if family:
+                    family.isDeleted = True
+
                 child.social_worker_relation.currentChildCount -= 1
                 child.ngo_relation.currentChildrenCount -= 1
 
