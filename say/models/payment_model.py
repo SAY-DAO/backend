@@ -26,7 +26,7 @@ class PaymentModel(base):
     hashed_card_no = Column(String, nullable=True)
     track_id = Column(String, nullable=True)
     verfied_date = Column(Date, nullable=True)
-    donate = Column(FLOAT, default=0)
+    donate = Column(Integer, default=0)
 
     need = relationship(
         "NeedModel",
