@@ -15,6 +15,6 @@ RUN pip install -r requirements.txt
 COPY . /app
 
 
-CMD ["/scripts/run.sh"]
+CMD ["./scripts/run.sh"]
 
 
