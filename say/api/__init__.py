@@ -25,6 +25,8 @@ from flask_limiter.util import get_remote_address
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from logging import debug, basicConfig, DEBUG
+from flask_caching import Cache
+
 
 # from hazm import *
 from flask_cors import CORS
@@ -59,25 +61,35 @@ ALLOWED_VOICE_EXTENSIONS = {"wav", "m4a", "wma", "mp3", "aac", "ogg"}
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
 
 app = Flask(__name__)
+app.config['JSON_SORT_KEYS'] = False
 app.config['BASE_URL'] = 'sayapp.company'
 app.config['SQLALCHEMY_DATABASE_URI'] = conf['dbUrl']
 app.config['SANDBOX'] = True
 app.config['IDPAY_API_KEY'] = "83bdbfa4-04e6-4593-ba07-3e0652ae726d"
-app.config.update(conf)
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
-app.config["DEBUG"] = True
+app.config["DEBUG"] = False
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-
+app.config.update({
+    "CACHE_TYPE": "simple", # Flask-Caching related configs
+    "CACHE_DEFAULT_TIMEOUT": 30
+})
 app.config["SWAGGER"] = {
     # "swagger_version": "3.20.9",
     "specs": [
         {"version": "2.0", "title": "SAY API", "endpoint": "api_v2", "route": "/api/v2"}
     ]
 }
+app.config.update(conf)
+
+cache = Cache(app)
 
 Swagger(app)
 
-limiter = Limiter(app, key_func=get_remote_address, default_limits=["100 per minute"])
+limiter = Limiter(
+    app,
+    key_func=get_remote_address,
+    default_limits=["100 per minute"],
+)
 
 mail = Mail(app)
 

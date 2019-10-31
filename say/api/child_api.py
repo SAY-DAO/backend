@@ -1,3 +1,6 @@
+from collections import OrderedDict
+
+from . import *
 from say.api.need_api import get_need
 from say.models.child_model import ChildModel
 from say.models.child_need_model import ChildNeedModel
@@ -8,7 +11,7 @@ from say.models.ngo_model import NgoModel
 from say.models.social_worker_model import SocialWorkerModel
 from say.models.user_family_model import UserFamilyModel
 from say.models.user_model import UserModel
-from . import *
+
 
 # api_bp = Blueprint('api', __name__)
 # api = Api(api_bp)
@@ -121,7 +124,13 @@ def get_child_need(session, child_id, urgent=False, done=False,
 
 class GetAllChildren(Resource):
     @swag_from("./docs/child/all.yml")
+    @cache.cached(timeout=2)
     def get(self, confirm):
+        args = request.args
+        take = args.get('take', 100)
+        skip = args.get('skip', 0)
+        ngo_id = args.get('ngo_id', None)
+
         session_maker = sessionmaker(db)
         session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
@@ -134,21 +143,25 @@ class GetAllChildren(Resource):
                 .filter_by(isMigrated=False)
             )
 
+            if ngo_id:
+                children_query = children_query.filter_by(id_ngo=ngo_id)
+
             if int(confirm) == 0:
                 children_query = children_query.filter_by(isConfirmed=False)
             elif int(confirm) == 1:
                 children_query = children_query.filter_by(isConfirmed=True)
 
-            children = children_query.all()
-            if len(children) == 0:
-                resp = make_response(jsonify({}), 200)
+            children_query = children_query \
+                .order_by(ChildModel.generatedCode.asc())
 
-            result = {}
+            children = children_query.offset(skip).limit(take)
+
+            result = OrderedDict(
+                totalCount=children_query.count(),
+                children=[],
+            )
             for child in children:
-                result[str(child.id)] = get_child_by_id(session,
-                                                        child.id,
-                                                        confirm=confirm,
-                                                        with_need=True)
+                result['children'].append(obj_to_dict(child))
 
             resp = make_response(jsonify(result), 200)
 
@@ -224,6 +237,7 @@ class GetChildrenOfUserByUserId(Resource):
 
 class GetChildNeeds(Resource):
     @swag_from("./docs/child/needs.yml")
+
     def get(self, child_id, confirm):
         session_maker = sessionmaker(db)
         session = session_maker()

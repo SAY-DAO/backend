@@ -14,3 +14,4 @@ requests
 flasgger
 pyotp
 gunicorn
+Flask-Caching
