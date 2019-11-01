@@ -117,7 +117,7 @@ class AddUserToFamily(Resource):
                 .first()
             )
             
-            if duplicate_family is None:
+            if duplicate_family is not None:
                 resp = make_response(jsonify({"message": "You already had this child in your family!"}), 499)
                 session.close()
                 return resp
