@@ -49,7 +49,7 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
     participants = (
         session.query(UserFamilyModel)
         .filter(UserFamilyModel.id_user.in_(ids))
-        .filter_by(isDeleted=False)
+        # .filter_by(isDeleted=False)
     )
 
 #    if len(participant_ids) > 0:

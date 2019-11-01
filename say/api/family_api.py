@@ -109,6 +109,19 @@ class AddUserToFamily(Resource):
             # user_role = int(request.json['user_role'])
             user_role = int(request.json["userRole"])
 
+            duplicate_family = (
+                session.query(UserFamilyModel)
+                .filter_by(id_user=user_id)
+                .filter_by(id_family=family_id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
+            
+            if duplicate_family is None:
+                resp = make_response(jsonify({"message": "You already had this child in your family!"}), 499)
+                session.close()
+                return resp
+
             new_member = UserFamilyModel(
                 id_user=id_user, id_family=id_family, userRole=user_role
             )
