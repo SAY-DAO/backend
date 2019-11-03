@@ -14,6 +14,18 @@ from say.models.revoked_token_model import RevokedTokenModel
 Panel Authentication APIs
 """
 
+def create_sw_access_token(social_worker, fresh=False):
+    return create_access_token(
+        identity=social_worker.id,
+        fresh=fresh,
+        user_claims=dict(
+            username=social_worker.userName,
+            firstName=social_worker.firstName,
+            lastName=social_worker.lastName,
+            avatarUrl=social_worker.avatarUrl,
+        )
+    )
+
 
 class PanelLogin(Resource):
 
@@ -24,19 +36,20 @@ class PanelLogin(Resource):
         resp = {"message": "Something is Wrong!"}
 
         try:
-
             if "username" in request.form.keys():
                 username = request.form["username"]
             else:
-                return Response(
-                    json.dumps({"message": "username is needed!!!"}), status=500
+                return make_response(
+                    jsonify({"message": "username is needed!!!"}),
+                    500,
                 )
 
             if "password" in request.form.keys():
                 password = md5(request.form["password"].encode()).hexdigest()
             else:
-                return Response(
-                    json.dumps({"message": "password is needed!!!"}), status=500
+                return make_response(
+                    jsonify({"message": "password is needed!!!"}),
+                    500,
                 )
 
             social_worker = (
@@ -50,38 +63,32 @@ class PanelLogin(Resource):
                     social_worker.lastLogin = datetime.utcnow()
                     session.commit()
 
-                    access_token = create_access_token(
-                        identity = social_worker.userName
-                    )
+                    access_token = create_sw_access_token(social_worker)
 
                     refresh_token = create_refresh_token(
-                        identity = social_worker.userName
+                        identity = social_worker.id,
                     )
 
-                    resp = Response(
-                        json.dumps(
-                            {
-                                "message": "Login Successful",
-                                "access_token": f"Bearer {access_token}",
-                                "refresh_token": f"Bearer {refresh_token}",
-                            }
-                        ),
-                        status=200,
-                    )
+                    resp = jsonify({
+                        "message": "Login Successful",
+                        "access_token": f"Bearer {access_token}",
+                        "refresh_token": f"Bearer {refresh_token}",
+                    })
                 else:
-                    resp = Response(
-                        json.dumps({"message": "UserName or Password is Wrong"}),
-                        status=303,
+                    resp = make_response(
+                        jsonify({"message": "UserName or Password is Wrong"}),
+                        303,
                     )
 
             else:
-                resp = Response(
-                    json.dumps({"message": "Please Register First"}), status=303
+                resp = make_response(
+                    jsonify({"message": "Please Register First"}),
+                    303,
                 )
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "something is wrong"}), status=500)
+            resp = make_response(jsonify({"message": str(e)}), 500)
 
         finally:
             session.close()
@@ -93,9 +100,13 @@ class PanelTokenRefresh(Resource):
     @jwt_refresh_token_required
     @swag_from("./docs/panel_auth/refresh.yml")
     def post(self):
-        current_user = get_jwt_identity()
-        access_token = create_access_token(identity = current_user)
-        return {'access_token': f'Bearer {access_token}'}
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        id = get_jwt_identity()
+        social_worker = session.query(SocialWorkerModel).get(id)
+        session.close()
+        access_token = create_sw_access_token(social_worker, fresh=True)
+        return jsonify({'access_token': f'Bearer {access_token}'})
 
 
 class PanelLogoutAccess(Resource):
