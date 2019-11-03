@@ -124,7 +124,7 @@ def get_child_need(session, child_id, urgent=False, done=False,
 
 class GetAllChildren(Resource):
     @swag_from("./docs/child/all.yml")
-    @cache.cached(timeout=2)
+    #@cache.cached(timeout=10, query_string=True)
     def get(self, confirm):
         args = request.args
         take = args.get('take', 100)
