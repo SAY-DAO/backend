@@ -16,8 +16,10 @@ parameters:
     type: string
 
 responses:
-  500:
-    description: Error occurred somewhere!
+  400:
+    description: Username or Password is Wrong 
+  401:
+    description: Please Register First
 
   200:
     description: Ok

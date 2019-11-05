@@ -257,17 +257,17 @@ class Login(Resource):
                 else:
                     resp = Response(
                         json.dumps({"message": "Username or Password is Wrong"}),
-                        status=303,
+                        status=400,
                     )
 
             else:
                 resp = Response(
-                    json.dumps({"message": "Please Register First"}), status=303
+                    json.dumps({"message": "Please Register First"}), status=401
                 )
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "something is wrong"}), status=500)
+            resp = Response(json.dumps({"message": "something is wrong"}), status=400)
 
         finally:
             session.close()
