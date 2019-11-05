@@ -1,13 +1,16 @@
 from datetime import datetime, timedelta
 from random import randint
 
-from flask_jwt_extended import create_access_token, create_refresh_token
+from flask_jwt_extended import (
+    create_access_token, create_refresh_token, jwt_required,
+    jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
+)
 from flask_mail import Message
 
 from . import *
 from say.models.user_model import UserModel
 from say.models.verify_model import VerifyModel
-
+from say.models.revoked_token_model import RevokedTokenModel
 
 """
 Authentication APIs
@@ -203,16 +206,16 @@ class Login(Resource):
 
         try:
 
-            if "username" in request.json.keys():
-                username = request.json["username"]
+            if "username" in request.form.keys():
+                username = request.form["username"]
             else:
                 resp = Response(
                     json.dumps({"message": "userName is needed !!!"}), status=500
                 )
                 return
 
-            if "password" in request.json.keys():
-                password = request.json["password"]
+            if "password" in request.form.keys():
+                password = request.form["password"]
             else:
                 resp = Response(
                     json.dumps({"message": "password is needed !!!"}), status=500
@@ -271,27 +274,43 @@ class Login(Resource):
             return resp
 
 
-class Logout(Resource):
-    def post(self, user_id):
+class LogoutAccess(Resource):
+    @jwt_required
+    @swag_from("./docs/auth/logout-access.yml")
+    def post(self):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "fuck"}
-
+        jti = get_raw_jwt()['jti']
+        msg = None
         try:
-            user = session.query(UserModel).filter_by(id=user_id).first()
-            user.token = ""
+            revoked_token = RevokedTokenModel(jti=jti)
+            session.add(revoked_token)
             session.commit()
-            resp = Response(
-                json.dumps({"message": "user is successfully logged out."}), status=200
-            )
-
-        except Exception as e:
-            print(e)
-            resp = Response(json.dumps({"message": "Something is Wrong!"}), status=500)
-
+            msg = {'message': 'Access token has been revoked'}
+        except:
+            msg = {'message': 'Something went wrong'}, 500
         finally:
             session.close()
-            return resp
+            return msg
+
+
+class LogoutRefresh(Resource):
+    @jwt_refresh_token_required
+    @swag_from("./docs/auth/logout-refresh.yml")
+    def post(self):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        jti = get_raw_jwt()['jti']
+        try:
+            revoked_token = RevokedTokenModel(jti=jti)
+            session.add(revoked_token)
+            session.commit()
+            msg = {'message': 'Refresh token has been revoked'}
+        except:
+            msg = {'message': 'Something went wrong'}, 500
+        finally:
+            session.close()
+            return msg
 
 
 class Verify(Resource):
@@ -399,6 +418,7 @@ API URLs
 api.add_resource(CheckUser, "/api/v2/auth/checkUserName")
 api.add_resource(RegisterUser, "/api/v2/auth/register")
 api.add_resource(Login, "/api/v2/auth/login")
-api.add_resource(Logout, "/api/v2/auth/logout/userid=<user_id>")
+api.add_resource(LogoutAccess, "/api/v2/auth/logout/token")
+api.add_resource(LogoutRefresh, "/api/v2/auth/logout/refresh")
 api.add_resource(Verify, "/api/v2/auth/verify/userid=<user_id>")
 api.add_resource(VerifyResend, "/api/v2/auth/verify/resend/userid=<user_id>")

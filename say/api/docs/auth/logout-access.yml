@@ -1,0 +1,22 @@
+Logout (Access Token) API
+---
+
+tags:
+  - Auth API
+
+parameters:
+- name: Authorization
+  in: header
+  description: Access Token
+  required: true
+  type: string
+      
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: revoked_token

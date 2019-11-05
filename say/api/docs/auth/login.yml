@@ -14,7 +14,6 @@ parameters:
     name: password
     required: true
     type: string
-    format: email
 
 responses:
   500:
