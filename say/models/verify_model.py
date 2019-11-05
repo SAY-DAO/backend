@@ -5,7 +5,7 @@ from say.models.user_model import UserModel
 
 
 def expire_at():
-    return datetime.utcnow() + timedelta(days=1)
+    return datetime.utcnow() + timedelta(minutes=2)
 
 
 """

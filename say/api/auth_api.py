@@ -155,16 +155,6 @@ class RegisterUser(Resource):
                 session.add(new_user)
                 session.flush()
 
-                access_token = create_access_token(
-                    identity=new_user.id,
-                    headers=dict(email=email),
-                )
-
-                refresh_token = create_refresh_token(
-                    identity=new_user.id,
-                    headers=dict(email=email),
-                )
-
                 code = randint(100000, 999999)
                 verify = VerifyModel(user=new_user, code=code)
                 session.add(verify)
@@ -172,14 +162,7 @@ class RegisterUser(Resource):
                 send_verify_email(new_user.emailAddress, verify.code)
 
                 resp = make_response(
-                    jsonify(
-                        {
-                            "message": "Register Successful",
-                            "accessToken": f"Bearer {access_token}",
-                            "refreshToken": f"Bearer {refresh_token}",
-                            "user": obj_to_dict(new_user),
-                        },
-                    ),
+                    jsonify(obj_to_dict(new_user)),
                     200,
                 )
                 session.commit()
@@ -325,45 +308,48 @@ class Verify(Resource):
         try:
             user_id = int(user_id)
             user = session.query(UserModel).filter_by(id=user_id).first()
-            if user.isVerified:
-                resp = Response(
-                    json.dumps({"message": "User is already verified"}), status=200
-                )
-                return
-
             verify = session.query(VerifyModel).filter_by(user_id=user_id).first()
-            if (
-                verify is None
-                or "verifyCode" not in request.json.keys()
-            ):
-                resp = Response(
-                    json.dumps({"message": "Something is Wrong!"}), status=400
-                )
-                return
+            sent_verify_code = request.form.get('verifyCode', 'invalid')
 
-            sent_verify_code = str(request.json["verifyCode"])
-            sent_verify_code = sent_verify_code.replace('-', '')
-            sent_verify_code = int(sent_verify_code)
-            if (
-                verify.expire_at < datetime.utcnow()
-                or verify.code != sent_verify_code
-            ):
-                resp = Response(
-                    json.dumps({"message": "verifyCode is Invalid!"}), status=500
-                )
-                return
+            if not user.isVerified:
+                error = None
+                if (
+                    verify is None
+                    or str(verify.code) != sent_verify_code.replace('-', '')
+                ):
+                    error = 'Verify code is invalid'
 
-            user.isVerified = True
-            session.commit()
-            resp = Response(
-                json.dumps({"message": "User successfully verified."}), status=200
+                elif verify.expire_at < datetime.utcnow():
+                    error = 'Verify code is expired'
+
+                if error:
+                    raise Exception(error)
+
+            access_token = create_access_token(
+                identity=user.id,
             )
+
+            refresh_token = create_refresh_token(
+                identity=user.id,
+            )
+            user.isVerified = True
+
+            resp = make_response(
+                jsonify({
+                    "message": "User successfully verified",
+                    "accessToken": f"Bearer {access_token}",
+                    "refreshToken": f"Bearer {refresh_token}",
+                    "user": obj_to_dict(user),
+                }),
+                200,
+            )
+            session.commit()
 
         except Exception as e:
             print(e)
-            resp = Response(
-                json.dumps({"message": "Something is Wrong!", "error": str(e)}),
-                status=500,
+            resp = make_response(
+                jsonify({"message": str(e)}),
+                400,
             )
 
         finally:
