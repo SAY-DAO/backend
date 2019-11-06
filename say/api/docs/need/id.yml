@@ -112,3 +112,7 @@ responses:
           type: string
           description: the last date that the need has been updated
 
+        details:
+          type: string
+          description: Details
+

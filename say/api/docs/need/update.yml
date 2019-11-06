@@ -62,6 +62,10 @@ parameters:
     in: formData
     type: integer
 
+  - name: details
+    in: formData
+    type: string
+
 responses:
   500:
     description: Error occurred somewhere!

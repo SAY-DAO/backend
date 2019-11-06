@@ -553,6 +553,9 @@ class UpdateNeedById(Resource):
             if "doing_duration" in request.form.keys():
                 primary_need.doing_duration = int(request.form["doing_duration"])
 
+            if "details" in request.form.keys():
+                primary_need.details = request.form["details"]
+
             primary_need.lastUpdate = datetime.utcnow()
 
             secondary_need = obj_to_dict(primary_need)
@@ -743,7 +746,7 @@ class AddNeed(Resource):
             need_type = request.form["type"]
             description = request.form["description"]
             description_summary = request.form["descriptionSummary"]
-
+            details = request.form.get("details", '')
             created_at = datetime.utcnow()
             last_update = datetime.utcnow()
 
@@ -772,6 +775,7 @@ class AddNeed(Resource):
                 lastUpdate=last_update,
                 child=child,
                 doing_duration=doing_duration,
+                details=details,
             )
 
             debug(f'new need: {obj_to_dict(new_need)}')

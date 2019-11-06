@@ -37,8 +37,14 @@ from ..payment import IDPay
 
 basicConfig(level=DEBUG)
 
-with open("./config.json") as config_file:
-    conf = json.load(config_file)
+conf = {
+    'dbUrl': 'postgresql://postgres:postgres@localhost/say_en'
+}
+try:
+    with open("./config.json") as config_file:
+        conf = json.load(config_file)
+except:
+    pass
 
 # db = create_engine('postgresql://postgres:13771998@localhost:5432/postgres')
 db = create_engine(conf["dbUrl"])
