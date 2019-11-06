@@ -18,6 +18,7 @@ class NeedModel(base):
     isUrgent = Column(Boolean, nullable=False)
     description = Column(Text, nullable=False)
     descriptionSummary = Column(Text, nullable=False)
+    details = Column(Text, nullable=True)
     cost = Column(Integer, nullable=False)
     progress = Column(Integer, nullable=False, default=0)
     paid = Column(Integer, nullable=False, default=0)
