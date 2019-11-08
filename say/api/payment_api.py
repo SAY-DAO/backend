@@ -1,3 +1,4 @@
+from urllib.parse import urljoin
 import random
 from datetime import datetime
 
@@ -112,7 +113,7 @@ class Payment(Resource):
                 "phone": user.phoneNumber,
                 "mail": 'info@say.company',
                 "desc": need.name,
-                "callback": f"{app.config['BASE_URL']}/api/v2/payment/verify"
+                "callback": urljoin(app.config['BASE_URL'], 'api/v2/payment/verify'),
             }
 
             new_transaction = idpay.new_transaction(**api_data)
