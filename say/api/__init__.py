@@ -99,8 +99,12 @@ limiter = Limiter(
 
 mail = Mail(app)
 
-app.config['JWT_BLACKLIST_ENABLED'] = True
-app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
+app.config.update({
+    'JWT_ACCESS_TOKEN_EXPIRES': 30 * 60, # 30 mins
+    'JWT_REFRESH_TOKEN_EXPIRES': 3 * 30 * 24 * 3600, # 3 months
+    'JWT_BLACKLIST_ENABLED': True,
+    'JWT_BLACKLIST_TOKEN_CHECKS': ['access', 'refresh'],
+})
 jwt = JWTManager(app)
 
 migrate = Migrate(app, db)
