@@ -8,59 +8,165 @@
 
         <!-- Font -->
         <link rel="stylesheet" href="font/WebFonts/css/fontiran.css" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto:100,400&display=swap" rel="stylesheet" type="text/css">
 
     </head>
-    <body style="margin:0; padding : 0; font-family: iranyekan">
-        <div style="background-color : #F1F1F1 ; height : 250px ; width:100%; text-align : center; padding-top : 15%;">
-            <div style="margin-bottom : 15px;">
-                <img src="../../../public/resources/img/logo.png" style="max-width:182px; width:40%; height : auto; border-radius : 15px" />
-            </div>
-            <span style="color:#666; font-size : 16px;font-weight : 500;">What You Hear Is Real</span><br/>
-            <span style="color : #F05A31; font-size: 12px; font-weight : 500; line-height : 25px" >Building A Platform To Share Wealth And Love, Literally</span>
-
+    <body style="
+            margin: 0; 
+            padding : 0; 
+            font-family: 'Roboto', Roboto;
+            padding-bottom: 50px;">
+      
+      <div style="
+            background-color : #F1F1F1; 
+            height : 250px; 
+            width: 100%; 
+            text-align : center; 
+            padding : 50px 0;
+            margin-bottom: 30px;">
+        
+        <div style="margin-bottom : 30px;">
+          <img src="../../../public/resources/img/logo.png" style="
+                                                              max-width:182px; 
+                                                              width: 40%; 
+                                                              height: auto; 
+                                                              border-radius : 15px;" />
         </div>
-        <div style="text-align:center">
-          <h3>Dear {{user.firstName}} {{user.lastName}}</h3>
-            <h6 style="color : #1AAE0E">Payment Successful</h6>
-            <hr style="background-color : #CDCDCD; width: 90%;"/>
-            <div style="width:100%; margin-top : 15px; margin-bottom : 15px;">
-                <span style="width: 45%; display:inline-block; text-align: left ; color:#666;
-                font-size: 14px; font-weight : 500; ">{{payment.amount + payment.donate}} Toman</span>
-                <span style="width:45%; display:inline-block: text-align : right: color :
-                  color:#666; font-size : 12px;">Total Amount</span>
-            </div>
-            <div style="width:100%; margin-top : 15px; margin-bottom : 15px;">
-                <span style="width: 45%; display:inline-block; text-align: left ; color:#666;
-                font-size: 14px; font-weight : 500; ">{{payment.amount}} Toman</span>
-                <span style="width:45%; display:inline-block: text-align : right: color :
-                  color:#666; font-size : 12px;">Amount</span>
-            </div>
-            <div style="width:100%; margin-top : 15px; margin-bottom : 15px;">
-                <span style="width: 45%; display:inline-block; text-align: left ; color:#666;
-                font-size: 14px; font-weight : 500; ">{{payment.donate}} Toman</span>
-                <span style="width:45%; display:inline-block: text-align : right: color :
-                  color:#666; font-size : 12px;">Donation</span>
-            </div>
-            <hr style="background-color : #CDCDCD; width: 90%;"/>
-            <div style="width:100%; margin-top : 15px; margin-bottom : 15px;">
-                <span style="width: 45%; display:inline-block; text-align: left ; color:#666;
-                font-size: 14px; font-weight : 500; ">{{payment.track_id}}</span>
-                <span style="width:45%; display:inline-block: text-align : right: color :
-                  color:#666; font-size : 12px;">Track ID</span>
-            </div><hr style="background-color : #CDCDCD; width: 90%;"/>
-            <div style="width:100%; margin-top : 15px; margin-bottom : 15px;">
-                <span style="width: 45%; display:inline-block; text-align: left ; color:#666;
-                font-size: 14px; font-weight : 500; ">{{payment.card_no}}</span>
-                <span style="width:45%; display:inline-block: text-align : right: color :
-                  color:#666; font-size : 12px;">Card Number</span>
-            </div>
+        <span style="
+                color:#666; 
+                font-size: 16px;
+                font-weight: 500;">What You Hear Is Real</span>
+        <br/>
+        <span style="
+                color: #F05A31; 
+                font-size: 12px; 
+                font-weight: 500; 
+                line-height : 25px;">Building A Platform To Share Wealth And Love, Literally</span>
+      </div>
 
-            <a style="text-decoration:none; color : #fff" href={{need_url}}>
-              <div style=" margin:0 auto; margin-top : 65px; background: linear-gradient(90deg,
-                #F59E39 0%, #F05A31 100%);border-radius: 48px; height:35px; width:300px;
-                padding-top :15px;"> Back To SAY </div>
-            </a>
+      <div style="text-align:center">
+
+        <h3>Dear {{user.firstName}} {{user.lastName}}</h3>
+
+        <h6 style="color : #1AAE0E">Payment Successful</h6>
+        <hr style="background-color : #CDCDCD; width: 90%;"/>
+
+        <div style="
+              width: 100%; 
+              margin-top: 15px; 
+              margin-bottom : 15px;">
+            <span style="
+                    width: 44%; 
+                    display: inline-block; 
+                    text-align: left; 
+                    color:#666;
+                    font-size: 14px; 
+                    font-weight : 500;">{{payment.amount + payment.donate}} Toman</span>
+            <span style="
+                    width:44%; 
+                    display:inline-block; 
+                    text-align : right;
+                    color:#666; 
+                    font-size: 12px;">Total Amount</span>
         </div>
+
+        <div style="
+              width: 100%; 
+              margin-top: 15px; 
+              margin-bottom: 15px;">
+            <span style="
+                    width: 44%; 
+                    display:inline-block; 
+                    text-align: left; 
+                    color:#666;
+                    font-size: 14px;
+                    font-weight : 500;">{{payment.amount}} Toman</span>
+            <span style="
+                    width: 44%; 
+                    display: inline-block; 
+                    text-align: right;
+                    color:#666; 
+                    font-size : 12px;">Amount</span>
+        </div>
+
+        <div style="
+              width:100%; 
+              margin-top : 15px; 
+              margin-bottom : 15px;">
+            <span style="
+                    width: 44%; 
+                    display:inline-block; 
+                    text-align: left; 
+                    color:#666;
+                    font-size: 14px; 
+                    font-weight : 500;">{{payment.donate}} Toman</span>
+            <span style="
+                    width: 44%; 
+                    display :inline-block; 
+                    text-align: right;
+                    color:#666; 
+                    font-size: 12px;">Donation</span>
+        </div>
+
+        <hr style="background-color : #CDCDCD; width: 90%;"/>
+
+        <div style="
+              width:100%; 
+              margin-top : 15px; 
+              margin-bottom : 15px;">
+            <span style="
+                    width: 44%; 
+                    display:inline-block; 
+                    text-align: left; 
+                    color:#666;
+                    font-size: 14px; 
+                    font-weight : 500;">{{payment.track_id}}</span>
+            <span style="
+                    width: 44%; 
+                    display: inline-block; 
+                    text-align : right;
+                    color:#666; 
+                    font-size: 12px;">Track ID</span>
+        </div>
+        <hr style="background-color: #CDCDCD; width: 90%;"/>
+
+        <div style="
+              width: 100%; 
+              margin-top: 15px; 
+              margin-bottom: 15px;">
+            <span style="
+                    width: 44%; 
+                    display:inline-block; 
+                    text-align: left; 
+                    color:#666;
+                    font-size: 14px; 
+                    font-weight : 500;">{{payment.card_no}}</span>
+            <span style="
+                    width: 44%; 
+                    display: inline-block; 
+                    text-align: right;
+                    color:#666; 
+                    font-size: 12px;">Card Number</span>
+        </div>
+
+        <a style="
+            text-decoration: none; 
+            color: #fff;
+            width: 230px;
+            margin: 0 auto; 
+            display: block;
+            border-radius: 48px;" href={{need_url}}>
+          <div style="
+                margin-top: 65px; 
+                background: linear-gradient(90deg, #F59E39 0%, #F05A31 100%);
+                border-radius: 48px; 
+                height: 40px;
+                padding-top: 7px;
+                padding-right: 10px;
+                padding-left: 10px;
+                line-height: 30px;"> Back To SAY </div>
+        </a>
+      </div>
     </body>
 </html>
 
