@@ -85,6 +85,14 @@ app.config["SWAGGER"] = {
         {"version": "2.0", "title": "SAY API", "endpoint": "api_v2", "route": "/api/v2"}
     ]
 }
+
+app.config.update({
+    'JWT_ACCESS_TOKEN_EXPIRES': 24 * 3600, # 1 day
+    'JWT_REFRESH_TOKEN_EXPIRES': 3 * 30 * 24 * 3600, # 3 months
+    'JWT_BLACKLIST_ENABLED': True,
+    'JWT_BLACKLIST_TOKEN_CHECKS': ['access', 'refresh'],
+})
+
 app.config.update(conf)
 
 cache = Cache(app)
@@ -99,12 +107,6 @@ limiter = Limiter(
 
 mail = Mail(app)
 
-app.config.update({
-    'JWT_ACCESS_TOKEN_EXPIRES': 24 * 3600, # 1 day
-    'JWT_REFRESH_TOKEN_EXPIRES': 3 * 30 * 24 * 3600, # 3 months
-    'JWT_BLACKLIST_ENABLED': True,
-    'JWT_BLACKLIST_TOKEN_CHECKS': ['access', 'refresh'],
-})
 jwt = JWTManager(app)
 
 migrate = Migrate(app, db)
