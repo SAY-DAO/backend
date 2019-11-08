@@ -16,6 +16,20 @@ from say.models.revoked_token_model import RevokedTokenModel
 Authentication APIs
 """
 
+
+def create_user_access_token(user, fresh=False):
+    return create_access_token(
+        identity=user.id,
+        fresh=fresh,
+        user_claims=dict(
+            username=user.userName,
+            firstName=user.firstName,
+            lastName=user.lastName,
+            avatarUrl=user.avatarUrl,
+        )
+    )
+
+
 def datetime_converter(o):
     if isinstance(o, datetime):
         return o.__str__()
@@ -216,15 +230,8 @@ class Login(Resource):
                     user.lastLogin = datetime.utcnow()
                     session.commit()
 
-                    access_token = create_access_token(
-                        identity=user.id,
-                        headers=dict(email=user.emailAddress),
-                    )
-
-                    refresh_token = create_refresh_token(
-                        identity=user.id,
-                        headers=dict(email=user.emailAddress),
-                    )
+                    access_token = create_user_access_token(user)
+                    refresh_token = create_refresh_token(identity=user.id)
 
                     resp = make_response(
                         jsonify(
@@ -325,14 +332,10 @@ class Verify(Resource):
                 if error:
                     raise Exception(error)
 
-            access_token = create_access_token(
-                identity=user.id,
-            )
-
-            refresh_token = create_refresh_token(
-                identity=user.id,
-            )
             user.isVerified = True
+
+            access_token = create_user_access_token(user)
+            refresh_token = create_refresh_token(identity=user.id)
 
             resp = make_response(
                 jsonify({
@@ -396,6 +399,20 @@ class VerifyResend(Resource):
             return resp
 
 
+class TokenRefresh(Resource):
+
+    @jwt_refresh_token_required
+    @swag_from("./docs/auth/refresh.yml")
+    def post(self):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        id = get_jwt_identity()
+        user = session.query(UserModel).get(id)
+        session.close()
+        access_token = create_user_access_token(user, fresh=True)
+        return jsonify({'access_token': f'Bearer {access_token}'})
+
+
 """
 API URLs
 """
@@ -406,5 +423,6 @@ api.add_resource(RegisterUser, "/api/v2/auth/register")
 api.add_resource(Login, "/api/v2/auth/login")
 api.add_resource(LogoutAccess, "/api/v2/auth/logout/token")
 api.add_resource(LogoutRefresh, "/api/v2/auth/logout/refresh")
+api.add_resource(TokenRefresh, "/api/v2/auth/refresh")
 api.add_resource(Verify, "/api/v2/auth/verify/userid=<user_id>")
 api.add_resource(VerifyResend, "/api/v2/auth/verify/resend/userid=<user_id>")

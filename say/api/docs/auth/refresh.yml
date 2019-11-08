@@ -1,0 +1,22 @@
+Refresh Token API
+---
+
+tags:
+  - Auth API
+
+parameters:
+- name: Authorization
+  in: header
+  description: Refresh Token
+  required: true
+  type: string
+      
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+
+    schema:
+      id: user_model
