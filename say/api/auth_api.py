@@ -410,7 +410,7 @@ class TokenRefresh(Resource):
         user = session.query(UserModel).get(id)
         session.close()
         access_token = create_user_access_token(user, fresh=True)
-        return jsonify({'access_token': f'Bearer {access_token}'})
+        return jsonify({'accessToken': f'Bearer {access_token}'})
 
 
 """
