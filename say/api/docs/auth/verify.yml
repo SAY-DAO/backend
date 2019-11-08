@@ -10,7 +10,7 @@ parameters:
     required: true
     type: integer
 
-  - in: body
+  - in: formData
     name: verifyCode
     required: true
     type: string
