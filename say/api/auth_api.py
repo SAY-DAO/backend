@@ -97,7 +97,7 @@ class RegisterUser(Resource):
         resp = {"message": "something is wrong"}
         try:
             if "username" in request.json.keys():
-                username = request.json["username"]
+                username = request.json["username"].lower()
             else:
                 resp = Response(
                     json.dumps({"message": "userName is needed !!!"}), status=500
@@ -113,7 +113,7 @@ class RegisterUser(Resource):
                 return
 
             if "email" in request.json.keys():
-                email = request.json["email"]
+                email = request.json["email"].lower()
             else:
                 resp =  Response(json.dumps({"message": "email is needed"}), status=500)
                 return
@@ -137,12 +137,15 @@ class RegisterUser(Resource):
             alreadyExist = (
                 session.query(UserModel)
                 .filter_by(isDeleted=False)
-                .filter_by(userName=username)
+                .filter(or_(
+                    UserModel.userName==username,
+                    UserModel.emailAddress==email,
+                ))
                 .first()
             )
             if alreadyExist is not None:
                 resp = Response(
-                    json.dumps({"status": False, "Message": "User is Already existed"}),
+                    json.dumps({"status": False, "Message": "Username or email already existed"}),
                     status=500,
                 )
             else:
@@ -205,7 +208,7 @@ class Login(Resource):
         try:
 
             if "username" in request.form.keys():
-                username = request.form["username"]
+                username = request.form["username"].lower()
             else:
                 resp = Response(
                     json.dumps({"message": "userName is needed !!!"}), status=500
@@ -238,7 +241,9 @@ class Login(Resource):
                             session.add(verify)
 
                         verify.code = randint(100000, 999999)
-                        verify.expire_at = datetime.utcnow() + timedelta(minutes=60)
+                        verify.expire_at = datetime.utcnow() + timedelta(
+                            minutes=app.config['VERIFICATION_EMAIL_MAXAGE']
+                        )
 
                         session.commit()
                         send_verify_email(user.emailAddress, verify.code)
@@ -407,7 +412,9 @@ class VerifyResend(Resource):
                 session.add(verify)
 
             verify.code = randint(100000, 999999)
-            verify.expire_at = datetime.utcnow() + timedelta(minutes=60)
+            verify.expire_at = datetime.utcnow() + timedelta(
+                minutes=app.config['VERIFICATION_EMAIL_MAXAGE']
+            )
 
             session.commit()
             send_verify_email(user.emailAddress, verify.code)

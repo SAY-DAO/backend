@@ -93,6 +93,8 @@ app.config.update({
     'JWT_BLACKLIST_TOKEN_CHECKS': ['access', 'refresh'],
 })
 
+app.config['VERIFICATION_EMAIL_MAXAGE'] = 2 # minutes
+
 app.config.update(conf)
 
 cache = Cache(app)

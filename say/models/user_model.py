@@ -20,7 +20,7 @@ class UserModel(base):
     avatarUrl = Column(String, nullable=True)
     flagUrl = Column(String, nullable=True)
     phoneNumber = Column(String, nullable=True)
-    emailAddress = Column(String, nullable=True)
+    emailAddress = Column(String, nullable=True, unique=True)
     gender = Column(Boolean, nullable=True)  # real country codes
     city = Column(Integer, nullable=False)  # 1:tehran | 2:karaj
     country = Column(Integer, nullable=False)
