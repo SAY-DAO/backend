@@ -111,7 +111,7 @@ class Payment(Resource):
                 "amount": total_amount * 10, # Converting Toman to Rial
                 "name": user.lastName,
                 "phone": user.phoneNumber,
-                "mail": 'info@say.company',
+                "mail": user.emailAddress,
                 "desc": need.name,
                 "callback": urljoin(app.config['BASE_URL'], 'api/v2/payment/verify'),
             }
