@@ -145,7 +145,10 @@ class RegisterUser(Resource):
             )
             if alreadyExist is not None:
                 resp = Response(
-                    json.dumps({"status": False, "Message": "Username or email already existed"}),
+                    json.dumps({
+                        "status": False,
+                        "Message": "Username or email already exists"}
+                    ),
                     status=500,
                 )
             else:
