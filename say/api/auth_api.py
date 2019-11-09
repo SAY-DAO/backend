@@ -1,3 +1,4 @@
+from urllib.parse import urljoin
 from datetime import datetime, timedelta
 from random import randint
 
@@ -227,6 +228,29 @@ class Login(Resource):
             )
             if user is not None:
                 if user.validate_password(password):
+                    if not user.isVerified:
+                        verify = session.query(VerifyModel) \
+                            .filter_by(user_id=user.id) \
+                            .first()
+
+                        if verify is None:
+                            verify = VerifyModel(user=user)
+                            session.add(verify)
+
+                        verify.code = randint(100000, 999999)
+                        verify.expire_at = datetime.utcnow() + timedelta(minutes=60)
+
+                        session.commit()
+                        send_verify_email(user.emailAddress, verify.code)
+
+                        resp = make_response(
+                            jsonify({
+                                'user': obj_to_dict(user),
+                            }),
+                            302,
+                        )
+                        return
+
                     user.lastLogin = datetime.utcnow()
                     session.commit()
 
@@ -382,7 +406,6 @@ class VerifyResend(Resource):
                 verify = VerifyModel(user=user)
                 session.add(verify)
 
-            user.password = verify.code
             verify.code = randint(100000, 999999)
             verify.expire_at = datetime.utcnow() + timedelta(minutes=60)
 
