@@ -479,7 +479,7 @@ class GetUserRole(Resource):
                 .filter_by(isDeleted=False)
                 .first()
             )
-            
+
             resp = make_response(jsonify({"role": user.userRole}), 200)
 
         except Exception as e:
@@ -527,6 +527,34 @@ class GetUserChildren(Resource):
 
             if not user.isDeleted:
                 resp = make_response(jsonify(get_user_children(session, user)), 200)
+            else:
+                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
+
+        except Exception as e:
+            print(e)
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
+
+        finally:
+            session.close()
+            return resp
+
+
+class GetUserChildrenCount(Resource):
+    @swag_from("./docs/user/children-count.yml")
+    def get(self, user_id):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+
+        try:
+            user = session.query(UserModel).get(user_id)
+
+            if not user.isDeleted:
+                child_count = session.query(UserFamilyModel) \
+                    .filter_by(id_user=user.id) \
+                    .filter_by(isDeleted=False) \
+                    .count()
+                resp = make_response(jsonify({'childrenCount': child_count}), 200)
             else:
                 resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
@@ -943,10 +971,10 @@ class AddUser(Resource):
 #                     .filter(PaymentModel.id_need.in_(ids))
 #                     .filter_by(is_verified=True)
 #                 )
-                
+
 #                 for p in payments:
 #                     pay += p.amount
-                
+
 #                 c.spentCredit = pay
 
 #             for u in users:
@@ -1004,6 +1032,7 @@ api.add_resource(GetUserCredit, "/api/v2/user/credit/userId=<user_id>")
 api.add_resource(GetUserRole, "/api/v2/user/role/userId=<user_id>&childId=<child_id>")
 api.add_resource(GetUserSpentCredit, "/api/v2/user/credit/spent/userId=<user_id>")
 api.add_resource(GetUserChildren, "/api/v2/user/children/userId=<user_id>")
+api.add_resource(GetUserChildrenCount, "/api/v2/user/children/count/userId=<user_id>")
 api.add_resource(GetUserNeeds, "/api/v2/user/needs/userId=<user_id>")
 api.add_resource(GetUserFinancialReport, "/api/v2/user/report/userId=<user_id>")
 api.add_resource(GetAllUsersNeeds, "/api/v2/user/needs/all")
