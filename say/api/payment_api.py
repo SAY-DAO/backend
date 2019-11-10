@@ -1,6 +1,6 @@
-from urllib.parse import urljoin
 import random
 from datetime import datetime
+from urllib.parse import urljoin
 
 from . import *
 from say.models.child_need_model import ChildNeedModel
@@ -44,7 +44,6 @@ class GetAllPayment(Resource):
 
         session_maker = sessionmaker(db)
         session = session_maker()
-
 
         payments = session.query(self.model) \
             .filter_by(is_verified=True)
@@ -280,6 +279,8 @@ class VerifyPayment(Resource):
 
         need.status = 1
         need.paid += amount
+        need.donated += pending_payment.donate
+
         child.spentCredit += amount
         need.progress = need.paid / need.cost * 100
 
