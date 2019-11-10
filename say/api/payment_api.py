@@ -22,6 +22,73 @@ def validate_amount(need, amount):
     return amount
 
 
+class GetAllPayment(Resource):
+    model = PaymentModel
+
+    @swag_from("./docs/payment/all.yml")
+    def get(self):
+        args = request.args
+        take = args.get('take', 10)
+        skip = args.get('skip', 0)
+        need_id = args.get('need_id', None)
+
+        try:
+            if need_id:
+                need_id = int(need_id)
+            take = int(take)
+            skip = int(skip)
+            if take < 1 or skip < 0:
+                raise ValueError()
+        except (ValueError, TypeError):
+            return Response(status=400)
+
+        session_maker = sessionmaker(db)
+        session = session_maker()
+
+
+        payments = session.query(self.model) \
+            .filter_by(is_verified=True)
+
+        if need_id:
+            payments = payments.filter_by(id_need=need_id)
+
+        total_count = payments.count()
+
+        payments = payments \
+            .offset(skip) \
+            .limit(take)
+
+        result = dict(
+            totalCount=total_count,
+            payments=[],
+        )
+        for payment in payments:
+            result['payments'].append(obj_to_dict(payment))
+
+        return make_response(
+            jsonify(result),
+            200,
+        )
+
+
+class GetPayment(Resource):
+    model = PaymentModel
+
+    @swag_from("./docs/payment/id.yml")
+    def get(self, id):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        payment = session.query(self.model).get(id)
+        session.close()
+        if payment is None:
+            return Response(status=404)
+
+        return make_response(
+            jsonify(obj_to_dict(payment)),
+            200,
+        )
+
+
 class Payment(Resource):
 
     @swag_from("./docs/payment/new_payment.yml")
@@ -287,5 +354,7 @@ class VerifyPayment(Resource):
 #
 
 api.add_resource(Payment, "/api/v2/payment")
+api.add_resource(GetPayment, "/api/v2/payment/<int:id>")
+api.add_resource(GetAllPayment, "/api/v2/payment/all")
 api.add_resource(VerifyPayment, "/api/v2/payment/verify")
 

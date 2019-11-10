@@ -11,8 +11,8 @@ parameters:
     type: integer
 
 responses:
-  500:
-    description: Error occurred somewhere!
+  404:
+    description: Not found
 
   200:
     description: Ok

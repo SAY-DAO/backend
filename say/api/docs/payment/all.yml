@@ -1,0 +1,39 @@
+get all payments
+
+---
+
+tags:
+  - Payment API
+
+parameters:
+
+  - in: query
+    name: need_id
+    schema:
+      type: integer
+
+  - in: query
+    name: take
+    schema:
+      type: integer
+
+  - in: query
+    name: skip
+    schema:
+      type: integer
+
+responses:
+  400:
+    description: Bad request
+
+  200:
+    description: Ok
+    schema:
+      properties:
+        totalCount: 
+          type: integer
+        payments: 
+          type: array
+          items:
+            schema: 
+              id: payment_model
