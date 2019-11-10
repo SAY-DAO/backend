@@ -24,14 +24,15 @@ class NeedModel(base):
     paid = Column(Integer, nullable=False, default=0)
     affiliateLinkUrl = Column(String, nullable=True)
     isDone = Column(Boolean, nullable=False, default=False)
+    doneAt = Column(DateTime, nullable=True)
     isDeleted = Column(Boolean, nullable=False, default=False)
-    createdAt = Column(Date, nullable=False)
+    createdAt = Column(DateTime, nullable=False)
     receipts = Column(String, nullable=True)  # comma separated
     isConfirmed = Column(Boolean, nullable=False, default=False)
-    confirmDate = Column(Date, nullable=True)
+    confirmDate = Column(DateTime, nullable=True)
     confirmUser = Column(Integer, nullable=True)
     type = Column(Integer, nullable=False)  # 0:donate | 1:affiliate
-    lastUpdate = Column(Date, nullable=False)
+    lastUpdate = Column(DateTime, nullable=False)
     doing_duration = Column(Integer, nullable=False, default=5)
 
     child = relationship('ChildModel', foreign_keys=child_id, uselist=False)
