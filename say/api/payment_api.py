@@ -217,19 +217,19 @@ class VerifyPayment(Resource):
 
         if need.paid == need.cost:
             need.isDone = True
-            # user.doneNeedCount += 1  # TODO: which one is correct?
+            need.doneAt = datetime.utcnow()
+
+            child.doneNeedCount += 1
 
             participants = (
                 session.query(NeedFamilyModel)
                 .filter_by(id_need=need.id)
                 .filter_by(isDeleted=False)
-                .all()
             )
 
             for participate in participants:
                 participate.user_relation.doneNeedCount += 1
 
-            child.doneNeedCount += 1
 
         session.commit()
 
