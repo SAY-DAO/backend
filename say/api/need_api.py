@@ -127,7 +127,7 @@ class GetAllNeeds(Resource):
     @swag_from("./docs/need/all.yml")
     def get(self, confirm):
         args = request.args
-        done = args.get('done', 1)
+        done = args.get('done', None)
 
         session_maker = sessionmaker(db)
         session = session_maker()
@@ -159,19 +159,20 @@ class GetAllNeeds(Resource):
             if int(done) == 1:
                 needs = needs.filter_by(isDone=True)
 
+            elif int(done) == 0:
+                needs = needs.filter_by(isDone=False)
+
             result = {}
             for need in needs:
                 res = get_need(need, session)
                 
-                if int(done) == 1:
-                    ngo = need.child.ngo_relation
-                    child = need.child
+                ngo = need.child.ngo_relation
+                child = need.child
 
-                    res['ngoId'] = ngo.id
-                    res['ngoName'] = ngo.name
-                    res['ngoAddress'] = ngo.postalAddress
-                    res['childId'] = child.id
-                    res['childGeneratedCode'] = child.generatedCode
+                res['ngoId'] = ngo.id
+                res['ngoName'] = ngo.name
+                res['ngoAddress'] = ngo.postalAddress
+                res['childGeneratedCode'] = child.generatedCode
 
                 result[str(need.id)] = res
 
