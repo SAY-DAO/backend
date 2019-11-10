@@ -211,11 +211,13 @@ class VerifyPayment(Resource):
             )
             session.add(new_participant)
 
+        need.status = 1
         need.paid += amount
         child.spentCredit += amount
         need.progress = need.paid / need.cost * 100
 
         if need.paid == need.cost:
+            need.status = 2
             need.isDone = True
             need.doneAt = datetime.utcnow()
 
