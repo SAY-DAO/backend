@@ -126,35 +126,57 @@ class GetNeedById(Resource):
 class GetAllNeeds(Resource):
     @swag_from("./docs/need/all.yml")
     def get(self, confirm):
+        args = request.args
+        done = args.get('done', 1)
+
         session_maker = sessionmaker(db)
         session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
+            needs = session.query(NeedModel)
+
             if int(confirm) == 2:
-                needs = session.query(NeedModel).filter_by(isDeleted=False).all()
+                needs = needs.filter_by(isDeleted=False)
+
             elif int(confirm) == 1:
                 needs = (
-                    session.query(NeedModel)
+                    needs
                     .filter_by(isDeleted=False)
                     .filter_by(isConfirmed=True)
-                    .all()
                 )
+
             elif int(confirm) == 0:
                 needs = (
-                    session.query(NeedModel)
+                    needs
                     .filter_by(isDeleted=False)
                     .filter_by(isConfirmed=False)
-                    .all()
                 )
+
             else:
                 return make_response(jsonify({"message": "wrong input"}), 500)
 
-            res = {}
-            for need in needs:
-                res[str(need.id)] = get_need(need, session)
+            if int(done) == 1:
+                needs = needs.filter_by(isDone=True)
 
-            resp = make_response(jsonify(res), 200)
+            result = {}
+            for need in needs:
+                res = get_need(need, session)
+                
+                if int(done) == 1:
+                    ngo = need.child.ngo_relation
+                    child = need.child
+
+                    res['ngoId'] = ngo.id
+                    res['ngoName'] = ngo.name
+                    res['ngoAddress'] = ngo.postalAddress
+                    res['childId'] = child.id
+                    res['childGeneratedCode'] = child.generatedCode
+
+                result[str(need.id)] = res
+
+
+            resp = make_response(jsonify(result), 200)
 
         except Exception as e:
             print(e)
