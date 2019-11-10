@@ -127,13 +127,14 @@ class GetAllNeeds(Resource):
     @swag_from("./docs/need/all.yml")
     def get(self, confirm):
         args = request.args
-        done = args.get('done', None)
+        done = args.get('done', -1)
 
         session_maker = sessionmaker(db)
         session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
+            done = int(done)
             needs = session.query(NeedModel)
 
             if int(confirm) == 2:
@@ -156,16 +157,16 @@ class GetAllNeeds(Resource):
             else:
                 return make_response(jsonify({"message": "wrong input"}), 500)
 
-            if int(done) == 1:
+            if done == 1:
                 needs = needs.filter_by(isDone=True)
 
-            elif int(done) == 0:
+            elif done == 0:
                 needs = needs.filter_by(isDone=False)
 
             result = {}
             for need in needs:
                 res = get_need(need, session)
-                
+
                 ngo = need.child.ngo_relation
                 child = need.child
 
@@ -181,7 +182,7 @@ class GetAllNeeds(Resource):
 
         except Exception as e:
             print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
+            resp = make_response(jsonify({"message": str(e)}), 500)
 
         finally:
             session.close()
