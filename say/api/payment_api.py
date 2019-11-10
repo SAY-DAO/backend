@@ -112,7 +112,7 @@ class Payment(Resource):
                 "name": f'{user.firstName} {user.lastName}',
                 "phone": user.phoneNumber,
                 "mail": user.emailAddress,
-                "desc": f'{need.child.generatedCode}-{need.name}',
+                "desc": f'{need.name-{need.child.generatedCode}-{need.id}',
                 "callback": urljoin(app.config['BASE_URL'], 'api/v2/payment/verify'),
             }
 

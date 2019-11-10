@@ -1,0 +1,20 @@
+get a payment
+---
+
+tags:
+  - Payment API
+
+parameters:
+  - in: path
+    name: id
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+    schema:
+      id: child_model
