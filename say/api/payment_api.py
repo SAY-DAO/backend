@@ -63,7 +63,7 @@ class GetAllPayment(Resource):
         )
         for payment in payments:
             result['payments'].append(obj_to_dict(payment))
-
+        session.close()
         return make_response(
             jsonify(result),
             200,

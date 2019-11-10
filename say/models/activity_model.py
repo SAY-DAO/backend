@@ -1,5 +1,10 @@
-from say.models.social_worker_model import SocialWorkerModel
+from datetime import datetime
+
+from sqlalchemy.dialects.postgresql import JSONB
+
 from . import *
+from say.models.social_worker_model import SocialWorkerModel
+
 
 """
 Activity Model
@@ -12,6 +17,9 @@ class ActivityModel(base):
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
     id_social_worker = Column(Integer, ForeignKey(SocialWorkerModel.id), nullable=False)
     activityCode = Column(Integer, nullable=False)
+    diff = Column(JSONB, nullable=True)
+    model = Column(Text)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     # 11: update profile                 21: add user                    31: delete user                    4: payment
     # 12: update child                   22: add child                   32: delete child                   5: need done
     # 13: update need                    23: add need                    33: delete need

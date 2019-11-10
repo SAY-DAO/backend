@@ -1,4 +1,7 @@
+from dictdiffer import diff
+
 # from say.api.child_api import get_child_by_id
+from say.models.activity_model import ActivityModel
 from say.models.child_model import ChildModel
 from say.models.child_need_model import ChildNeedModel
 from say.models.family_model import FamilyModel
@@ -464,7 +467,16 @@ class UpdateNeedById(Resource):
                 .filter_by(isDeleted=False)
                 .first()
             )
+            temp = obj_to_dict(primary_need)
             child = primary_need.child
+
+            activity = ActivityModel(
+                id_social_worker=child.id_social_worker,
+                model=NeedModel.__tablename__,
+                activityCode=11,
+            )
+            session.add(activity)
+
             if "cost" in request.form.keys():
                 if not primary_need.isConfirmed:
                     primary_need.cost = int(request.form["cost"])
@@ -583,6 +595,8 @@ class UpdateNeedById(Resource):
             primary_need.lastUpdate = datetime.utcnow()
 
             secondary_need = obj_to_dict(primary_need)
+
+            activity.diff = json.dumps(list(diff(temp, obj_to_dict(primary_need))))
 
             session.commit()
             resp = make_response(jsonify(secondary_need), 200)

@@ -130,15 +130,9 @@ class GetAllActivities(Resource):
                 session.close()
                 return resp
 
-            result = {}
+            result = []
             for activity in activities:
-                res = {
-                    "Id": activity.id,
-                    "Id_social_worker": activity.id_social_worker,
-                    "ActivityCode": activity.activityCode,
-                }
-
-                result[str(activity.id)] = res
+                result.append(obj_to_dict(activity))
 
             resp = make_response(jsonify(result), 200)
             resp.headers["Access-Control-Allow-Origin"] = "*"
