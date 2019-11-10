@@ -109,10 +109,10 @@ class Payment(Resource):
             api_data = {
                 "order_id": order_id,
                 "amount": total_amount * 10, # Converting Toman to Rial
-                "name": user.lastName,
+                "name": f'{user.firstName} {user.lastName}',
                 "phone": user.phoneNumber,
                 "mail": user.emailAddress,
-                "desc": need.name,
+                "desc": f'{need.child.generatedCode}-{need.name}',
                 "callback": urljoin(app.config['BASE_URL'], 'api/v2/payment/verify'),
             }
 
