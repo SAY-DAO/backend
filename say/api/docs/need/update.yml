@@ -50,6 +50,10 @@ parameters:
     in: formData
     type: integer
 
+  - name: link
+    in: formData
+    type: string
+
   - name: affiliateLinkUrl
     in: formData
     type: string

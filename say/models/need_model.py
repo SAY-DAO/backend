@@ -23,6 +23,7 @@ class NeedModel(base):
     progress = Column(Integer, nullable=False, default=0)
     paid = Column(Integer, nullable=False, default=0)
     donated = Column(Integer, nullable=False, default=0)
+    link = Column(String, nullable=True)
     affiliateLinkUrl = Column(String, nullable=True)
     isDone = Column(Boolean, nullable=False, default=False)
     doneAt = Column(DateTime, nullable=True)

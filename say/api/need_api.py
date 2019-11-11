@@ -574,6 +574,9 @@ class UpdateNeedById(Resource):
                     True if request.form["isUrgent"] == "true" else False
                 )
 
+            if "link" in request.form.keys():
+                primary_need.link = request.form["link"]
+
             if "affiliateLinkUrl" in request.form.keys():
                 primary_need.affiliateLinkUrl = request.form["affiliateLinkUrl"]
 
@@ -791,6 +794,7 @@ class AddNeed(Resource):
             details = request.form.get("details", '')
             created_at = datetime.utcnow()
             last_update = datetime.utcnow()
+            link = request.form.get('link', None)
 
             if "affiliateLinkUrl" in request.form.keys():
                 affiliate_link_url = request.form["affiliateLinkUrl"]
@@ -812,6 +816,7 @@ class AddNeed(Resource):
                 descriptionSummary=description_summary,
                 description=description,
                 affiliateLinkUrl=affiliate_link_url,
+                link=link,
                 receipts=receipts,
                 type=need_type,
                 lastUpdate=last_update,
@@ -819,8 +824,6 @@ class AddNeed(Resource):
                 doing_duration=doing_duration,
                 details=details,
             )
-
-            debug(f'new need: {obj_to_dict(new_need)}')
 
             session.add(new_need)
             session.flush()
