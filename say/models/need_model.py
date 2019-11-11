@@ -52,10 +52,10 @@ class NeedModel(base):
 
     @hybrid_property
     def progress(self):
-        return self.paid / self.cost * 100
+        return int(self.paid / self.cost * 100)
 
-    @cost.expression
-    def porgress(cls):
+    @progress.expression
+    def progress(cls):
         return
 
     child = relationship('ChildModel', foreign_keys=child_id, uselist=False)
