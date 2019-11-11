@@ -55,7 +55,7 @@ class ChildModel(base):
     migrateDate = Column(Date, nullable=True)
 
     families = relationship('FamilyModel', back_populates='child')
-    ngo_relation = relationship("NgoModel", foreign_keys="ChildModel.id_ngo")
-    social_worker_relation = relationship(
+    ngo = relationship("NgoModel", foreign_keys="ChildModel.id_ngo")
+    social_worker = relationship(
         "SocialWorkerModel", foreign_keys="ChildModel.id_social_worker"
     )

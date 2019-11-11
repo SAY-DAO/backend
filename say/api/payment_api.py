@@ -237,7 +237,7 @@ class VerifyPayment(Resource):
         need = pending_payment.need
         amount = pending_payment.amount
 
-        child = child_need.child_relation
+        child = child_need.child
         need_url = f"/needPage/{need.id}/{child.id}/{pending_payment.id_user}"
         response = idpay.verify(paymentId, orderId)
         if 'error_code' in response or response['status'] != 100:
@@ -297,7 +297,7 @@ class VerifyPayment(Resource):
             )
 
             for participate in participants:
-                participate.user_relation.doneNeedCount += 1
+                participate.user.doneNeedCount += 1
 
         session.commit()
 

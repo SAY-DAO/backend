@@ -38,7 +38,7 @@ class GetRandomSearchResult(Resource):
             user_families = (session.query(UserFamilyModel).filter_by(
                 id_user=user_id).filter_by(isDeleted=False))
             ids = [
-                user_family.family_relation.child.id
+                user_family.family.child.id
                 for user_family in user_families
             ]
             children = (session.query(ChildModel).filter(

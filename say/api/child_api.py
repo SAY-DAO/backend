@@ -83,9 +83,9 @@ def get_child_by_id(session, child_id, is_migrate=False, confirm=1, with_need=Fa
     if with_need:
         child_data['Needs'] = get_child_need(session, child_id)
 
-    child_data['ngoName'] = child.ngo_relation.name
-    child_data['socialWorkerFirstName'] = child.social_worker_relation.firstName
-    child_data['socialWorkerLastName'] = child.social_worker_relation.lastName
+    child_data['ngoName'] = child.ngo.name
+    child_data['socialWorkerFirstName'] = child.social_worker.firstName
+    child_data['socialWorkerLastName'] = child.social_worker.lastName
 
     return child_data
 
@@ -300,7 +300,7 @@ class GetChildNeedsByCategory(Resource):
 
             res = {}
             for need in needs:
-                if need.need_relation.category == int(category):
+                if need.need.category == int(category):
                     need_data = (
                         session.query(NeedModel)
                         .filter_by(id=need.id_need)
@@ -639,8 +639,8 @@ class AddChild(Resource):
                 new_child.sleptAvatarUrl = '/' + slept_avatar_path
 
 
-            new_child.ngo_relation.childrenCount += 1
-            new_child.social_worker_relation.childCount += 1
+            new_child.ngo.childrenCount += 1
+            new_child.social_worker.childCount += 1
 
             session.commit()
 
@@ -975,8 +975,8 @@ class DeleteChildById(Resource):
                 if family:
                     family.isDeleted = True
 
-                child.social_worker_relation.currentChildCount -= 1
-                child.ngo_relation.currentChildrenCount -= 1
+                child.social_worker.currentChildCount -= 1
+                child.ngo.currentChildrenCount -= 1
 
                 session.commit()
 
@@ -1248,9 +1248,9 @@ class ConfirmChild(Resource):
                 primary_child.confirmUser = social_worker_id
                 primary_child.confirmDate = datetime.utcnow()
 
-                primary_child.ngo_relation.currentChildrenCount += 1
+                primary_child.ngo.currentChildrenCount += 1
 
-                primary_child.social_worker_relation.currentChildCount += 1
+                primary_child.social_worker.currentChildCount += 1
 
                 new_family = FamilyModel(id_child=primary_child.id)
 
@@ -1289,7 +1289,7 @@ class ConfirmChild(Resource):
                 )
 
                 if (
-                    secondary_child.social_worker_relation.ngo.id
+                    secondary_child.social_worker.ngo.id
                     != primary_child.id_ngo
                 ):
                     previous_ngo = (
@@ -1299,17 +1299,17 @@ class ConfirmChild(Resource):
                         .first()
                     )
 
-                    secondary_child.social_worker_relation.ngo.childrenCount += 1
-                    secondary_child.social_worker_relation.ngo.currentChildrenCount += 1
+                    secondary_child.social_worker.ngo.childrenCount += 1
+                    secondary_child.social_worker.ngo.currentChildrenCount += 1
                     previous_ngo.currentChildrenCount -= 1
 
-                secondary_child.social_worker_relation.childCount += 1
-                secondary_child.social_worker_relation.currentChildCount += 1
-                secondary_child.social_worker_relation.needCount += len(needs)
-                secondary_child.social_worker_relation.currentNeedCount += len(needs)
+                secondary_child.social_worker.childCount += 1
+                secondary_child.social_worker.currentChildCount += 1
+                secondary_child.social_worker.needCount += len(needs)
+                secondary_child.social_worker.currentNeedCount += len(needs)
 
-                primary_child.social_worker_relation.currentChildCount -= 1
-                primary_child.social_worker_relation.currentNeedCount -= len(needs)
+                primary_child.social_worker.currentChildCount -= 1
+                primary_child.social_worker.currentNeedCount -= len(needs)
 
                 family.id_child = secondary_child.id
 
@@ -1364,7 +1364,7 @@ class ConfirmChild(Resource):
 
                 for need in needs:
                     need.id_child = secondary_child.id
-                    need.need_relation.imageUrl = need_dump[str(need.id_need)]
+                    need.need.imageUrl = need_dump[str(need.id_need)]
 
                 session.commit()
 

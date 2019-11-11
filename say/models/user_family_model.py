@@ -16,12 +16,12 @@ class UserFamilyModel(base):
     userRole = Column(Integer, nullable=False)  # 0:father | 1:mother | 2:uncle | 3:aunt
     isDeleted = Column(Boolean, nullable=False, default=False)
 
-    family_relation = relationship(
+    family = relationship(
         "FamilyModel",
         foreign_keys="UserFamilyModel.id_family",
         uselist=False,
     )
-    user_relation = relationship(
+    user = relationship(
         "UserModel",
         foreign_keys="UserFamilyModel.id_user",
         uselist=False,

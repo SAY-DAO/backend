@@ -16,5 +16,5 @@ class ChildNeedModel(base):
     id = Column(Integer, nullable=False, primary_key=True)
     isDeleted = Column(Boolean, nullable=False, default=False)
 
-    child_relation = relationship("ChildModel", foreign_keys="ChildNeedModel.id_child")
-    need_relation = relationship("NeedModel", foreign_keys="ChildNeedModel.id_need")
+    child = relationship("ChildModel", foreign_keys="ChildNeedModel.id_child")
+    need = relationship("NeedModel", foreign_keys="ChildNeedModel.id_need")

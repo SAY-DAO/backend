@@ -170,7 +170,7 @@ class GetAllNeeds(Resource):
             for need in needs:
                 res = get_need(need, session)
 
-                ngo = need.child.ngo_relation
+                ngo = need.child.ngo
                 child = need.child
 
                 res['ngoId'] = ngo.id
@@ -437,7 +437,7 @@ class AddPaymentForNeed(Resource):
                     )
 
                     for participate in participants:
-                        participate.user_relation.doneNeedCount += 1
+                        participate.user.doneNeedCount += 1
 
                     child.doneNeedCount += 1
 

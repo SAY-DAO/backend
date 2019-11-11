@@ -34,8 +34,8 @@ def get_user_children(session, user):
 
     children = {}
     for f in families:
-        if f.family_relation.child.isConfirmed:
-            children[str(f.family_relation.id_child)] = get_child_by_id(session, f.family_relation.id_child)
+        if f.family.child.isConfirmed:
+            children[str(f.family.id_child)] = get_child_by_id(session, f.family.id_child)
 
     return children
 
@@ -52,7 +52,7 @@ def get_user_needs(session, user, urgent=False):
     for family in families:
         child = (
             session.query(FamilyModel)
-            .filter_by(id_child=family.family_relation.id_child)
+            .filter_by(id_child=family.family.id_child)
             .filter_by(isDeleted=False)
             .first()
         )
