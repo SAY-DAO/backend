@@ -177,6 +177,8 @@ class GetAllNeeds(Resource):
                 res['ngoName'] = ngo.name
                 res['ngoAddress'] = ngo.postalAddress
                 res['childGeneratedCode'] = child.generatedCode
+                res['childFirstName'] = child.firstName
+                res['childLastName'] = child.lastName
 
                 result[str(need.id)] = res
 
