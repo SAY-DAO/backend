@@ -1,3 +1,6 @@
+from sqlalchemy.ext.hybrid import hybrid_property
+
+from say.utils import get_price
 from . import *
 
 """
@@ -19,7 +22,7 @@ class NeedModel(base):
     description = Column(Text, nullable=False)
     descriptionSummary = Column(Text, nullable=False)
     details = Column(Text, nullable=True)
-    cost = Column(Integer, nullable=False)
+    _cost = Column(Integer, nullable=False)
     progress = Column(Integer, nullable=False, default=0)
     paid = Column(Integer, nullable=False, default=0)
     donated = Column(Integer, nullable=False, default=0)
@@ -37,5 +40,15 @@ class NeedModel(base):
     lastUpdate = Column(DateTime, nullable=False)
     doing_duration = Column(Integer, nullable=False, default=5)
     status = Column(Integer, nullable=False, default=0)
+
+    @hybrid_property
+    def cost(self):
+        if not self.link:
+            return self._cost
+        return get_price(self.link)
+
+    @cost.expression
+    def cost(cls):
+        return
 
     child = relationship('ChildModel', foreign_keys=child_id, uselist=False)

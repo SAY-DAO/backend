@@ -15,6 +15,8 @@ from flask import (
 from flask_restful import Api, Resource
 from sqlalchemy import create_engine, inspect, or_, not_, and_, func
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.associationproxy import ASSOCIATION_PROXY
+from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
 from datetime import datetime
 from flasgger import Swagger
 from flasgger.utils import swag_from
@@ -121,7 +123,30 @@ api = Api(app)
 
 # this function converts an object to a python dictionary
 def obj_to_dict(obj):
-    return {c.key: getattr(obj, c.key) for c in inspect(obj).mapper.column_attrs}
+    return {c.key: getattr(obj, c.key) for c in columns(obj)}
+
+
+def columns(obj, relationships=False, synonyms=True, composites=False,
+                 hybrids=True):
+    cls = obj.__class__
+
+    mapper = inspect(cls)
+    for k, c in mapper.all_orm_descriptors.items():
+
+        if k == '__mapper__':
+            continue
+
+        if c.extension_type == ASSOCIATION_PROXY:
+            continue
+
+        if (not hybrids and c.extension_type == HYBRID_PROPERTY) \
+                or (not relationships and k in mapper.relationships) \
+                or (not synonyms and k in mapper.synonyms) \
+                or (not composites and k in mapper.composites):
+            continue
+
+        yield getattr(cls, k)
+
 
 
 def allowed_voice(filename):
