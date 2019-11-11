@@ -299,7 +299,6 @@ class VerifyPayment(Resource):
             for participate in participants:
                 participate.user_relation.doneNeedCount += 1
 
-
         session.commit()
 
         resp = jsonify(obj_to_dict(pending_payment))

@@ -6,12 +6,13 @@ from flask_jwt_extended import (
     create_access_token, create_refresh_token, jwt_required,
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
 )
-from flask_mail import Message
 
 from . import *
 from say.models.user_model import UserModel
 from say.models.verify_model import VerifyModel
 from say.models.revoked_token_model import RevokedTokenModel
+from say.tasks import send_email
+
 
 """
 Authentication APIs
@@ -38,12 +39,11 @@ def datetime_converter(o):
 
 def send_verify_email(email, verify_code):
 
-    verify_mail = Message(
+    send_email.delay(
         subject='SAY Email Verification',
-        recipients=[email],
+        email=email,
         html=render_template('email_verification.html', code=str(verify_code)),
     )
-    mail.send(verify_mail)
 
 
 class CheckUser(Resource):
