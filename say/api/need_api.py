@@ -478,13 +478,13 @@ class UpdateNeedById(Resource):
             session.add(activity)
 
             if "cost" in request.form.keys():
-                if not primary_need.isConfirmed:
-                    primary_need.cost = int(request.form["cost"])
+                # if not primary_need.isConfirmed:
+                primary_need.cost = int(request.form["cost"])
 
-                else:
-                    resp = make_response(jsonify({"message": "error: cannot change cost for confirmed need!"}), 500)
-                    session.close()
-                    return resp
+                # else:
+                #     resp = make_response(jsonify({"message": "error: cannot change cost for confirmed need!"}), 500)
+                #     session.close()
+                #     return resp
 
             if "imageUrl" in request.files.keys():
                 file = request.files["imageUrl"]
