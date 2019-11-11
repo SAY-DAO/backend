@@ -23,7 +23,6 @@ class NeedModel(base):
     descriptionSummary = Column(Text, nullable=False)
     details = Column(Text, nullable=True)
     _cost = Column(Integer, nullable=False)
-    progress = Column(Integer, nullable=False, default=0)
     paid = Column(Integer, nullable=False, default=0)
     donated = Column(Integer, nullable=False, default=0)
     link = Column(String, nullable=True)
@@ -43,12 +42,20 @@ class NeedModel(base):
 
     @hybrid_property
     def cost(self):
-        if not self.link:
+        if not self.link or self.isDone:
             return self._cost
         return get_price(self.link)
 
     @cost.expression
     def cost(cls):
+        return
+
+    @hybrid_property
+    def progress(self):
+        return self.paid / self.cost * 100
+
+    @cost.expression
+    def porgress(cls):
         return
 
     child = relationship('ChildModel', foreign_keys=child_id, uselist=False)

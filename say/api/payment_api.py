@@ -282,7 +282,6 @@ class VerifyPayment(Resource):
         need.donated += pending_payment.donate
 
         child.spentCredit += amount
-        need.progress = need.paid / need.cost * 100
 
         if need.paid == need.cost:
             need.status = 2

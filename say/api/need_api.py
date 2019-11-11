@@ -423,7 +423,6 @@ class AddPaymentForNeed(Resource):
                 user.credit -= amount
                 user.spentCredit += amount
                 need.paid += amount
-                need.progress = need.paid / need.cost * 100
 
                 child.spentCredit += amount
                 if need.paid == need.cost:
