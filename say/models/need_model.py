@@ -33,7 +33,7 @@ class NeedModel(base):
     isConfirmed = Column(Boolean, nullable=False, default=False)
     confirmDate = Column(DateTime, nullable=True)
     confirmUser = Column(Integer, nullable=True)
-    type = Column(Integer, nullable=False)  # 0:donate | 1:affiliate
+    type = Column(Integer, nullable=False)  # 0:service | 1:product
     lastUpdate = Column(DateTime, nullable=False)
     doing_duration = Column(Integer, nullable=False, default=5)
     status = Column(Integer, nullable=False, default=0)
