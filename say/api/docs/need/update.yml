@@ -58,6 +58,10 @@ parameters:
     in: formData
     type: file
 
+  - name: status
+    in: formData
+    type: integer
+
   - name: doing_duration
     in: formData
     type: integer

@@ -592,6 +592,10 @@ class UpdateNeedById(Resource):
             if "details" in request.form.keys():
                 primary_need.details = request.form["details"]
 
+            if "status" in request.form.keys():
+                if primary_need.status > 1:
+                    primary_need.status = request.form["status"]
+
             primary_need.lastUpdate = datetime.utcnow()
 
             secondary_need = obj_to_dict(primary_need)
