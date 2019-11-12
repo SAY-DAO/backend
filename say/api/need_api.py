@@ -479,8 +479,12 @@ class UpdateNeedById(Resource):
             session.add(activity)
 
             if "cost" in request.form.keys():
+                if primary_need.isDone and int(request.form['cost']) != primary_need._cost:
+                    resp = make_response(jsonify({"message": "Can not change cost when need is done"}), 503)
+                    return
+
                 # if not primary_need.isConfirmed:
-                primary_need.cost = int(request.form["cost"])
+                primary_need._cost = int(request.form["cost"])
 
                 # else:
                 #     resp = make_response(jsonify({"message": "error: cannot change cost for confirmed need!"}), 500)
