@@ -20,4 +20,5 @@ beautifulsoup4
 requests
 celery
 redis
+khayyam
 

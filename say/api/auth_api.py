@@ -41,7 +41,7 @@ def send_verify_email(email, verify_code):
 
     send_email.delay(
         subject='SAY Email Verification',
-        email=email,
+        emails=email,
         html=render_template('email_verification.html', code=str(verify_code)),
     )
 

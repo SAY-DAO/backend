@@ -100,7 +100,7 @@ ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
 
 app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
-app.config['BASE_URL'] = 'sayapp.company'
+app.config['BASE_URL'] = 'https://sayapp.company'
 app.config['SQLALCHEMY_DATABASE_URI'] = conf['dbUrl']
 app.config['SANDBOX'] = True
 app.config['IDPAY_API_KEY'] = "83bdbfa4-04e6-4593-ba07-3e0652ae726d"

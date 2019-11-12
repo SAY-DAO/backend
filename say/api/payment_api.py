@@ -2,6 +2,8 @@ import random
 from datetime import datetime
 from urllib.parse import urljoin
 
+from khayyam import JalaliDate
+
 from . import *
 from say.models.child_need_model import ChildNeedModel
 from say.models.family_model import FamilyModel
@@ -10,6 +12,7 @@ from say.models.need_model import NeedModel
 from say.models.payment_model import PaymentModel
 from say.models.user_family_model import UserFamilyModel
 from say.models.user_model import UserModel
+from say.tasks import send_email
 
 
 def validate_amount(need, amount):
@@ -296,8 +299,27 @@ class VerifyPayment(Resource):
                 .filter_by(isDeleted=False)
             )
 
+            emails = set()
+            ccs = {user.emailAddress for user in child.families[0].users}
+
             for participate in participants:
                 participate.user.doneNeedCount += 1
+                emails.add(participate.user.emailAddress)
+
+            ccs -= emails
+            iran_date = JalaliDate(need.doneAt).localdateformat()
+            send_email.delay(
+                subject=f'یکی از نیازهای {child.sayName} کامل شد',
+                emails=list(emails),
+                cc=list(ccs),
+                html=render_template(
+                    'status_done.html',
+                    child=child,
+                    need=need,
+                    date=iran_date,
+                ),
+            )
+
 
         session.commit()
 

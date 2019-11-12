@@ -4,15 +4,16 @@ from say.api import celery, mail
 
 
 @celery.task()
-def send_email(subject, email, html):
+def send_email(subject, emails, html, cc=[]):
 
-    if type(email) is str:
-        email = [email]
+    if type(emails) is str:
+        emails = [emails]
 
     email = Message(
         subject=subject,
-        recipients=email,
+        recipients=emails,
         html=html,
+        cc=cc,
     )
     mail.send(email)
 

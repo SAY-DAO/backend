@@ -29,53 +29,16 @@
             -moz-justify-content: center;
             -ms-justify-content: center;
             -o-justify-content: center;
-            padding-top:20px;
-            padding-bottom:20px;
+            padding-top:80px;
             ">
-
-            <!--the header part-->
-            <div id="header" style="
-            width: 70%;
-            height: 80px;
-            margin:0 auto;
-            text-align: center;
-            ">
-
-            <!--a div for bringing logo vertically middle - but does not work in sending html email-->
-                <span class="helper" style="
-                display: inline-block;
-                -webkit-display: inline-block;
-                -moz-display: inline-block;
-                -ms-display: inline-block;
-                -o-display: inline-block;
-                height: 100%;
-                vertical-align: middle;
-                -webkit-vertical-align: middle;
-                -moz-vertical-align: middle;
-                -ms-vertical-align: middle;
-                -o-vertical-align: middle;
-                "></span><a href="https://say.company" target="_blank"><img src="https://sayapp.company/public/resources/img/logo-white.png" style="
-                height: 70%;
-                vertical-align: middle;
-                -webkit-vertical-align: middle;
-                -moz-vertical-align: middle;
-                -ms-vertical-align: middle;
-                -o-vertical-align: middle;
-                box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
-                -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
-                -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
-                -ms-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
-                -o-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
-                " /></a>
-            </div>
 
             <!--the main content-->
             <div id="content" style="
             width: 70%;
-            height: 250px;
+            min-height: 250px;
             background-color: #ffffff;
             margin: 0 auto;
-            padding-bottom: 20px;
+            /* padding-bottom: 20px; */
             padding-top: 50px;
             /* display: flex;
             -webkit-display: flex;
@@ -99,13 +62,32 @@
             -o-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
             text-align: center;">
 
-                <img src="https://sayapp.company/public/resources/img/verification.png" style="height: 35%;" />
+                <img src="https://sayapp.company/public/resources/img/verification.png" style="height: 100px;" />
                 <div class="content-paragraph">
 
                     <p class="en-paragraph" style="font-family: 'Roboto', Roboto; font-size: 14px; margin: 20px 0; color: #515151;">Enter the code below on the App</p>
                     
                     <!--the verification code-->
                     <p class="en-paragraph generated" style="font-family: 'Roboto', Roboto; font-size: 42px; margin-top: 20px; margin: 10px 0; color: #515151;">{{code[:3]}}-{{code[3:]}}</p>
+                </div>
+                <div id="logo_wrapper" style="
+                                    width: 100%;
+                                    height: 50px;
+                                    text-align: center;
+                                    ">
+                    <a href="https://say.company" target="_blank"><img src="https://sayapp.company/public/resources/img/logo-white.png" style="
+                        height: 100%;
+                        vertical-align: middle;
+                        -webkit-vertical-align: middle;
+                        -moz-vertical-align: middle;
+                        -ms-vertical-align: middle;
+                        -o-vertical-align: middle;
+                        /* box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
+                        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
+                        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
+                        -ms-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
+                        -o-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08); */
+                        " /></a>
                 </div>
             </div>
 
