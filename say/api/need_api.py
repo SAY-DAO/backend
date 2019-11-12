@@ -462,14 +462,14 @@ class UpdateNeedById(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            primary_need = (
+            need = (
                 session.query(NeedModel)
                 .filter_by(id=need_id)
                 .filter_by(isDeleted=False)
                 .first()
             )
-            temp = obj_to_dict(primary_need)
-            child = primary_need.child
+            temp = obj_to_dict(need)
+            child = need.child
 
             activity = ActivityModel(
                 id_social_worker=child.id_social_worker,
@@ -479,12 +479,12 @@ class UpdateNeedById(Resource):
             session.add(activity)
 
             if "cost" in request.form.keys():
-                if primary_need.isDone and int(request.form['cost']) != primary_need._cost:
+                if need.isDone and int(request.form['cost']) != need._cost:
                     resp = make_response(jsonify({"message": "Can not change cost when need is done"}), 503)
                     return
 
-                # if not primary_need.isConfirmed:
-                primary_need._cost = int(request.form["cost"])
+                # if not need.isConfirmed:
+                need._cost = int(request.form["cost"])
 
                 # else:
                 #     resp = make_response(jsonify({"message": "error: cannot change cost for confirmed need!"}), 500)
@@ -501,14 +501,14 @@ class UpdateNeedById(Resource):
 
                 if file and allowed_image(file.filename):
                     # filename = secure_filename(file.filename)
-                    filename = str(primary_need.id) + "." + file.filename.split(".")[-1]
+                    filename = str(need.id) + "." + file.filename.split(".")[-1]
 
                     temp_need_path = os.path.join(
                         app.config["UPLOAD_FOLDER"], str(child.id) + "-child"
                     )
                     temp_need_path = os.path.join(temp_need_path, "needs")
                     temp_need_path = os.path.join(
-                        temp_need_path, str(primary_need.id) + "-need"
+                        temp_need_path, str(need.id) + "-need"
                     )
 
                     if not os.path.isdir(temp_need_path):
@@ -516,16 +516,16 @@ class UpdateNeedById(Resource):
 
 
                     for obj in os.listdir(temp_need_path):
-                        check = str(primary_need.id) + "-image"
+                        check = str(need.id) + "-image"
 
                         if obj.split("_")[0] == check:
                             os.remove(os.path.join(temp_need_path, obj))
 
-                    primary_need.imageUrl = os.path.join(
-                        temp_need_path, str(primary_need.id) + "-image_" + filename
+                    need.imageUrl = os.path.join(
+                        temp_need_path, str(need.id) + "-image_" + filename
                     )
-                    file.save(primary_need.imageUrl)
-                    primary_need.imageUrl = '/' + primary_need.imageUrl
+                    file.save(need.imageUrl)
+                    need.imageUrl = '/' + need.imageUrl
 
             if "receipts" in request.files.keys():
                 file2 = request.files["receipts"]
@@ -537,9 +537,9 @@ class UpdateNeedById(Resource):
 
                 if file2 and allowed_image(file2.filename):
                     # filename = secure_filename(file2.filename)
-                    if primary_need.receipts is not None:
+                    if need.receipts is not None:
                         filename = (
-                            str(len(primary_need.receipts.split(",")))
+                            str(len(need.receipts.split(",")))
                             + "."
                             + file2.filename.split(".")[-1]
                         )
@@ -551,64 +551,71 @@ class UpdateNeedById(Resource):
                     )
                     temp_need_path = os.path.join(temp_need_path, "needs")
                     temp_need_path = os.path.join(
-                        temp_need_path, str(primary_need.id) + "-need"
+                        temp_need_path, str(need.id) + "-need"
                     )
                     if not os.path.isdir(temp_need_path):
                         os.mkdir(temp_need_path)
 
                     receipt_path = os.path.join(
-                        temp_need_path, str(primary_need.id) + "-receipt_" + filename
+                        temp_need_path, str(need.id) + "-receipt_" + filename
                     )
                     file2.save(receipt_path)
 
                     receipt_path = '/' + receipt_path
-                    if primary_need.receipts is None:
-                        primary_need.receipts = str(receipt_path)
+                    if need.receipts is None:
+                        need.receipts = str(receipt_path)
                     else:
-                        primary_need.receipts += "," + str(receipt_path)
+                        need.receipts += "," + str(receipt_path)
 
 
             if "category" in request.form.keys():
-                primary_need.category = int(request.form["category"])
+                need.category = int(request.form["category"])
 
             if "type" in request.form.keys():
-                primary_need.type = int(request.form["type"])
+                need.type = int(request.form["type"])
 
             if "isUrgent" in request.form.keys():
-                primary_need.isUrgent = (
+                need.isUrgent = (
                     True if request.form["isUrgent"] == "true" else False
                 )
 
             if "link" in request.form.keys():
-                primary_need.link = request.form["link"]
+                need.link = request.form["link"]
 
             if "affiliateLinkUrl" in request.form.keys():
-                primary_need.affiliateLinkUrl = request.form["affiliateLinkUrl"]
+                need.affiliateLinkUrl = request.form["affiliateLinkUrl"]
 
             if "description" in request.form.keys():
-                primary_need.description = request.form["description"]
+                need.description = request.form["description"]
 
             if "descriptionSummary" in request.form.keys():
-                primary_need.descriptionSummary = request.form["descriptionSummary"]
+                need.descriptionSummary = request.form["descriptionSummary"]
 
             if "name" in request.form.keys():
-                primary_need.name = request.form["name"]
+                need.name = request.form["name"]
 
             if "doing_duration" in request.form.keys():
-                primary_need.doing_duration = int(request.form["doing_duration"])
+                need.doing_duration = int(request.form["doing_duration"])
 
             if "details" in request.form.keys():
-                primary_need.details = request.form["details"]
+                need.details = request.form["details"]
 
             if "status" in request.form.keys():
-                if primary_need.status > 1:
-                    primary_need.status = request.form["status"]
+                new_status = int(request.form["status"])
+                prev_status = need.status
 
-            primary_need.lastUpdate = datetime.utcnow()
+                if prev_status == new_status or prev_status < 2:
+                    pass
+                else:
+                    need.status = new_status
+                    if new_status == 3 and need.type == 1:
+                        need.send_purchase_email()
 
-            secondary_need = obj_to_dict(primary_need)
+            need.lastUpdate = datetime.utcnow()
 
-            activity.diff = json.dumps(list(diff(temp, obj_to_dict(primary_need))))
+            secondary_need = obj_to_dict(need)
+
+            activity.diff = json.dumps(list(diff(temp, obj_to_dict(need))))
 
             session.commit()
             resp = make_response(jsonify(secondary_need), 200)

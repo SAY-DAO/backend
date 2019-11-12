@@ -286,7 +286,7 @@ class VerifyPayment(Resource):
 
         child.spentCredit += amount
 
-        if need.paid == need.cost:
+        if need.paid == need._cost:
             need.status = 2
             need.isDone = True
             need.doneAt = datetime.utcnow()

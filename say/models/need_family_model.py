@@ -1,3 +1,5 @@
+from khayyam import JalaliDate
+
 from say.models.family_model import FamilyModel
 from say.models.need_model import NeedModel
 from say.models.user_model import UserModel
@@ -21,4 +23,8 @@ class NeedFamilyModel(base):
         "FamilyModel", foreign_keys="NeedFamilyModel.id_family"
     )
     user = relationship("UserModel", foreign_keys="NeedFamilyModel.id_user")
-    need = relationship("NeedModel", foreign_keys="NeedFamilyModel.id_need")
+    need = relationship(
+        "NeedModel",
+        foreign_keys="NeedFamilyModel.id_need",
+        back_populates='need_family',
+    )

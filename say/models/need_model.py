@@ -1,6 +1,10 @@
+from datetime import datetime
+from khayyam import JalaliDate
 from sqlalchemy.ext.hybrid import hybrid_property
-
+from sqlalchemy.orm import object_session
+from flask import render_template
 from say.utils import get_price
+from say.tasks import send_email
 from . import *
 
 """
@@ -65,3 +69,36 @@ class NeedModel(base):
         return
 
     child = relationship('ChildModel', foreign_keys=child_id, uselist=False)
+    need_family = relationship(
+        'NeedFamilyModel',
+        uselist=False,
+        back_populates='need',
+    )
+
+    def send_purchase_email(self):
+        session = object_session(self)
+        cc_emails = {user.emailAddress for user in self.child.families[0].users}
+        participants = participants = (
+                session.query(self.need_family.__class__)
+                .filter_by(id_need=self.id)
+                .filter_by(isDeleted=False)
+            )
+
+        to_emails = set()
+        for participate in participants:
+            to_emails.add(participate.user.emailAddress)
+
+        cc_emails -= to_emails
+        iran_date = JalaliDate(datetime.utcnow()).localdateformat()
+        send_email.delay(
+            subject=f'رسید خرید کالای {self.child.sayName} توسط SAY',
+            emails=list(to_emails),
+            cc=list(cc_emails),
+            html=render_template(
+                'status_purchased.html',
+                 child=self.child,
+                 need=self,
+                 date=iran_date,
+            ),
+         )
+
