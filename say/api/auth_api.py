@@ -347,6 +347,10 @@ class Verify(Resource):
         try:
             user_id = int(user_id)
             user = session.query(UserModel).filter_by(id=user_id).first()
+            if user is None:
+                resp =  redirect('/', 302)
+                return
+
             verify = session.query(VerifyModel).filter_by(user_id=user_id).first()
             sent_verify_code = request.form.get('verifyCode', 'invalid')
 
