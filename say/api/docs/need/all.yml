@@ -1,8 +1,10 @@
 get all needs
 Returns information of all needs as a json object.
 Calling this API affects need, child_need and need_family and user tables.
-Confirm parameter determines how do you want the result:
 [0]not onfirmed, [1]confirmed, [2]both
+
+Done parameter determines how do you want the result:
+[0]not done, [1]done, [2]all
 ---
 
 tags:
@@ -25,6 +27,12 @@ responses:
 
   200:
     description: Ok
-
     schema:
-      id: need_model
+      properties:
+        totalCount: 
+          type: integer
+        children: 
+          type: array
+          items:
+            schema: 
+              id: need_model

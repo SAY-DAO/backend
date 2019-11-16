@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from dictdiffer import diff
 
 # from say.api.child_api import get_child_by_id
@@ -138,7 +139,7 @@ class GetAllNeeds(Resource):
 
         try:
             done = int(done)
-            needs = session.query(NeedModel)
+            needs = session.query(NeedModel).order_by(NeedModel.doneAt.desc())
 
             if int(confirm) == 2:
                 needs = needs.filter_by(isDeleted=False)
@@ -166,9 +167,12 @@ class GetAllNeeds(Resource):
             elif done == 0:
                 needs = needs.filter_by(isDone=False)
 
-            result = {}
+            result = OrderedDict(
+                totalCount=needs.count(),
+                needs=[],
+            )
             for need in needs:
-                res = get_need(need, session)
+                res = obj_to_dict(need)
 
                 ngo = need.child.ngo
                 child = need.child
@@ -180,10 +184,9 @@ class GetAllNeeds(Resource):
                 res['childFirstName'] = child.firstName
                 res['childLastName'] = child.lastName
 
-                result[str(need.id)] = res
+                result['needs'].append(res)
 
-
-            resp = make_response(jsonify(result), 200)
+            resp = jsonify(result)
 
         except Exception as e:
             print(e)
