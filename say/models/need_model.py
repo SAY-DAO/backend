@@ -44,16 +44,28 @@ class NeedModel(base):
     doing_duration = Column(Integer, nullable=False, default=5)
     status = Column(Integer, nullable=False, default=0)
 
-    @hybrid_property
-    def cost(self):
-        return self._cost
-#        if not self.link or self.isDone:
-#            return self._cost
-#        return get_price(self.link)
+    def _set_cost(self, cost):
+        self._cost = cost
 
-    @cost.expression
-    def cost(cls):
-        return cls._cost
+    def _get_cost(self):
+        return self._cost
+
+    cost = synonym(
+        '_cost',
+        descriptor=property(_get_cost, _set_cost),
+    )
+
+
+#    @hybrid_property
+#    def cost(self):
+#        return self._cost
+##        if not self.link or self.isDone:
+##            return self._cost
+##        return get_price(self.link)
+#
+#    @cost.expression
+#    def cost(cls):
+#        return cls._cost
 
     @hybrid_property
     def progress(self):
