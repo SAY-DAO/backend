@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from khayyam import JalaliDate
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import object_session
@@ -127,17 +127,20 @@ class NeedModel(base):
 
         cc_emails -= to_emails
         iran_date = JalaliDate(datetime.utcnow()).localdateformat()
-        send_email.delay(
-            subject=f'اطلاع از رسیدن کالا به {self.child.sayName}',
-            emails=list(to_emails),
-            cc=list(cc_emails),
-            html=render_template(
-                'status_child_delivery_product.html',
-                 child=self.child,
-                 need=self,
-                 date=iran_date,
+        send_email.apply_async((
+               f'اطلاع از رسیدن کالا به {self.child.sayName}',
+               list(to_emails),
+               render_template(
+                   'status_child_delivery_product.html',
+                    child=self.child,
+                    need=self,
+                    date=iran_date,
+               ),
+               list(cc_emails),
             ),
-         )
+            eta=datetime.utcnow() + timedelta(hours=4),
+        )
+        #  TODO: change status to 5
 
     def send_child_delivery_service_email(self):
         session = object_session(self)
@@ -183,12 +186,13 @@ class NeedModel(base):
         cc_emails -= to_emails
         iran_date = JalaliDate(datetime.utcnow()).localdateformat()
         send_email.delay(
-            subject=f'رسید پرداخت هزینه به انجمن',
+            subject=f'رسید انتقال وجه به انجمن توسط SAY',
             emails=list(to_emails),
             cc=list(cc_emails),
             html=render_template(
                 'status_money_to_ngo.html',
                  need=self,
+                 child=self.child,
                  date=iran_date,
             ),
         )

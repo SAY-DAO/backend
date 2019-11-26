@@ -611,15 +611,15 @@ class UpdateNeedById(Resource):
                     pass
                 else:
                     need.status = new_status
-                    if need.type == 1:  #  Service
+                    if need.type == 0:  # Service
+                        if new_status == 3:
+                            need.send_money_to_ngo_email()
+                        if new_status == 4:
+                            need.send_child_delivery_service_email()
+                    if need.type == 1:  # Product
                         if new_status == 3:
                             need.send_purchase_email()
                         if new_status == 4:
-                            need.send_child_delivery_service_email()
-                    if need.type == 0:  # Product
-                        if new_status == 3:
-                            need.send_money_to_ngo_email()
-                        if new_status == 5:
                             need.send_child_delivery_product_email()
 
             need.lastUpdate = datetime.utcnow()
