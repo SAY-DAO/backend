@@ -320,7 +320,6 @@ class VerifyPayment(Resource):
                 ),
             )
 
-
         session.commit()
 
         resp = jsonify(obj_to_dict(pending_payment))

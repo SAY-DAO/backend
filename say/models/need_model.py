@@ -112,3 +112,84 @@ class NeedModel(base):
             ),
          )
 
+    def send_child_delivery_product_email(self):
+        session = object_session(self)
+        cc_emails = {user.emailAddress for user in self.child.families[0].users}
+        participants = participants = (
+                session.query(self.need_family.__class__)
+                .filter_by(id_need=self.id)
+                .filter_by(isDeleted=False)
+            )
+
+        to_emails = set()
+        for participate in participants:
+            to_emails.add(participate.user.emailAddress)
+
+        cc_emails -= to_emails
+        iran_date = JalaliDate(datetime.utcnow()).localdateformat()
+        send_email.delay(
+            subject=f'اطلاع از رسیدن کالا به {self.child.sayName}',
+            emails=list(to_emails),
+            cc=list(cc_emails),
+            html=render_template(
+                'status_child_delivery_product.html',
+                 child=self.child,
+                 need=self,
+                 date=iran_date,
+            ),
+         )
+
+    def send_child_delivery_service_email(self):
+        session = object_session(self)
+        cc_emails = {user.emailAddress for user in self.child.families[0].users}
+        participants = participants = (
+                session.query(self.need_family.__class__)
+                .filter_by(id_need=self.id)
+                .filter_by(isDeleted=False)
+            )
+
+        to_emails = set()
+        for participate in participants:
+            to_emails.add(participate.user.emailAddress)
+
+        cc_emails -= to_emails
+        iran_date = JalaliDate(datetime.utcnow()).localdateformat()
+        send_email.delay(
+            subject=f'{self.name} به دست {self.child.sayName} رسید',
+            emails=list(to_emails),
+            cc=list(cc_emails),
+            html=render_template(
+                'status_child_delivery_service.html',
+                 child=self.child,
+                 need=self,
+                 date=iran_date,
+            ),
+         )
+
+
+    def send_money_to_ngo_email(self):
+        session = object_session(self)
+        cc_emails = {user.emailAddress for user in self.child.families[0].users}
+        participants = participants = (
+                session.query(self.need_family.__class__)
+                .filter_by(id_need=self.id)
+                .filter_by(isDeleted=False)
+            )
+
+        to_emails = set()
+        for participate in participants:
+            to_emails.add(participate.user.emailAddress)
+
+        cc_emails -= to_emails
+        iran_date = JalaliDate(datetime.utcnow()).localdateformat()
+        send_email.delay(
+            subject=f'رسید پرداخت هزینه به انجمن',
+            emails=list(to_emails),
+            cc=list(cc_emails),
+            html=render_template(
+                'status_money_to_ngo.html',
+                 need=self,
+                 date=iran_date,
+            ),
+        )
+

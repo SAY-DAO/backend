@@ -11,7 +11,7 @@ Flask-WTF
 SQLAlchemy
 psycopg2
 requests
-flasgger
+flasgger==0.9.2
 pyotp
 gunicorn
 dictdiffer

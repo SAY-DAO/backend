@@ -607,12 +607,20 @@ class UpdateNeedById(Resource):
                 new_status = int(request.form["status"])
                 prev_status = need.status
 
-                if prev_status == new_status or prev_status < 2:
+                if prev_status >= new_status:
                     pass
                 else:
                     need.status = new_status
-                    if new_status == 3 and need.type == 1:
-                        need.send_purchase_email()
+                    if need.type == 1:  #  Service
+                        if new_status == 3:
+                            need.send_purchase_email()
+                        if new_status == 4:
+                            need.send_child_delivery_service_email()
+                    if need.type == 0:  # Product
+                        if new_status == 3:
+                            need.send_money_to_ngo_email()
+                        if new_status == 5:
+                            need.send_child_delivery_product_email()
 
             need.lastUpdate = datetime.utcnow()
 
@@ -625,7 +633,7 @@ class UpdateNeedById(Resource):
 
         except Exception as e:
             print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
+            resp = make_response(jsonify({"message": str(e)}), 500)
 
         finally:
             session.close()

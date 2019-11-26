@@ -25,4 +25,8 @@ class UserFamilyModel(base):
         "UserModel",
         foreign_keys="UserFamilyModel.id_user",
         uselist=False,
+        primaryjoin='''and_(
+            UserFamilyModel.id_user==UserModel.id,
+            UserFamilyModel.isDeleted==False,
+        )''',
     )
