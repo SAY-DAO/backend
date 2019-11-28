@@ -23,7 +23,7 @@ cd $CI_PROJECT_DIR_NIGTHLY &&
 tar -xvf $CI_PROJECT_NAME_NIGTHLY.tar.gz &&
 cd $CI_PROJECT_NAME &&
 docker build -t $IMAGE_NAME . -f Dockerfile_nigthly &&
-cd /home/server/say-installer-nigthly &&
+cd /home/server/say-installer &&
 docker-compose up -d &&
 docker image prune -a
 "
