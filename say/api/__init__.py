@@ -15,7 +15,8 @@ from flask import (
 )
 from flask_restful import Api, Resource
 from sqlalchemy import create_engine, inspect, or_, not_, and_, func
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.associationproxy import ASSOCIATION_PROXY
 from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
 from datetime import datetime
@@ -29,43 +30,15 @@ from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from logging import debug, basicConfig, DEBUG
 from flask_caching import Cache
-
-
 # from hazm import *
 from flask_cors import CORS
 
-
 from ..payment import IDPay
+
 
 CELERY_TASK_LIST = [
     'say.tasks',
 ]
-
-
-def create_celery_app(app=None):
-    """
-    Create a new Celery object and tie together the Celery config to the app's
-    config. Wrap all tasks in the context of the application.
-    :param app: Flask app
-    :return: Celery app
-    """
-    app = app or create_app()
-
-    celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'],
-                    include=CELERY_TASK_LIST)
-    celery.conf.update(app.config)
-    TaskBase = celery.Task
-
-    class ContextTask(TaskBase):
-        abstract = True
-
-        def __call__(self, *args, **kwargs):
-            with app.app_context():
-                return TaskBase.__call__(self, *args, **kwargs)
-
-    celery.Task = ContextTask
-    return celery
-
 
 basicConfig(level=DEBUG)
 
@@ -78,16 +51,15 @@ try:
 except:
     pass
 
-# db = create_engine('postgresql://postgres:13771998@localhost:5432/postgres')
 db = create_engine(conf["dbUrl"])
-# db = create_engine('postgresql://postgres:postgres@5.253.27.219:5432/postgres')
-# "dbUrl" : "postgresql://postgres:13771998@localhost:5432/say",
+
+session_factory = sessionmaker(db)
+session = scoped_session(session_factory)
+base = declarative_base()
 
 BASE_FOLDER = os.getcwd()
 
-#UPLOAD_FOLDER = os.path.join(BASE_FOLDER, "say")
 UPLOAD_FOLDER = "files"
-#UPLOAD_FOLDER = os.path.join(UPLOAD_FOLDER, "files")
 
 if not os.path.isdir(UPLOAD_FOLDER):
     os.mkdir(UPLOAD_FOLDER)
@@ -133,6 +105,46 @@ app.config.update(
 )
 
 app.config.update(conf)
+
+def create_celery_app(app=None):
+    """
+    Create a new Celery object and tie together the Celery config to the app's
+    config. Wrap all tasks in the context of the application.
+    :param app: Flask app
+    :return: Celery app
+    """
+    app = app or create_app()
+
+    celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'],
+                    include=CELERY_TASK_LIST)
+    celery.conf.update(app.config)
+    TaskBase = celery.Task
+
+    class DBTask(TaskBase):
+        _session = None
+
+        def after_return(self, *args, **kwargs):
+            if self._session is not None:
+                self._session.remove()
+
+        @property
+        def session(self):
+            if self._session is None:
+                self._session = session
+
+            return self._session
+
+    celery.DBTask = DBTask
+
+    class ContextTask(TaskBase):
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+
+    celery.Task = ContextTask
+    return celery
 
 celery = create_celery_app(app)
 

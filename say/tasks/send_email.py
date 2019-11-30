@@ -1,6 +1,7 @@
 from flask_mail import Message
 
-from say.api import celery, mail
+from . import celery
+from say.api import mail
 
 
 @celery.task()

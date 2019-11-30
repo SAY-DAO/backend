@@ -35,7 +35,7 @@ class GetAllNgo(Resource):
                     .filter_by(isDeleted=False)
                     .first()
                 )
-                
+
                 data['coordinatorFirstName'] = coordinator[0]
                 data['coordinatorLastName'] = coordinator[1]
                 data['socialWorkers'] = sw_list(
@@ -163,6 +163,8 @@ class AddNgo(Resource):
 class GetNgoById(Resource):
     @swag_from("./docs/ngo/id.yml")
     def get(self, ngo_id):
+        from say.tasks import send_email_to_ngo
+        t = send_email_to_ngo.delay(ngo_id)
         session_maker = sessionmaker(db)
         session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
@@ -187,7 +189,7 @@ class GetNgoById(Resource):
                 .filter_by(isDeleted=False)
                 .first()
             )
-            
+
             res['coordinatorFirstName'] = coordinator[0]
             res['coordinatorLastName'] = coordinator[1]
             res['socialWorkers'] = sw_list(
@@ -239,7 +241,7 @@ class GetNgoByCoordinatorId(Resource):
                     .filter_by(isDeleted=False)
                     .first()
                 )
-                
+
                 data['coordinatorFirstName'] = coordinator[0]
                 data['coordinatorLastName'] = coordinator[1]
                 data['socialWorkers'] = sw_list(
@@ -290,7 +292,7 @@ class GetNgoByName(Resource):
                     .filter_by(isDeleted=False)
                     .first()
                 )
-                
+
                 data['coordinatorFirstName'] = coordinator[0]
                 data['coordinatorLastName'] = coordinator[1]
                 data['socialWorkers'] = sw_list(
@@ -341,7 +343,7 @@ class GetNgoByWebsite(Resource):
                     .filter_by(isDeleted=False)
                     .first()
                 )
-                
+
                 data['coordinatorFirstName'] = coordinator[0]
                 data['coordinatorLastName'] = coordinator[1]
                 data['socialWorkers'] = sw_list(
@@ -392,7 +394,7 @@ class GetNgoByPhoneNumber(Resource):
                     .filter_by(isDeleted=False)
                     .first()
                 )
-                
+
                 data['coordinatorFirstName'] = coordinator[0]
                 data['coordinatorLastName'] = coordinator[1]
                 data['socialWorkers'] = sw_list(
