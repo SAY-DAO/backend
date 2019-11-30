@@ -100,8 +100,8 @@ app.config.update({
 app.config['VERIFICATION_EMAIL_MAXAGE'] = 2 # minutes
 
 app.config.update(
-    CELERY_BROKER_URL='redis://localhost:6379',
-    CELERY_RESULT_BACKEND='redis://localhost:6379'
+    broker_url='redis://localhost:6379',
+    result_backend='redis://localhost:6379'
 )
 
 app.config.update(conf)
@@ -115,8 +115,16 @@ def create_celery_app(app=None):
     """
     app = app or create_app()
 
-    celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'],
+    celery = Celery(app.import_name, broker=app.config['broker_url'],
                     include=CELERY_TASK_LIST)
+    celery.conf.beat_schedule = {
+        'add-every-10-seconds': {
+            'task': 'say.tasks.send_email_to_ngo.send_email_to_ngo',
+            'schedule': 1.0,
+            'args': (1,)
+        },
+    }
+
     celery.conf.update(app.config)
     TaskBase = celery.Task
 
@@ -147,6 +155,7 @@ def create_celery_app(app=None):
     return celery
 
 celery = create_celery_app(app)
+
 
 cache = Cache(app)
 
