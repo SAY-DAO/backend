@@ -132,6 +132,7 @@ class GetAllNeeds(Resource):
     def get(self, confirm):
         args = request.args
         done = args.get('done', -1)
+        status = args.get('status', None)
         ngo_id = args.get('ngoId', None)
         is_reported = args.get('isReported', None)
         type_ = args.get('type', None)
@@ -173,6 +174,10 @@ class GetAllNeeds(Resource):
             if type_:
                 type_ = int(type_)
                 needs = needs.filter_by(type=type_)
+
+            if status:
+                status = int(status)
+                needs = needs.filter_by(status=status)
 
             if is_reported:
                 is_reported = bool(is_reported)
