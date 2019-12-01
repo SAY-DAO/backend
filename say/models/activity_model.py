@@ -3,7 +3,6 @@ from datetime import datetime
 from sqlalchemy.dialects.postgresql import JSONB
 
 from . import *
-from say.models.social_worker_model import SocialWorkerModel
 
 
 """
@@ -15,7 +14,7 @@ class ActivityModel(base):
     __tablename__ = "activity"
 
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
-    id_social_worker = Column(Integer, ForeignKey(SocialWorkerModel.id), nullable=False)
+    id_social_worker = Column(Integer, ForeignKey('social_worker.id'), nullable=False)
     activityCode = Column(Integer, nullable=False)
     diff = Column(JSONB, nullable=True)
     model = Column(Text)

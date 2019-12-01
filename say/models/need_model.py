@@ -81,6 +81,7 @@ class NeedModel(base):
         return
 
     child = relationship('ChildModel', foreign_keys=child_id, uselist=False)
+    payments = relationship('PaymentModel', back_populates='need')
     need_family = relationship(
         'NeedFamilyModel',
         uselist=False,

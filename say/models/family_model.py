@@ -1,4 +1,3 @@
-from say.models.child_model import ChildModel
 from . import *
 
 """
@@ -10,7 +9,7 @@ class FamilyModel(base):
     __tablename__ = "family"
 
     id = Column(Integer, nullable=False, primary_key=True)
-    id_child = Column(Integer, ForeignKey(ChildModel.id), nullable=False)
+    id_child = Column(Integer, ForeignKey('child.id'), nullable=False)
     isDeleted = Column(Boolean, nullable=False, default=False)
 
     child = relationship(
@@ -19,8 +18,8 @@ class FamilyModel(base):
         back_populates="families",
         uselist=False,
     )
-    users = relationship(
-        'UserModel',
-        secondary='user_family',
-        back_populates='families',
-    )
+    # users = relationship(
+    #     'UserModel',
+    #     secondary='user_family',
+    #     back_populates='families',
+    # )

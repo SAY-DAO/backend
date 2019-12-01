@@ -1,5 +1,4 @@
-from say.models.need_model import NeedModel
-from say.models.user_model import UserModel
+
 from . import *
 
 """
@@ -11,8 +10,8 @@ class PaymentModel(base):
     __tablename__ = "payment"
 
     id = Column(Integer, nullable=False, primary_key=True)
-    id_need = Column(Integer, ForeignKey(NeedModel.id), nullable=False)
-    id_user = Column(Integer, ForeignKey(UserModel.id), nullable=False)
+    id_need = Column(Integer, ForeignKey('need.id'), nullable=False)
+    # id_user = Column(Integer, ForeignKey('user.id'), nullable=False)
 
     createdAt = Column(DateTime, nullable=False)
     orderId = Column(String, nullable=True)
@@ -30,7 +29,13 @@ class PaymentModel(base):
 
     need = relationship(
         "NeedModel",
-        foreign_keys="PaymentModel.id_need",
-        uselist=False
+        foreign_keys=id_need,
+        uselist=False,
+        back_populates='payments',
     )
-    user = relationship("UserModel", foreign_keys="PaymentModel.id_user")
+    # user = relationship(
+    #     "UserModel",
+    #     foreign_keys=id_user,
+    #     back_populates='payments', 
+    #     uselist=False,
+    # )

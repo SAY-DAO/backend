@@ -1,7 +1,4 @@
 from . import *
-from say.models.ngo_model import NgoModel
-from say.models.social_worker_model import SocialWorkerModel
-
 
 """
 Child Model
@@ -40,8 +37,8 @@ class ChildModel(base):
     )  # -3:Deprived of education | -2:Kinder garden | -1:Not attending | 0:Pre-school | 1:1st grade | 2:2nd grade | ... | 13:University
     status = Column(Integer, nullable=True)  # happy, sad, etc
     doneNeedCount = Column(Integer, nullable=False, default=0)
-    id_ngo = Column(Integer, ForeignKey(NgoModel.id), nullable=False)
-    id_social_worker = Column(Integer, ForeignKey(SocialWorkerModel.id), nullable=False)
+    id_ngo = Column(Integer, ForeignKey('ngo.id'), nullable=False)
+    id_social_worker = Column(Integer, ForeignKey('social_worker.id'), nullable=False)
     spentCredit = Column(Integer, nullable=False, default=0)
     createdAt = Column(DateTime, nullable=False)
     lastUpdate = Column(DateTime, nullable=False)
@@ -57,5 +54,7 @@ class ChildModel(base):
     families = relationship('FamilyModel', back_populates='child')
     ngo = relationship("NgoModel", foreign_keys="ChildModel.id_ngo")
     social_worker = relationship(
-        "SocialWorkerModel", foreign_keys="ChildModel.id_social_worker"
+        "SocialWorkerModel",
+        foreign_keys=id_social_worker,
+        back_populates='children',
     )

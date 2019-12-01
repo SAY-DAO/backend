@@ -34,7 +34,7 @@ from flask_caching import Cache
 from flask_cors import CORS
 
 from ..payment import IDPay
-
+from say.celery import beat
 
 CELERY_TASK_LIST = [
     'say.tasks',
@@ -56,6 +56,7 @@ db = create_engine(conf["dbUrl"])
 session_factory = sessionmaker(db)
 session = scoped_session(session_factory)
 base = declarative_base()
+base.metadata.bind = db
 
 BASE_FOLDER = os.getcwd()
 
@@ -118,14 +119,7 @@ def create_celery_app(app=None):
 
     celery = Celery(app.import_name, broker=app.config['broker_url'],
                     include=CELERY_TASK_LIST)
-    celery.conf.beat_schedule = {
-        'add-every-10-seconds': {
-            'task': 'say.tasks.send_email_to_ngo.send_email_to_ngo',
-            'schedule': 1.0,
-            'args': (1,)
-        },
-    }
-
+    celery.conf.beat_schedule = beat
     celery.conf.update(app.config)
     TaskBase = celery.Task
 
@@ -156,7 +150,6 @@ def create_celery_app(app=None):
     return celery
 
 celery = create_celery_app(app)
-
 
 cache = Cache(app)
 

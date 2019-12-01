@@ -1,5 +1,4 @@
-from say.models.ngo_model import NgoModel
-from say.models.privilege_model import PrivilegeModel
+
 from . import *
 
 """
@@ -12,10 +11,12 @@ class SocialWorkerModel(base):
 
     id = Column(Integer, primary_key=True, nullable=False, unique=True)
     generatedCode = Column(String, nullable=False)
-    id_ngo = Column(Integer, ForeignKey(NgoModel.id), nullable=False)
+
+    id_ngo = Column(Integer, ForeignKey('ngo.id'), nullable=False)
+    id_type = Column(Integer, ForeignKey('social_worker_type.id'), nullable=False)
+
     country = Column(Integer, nullable=True)
     city = Column(Integer, nullable=True)
-    id_type = Column(Integer, ForeignKey(PrivilegeModel.id), nullable=False)
     firstName = Column(String, nullable=True)
     lastName = Column(String, nullable=False)
     userName = Column(String, nullable=False)  # ngoName + "-sw" + generatedCode
@@ -47,6 +48,6 @@ class SocialWorkerModel(base):
     isActive = Column(Boolean, nullable=False, default=True)
     isDeleted = Column(Boolean, nullable=False, default=False)
 
-
-    privilege = relationship("PrivilegeModel", foreign_keys="SocialWorkerModel.id_type")
-    ngo = relationship("NgoModel", foreign_keys="SocialWorkerModel.id_ngo")
+    privilege = relationship("PrivilegeModel", foreign_keys=id_type)
+    ngo = relationship("NgoModel", foreign_keys=id_ngo)
+    children = relationship("ChildModel", back_populates='social_worker')

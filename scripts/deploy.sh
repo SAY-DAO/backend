@@ -1,6 +1,7 @@
 #!/bin/sh
 
 set -e
+export IMAGE_NAME=$REPO_UPLOAD_ADD
 
 apk update && apk add openssh
 eval $(ssh-agent -s)
@@ -21,7 +22,7 @@ ssh -t $SERVER_USER@$SERVER "
 cd /tmp &&
 tar -xvf $CI_PROJECT_NAME.tar.gz &&
 cd $CI_PROJECT_NAME &&
-docker build -t $REPO_UPLOAD_ADD . &&
+docker build -t $IMAGE_NAME . &&
 cd /home/server/say-installer &&
 docker-compose up -d &&
 docker image prune -af
