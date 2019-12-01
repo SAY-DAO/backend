@@ -163,8 +163,6 @@ class AddNgo(Resource):
 class GetNgoById(Resource):
     @swag_from("./docs/ngo/id.yml")
     def get(self, ngo_id):
-        from say.tasks import send_email_to_ngo
-        t = send_email_to_ngo.delay(ngo_id)
         session_maker = sessionmaker(db)
         session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
