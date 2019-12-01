@@ -132,6 +132,9 @@ class GetAllNeeds(Resource):
     def get(self, confirm):
         args = request.args
         done = args.get('done', -1)
+        ngo_id = args.get('ngoId', None)
+        is_reported = args.get('isReported', None)
+        type_ = args.get('type', None)
 
         session_maker = sessionmaker(db)
         session = session_maker()
@@ -166,6 +169,21 @@ class GetAllNeeds(Resource):
 
             elif done == 0:
                 needs = needs.filter_by(isDone=False)
+
+            if type_:
+                type_ = int(type_)
+                needs = needs.filter_by(type=type_)
+
+            if is_reported:
+                is_reported = bool(is_reported)
+                needs = needs.filter_by(isReported=is_reported)
+
+            if ngo_id:
+                ngo_id = int(ngo_id)
+                needs = needs \
+                    .join(ChildNeedModel) \
+                    .join(ChildModel) \
+                    .filter(ChildModel.id_ngo==ngo_id)
 
             result = OrderedDict(
                 totalCount=needs.count(),

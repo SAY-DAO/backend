@@ -21,6 +21,21 @@ parameters:
     schema:
       type: integer
 
+  - in: query
+    name: isReported
+    schema:
+      type: boolean
+
+  - in: query
+    name: type
+    schema:
+      type: integer
+
+  - in: query
+    name: ngoId
+    schema:
+      type: integer
+
 responses:
   500:
     description: Error occurred somewhere!
