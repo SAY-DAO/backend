@@ -6,6 +6,6 @@ from say.models.ngo_model import NgoModel
 def send_email_to_ngo(self, ngo_id):
     ngo = self.session.query(NgoModel).get(ngo_id)
     ngo.name = ngo.name + str(1)
-    self.session.commit()
+#    self.session.commit()
     return
 

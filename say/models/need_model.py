@@ -43,6 +43,8 @@ class NeedModel(base):
     lastUpdate = Column(DateTime, nullable=False)
     doing_duration = Column(Integer, nullable=False, default=5)
     status = Column(Integer, nullable=False, default=0)
+    isReported = Column(Boolean, default=False)
+    delivereDate = Column(Date)
 
     def _set_cost(self, cost):
         self._cost = cost

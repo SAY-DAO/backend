@@ -106,6 +106,7 @@ app.config.update(
 
 app.config.update(conf)
 
+
 def create_celery_app(app=None):
     """
     Create a new Celery object and tie together the Celery config to the app's
