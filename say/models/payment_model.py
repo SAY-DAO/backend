@@ -33,9 +33,9 @@ class PaymentModel(base):
         uselist=False,
         back_populates='payments',
     )
-    # user = relationship(
-    #     "UserModel",
-    #     foreign_keys=id_user,
-    #     back_populates='payments',
-    #     uselist=False,
-    # )
+    user = relationship(
+        "UserModel",
+        foreign_keys=id_user,
+        back_populates='payments',
+        uselist=False,
+    )
