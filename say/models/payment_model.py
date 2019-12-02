@@ -11,7 +11,7 @@ class PaymentModel(base):
 
     id = Column(Integer, nullable=False, primary_key=True)
     id_need = Column(Integer, ForeignKey('need.id'), nullable=False)
-    # id_user = Column(Integer, ForeignKey('user.id'), nullable=False)
+    id_user = Column(Integer, ForeignKey('user.id'), nullable=False)
 
     createdAt = Column(DateTime, nullable=False)
     orderId = Column(String, nullable=True)
@@ -36,6 +36,6 @@ class PaymentModel(base):
     # user = relationship(
     #     "UserModel",
     #     foreign_keys=id_user,
-    #     back_populates='payments', 
+    #     back_populates='payments',
     #     uselist=False,
     # )
