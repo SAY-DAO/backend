@@ -2,6 +2,7 @@ from sqlalchemy.orm import object_session
 from flask import render_template
 
 from say.tasks import send_email
+from say.utils import surname
 from . import *
 
 """
@@ -67,7 +68,7 @@ class NgoModel(base):
 
         from datetime import datetime
         from khayyam import JalaliDate
-        date = JalaliDate(datetime.utcnow()).localdateformat()
+        date = JalaliDate(datetime.utcnow()).strftime('%Y/%m/%d')
 
         if len(services) != 0:
             with app.app_context():
@@ -78,11 +79,19 @@ class NgoModel(base):
                         'ngo_report_service.html',
                         needs=services,
                         ngo=self,
+                        surname=surname(self.coordinator.gender),
                         date=date,
                     ),
                  )
 
         if len(products) != 0:
+            for need in products:
+                if need.delivery_date:
+                    need.delivere_at = JalaliDate(need.delivery_date) \
+                        .strftime('%Y/%m/%d')
+                else:
+                    need_delivere_at = None
+
             with app.app_context():
                 send_email.delay(
                     subject='اطلاع‌رسانی خرید کالا توسط SAY',
@@ -91,7 +100,9 @@ class NgoModel(base):
                         'ngo_report_product.html',
                         needs=products,
                         ngo=self,
+                        surname=surname(self.coordinator.gender),
                         date=date,
+                        miladi_to_jalali=JalaliDate
                     ),
                  )
 

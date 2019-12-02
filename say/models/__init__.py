@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship, synonym, scoped_session, sessionmaker
 from say.api import base
 
 from .payment_model import PaymentModel
+from .user_model import UserModel
 from .need_model import NeedModel
 from .child_model import ChildModel
 from .need_family_model import NeedFamilyModel

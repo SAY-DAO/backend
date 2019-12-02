@@ -626,6 +626,9 @@ class UpdateNeedById(Resource):
             if "details" in request.form.keys():
                 need.details = request.form["details"]
 
+            if "delivery_date" in request.form.keys():
+                need.delivery_date = request.form["delivery_date"]
+
             if "status" in request.form.keys():
                 new_status = int(request.form["status"])
                 prev_status = need.status
