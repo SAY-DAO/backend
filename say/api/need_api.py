@@ -180,7 +180,7 @@ class GetAllNeeds(Resource):
                 needs = needs.filter_by(status=status)
 
             if is_reported:
-                is_reported = bool(is_reported)
+                is_reported = bool(int(is_reported))
                 needs = needs.filter_by(isReported=is_reported)
 
             if ngo_id:
@@ -633,9 +633,7 @@ class UpdateNeedById(Resource):
                 new_status = int(request.form["status"])
                 prev_status = need.status
 
-                if prev_status >= new_status:
-                    pass
-                else:
+                if new_status != 5 and new_status - prev_status == 1:
                     need.status = new_status
                     if need.type == 0:  # Service
                         if new_status == 3:
@@ -647,6 +645,12 @@ class UpdateNeedById(Resource):
                             need.send_purchase_email()
                         if new_status == 4:
                             need.send_child_delivery_product_email()
+
+                elif need.type == 1 and prev_status == 3 and new_status == 2:
+                    need.status = new_status
+
+                else:
+                    pass
 
             need.lastUpdate = datetime.utcnow()
 

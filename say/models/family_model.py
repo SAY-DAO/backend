@@ -18,8 +18,8 @@ class FamilyModel(base):
         back_populates="families",
         uselist=False,
     )
-    # users = relationship(
-    #     'UserModel',
-    #     secondary='user_family',
-    #     back_populates='families',
-    # )
+    users = relationship(
+        'UserModel',
+        secondary='user_family',
+        back_populates='families',
+    )
