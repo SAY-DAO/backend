@@ -29,21 +29,8 @@ class GetAllNgo(Resource):
             fetch = {}
             for n in base_ngos:
                 data = obj_to_dict(n)
-                coordinator = (
-                    session.query(SocialWorkerModel.firstName, SocialWorkerModel.lastName)
-                    .filter_by(id=n.coordinatorId)
-                    .filter_by(isDeleted=False)
-                    .first()
-                )
 
-                data['coordinatorFirstName'] = coordinator[0]
-                data['coordinatorLastName'] = coordinator[1]
-                data['socialWorkers'] = sw_list(
-                    session.query(SocialWorkerModel)
-                    .filter_by(id_ngo=n.id)
-                    .filter_by(isDeleted=False)
-                    .all()
-                )
+                data['coordinator'] = obj_to_dict(n.coordinator)
                 fetch[str(n.id)] = data
 
             resp = make_response(jsonify(fetch), 200)
