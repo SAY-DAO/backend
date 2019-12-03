@@ -16,11 +16,14 @@ class NeedFamilyModel(base):
     id_need = Column(Integer, ForeignKey('need.id'), nullable=False)
     isDeleted = Column(Boolean, nullable=False, default=False)
 
-    # family = relationship(
-    #     "FamilyModel",
-    #     foreign_keys="NeedFamilyModel.id_family",
-    # )
-    # user = relationship("UserModel", foreign_keys="NeedFamilyModel.id_user")
+    family = relationship(
+        "FamilyModel",
+        foreign_keys="NeedFamilyModel.id_family",
+    )
+    user = relationship(
+        'UserModel',
+        foreign_keys=id_user,
+    )
     need = relationship(
         "NeedModel",
         foreign_keys=id_need,
