@@ -628,7 +628,8 @@ class UpdateNeedById(Resource):
 
             if "delivery_date" in request.form.keys():
                 need.delivery_date = datetime.strptime(
-                    request.form["delivery_date"]
+                    request.form["delivery_date"],
+                    '%Y-%m-%d',
                 )
 
             if "status" in request.form.keys():
