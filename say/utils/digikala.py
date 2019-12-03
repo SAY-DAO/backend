@@ -1,17 +1,28 @@
+import re
 import requests
 from bs4 import BeautifulSoup
 from ..api import cache
 
-@cache.memoize(timeout=12 * 3600)
-def get_price(url):
+
+price_pattern = r'''c-product__seller-price-raw js-price-value">(.*?)<|c-product__seller-price-prev js-rrp-price">(.*?)<'''
+#TODO namojood
+
+#@cache.memoize(timeout=12 * 3600)
+def get_data(url):
     price = None
     try:
-       result = requests.get(url)
-       soup = BeautifulSoup(result.content, features="html.parser")
-       price_div = soup.find("div", "c-product__seller-price-raw js-price-value")
-       price_text = price_div.text.strip().replace(',', '')
-       price = int(price_text)
+       c = requests.get(url).text
     except:
-        pass
+        raise
 
-    return price
+    try:
+        price_text = re.search(
+            price_pattern,
+            c,
+            re.DOTALL
+        ).group(1).strip().replace(',', '')
+    except IndexError:
+        raise
+
+    price = int(price_text)
+    return dict(price=price)

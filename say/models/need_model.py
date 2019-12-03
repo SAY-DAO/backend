@@ -3,7 +3,6 @@ from khayyam import JalaliDate
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import object_session
 from flask import render_template
-from say.utils import get_price
 from say.tasks import send_email
 from . import *
 
@@ -76,6 +75,12 @@ class NeedModel(base):
         uselist=False,
         back_populates='need',
     )
+
+    def update(self):
+        from say.utils import digikala
+        data = digikala.get_data(self.link)
+        self.cost = data['price']
+        return data
 
     def send_purchase_email(self):
         session = object_session(self)

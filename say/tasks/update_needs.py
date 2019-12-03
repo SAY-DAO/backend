@@ -9,15 +9,16 @@ def update_needs(self):
         .filter(NeedModel.type == 1) \
         .filter(NeedModel.status.in_([0,1]))
 
+    t = []
     for need in needs:
+        t.append(need.id)
         update_need.delay(need.id)
-
+    return t
 
 @celery.task(base=celery.DBTask, bind=True)
 def update_need(self, need_id):
     from say.models.need_model import NeedModel
     need = self.session.query(NeedModel).get(need_id)
-    return need.update()
-
-
+    need.update()
+    self.session.commit()
 

@@ -1,4 +1,4 @@
-from .digikala import get_price
+from .digikala import get_data
 
 
 def surname(gender):
