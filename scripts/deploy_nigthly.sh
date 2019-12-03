@@ -3,7 +3,7 @@
 set -e
 export CI_PROJECT_NAME_NIGTHLY=$CI_PROJECT_NAME-nigthly
 export CI_PROJECT_DIR_NIGTHLY=/tmp/nigthly
-export IMAGE_NAME=$REPO_UPLOAD_ADD-nigthly
+export IMAGE_NAME=$REPO_UPLOAD_ADD:nigthly
 
 apk update && apk upgrade && apk add openssh
 eval $(ssh-agent -s)
