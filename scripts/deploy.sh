@@ -24,6 +24,6 @@ tar -xvf $CI_PROJECT_NAME.tar.gz &&
 cd $CI_PROJECT_NAME &&
 docker build -t $IMAGE_NAME . &&
 cd /home/server/say-installer &&
-docker-compose up -d &&
+docker-compose up -d
 "
 echo 'DONE'
