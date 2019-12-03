@@ -74,7 +74,7 @@ class NgoModel(base):
             with app.app_context():
                 send_email.delay(
                     subject='اطلاع از واریز وجه توسط SAY',
-                    emails=self.emailAddress,
+                    emails=self.coordinator.emailAddress,
                     html=render_template(
                         'ngo_report_service.html',
                         needs=services,
@@ -95,7 +95,7 @@ class NgoModel(base):
             with app.app_context():
                 send_email.delay(
                     subject='اطلاع‌رسانی خرید کالا توسط SAY',
-                    emails=self.emailAddress,
+                    emails=self.coordinator.emailAddress,
                     html=render_template(
                         'ngo_report_product.html',
                         needs=products,
