@@ -79,6 +79,10 @@ parameters:
     in: formData
     type: string
 
+  - name: delivery_date
+    in: formData
+    type: string
+
 responses:
   500:
     description: Error occurred somewhere!

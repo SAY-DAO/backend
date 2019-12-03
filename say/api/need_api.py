@@ -627,7 +627,9 @@ class UpdateNeedById(Resource):
                 need.details = request.form["details"]
 
             if "delivery_date" in request.form.keys():
-                need.delivery_date = request.form["delivery_date"]
+                need.delivery_date = datetime.strptime(
+                    request.form["delivery_date"]
+                )
 
             if "status" in request.form.keys():
                 new_status = int(request.form["status"])
