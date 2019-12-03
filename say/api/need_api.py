@@ -651,7 +651,10 @@ class UpdateNeedById(Resource):
                     need.isReported = False
 
                 else:
-                    pass
+                    raise ValueError(
+                        f'Can not change status from '
+                        f'{prev_status} to {new_status}'
+                    )
 
             need.lastUpdate = datetime.utcnow()
 
