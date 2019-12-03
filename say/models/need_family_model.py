@@ -23,6 +23,6 @@ class NeedFamilyModel(base):
     # user = relationship("UserModel", foreign_keys="NeedFamilyModel.id_user")
     need = relationship(
         "NeedModel",
-        foreign_keys="NeedFamilyModel.id_need",
+        foreign_keys=id_need,
         back_populates='need_family',
     )

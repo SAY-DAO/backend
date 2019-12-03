@@ -26,6 +26,5 @@ cd $CI_PROJECT_NAME &&
 docker build -t $IMAGE_NAME . -f Dockerfile_nigthly &&
 cd /home/server/say-installer &&
 docker-compose up -d &&
-docker image prune -a
 "
 echo 'DONE'

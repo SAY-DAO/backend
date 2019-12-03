@@ -58,17 +58,6 @@ class NeedModel(base):
     )
 
 
-#    @hybrid_property
-#    def cost(self):
-#        return self._cost
-##        if not self.link or self.isDone:
-##            return self._cost
-##        return get_price(self.link)
-#
-#    @cost.expression
-#    def cost(cls):
-#        return cls._cost
-
     @hybrid_property
     def progress(self):
         try:
