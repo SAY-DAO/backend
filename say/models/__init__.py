@@ -4,11 +4,19 @@ from sqlalchemy.orm import relationship, synonym, scoped_session, sessionmaker
 
 from say.api import base
 
-from .payment_model import PaymentModel
-from .user_model import UserModel
-from .need_model import NeedModel
+
+from .activity_model import ActivityModel
 from .child_model import ChildModel
-from .need_family_model import NeedFamilyModel
+from .child_need_model import ChildNeedModel
 from .family_model import FamilyModel
-from .social_worker_model import SocialWorkerModel
+from .need_family_model import NeedFamilyModel
+from .need_model import NeedModel
+from .ngo_model import NgoModel
+from .payment_model import PaymentModel
 from .privilege_model import PrivilegeModel
+from .revoked_token_model import RevokedTokenModel
+from .social_worker_model import SocialWorkerModel
+from .user_family_model import UserFamilyModel
+from .user_model import UserModel
+from .verify_model import VerifyModel
+
