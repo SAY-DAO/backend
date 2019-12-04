@@ -8,7 +8,7 @@ beat = {
     },
     'update-needs': {
         'task': 'say.tasks.update_needs.update_needs',
-        'schedule': 10#crontab(minute=0, hour=23),
+        'schedule': 10 * 60#crontab(minute=0, hour=23),
     },
 }
 
