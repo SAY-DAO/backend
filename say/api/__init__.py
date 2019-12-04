@@ -80,6 +80,7 @@ app.config['IDPAY_API_KEY'] = "83bdbfa4-04e6-4593-ba07-3e0652ae726d"
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config["DEBUG"] = False
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+app.config["DELIVER_TO_CHILD_DELAY"] = 5 * 60 # 5 mins for development
 app.config.update({
     "CACHE_TYPE": "simple", # Flask-Caching related configs
     "CACHE_DEFAULT_TIMEOUT": 30

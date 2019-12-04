@@ -22,3 +22,12 @@ def update_need(self, need_id):
     data = need.update()
     self.session.commit()
     return data
+
+
+@celery.task(base=celery.DBTask, bind=True)
+def change_need_status_to_delivered(self, need_id):
+    from say.models.need_model import NeedModel
+    need = self.session.query(NeedModel).get(need_id)
+    need.status = 5
+    self.session.commit()
+

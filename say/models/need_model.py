@@ -136,6 +136,10 @@ class NeedModel(base):
 
         cc_emails -= to_emails
         iran_date = JalaliDate(datetime.utcnow()).localdateformat()
+
+        from say.api import app
+        deliver_to_child_delay = datetime.utcnow() \
+            + timedelta(seconds=app.config['DELIVER_TO_CHILD_DELAY'])
         send_email.apply_async((
                f'اطلاع از رسیدن کالا به {self.child.sayName}',
                list(to_emails),
@@ -147,9 +151,13 @@ class NeedModel(base):
                ),
                list(cc_emails),
             ),
-            eta=datetime.utcnow() + timedelta(minutes=5),
+            eta=deliver_to_child_delay,
         )
-        #  TODO: change status to 5
+        from say.tasks.update_needs import change_need_status_to_delivered
+        change_need_status_to_delivered.apply_async(
+            (self.id,),
+            eta=deliver_to_child_delay,
+        )
 
     def send_child_delivery_service_email(self):
         session = object_session(self)
