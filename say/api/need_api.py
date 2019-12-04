@@ -648,6 +648,7 @@ class UpdateNeedById(Resource):
 
                 elif need.type == 1 and prev_status == 3 and new_status == 2:
                     need.status = new_status
+                    need.isReported = False
 
                 else:
                     pass
