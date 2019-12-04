@@ -15,3 +15,8 @@ class UserFamilyModel(base):
     userRole = Column(Integer, nullable=False)  # 0:father | 1:mother | 2:uncle | 3:aunt
     isDeleted = Column(Boolean, nullable=False, default=False)
 
+    family = relationship(
+        'FamilyModel',
+        foreign_keys=id_family,
+        uselist=False,
+    )
