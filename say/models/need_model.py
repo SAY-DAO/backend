@@ -44,6 +44,8 @@ class NeedModel(base):
     status = Column(Integer, nullable=False, default=0)
     isReported = Column(Boolean, default=False)
     delivery_date = Column(Date)
+    img = Column(Text, nullable=True)
+    title = Column(Text, nullable=True)
 
     def _set_cost(self, cost):
         self._cost = cost
@@ -55,7 +57,6 @@ class NeedModel(base):
         '_cost',
         descriptor=property(_get_cost, _set_cost),
     )
-
 
     @hybrid_property
     def progress(self):
@@ -79,7 +80,18 @@ class NeedModel(base):
     def update(self):
         from say.utils import digikala
         data = digikala.get_data(self.link)
-        self.cost = data['price']
+        cost = data['cost']
+        if cost:
+            self.cost = data['cost']
+
+        img = data['img']
+        if img:
+            self.img = data['img']
+
+        title = data['title']
+        if title:
+            self.title = data['title']
+
         return data
 
     def send_purchase_email(self):

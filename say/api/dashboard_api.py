@@ -40,7 +40,7 @@ class DashboardDataFeed(Resource):
 
 
 """
-API URLs 
+API URLs
 """
 
 api.add_resource(DashboardDataFeed, "/api/v2/dashboard/userId=<user_id>")

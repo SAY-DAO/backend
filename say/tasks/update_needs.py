@@ -19,6 +19,6 @@ def update_needs(self):
 def update_need(self, need_id):
     from say.models.need_model import NeedModel
     need = self.session.query(NeedModel).get(need_id)
-    need.update()
+    data = need.update()
     self.session.commit()
-
+    return data
