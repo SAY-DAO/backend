@@ -147,7 +147,7 @@ class NeedModel(base):
                ),
                list(cc_emails),
             ),
-            eta=datetime.utcnow() + timedelta(hours=4),
+            eta=datetime.utcnow() + timedelta(minutes=5),
         )
         #  TODO: change status to 5
 
