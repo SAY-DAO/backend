@@ -70,11 +70,15 @@ class NgoModel(base):
         from khayyam import JalaliDate
         date = JalaliDate(datetime.utcnow()).strftime('%Y/%m/%d')
 
+        say = session.query(NgoModel).filter_by(name='SAY').first()
+        bcc = [say.coordinator.emailAddress]
+
         if len(services) != 0:
             with app.app_context():
                 send_email.delay(
                     subject='اطلاع از واریز وجه توسط SAY',
                     emails=self.coordinator.emailAddress,
+                    bcc=bcc,
                     html=render_template(
                         'ngo_report_service.html',
                         needs=services,
@@ -96,6 +100,7 @@ class NgoModel(base):
                 send_email.delay(
                     subject='اطلاع‌رسانی خرید کالا توسط SAY',
                     emails=self.coordinator.emailAddress,
+                    bcc=bcc,
                     html=render_template(
                         'ngo_report_product.html',
                         needs=products,
