@@ -21,4 +21,5 @@ requests
 celery
 redis
 khayyam
+celery-redbeat
 

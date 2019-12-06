@@ -102,8 +102,9 @@ app.config.update({
 app.config['VERIFICATION_EMAIL_MAXAGE'] = 2 # minutes
 
 app.config.update(
-    broker_url='redis://localhost:6379',
-    result_backend='redis://localhost:6379'
+    broker_url='redis://localhost:6379/0',
+    result_backend='redis://localhost:6379/0',
+    redbeat_redis_url = "redis://localhost:6379/0"
 )
 
 app.config.update(conf)
