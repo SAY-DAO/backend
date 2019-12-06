@@ -115,5 +115,5 @@ class NgoModel(base):
             need.isReported = True
 
         session.commit()
-        return
+        return [need.id for need in needs]
 

@@ -121,3 +121,6 @@ files/*
 
 # Local config file
 config.json
+
+# PID files
+*.pid
