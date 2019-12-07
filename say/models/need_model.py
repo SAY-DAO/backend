@@ -81,9 +81,8 @@ class NeedModel(base):
     def update(self):
         from say.utils import digikala
         data = digikala.get_data(self.link)
-        cost = data['cost']
-        if cost:
-            self.cost = data['cost']
+
+        dkp = data['dkp']
 
         img = data['img']
         if img:
@@ -93,6 +92,27 @@ class NeedModel(base):
         if title:
             self.title = data['title']
 
+        cost = data['cost']
+        if cost:
+            if type(cost) is int:
+                self.cost = data['cost']
+            elif type(cost) is str:
+                session = object_session(self)
+                from say.api import app
+                from say.models import NgoModel
+                SAY_ngo = session.query(NgoModel).filter_by(name='SAY').first()
+                with app.app_context():
+                    send_email.delay(
+                        subject=f'تغییر وضعیت کالا {dkp}',
+                        emails=SAY_ngo.coordinator.emailAddress,
+                        html=render_template(
+                            'product_status_changed.html',
+                             child=self.child,
+                             need=self,
+                             dkp=dkp,
+                             details=cost,
+                        ),
+                    )
         return data
 
     def send_purchase_email(self):
