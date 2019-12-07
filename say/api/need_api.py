@@ -644,7 +644,8 @@ class UpdateNeedById(Resource):
                         if new_status == 4:
                             need.send_child_delivery_service_email()
                     if need.type == 1:  # Product
-                        if new_status == 3:
+                        if new_status == 3 and not need.oncePurchased:
+                            need.oncePurchased = True
                             need.send_purchase_email()
                         if new_status == 4:
                             need.send_child_delivery_product_email()

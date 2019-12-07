@@ -46,6 +46,7 @@ class NeedModel(base):
     delivery_date = Column(Date)
     img = Column(Text, nullable=True)
     title = Column(Text, nullable=True)
+    oncePurchased = Column(Boolean, nullable=False, default=False)
 
     def _set_cost(self, cost):
         self._cost = cost
