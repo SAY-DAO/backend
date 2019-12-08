@@ -637,6 +637,8 @@ class UpdateNeedById(Resource):
                 prev_status = need.status
 
                 if new_status != 5 and new_status - prev_status == 1:
+                    if new_status == 4 and need.isReported != True:
+                        raise Exception('Need has not been reported to ngo yet')
                     need.status = new_status
                     if need.type == 0:  # Service
                         if new_status == 3:

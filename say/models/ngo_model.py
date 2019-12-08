@@ -66,9 +66,11 @@ class NgoModel(base):
 
         from say.api import app
 
-        from datetime import datetime
+        from datetime import datetime, timedelta
         from khayyam import JalaliDate
-        date = JalaliDate(datetime.utcnow()).strftime('%Y/%m/%d')
+        # This date show when the needs status updated to 3
+        date = JalaliDate(datetime.utcnow() - timedelta(days=1)) \
+            .strftime('%Y/%m/%d')
 
         say = session.query(NgoModel).filter_by(name='SAY').first()
         bcc = [say.coordinator.emailAddress]
