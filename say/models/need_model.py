@@ -83,23 +83,25 @@ class NeedModel(base):
         data = digikala.get_data(self.link)
 
         dkp = data['dkp']
-
         img = data['img']
-        if img:
-            self.img = data['img']
-
         title = data['title']
-        if title:
-            self.title = data['title']
-
         cost = data['cost']
+
+        if img:
+            self.img = img
+
+        if title:
+            self.title = title
+
         if cost:
             if type(cost) is int:
-                self.cost = data['cost']
+                self.cost = cost
             elif type(cost) is str:
                 session = object_session(self)
+
                 from say.api import app
                 from say.models import NgoModel
+
                 SAY_ngo = session.query(NgoModel).filter_by(name='SAY').first()
                 with app.app_context():
                     send_email.delay(

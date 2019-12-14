@@ -669,6 +669,8 @@ class UpdateNeedById(Resource):
             activity.diff = json.dumps(list(diff(temp, obj_to_dict(need))))
 
             session.commit()
+            from say.tasks import update_need
+            update_need.delay(need.id)
             resp = make_response(jsonify(secondary_need), 200)
 
         except Exception as e:
@@ -956,10 +958,6 @@ class AddNeed(Resource):
                     file2.save(receipt_path)
                     new_need.receipts = '/' + receipt_path
 
-            debug(f'final need: {obj_to_dict(new_need)}')
-
-            # else:
-            #     receipt_path = None
 
             session.commit()
 
