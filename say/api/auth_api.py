@@ -1,36 +1,19 @@
-from urllib.parse import urljoin
 from datetime import datetime, timedelta
 from random import randint
 
-from flask_jwt_extended import (
-    create_access_token, create_refresh_token, jwt_required,
+from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
-)
 
 from . import *
+from say.models.revoked_token_model import RevokedTokenModel
 from say.models.user_model import UserModel
 from say.models.verify_model import VerifyModel
-from say.models.revoked_token_model import RevokedTokenModel
 from say.tasks import send_email
 
 
 """
 Authentication APIs
 """
-
-
-def create_user_access_token(user, fresh=False):
-    return create_access_token(
-        identity=user.id,
-        fresh=fresh,
-        user_claims=dict(
-            username=user.userName,
-            firstName=user.firstName,
-            lastName=user.lastName,
-            avatarUrl=user.avatarUrl,
-        )
-    )
-
 
 def datetime_converter(o):
     if isinstance(o, datetime):
@@ -297,7 +280,7 @@ class Login(Resource):
 
 
 class LogoutAccess(Resource):
-    @jwt_required
+    @authorize
     @swag_from("./docs/auth/logout-access.yml")
     def post(self):
         session_maker = sessionmaker(db)

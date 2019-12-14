@@ -1,32 +1,17 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from hashlib import md5
-from random import randint
-from flask_jwt_extended import (
-    create_access_token, create_refresh_token, jwt_required,
+
+from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
-)
+
 from . import *
-from say.models.social_worker_model import SocialWorkerModel
 from say.models.revoked_token_model import RevokedTokenModel
+from say.models.social_worker_model import SocialWorkerModel
 
 
 """
 Panel Authentication APIs
 """
-
-def create_sw_access_token(social_worker, fresh=False):
-    return create_access_token(
-        identity=social_worker.id,
-        fresh=fresh,
-        user_claims=dict(
-            username=social_worker.userName,
-            firstName=social_worker.firstName,
-            lastName=social_worker.lastName,
-            avatarUrl=social_worker.avatarUrl,
-            role=social_worker.privilege.name,
-            ngoId=social_worker.id_ngo,
-        )
-    )
 
 
 class PanelLogin(Resource):
@@ -112,7 +97,8 @@ class PanelTokenRefresh(Resource):
 
 
 class PanelLogoutAccess(Resource):
-    @jwt_required
+    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
+               SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/panel_auth/logout-access.yml")
     def post(self):
         session_maker = sessionmaker(db)

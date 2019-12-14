@@ -7,6 +7,13 @@ Calling this API only affects social_worker_type table by selecting rows from it
 tags:
   - Privilege API
 
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+ 
 responses:
   500:
     description: Error occurred somewhere!
