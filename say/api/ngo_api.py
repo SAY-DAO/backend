@@ -17,6 +17,7 @@ def sw_list(social_worker_list):
 
 
 class GetAllNgo(Resource):
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/ngo/all.yml")
     def get(self):
         session_maker = sessionmaker(db)
@@ -45,6 +46,7 @@ class GetAllNgo(Resource):
 
 
 class AddNgo(Resource):
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/ngo/add.yml")
     def post(self):
         session_maker = sessionmaker(db)
@@ -148,6 +150,7 @@ class AddNgo(Resource):
 
 
 class GetNgoById(Resource):
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/ngo/id.yml")
     def get(self, ngo_id):
         session_maker = sessionmaker(db)
@@ -197,245 +200,8 @@ class GetNgoById(Resource):
             return resp
 
 
-class GetNgoByCoordinatorId(Resource):
-    @swag_from("./docs/ngo/coordinator.yml")
-    def get(self, coordinator_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            base_ngos = (
-                session.query(NgoModel)
-                .filter_by(coordinatorId=coordinator_id)
-                .filter_by(isDeleted=False)
-                .all()
-            )
-
-            fetch = {}
-            for n in base_ngos:
-                if not n:
-                    resp = make_response(jsonify({"msg": "sth went wrong!"}), 500)
-                    session.close()
-                    return resp
-
-                data = obj_to_dict(n)
-                coordinator = (
-                    session.query(SocialWorkerModel.firstName, SocialWorkerModel.lastName)
-                    .filter_by(id=n.coordinatorId)
-                    .filter_by(isDeleted=False)
-                    .first()
-                )
-
-                data['coordinatorFirstName'] = coordinator[0]
-                data['coordinatorLastName'] = coordinator[1]
-                data['socialWorkers'] = sw_list(
-                    session.query(SocialWorkerModel)
-                    .filter_by(id_ngo=n.id)
-                    .filter_by(isDeleted=False)
-                    .all()
-                )
-                fetch[str(n.id)] = data
-
-            resp = make_response(jsonify(fetch), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"msg": "sth is wrong!"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetNgoByName(Resource):
-    @swag_from("./docs/ngo/name.yml")
-    def get(self, name):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            base_ngos = (
-                session.query(NgoModel)
-                .filter_by(name=name)
-                .filter_by(isDeleted=False)
-                .all()
-            )
-
-            fetch = {}
-            for n in base_ngos:
-                if not n:
-                    resp = make_response(jsonify({"msg": "sth is wrong!"}), 500)
-                    session.close()
-                    return resp
-
-                data = obj_to_dict(n)
-                coordinator = (
-                    session.query(SocialWorkerModel.firstName, SocialWorkerModel.lastName)
-                    .filter_by(id=n.coordinatorId)
-                    .filter_by(isDeleted=False)
-                    .first()
-                )
-
-                data['coordinatorFirstName'] = coordinator[0]
-                data['coordinatorLastName'] = coordinator[1]
-                data['socialWorkers'] = sw_list(
-                    session.query(SocialWorkerModel)
-                    .filter_by(id_ngo=n.id)
-                    .filter_by(isDeleted=False)
-                    .all()
-                )
-                fetch[str(n.id)] = data
-
-            resp = make_response(jsonify(fetch), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"msg": "sth is wrong!"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetNgoByWebsite(Resource):
-    @swag_from("./docs/ngo/website.yml")
-    def get(self, website):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            base_ngos = (
-                session.query(NgoModel)
-                .filter_by(website=website)
-                .filter_by(isDeleted=False)
-                .all()
-            )
-
-            fetch = {}
-            for n in base_ngos:
-                if not n:
-                    resp = make_response(jsonify({"msg": "sth is wrong!"}), 500)
-                    session.close()
-                    return resp
-
-                data = obj_to_dict(n)
-                coordinator = (
-                    session.query(SocialWorkerModel.firstName, SocialWorkerModel.lastName)
-                    .filter_by(id=n.coordinatorId)
-                    .filter_by(isDeleted=False)
-                    .first()
-                )
-
-                data['coordinatorFirstName'] = coordinator[0]
-                data['coordinatorLastName'] = coordinator[1]
-                data['socialWorkers'] = sw_list(
-                    session.query(SocialWorkerModel)
-                    .filter_by(id_ngo=n.id)
-                    .filter_by(isDeleted=False)
-                    .all()
-                )
-                fetch[str(n.id)] = data
-
-            resp = make_response(jsonify(fetch), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"msg": "sth is wrong!"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetNgoByPhoneNumber(Resource):
-    @swag_from("./docs/ngo/phone.yml")
-    def get(self, phone_number):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            base_ngos = (
-                session.query(NgoModel)
-                .filter(NgoModel.phoneNumber.contains(phone_number))
-                .filter_by(isDeleted=False)
-                .all()
-            )
-
-            fetch = {}
-            for n in base_ngos:
-                if not n:
-                    resp = make_response(jsonify({"msg": "sth is wrong!"}), 500)
-                    session.close()
-                    return resp
-
-                data = obj_to_dict(n)
-                coordinator = (
-                    session.query(SocialWorkerModel.firstName, SocialWorkerModel.lastName)
-                    .filter_by(id=n.coordinatorId)
-                    .filter_by(isDeleted=False)
-                    .first()
-                )
-
-                data['coordinatorFirstName'] = coordinator[0]
-                data['coordinatorLastName'] = coordinator[1]
-                data['socialWorkers'] = sw_list(
-                    session.query(SocialWorkerModel)
-                    .filter_by(id_ngo=n.id)
-                    .filter_by(isDeleted=False)
-                    .all()
-                )
-                fetch[str(n.id)] = data
-
-            resp = make_response(jsonify(fetch), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"msg": "sth is wrong!"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class DeletePhoneNumber(Resource):
-    @swag_from("./docs/ngo/delete_phone.yml")
-    def patch(self, ngo_id, phone_number):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            base_ngo = (
-                session.query(NgoModel)
-                .filter_by(id=ngo_id)
-                .filter_by(isDeleted=False)
-                .first()
-            )
-
-            base_ngo.phoneNumber = base_ngo.phoneNumber.replace(
-                phone_number, ""
-            ).replace(",,", ",")
-            if base_ngo.phoneNumber[-1] == ",":
-                base_ngo.phoneNumber = base_ngo.phoneNumber[:-1]
-
-            session.commit()
-
-            resp = make_response(jsonify(obj_to_dict(base_ngo)), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"msg": "sth is wrong!"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
 class UpdateNgo(Resource):
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/ngo/update.yml")
     def patch(self, ngo_id):
         session_maker = sessionmaker(db)
@@ -526,6 +292,7 @@ class UpdateNgo(Resource):
 
 
 class DeleteNgo(Resource):
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/ngo/delete.yml")
     def patch(self, ngo_id):
         session_maker = sessionmaker(db)
@@ -556,6 +323,7 @@ class DeleteNgo(Resource):
 
 
 class DeactivateNgo(Resource):
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/ngo/deactivate.yml")
     def patch(self, ngo_id):
         session_maker = sessionmaker(db)
@@ -586,6 +354,7 @@ class DeactivateNgo(Resource):
 
 
 class ActivateNgo(Resource):
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/ngo/activate.yml")
     def patch(self, ngo_id):
         session_maker = sessionmaker(db)
@@ -622,11 +391,6 @@ API URLs
 api.add_resource(GetAllNgo, "/api/v2/ngo/all")
 api.add_resource(AddNgo, "/api/v2/ngo/add")
 api.add_resource(GetNgoById, "/api/v2/ngo/ngoId=<ngo_id>")
-api.add_resource(GetNgoByCoordinatorId, "/api/v2/ngo/coordinatorId=<coordinator_id>")
-api.add_resource(GetNgoByName, "/api/v2/ngo/name=<name>")
-api.add_resource(GetNgoByWebsite, "/api/v2/ngo/website=<website>")
-api.add_resource(GetNgoByPhoneNumber, "/api/v2/ngo/phone=<phone_number>")
-api.add_resource(DeletePhoneNumber, "/api/v2/ngo/ngoId=<ngo_id>&phone=<phone_number>")
 api.add_resource(UpdateNgo, "/api/v2/ngo/update/ngoId=<ngo_id>")
 api.add_resource(DeleteNgo, "/api/v2/ngo/delete/ngoId=<ngo_id>")
 api.add_resource(DeactivateNgo, "/api/v2/ngo/deactivate/ngoId=<ngo_id>")
