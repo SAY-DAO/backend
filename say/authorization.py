@@ -18,7 +18,7 @@ def authorize(*roles):
 
             claims = get_jwt_claims()
 
-            if len(roles) != 0 and claims.get('roles', None) not in roles:
+            if len(roles) != 0 and claims.get('role', None) not in roles:
                 return make_response(jsonify(message='Permission Denied'), 403)
 
             return func(*args, **kwargs)

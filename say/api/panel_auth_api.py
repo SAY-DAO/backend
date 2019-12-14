@@ -23,7 +23,7 @@ def create_sw_access_token(social_worker, fresh=False):
             firstName=social_worker.firstName,
             lastName=social_worker.lastName,
             avatarUrl=social_worker.avatarUrl,
-            role=social_worker.id_type,
+            role=social_worker.privilege.name,
             ngoId=social_worker.id_ngo,
         )
     )

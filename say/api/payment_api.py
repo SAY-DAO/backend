@@ -28,6 +28,7 @@ def validate_amount(need, amount):
 class GetAllPayment(Resource):
     model = PaymentModel
 
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
     @swag_from("./docs/payment/all.yml")
     def get(self):
         args = request.args
@@ -76,6 +77,7 @@ class GetAllPayment(Resource):
 class GetPayment(Resource):
     model = PaymentModel
 
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
     @swag_from("./docs/payment/id.yml")
     def get(self, id):
         session_maker = sessionmaker(db)
@@ -93,21 +95,21 @@ class GetPayment(Resource):
 
 class Payment(Resource):
 
+    @authorize
     @swag_from("./docs/payment/new_payment.yml")
     def post(self):
+        user_id = get_user_id()
+
         resp = {"message": "Something is Wrong!"}
+
         if 'needId' not in request.json:
             return jsonify({"message": "needId is required"})
-
-        if 'userId' not in request.json:
-            return jsonify({"message": "userId is required"})
 
         if 'amount' not in request.json:
             return jsonify({"message": "amount is required"})
 
         amount = request.json['amount']
-        userId = request.json['userId']
-        needId = request.json['needId']
+        need_id = request.json['needId']
 
         session_maker = sessionmaker(db)
         session = session_maker()
@@ -121,7 +123,7 @@ class Payment(Resource):
                 resp = {"message": "Donation Can Not Be Negetive"}
                 return
 
-            need = session.query(NeedModel).get(needId)
+            need = session.query(NeedModel).get(need_id)
             if need is None:
                 resp = {"message": "Need Not Found"}
                 return
@@ -133,14 +135,14 @@ class Payment(Resource):
                 )
                 return resp
 
-            user = session.query(UserModel).get(userId)
+            user = session.query(UserModel).get(user_id)
             if user is None:
                 resp = {"message": "User Not Found"}
                 return
 
             child_need = (
                 session.query(ChildNeedModel)
-                .filter_by(id_need=needId)
+                .filter_by(id_need=need_id)
                 .first()
             )
 
@@ -155,7 +157,7 @@ class Payment(Resource):
                 session.query(UserFamilyModel)
                 .filter_by(isDeleted=False)
                 .filter_by(id_family=family.id)
-                .filter_by(id_user=userId)
+                .filter_by(id_user=user_id)
                 .first()
                 is None
             ):
@@ -310,47 +312,6 @@ class VerifyPayment(Resource):
             need_url=need_url,
         ))
 
-#@app.route('/payment/user/<int:user_id>' , methods =  ['GET'])
-#def getPaymentByUserId(user_id):
-#    try :
-#        Session = sessionmaker(db)
-#        session = Session()
-#
-#        base.metadata.create_all(db)
-#
-#        user_payment_data = session.query(paymentDB).filter_By(userId = user_id).all()
-#        user_payment_data = object_as_dict(user_payment_data)
-#
-#        resp = Response(json.dumps(user_payment_data) , status= 200 , mimetype='application/json')
-#
-#    except Exception as e :
-#        print(e)
-#        resp = Response(json.dumps({'message' : 'something is wrong !!!'}) , status= 500)
-#
-#    finally :
-#        return resp
-#
-#
-#@app.route('/payment/need/<int:need_id>' , methods =  ['GET'])
-#def getPaymentByNeedId(need_id):
-#    try :
-#        Session = sessionmaker(db)
-#        session = Session()
-#
-#        base.metadata.create_all(db)
-#
-#        need_payment_data = session.query(paymentDB).filter_By(needId = need_id).all()
-#        need_payment_data = object_as_dict(user_payment_data)
-#
-#        resp = Response(json.dumps(need_payment_data) , status= 200 , mimetype='application/json')
-#
-#    except Exception as e :
-#        print(e)
-#        resp = Response(json.dumps({'message' : 'something is wrong !!!'}) , status= 500)
-#
-#    finally :
-#        return resp
-#
 
 api.add_resource(Payment, "/api/v2/payment")
 api.add_resource(GetPayment, "/api/v2/payment/<int:id>")

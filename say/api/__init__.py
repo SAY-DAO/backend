@@ -36,6 +36,7 @@ from ..payment import IDPay
 from say.celery import beat
 from say.date import *
 from say.authorization import *
+from say.roles import *
 
 
 CELERY_TASK_LIST = [
