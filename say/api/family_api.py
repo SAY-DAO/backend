@@ -8,6 +8,8 @@ Family APIs
 
 
 class GetFamilyById(Resource):
+
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
     @swag_from("./docs/family/get.yml")
     def get(self, family_id):
         session_maker = sessionmaker(db)
@@ -53,6 +55,8 @@ class GetFamilyById(Resource):
 
 
 class GetAllFamilies(Resource):
+
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
     @swag_from("./docs/family/all.yml")
     def get(self):
         session_maker = sessionmaker(db)
@@ -97,8 +101,10 @@ class GetAllFamilies(Resource):
 
 
 class AddUserToFamily(Resource):
+    @authorize
     @swag_from("./docs/family/add.yml")
-    def post(self, user_id, family_id):
+    def post(self, family_id):
+        user_id = get_user_id()
         session_maker = sessionmaker(db)
         session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
@@ -106,7 +112,6 @@ class AddUserToFamily(Resource):
         try:
             id_user = user_id
             id_family = family_id
-            # user_role = int(request.json['user_role'])
             user_role = int(request.json["userRole"])
 
             duplicate_family = (
@@ -154,6 +159,6 @@ API URLs
 
 api.add_resource(GetFamilyById, "/api/v2/family/familyId=<family_id>")
 api.add_resource(
-    AddUserToFamily, "/api/v2/family/add/userId=<user_id>&familyId=<family_id>"
+    AddUserToFamily, "/api/v2/family/add/familyId=<family_id>"
 )
 api.add_resource(GetAllFamilies, "/api/v2/family/all")

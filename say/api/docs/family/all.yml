@@ -6,6 +6,13 @@ Calling this API affects family and user_family tables.
 tags:
   - Family API
 
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
 responses:
   500:
     description: Error occurred somewhere!
