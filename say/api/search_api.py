@@ -15,8 +15,10 @@ Search APIs
 
 
 class GetRandomSearchResult(Resource):
+    @authorize
     @swag_from("./docs/search/random.yml")
-    def get(self, user_id):
+    def get(self):
+        user_id = get_user_id()
         session_maker = sessionmaker(db)
         session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}),
@@ -89,6 +91,6 @@ API URLs
 """
 
 api.add_resource(GetRandomSearchResult,
-                 "/api/v2/search/random/userId=<user_id>")
+                 "/api/v2/search/random")
 api.add_resource(GetSayBrainSearchResult,
                  "/api/v2/search/sayBrain/userId=<user_id>")
