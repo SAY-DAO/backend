@@ -81,8 +81,9 @@ class GetRandomSearchResult(Resource):
 
 
 class GetSayBrainSearchResult(Resource):
+    @authorize
     @swag_from("./docs/search/brain.yml")
-    def get(self, user_id):
+    def get(self):
         return make_response(jsonify({"message": "not implemented yet!"}), 501)
 
 
@@ -93,4 +94,4 @@ API URLs
 api.add_resource(GetRandomSearchResult,
                  "/api/v2/search/random")
 api.add_resource(GetSayBrainSearchResult,
-                 "/api/v2/search/sayBrain/userId=<user_id>")
+                 "/api/v2/search/saybrain")
