@@ -7,6 +7,10 @@ from flask_jwt_extended import verify_jwt_in_request, get_jwt_claims, \
 from say.roles import *
 
 
+def get_user_role():
+    return get_jwt_claims().get('role', USER)
+
+
 def authorize(*roles):
 
     def decorator(func):
@@ -20,8 +24,7 @@ def authorize(*roles):
 
             claims = get_jwt_claims()
 
-            jwt_role = claims.get('role', USER)
-            if jwt_role not in roles:
+            if get_user_role() not in roles:
                 return make_response(jsonify(message='Permission Denied'), 403)
 
             return func(*args, **kwargs)
