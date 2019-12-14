@@ -8,11 +8,12 @@ tags:
   - Dashboard API
 
 parameters:
-  - in: path
-    name: user_id
+  - name: Authorization
+    in: header
+    description: Access Token
     required: true
-    type: integer
-
+    type: string
+ 
 responses:
   500:
     description: Error occurred somewhere!

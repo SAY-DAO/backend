@@ -35,6 +35,8 @@ from flask_cors import CORS
 from ..payment import IDPay
 from say.celery import beat
 from say.date import *
+from say.authorization import *
+
 
 CELERY_TASK_LIST = [
     'say.tasks',
