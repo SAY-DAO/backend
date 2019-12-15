@@ -9,10 +9,17 @@ tags:
   - User API
 
 parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
   - in: path
     name: user_id
     required: true
-    type: integer
+    type: string
+    description: me or user_id
 
 responses:
   500:

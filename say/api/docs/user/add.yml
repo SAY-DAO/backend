@@ -13,6 +13,12 @@ consumes:
   - multipart/form-data
 
 parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
   - name: firstName
     in: formData
     required: true

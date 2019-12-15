@@ -50,8 +50,6 @@ def authorize(*roles):
             except:
                 return make_response(jsonify(message='Unauthorized'), 401)
 
-            claims = get_jwt_claims()
-
             if get_user_role() not in roles:
                 return make_response(jsonify(message='Permission Denied'), 403)
 
