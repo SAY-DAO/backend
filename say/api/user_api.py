@@ -309,6 +309,42 @@ class DeleteUserById(Resource):
             return resp
 
 
+class GetUserRole(Resource):
+    @authorize(USER, ADMIN, SUPER_ADMIN)
+    @me_or_user_id
+    @swag_from("./docs/user/role.yml")
+    def get(self, user_id, child_id):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+
+        try:
+            family = (
+                session.query(FamilyModel)
+                .filter_by(id_child=child_id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
+
+            user = (
+                session.query(UserFamilyModel)
+                .filter_by(id_user=user_id)
+                .filter_by(id_family=family.id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
+
+            resp = make_response(jsonify({"role": user.userRole}), 200)
+
+        except Exception as e:
+            print(e)
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
+
+        finally:
+            session.close()
+            return resp
+
+
 class AddUser(Resource):
     @authorize(ADMIN, SUPER_ADMIN)
     @swag_from("./docs/user/add.yml")
@@ -441,3 +477,5 @@ api.add_resource(GetUserChildrenCount, "/api/v2/user/children/count/userId=<user
 api.add_resource(UpdateUserById, "/api/v2/user/update/userId=<user_id>")
 api.add_resource(DeleteUserById, "/api/v2/user/delete/userId=<user_id>")
 api.add_resource(AddUser, "/api/v2/user/add")
+api.add_resource(GetUserRole, "/api/v2/user/role/userId=<user_id>&childId=<child_id>")
+
