@@ -37,6 +37,7 @@ from say.celery import beat
 from say.date import *
 from say.authorization import *
 from say.roles import *
+from say.exceptions import *
 
 
 CELERY_TASK_LIST = [

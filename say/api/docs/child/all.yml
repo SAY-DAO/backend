@@ -10,6 +10,12 @@ tags:
   - Child API
 
 parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+ 
   - in: path
     name: confirm
     required: true
@@ -17,6 +23,11 @@ parameters:
 
   - in: query
     name: ngo_id
+    schema:
+      type: integer
+
+  - in: query
+    name: sw_id
     schema:
       type: integer
 

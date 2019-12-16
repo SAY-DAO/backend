@@ -121,19 +121,67 @@ def get_child_need(session, child_id, urgent=False, done=False,
 
     return child_needs
 
-
 class GetAllChildren(Resource):
+
+    def check_privileges(func):  # TODO: priv
+
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            query = request.args
+
+            ngo_id = query.get('ngo_id', None)
+            sw_id = query.get('sw_id', None)
+            sw_role = get_user_role()
+
+            if sw_role in [SOCIAL_WORKER, COORDINATOR]:
+                if sw_id or ngo_id:
+                    return HTTP_PERMISION_DENIED()
+
+            if sw_role in [NGO_SUPERVISOR]:
+                if ngo_id:
+                    return HTTP_PERMISION_DENIED()
+
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    def filter_by_privilege(self, children_query):  # TODO: priv
+        query = request.args
+
+        ngo_id = query.get('ngo_id', None)
+        sw_id = query.get('sw_id', None)
+        sw_role = get_user_role()
+
+        if sw_role in [SOCIAL_WORKER, COORDINATOR]:
+            sw_id = get_user_id()
+
+        if sw_role in [NGO_SUPERVISOR]:
+            ngo_id = get_sw_ngo_id()
+
+        if ngo_id:
+            children_query = children_query.filter_by(id_ngo=ngo_id)
+
+        if sw_id:
+            children_query = children_query \
+                .filter_by(id_social_worker=sw_id)
+
+        return children_query
+
+    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
+               SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @check_privileges
     @swag_from("./docs/child/all.yml")
-    #@cache.cached(timeout=10, query_string=True)
     def get(self, confirm):
-        args = request.args
-        take = args.get('take', 100)
-        skip = args.get('skip', 0)
-        ngo_id = args.get('ngo_id', None)
+        query = request.args.copy()
+        take = query.get('take', 100)
+        skip = query.get('skip', 0)
+        ngo_id = query.get('ngo_id', None)
+        sw_id = query.get('sw_id', None)
+
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             confirm = int(confirm)
@@ -143,8 +191,7 @@ class GetAllChildren(Resource):
                 .filter_by(isMigrated=False)
             )
 
-            if ngo_id:
-                children_query = children_query.filter_by(id_ngo=ngo_id)
+            children_query = self.filter_by_privilege(children_query)
 
             if int(confirm) == 0:
                 children_query = children_query.filter_by(isConfirmed=False)
@@ -254,173 +301,6 @@ class GetChildNeeds(Resource):
                 )),
                 200,
             )
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetChildDoneNeeds(Resource):
-    @swag_from("./docs/child/done.yml")
-    def get(self, child_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            resp = make_response(jsonify(get_child_need(session, child_id, done=True)), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetChildNeedsByCategory(Resource):
-    @swag_from("./docs/child/category.yml")
-    def get(self, child_id, category):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            needs = (
-                session.query(ChildNeedModel)
-                .filter_by(isDeleted=False)
-                .filter_by(id_child=child_id)
-                .all()
-            )
-
-            res = {}
-            for need in needs:
-                if need.need.category == int(category):
-                    need_data = (
-                        session.query(NeedModel)
-                        .filter_by(id=need.id_need)
-                        .filter_by(isDeleted=False)
-                        .filter_by(isConfirmed=True)
-                        .first()
-                    )
-                    res[str(need.id_need)] = get_need(need_data, session)
-
-            resp = make_response(jsonify(res), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetChildSayName(Resource):
-    @swag_from("./docs/child/say_name.yml")
-    def get(self, child_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            child = (
-                session.query(ChildModel)
-                .filter_by(id=child_id)
-                .filter_by(isDeleted=False)
-                .filter_by(isMigrated=False)
-                .filter_by(isConfirmed=True)
-                .first()
-            )
-
-            resp = make_response(jsonify({"ChildSayName": child.sayName}), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetChildFamilyId(Resource):
-    @swag_from("./docs/child/family_id.yml")
-    def get(self, child_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            family = (
-                session.query(FamilyModel)
-                .filter_by(id_child=child_id)
-                .filter_by(isDeleted=False)
-                .first()
-            )
-
-            resp = make_response(jsonify({"ChildFamilyId": family.id}), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetChildAvatarUrl(Resource):
-    @swag_from("./docs/child/avatar.yml")
-    def get(self, child_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            child = (
-                session.query(ChildModel)
-                .filter_by(id=child_id)
-                .filter_by(isDeleted=False)
-                .filter_by(isMigrated=False)
-                .filter_by(isConfirmed=True)
-                .first()
-            )
-
-            resp = make_response(jsonify({"ChildAvatarUrl": child.avatarUrl}), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetChildCreditSpent(Resource):
-    @swag_from("./docs/child/spent.yml")
-    def get(self, child_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            child = (
-                session.query(ChildModel)
-                .filter_by(id=child_id)
-                .filter_by(isDeleted=False)
-                .filter_by(isMigrated=False)
-                .filter_by(isConfirmed=True)
-                .first()
-            )
-
-            resp = make_response(jsonify({"ChildCreditSpent": child.spentCredit}), 200)
 
         except Exception as e:
             print(e)
@@ -993,231 +873,6 @@ class DeleteChildById(Resource):
             return resp
 
 
-class GetChildrenByBirthPlace(Resource):
-    @swag_from("./docs/child/birthplace.yml")
-    def get(self, birth_place):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            children = (
-                session.query(ChildModel)
-                .filter_by(birthPlace=birth_place)
-                .filter_by(isDeleted=False)
-                .filter_by(isMigrated=False)
-                .filter_by(isConfirmed=True)
-                .all()
-            )
-
-            res = {}
-            for child in children:
-                if child.isConfirmed:
-                    res[str(child.id)] = get_child_by_id(session, child.id)
-
-            resp = make_response(jsonify(res), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetChildrenByBirthDate(Resource):
-    @swag_from("./docs/child/birth_date.yml")
-    def get(self, birth_date, is_after):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            if is_after.lower() == "true":
-                children = (
-                    session.query(ChildModel)
-                    .filter(ChildModel.birthDate >= birth_date)
-                    .filter_by(isDeleted=False)
-                    .filter_by(isConfirmed=True)
-                    .filter_by(isMigrated=False)
-                    .all()
-                )
-
-            else:
-                children = (
-                    session.query(ChildModel)
-                    .filter(ChildModel.birthDate <= birth_date)
-                    .filter_by(isDeleted=False)
-                    .filter_by(isConfirmed=True)
-                    .filter_by(isMigrated=False)
-                    .all()
-                )
-
-            res = {}
-            for child in children:
-                if child.isConfirmed:
-                    res[str(child.id)] = get_child_by_id(session, child.id)
-
-            resp = make_response(jsonify(res), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetChildrenByNationality(Resource):
-    @swag_from("./docs/child/nationality.yml")
-    def get(self, nationality):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            children = (
-                session.query(ChildModel)
-                .filter_by(nationality=nationality)
-                .filter_by(isDeleted=False)
-                .filter_by(isMigrated=False)
-                .filter_by(isConfirmed=True)
-                .all()
-            )
-
-            res ={}
-            for child in children:
-                if child.isConfirmed:
-                    res[str(child.id)] = get_child_by_id(session, child.id)
-
-            resp = make_response(jsonify(res), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetChildByNgoId(Resource):
-    @swag_from("./docs/child/ngo.yml")
-    def get(self, ngo_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = {'message': 'major error occurred!'}
-
-        try:
-            children = (
-                session.query(ChildModel)
-                .filter_by(id_ngo=ngo_id)
-                .filter_by(isDeleted=False)
-                .filter_by(isMigrated=False)
-                .filter_by(isConfirmed=True)
-                .all()
-            )
-
-            res = {}
-            for child in children:
-                if child.isConfirmed:
-                    res[str(child.id)] = get_child_by_id(session, child.id)
-
-            resp = make_response(jsonify(res), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetChildBySocialWorkerId(Resource):
-    @swag_from("./docs/child/social_worker.yml")
-    def get(self, social_worker_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            children = (
-                session.query(ChildModel)
-                .filter_by(id_social_worker=social_worker_id)
-                .filter_by(isDeleted=False)
-                .filter_by(isConfirmed=True)
-                .filter_by(isMigrated=False)
-                .all()
-            )
-
-            res = {}
-            for child in children:
-                if child.isConfirmed:
-                    res[str(child.id)] = get_child_by_id(session, child.id)
-
-            resp = make_response(jsonify(res), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetChildUrgentNeedsById(Resource):
-    @swag_from("./docs/child/urgent.yml")
-    def get(self, child_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            resp = make_response(jsonify(get_child_need(session, child_id, urgent=True)), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetAllChildrenUrgentNeeds(Resource):
-    @swag_from("./docs/child/all_urgent.yml")
-    def get(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            children = (
-                session.query(ChildModel)
-                .filter_by(isDeleted=False)
-                .filter_by(isConfirmed=True)
-                .all()
-            )
-
-            result = {}
-            for child in children:
-                result[str(child.id)] = get_child_need(session, child.id, urgent=True)
-
-            resp = make_response(jsonify(result), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
 class ConfirmChild(Resource):
     @swag_from("./docs/child/confirm.yml")
     def patch(self, child_id, social_worker_id):
@@ -1379,63 +1034,6 @@ class ConfirmChild(Resource):
             return resp
 
 
-class GetChildGeneratedCode(Resource):
-    @swag_from("./docs/child/code.yml")
-    def get(self, child_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            child = (
-                session.query(ChildModel)
-                .filter_by(id=child_id)
-                .filter_by(isDeleted=False)
-                .filter_by(isMigrated=False)
-                .filter_by(isConfirmed=True)
-                .first()
-            )
-
-            resp = make_response(jsonify({"ChildGeneratedCode": child.generatedCode}), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetChildByGeneratedCode(Resource):
-    @swag_from("./docs/child/by_code.yml")
-    def get(self, generated_code):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            child = (
-                session.query(ChildModel)
-                .filter_by(generatedCode=generated_code)
-                .filter_by(isDeleted=False)
-                .filter_by(isMigrated=False)
-                .filter_by(isConfirmed=True)
-                .first()
-            )
-
-            res = get_child_by_id(session, child.id, confirm=2)
-            resp = make_response(jsonify(res), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
 class MigrateChild(Resource):
     @swag_from("./docs/child/migrate.yml")
     def patch(self, child_id, social_worker_id):
@@ -1587,14 +1185,6 @@ api.add_resource(
     GetChildNeeds,
     "/api/v2/child/need/childId=<child_id>&confirm=<confirm>"
 )
-api.add_resource(GetChildDoneNeeds, "/api/v2/child/need/done/childId=<child_id>")
-api.add_resource(
-    GetChildNeedsByCategory, "/api/v2/child/need/childId=<child_id>&category=<category>"
-)
-api.add_resource(GetChildSayName, "/api/v2/child/sayName/childId=<child_id>")
-api.add_resource(GetChildFamilyId, "/api/v2/child/family/childId=<child_id>")
-api.add_resource(GetChildAvatarUrl, "/api/v2/child/avatar/childId=<child_id>")
-api.add_resource(GetChildCreditSpent, "/api/v2/child/creditSpent/childId=<child_id>")
 api.add_resource(
     AddChild, "/api/v2/child/add/socialWorkerId=<social_worker_id>&ngoId=<ngo_id>"
 )
@@ -1607,28 +1197,9 @@ api.add_resource(
 )
 api.add_resource(UpdateChildById, "/api/v2/child/update/childId=<child_id>")
 api.add_resource(DeleteChildById, "/api/v2/child/delete/childId=<child_id>")
-api.add_resource(GetChildrenByBirthPlace, "/api/v2/child/birthPlace=<birth_place>")
-api.add_resource(
-    GetChildrenByBirthDate, "/api/v2/child/date=<birth_date>&isAfter=<is_after>"
-)
-api.add_resource(GetChildrenByNationality, "/api/v2/child/nationality=<nationality>")
-api.add_resource(GetChildByNgoId, "/api/v2/child/ngoId=<ngo_id>")
-api.add_resource(
-    GetChildBySocialWorkerId, "/api/v2/child/socialWorkerId=<social_worker_id>"
-)
-api.add_resource(
-    GetChildUrgentNeedsById, "/api/v2/child/need/urgent/childId=<child_id>"
-)
-api.add_resource(GetAllChildrenUrgentNeeds, "/api/v2/child/need/urgent/all")
 api.add_resource(
     ConfirmChild,
     "/api/v2/child/confirm/childId=<child_id>&socialWorkerId=<social_worker_id>",
-)
-api.add_resource(
-    GetChildGeneratedCode, "/api/v2/child/generatedCode/childId=<child_id>"
-)
-api.add_resource(
-    GetChildByGeneratedCode, "/api/v2/child/generatedCode=<generated_code>"
 )
 api.add_resource(
     MigrateChild,
