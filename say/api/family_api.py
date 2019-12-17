@@ -1,5 +1,6 @@
 from say.models.family_model import FamilyModel
 from say.models.user_family_model import UserFamilyModel
+from say.models.need_family_model import NeedFamilyModel
 from . import *
 
 """
@@ -153,6 +154,58 @@ class AddUserToFamily(Resource):
             return resp
 
 
+class LeaveFamily(Resource):
+
+    @authorize
+    @swag_from("./docs/family/leave.yml")
+    def patch(self, family_id):
+        user_id = get_user_id()
+
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+
+        try:
+            family = (
+                session.query(FamilyModel)
+                .filter_by(id=family_id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
+            user_family = (
+                session.query(UserFamilyModel)
+                .filter_by(id_user=user_id)
+                .filter_by(id_family=family_id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
+            participation = (
+                session.query(NeedFamilyModel)
+                .filter_by(id_user=user_id)
+                .filter_by(id_family=user_id)
+                .filter_by(isDeleted=False)
+            )
+
+            # TODO: WHY?
+            for participate in participation:
+                participate.isDeleted = True
+
+            family.child.sayFamilyCount -= 1
+            user_family.isDeleted = True
+
+            session.commit()
+
+            resp = make_response(jsonify({"message": "DELETED SUCCESSFULLY!"}), 200)
+
+        except Exception as e:
+            print(e)
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
+
+        finally:
+            session.close()
+            return resp
+
+
 """
 API URLs
 """
@@ -162,3 +215,8 @@ api.add_resource(
     AddUserToFamily, "/api/v2/family/add/familyId=<family_id>"
 )
 api.add_resource(GetAllFamilies, "/api/v2/family/all")
+api.add_resource(
+    LeaveFamily,
+    "/api/v2/family/<family_id>/leave",
+)
+
