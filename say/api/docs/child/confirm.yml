@@ -10,13 +10,14 @@ consumes:
   - multipart/form-data
 
 parameters:
-  - in: path
-    name: child_id
+  - name: Authorization
+    in: header
+    description: Access Token
     required: true
-    type: integer
+    type: string
 
   - in: path
-    name: social_worker_id
+    name: child_id
     required: true
     type: integer
 

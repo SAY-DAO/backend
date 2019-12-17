@@ -8,6 +8,12 @@ tags:
   - Child API
 
 parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
   - in: path
     name: child_id
     required: true

@@ -1,11 +1,11 @@
-delete a member from child family
+Leave from a family
 This API deletes a specific user from child family.
 Calling this API affects user_family table by updating a row and set isDeleted tag true, child table by decreasing its sayFamilyCount field by 1 and need_family by setting isDeleted tag true for some rows.
 We do not fully delete any rows.
 ---
 
 tags:
-  - Child API
+  - Family API
 
 parameters:
   - name: Authorization
@@ -18,7 +18,6 @@ parameters:
     name: family_id
     required: true
     type: integer
-
 
 responses:
   500:

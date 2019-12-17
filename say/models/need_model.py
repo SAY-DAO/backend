@@ -70,7 +70,12 @@ class NeedModel(base):
     def progress(cls):
         return
 
-    child = relationship('ChildModel', foreign_keys=child_id, uselist=False)
+    child = relationship(
+        'ChildModel',
+        foreign_keys=child_id,
+        uselist=False,
+        back_populates='needs',
+    )
     payments = relationship('PaymentModel', back_populates='need')
     need_family = relationship(
         'NeedFamilyModel',
