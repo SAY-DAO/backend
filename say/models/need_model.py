@@ -103,18 +103,19 @@ class NeedModel(base):
                 from say.models import NgoModel
 
                 SAY_ngo = session.query(NgoModel).filter_by(name='SAY').first()
-                with app.app_context():
-                    send_email.delay(
-                        subject=f'تغییر وضعیت کالا {dkp}',
-                        emails=SAY_ngo.coordinator.emailAddress,
-                        html=render_template(
-                            'product_status_changed.html',
-                             child=self.child,
-                             need=self,
-                             dkp=dkp,
-                             details=cost,
-                        ),
-                    )
+                if child.ngo.name != SAY_ngo.name:
+                    with app.app_context():
+                        send_email.delay(
+                            subject=f'تغییر وضعیت کالا {dkp}',
+                            emails=SAY_ngo.coordinator.emailAddress,
+                            html=render_template(
+                                'product_status_changed.html',
+                                 child=self.child,
+                                 need=self,
+                                 dkp=dkp,
+                                 details=cost,
+                            ),
+                        )
         return data
 
     def send_purchase_email(self):
