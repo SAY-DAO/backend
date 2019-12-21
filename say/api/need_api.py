@@ -19,6 +19,33 @@ Need APIs
 """
 
 
+def filter_by_privilege(query):  # TODO: priv
+    user_role = get_user_role()
+    sw_id = get_user_id()
+    ngo_id = get_sw_ngo_id()
+
+    if user_role in [SOCIAL_WORKER, COORDINATOR]:
+        query = query \
+            .join(ChildModel) \
+            .filter(ChildModel.id_social_worker==sw_id) \
+
+    elif user_role in [NGO_SUPERVISOR]:
+        query = query \
+            .join(ChildModel) \
+            .join(SocialWorkerModel) \
+            .filter(SocialWorkerModel.id_ngo==ngo_id)
+
+    elif user_role in [USER]:
+        query = query \
+            .join(ChildModel) \
+            .join(FamilyModel) \
+            .join(UserFamilyModel) \
+            .filter(UserFamilyModel.id_user==user_id) \
+            .filter(UserFamilyModel.isDeleted==False) \
+
+    return query
+
+
 def get_all_urgent_needs(session):
     needs = (
         session.query(NeedModel)
@@ -221,6 +248,9 @@ class GetNeedById(Resource):
 
 
 class UpdateNeedById(Resource):
+
+    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
+               SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/need/update.yml")
     def patch(self, need_id):
         session_maker = sessionmaker(db)
@@ -228,19 +258,23 @@ class UpdateNeedById(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            need = (
-                session.query(NeedModel)
-                .filter_by(id=need_id)
+            need_query = session.query(NeedModel) \
+                .filter_by(id=need_id) \
                 .filter_by(isDeleted=False)
-                .first()
-            )
+
+            need = filter_by_privilege(need_query).first()
+
+            if need is None:
+                resp = HTTP_NOT_FOUND()
+                return
+
             temp = obj_to_dict(need)
             child = need.child
 
             activity = ActivityModel(
-                id_social_worker=child.id_social_worker,
+                id_social_worker=get_user_id(),
                 model=NeedModel.__tablename__,
-                activityCode=11,
+                activityCode=11,  # TODO: wrong code
             )
             session.add(activity)
 
@@ -423,6 +457,9 @@ class UpdateNeedById(Resource):
 
 
 class DeleteNeedById(Resource):
+
+    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
+               SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/need/delete.yml")
     def patch(self, need_id):
         session_maker = sessionmaker(db)
@@ -430,12 +467,11 @@ class DeleteNeedById(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            need = (
-                session.query(NeedModel)
-                .filter_by(id=need_id)
+            need_query = session.query(NeedModel) \
+                .filter_by(id=need_id) \
                 .filter_by(isDeleted=False)
-                .first()
-            )
+
+            need = filter_by_privilege(need_query).first()
 
             if need.isConfirmed:
                 if need.paid != 0:
@@ -510,13 +546,30 @@ class ConfirmNeed(Resource):
 
 
 class AddNeed(Resource):
+
+    def check_privilege(self, sw_id, allowed_sw_ids):  # TODO: priv
+        sw_role = get_user_role()
+
+        if sw_role in [SOCIAL_WORKER, COORDINATOR]:
+            if sw_id != get_user_id():
+                return HTTP_PERMISION_DENIED()
+
+        elif sw_role in [NGO_SUPERVISOR]:
+            if sw_id not in allowed_sw_ids:
+                return HTTP_PERMISION_DENIED()
+
+        return None
+
+    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
+               SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/need/add.yml")
-    def post(self, child_id):
+    def post(self):
         session_maker = sessionmaker(db)
         session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
+            child_id = int(request.form["child_id"])
             child = (
                 session.query(ChildModel)
                 .filter_by(id=child_id)
@@ -525,7 +578,24 @@ class AddNeed(Resource):
                 .filter_by(isConfirmed=True)
                 .first()
             )
-            debug(f'child: {obj_to_dict(child)}')
+
+            sw_id = int(request.form.get("sw_id", get_user_id()))
+            sw_role = get_user_role()
+
+            allowed_sw_ids = []
+            if sw_role in [NGO_SUPERVISOR]:
+                allowed_sw_ids_tuple = session.query(SocialWorkerModel.id) \
+                    .filter_by(isDeleted=False) \
+                    .filter_by(id_ngo=get_sw_ngo_id()) \
+                    .distinct() \
+                    .all()
+
+                allowed_sw_ids = [item[0] for item in allowed_sw_ids_tuple]
+
+            error = self.check_privilege(sw_id, allowed_sw_ids)
+            if error:
+                resp = error
+                return
 
             if not child.isConfirmed:
                 resp = make_response(jsonify({"message": "error: child is not confirmed yet!"}), 500)
@@ -672,4 +742,4 @@ api.add_resource(
     ConfirmNeed,
     "/api/v2/need/confirm/needId=<need_id>",
 )
-api.add_resource(AddNeed, "/api/v2/need/add/childId=<child_id>")
+api.add_resource(AddNeed, "/api/v2/need/")
