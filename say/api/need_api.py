@@ -21,13 +21,13 @@ Need APIs
 
 def filter_by_privilege(query):  # TODO: priv
     user_role = get_user_role()
-    sw_id = get_user_id()
+    user_id = get_user_id()
     ngo_id = get_sw_ngo_id()
 
     if user_role in [SOCIAL_WORKER, COORDINATOR]:
         query = query \
             .join(ChildModel) \
-            .filter(ChildModel.id_social_worker==sw_id) \
+            .filter(ChildModel.id_social_worker==user_id) \
 
     elif user_role in [NGO_SUPERVISOR]:
         query = query \
@@ -129,12 +129,17 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
 
 
 class GetAllNeeds(Resource):
+
+    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
+               SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/need/all.yml")
     def get(self, confirm):
+        sw_role = get_user_role()
         args = request.args
         done = args.get('done', -1)
         status = args.get('status', None)
         ngo_id = args.get('ngoId', None)
+
         is_reported = args.get('isReported', None)
         type_ = args.get('type', None)
 
@@ -184,12 +189,16 @@ class GetAllNeeds(Resource):
                 is_reported = bool(int(is_reported))
                 needs = needs.filter_by(isReported=is_reported)
 
-            if ngo_id:
+            if ngo_id and sw_role in [
+                SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+            ]:
                 ngo_id = int(ngo_id)
                 needs = needs \
-                    .join(ChildNeedModel) \
                     .join(ChildModel) \
-                    .filter(ChildModel.id_ngo==ngo_id)
+                    .join(SocialWorkerModel) \
+                    .filter(SocialWorkerModel.id_ngo==ngo_id)
+
+            needs = filter_by_privilege(needs)
 
             result = OrderedDict(
                 totalCount=needs.count(),
@@ -222,6 +231,9 @@ class GetAllNeeds(Resource):
 
 
 class GetNeedById(Resource):
+
+    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
+               SAY_SUPERVISOR, ADMIN, USER)  # TODO: priv
     @swag_from("./docs/need/id.yml")
     def get(self, need_id):
         session_maker = sessionmaker(db)
@@ -229,14 +241,24 @@ class GetNeedById(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            need = (
-                session.query(NeedModel)
-                .filter_by(isDeleted=False)
+            need_query = session.query(NeedModel) \
+                .filter_by(isDeleted=False) \
                 .filter_by(id=need_id)
-                .first()
-            )
 
-            resp = make_response(jsonify(get_need(need, session)), 200)
+            need = filter_by_privilege(need_query).first()
+
+            if need is None:
+                resp = HTTP_NOT_FOUND()
+                return
+
+            need_dict = obj_to_dict(need, relationships=True)
+            if get_user_role() in [USER]:  # TODO: priv
+                del need_dict['child']
+
+            resp = make_response(
+                jsonify(need_dict),
+                200,
+            )
 
         except Exception as e:
             print(e)
