@@ -884,8 +884,6 @@ class ConfirmChild(Resource):
                 .filter_by(isMigrated=False)
                 .first()
             )
-            # print(child.migratedId)
-            # print(type(child.migratedId))
 
             if child.migratedId is None:
                 primary_child = child
