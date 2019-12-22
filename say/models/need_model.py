@@ -49,6 +49,7 @@ class NeedModel(base):
     oncePurchased = Column(Boolean, nullable=False, default=False)
 
     def _set_cost(self, cost):
+        cost = int(str(cost).replace(',', ''))
         self._cost = cost
 
     def _get_cost(self):

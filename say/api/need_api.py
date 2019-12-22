@@ -27,13 +27,19 @@ def filter_by_privilege(query):  # TODO: priv
     if user_role in [SOCIAL_WORKER, COORDINATOR]:
         query = query \
             .join(ChildModel) \
-            .filter(ChildModel.id_social_worker==user_id) \
+            .filter(or_(
+                ChildModel.id_social_worker==user_id,
+                ChildModel.id==DEFAULT_CHILD_ID,
+             ))
 
     elif user_role in [NGO_SUPERVISOR]:
         query = query \
             .join(ChildModel) \
             .join(SocialWorkerModel) \
-            .filter(SocialWorkerModel.id_ngo==ngo_id)
+            .filter(or_(
+                SocialWorkerModel.id_ngo==ngo_id,
+                ChildModel.id==DEFAULT_CHILD_ID,
+             ))
 
     elif user_role in [USER]:
         query = query \
@@ -306,7 +312,7 @@ class UpdateNeedById(Resource):
                     return
 
                 # if not need.isConfirmed:
-                need._cost = int(request.form["cost"])
+                need.cost = request.form["cost"]
 
                 # else:
                 #     resp = make_response(jsonify({"message": "error: cannot change cost for confirmed need!"}), 500)

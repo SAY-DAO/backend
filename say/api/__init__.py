@@ -40,6 +40,8 @@ from say.roles import *
 from say.exceptions import *
 
 
+DEFAULT_CHILD_ID = 104  # TODO: Remove this after implementing pre needs
+
 CELERY_TASK_LIST = [
     'say.tasks',
 ]

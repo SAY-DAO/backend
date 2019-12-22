@@ -52,7 +52,7 @@ class GetAllSocialWorkers(Resource):
 class AddSocialWorker(Resource):
     panel_users = 0
 
-    @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @authorize(SUPER_ADMIN)  # TODO: priv
     @swag_from("./docs/social_worker/add.yml")
     def post(self):
         session_maker = sessionmaker(db)
@@ -126,16 +126,6 @@ class AddSocialWorker(Resource):
             phone_number = request.form["phoneNumber"]
             emergency_phone_number = request.form["emergencyPhoneNumber"]
             email_address = request.form["emailAddress"]
-
-            if get_user_role() in [COORDINATOR, NGO_SUPERVISOR]:  # TODO: priv
-                user_id = get_user_id()
-                user = session.query(SocialWorkerModel).get(user_id)
-                if user.id_ngo != id_ngo:
-                    resp = make_response(jsonify(
-                        message='Permission Denied'),
-                        403,
-                    )
-                    return
 
             register_date = datetime.utcnow()
             last_update_date = datetime.utcnow()

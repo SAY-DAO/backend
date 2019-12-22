@@ -267,12 +267,15 @@ class GetChildById(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
+            child_id = int(child_id)
             child_query = session.query(ChildModel) \
                 .filter(ChildModel.isDeleted==False) \
                 .filter(ChildModel.isMigrated==False) \
                 .filter(ChildModel.id==child_id)
 
-            child_query = filter_by_privilege(child_query)
+            if child_id != DEFAULT_CHILD_ID:  # TODO: need needs
+                child_query = filter_by_privilege(child_query)
+
             child_query = filter_by_confirm(child_query, confirm)
 
             child = child_query.one_or_none()
