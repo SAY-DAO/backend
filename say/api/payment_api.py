@@ -293,32 +293,11 @@ class VerifyPayment(Resource):
 
             child.doneNeedCount += 1
 
-            participants = (
-                session.query(NeedFamilyModel)
-                .filter_by(id_need=need.id)
-                .filter_by(isDeleted=False)
-            )
-
-            emails = set()
-            ccs = {user.emailAddress for user in child.families[0].members}
-
+            participants = need.get_participants()
             for participate in participants:
                 participate.user.doneNeedCount += 1
-                emails.add(participate.user.emailAddress)
 
-            ccs -= emails
-            iran_date = JalaliDate(need.doneAt).localdateformat()
-            send_email.delay(
-                subject=f'یکی از نیازهای {child.sayName} کامل شد',
-                emails=list(emails),
-                cc=list(ccs),
-                html=render_template(
-                    'status_done.html',
-                    child=child,
-                    need=need,
-                    date=iran_date,
-                ),
-            )
+            need.send_done_email()
 
         session.commit()
 

@@ -132,6 +132,29 @@ class NeedModel(base):
                         )
         return data
 
+    def send_done_email(self):
+        cc_emails = self.get_ccs()
+        to_emails = set()
+
+        participants = self.get_participants()
+        for participate in participants:
+            to_emails.add(participate.user.emailAddress)
+
+        cc_emails -= to_emails
+
+        iran_date = JalaliDate(self.doneAt).localdateformat()
+        send_email.delay(
+            subject=f'یکی از نیازهای {self.child.sayName} کامل شد',
+            emails=list(to_emails),
+            cc=list(cc_emails),
+            html=render_template(
+                'status_done.html',
+                child=self.child,
+                need=self,
+                date=iran_date,
+            ),
+        )
+
     def send_purchase_email(self):
         cc_emails = self.get_ccs()
         to_emails = set()
