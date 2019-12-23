@@ -300,7 +300,7 @@ class VerifyPayment(Resource):
             )
 
             emails = set()
-            ccs = {user.emailAddress for user in child.families[0].users}
+            ccs = {user.emailAddress for user in child.families[0].members}
 
             for participate in participants:
                 participate.user.doneNeedCount += 1
