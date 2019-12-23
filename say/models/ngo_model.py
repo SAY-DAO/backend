@@ -66,12 +66,9 @@ class NgoModel(base):
 
         from say.api import app
 
-        from datetime import datetime, timedelta
-        from khayyam import JalaliDate
         # This date show when the needs status updated to 3
-        date = JalaliDate(datetime.utcnow() - timedelta(days=1)) \
-            .strftime('%Y/%m/%d')
-
+        date = JalaliDate(datetime.utcnow() - timedelta(days=1))
+        formated_date = format_jalali_date(date)
         say = session.query(NgoModel).filter_by(name='SAY').first()
         bcc = [say.coordinator.emailAddress]
 
@@ -86,15 +83,15 @@ class NgoModel(base):
                         needs=services,
                         ngo=self,
                         surname=surname(self.coordinator.gender),
-                        date=date,
+                        date=formated_date,
                     ),
                  )
 
         if len(products) != 0:
             for need in products:
                 if need.delivery_date:
-                    need.delivere_at = JalaliDate(need.delivery_date) \
-                        .strftime('%Y/%m/%d')
+                    date = JalaliDate(need.delivery_date)
+                    need.delivere_at = format_jalali_date(date)
                 else:
                     need_delivere_at = None
 
@@ -108,7 +105,7 @@ class NgoModel(base):
                         needs=products,
                         ngo=self,
                         surname=surname(self.coordinator.gender),
-                        date=date,
+                        date=formated_date,
                         miladi_to_jalali=JalaliDate
                     ),
                  )

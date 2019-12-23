@@ -30,11 +30,11 @@ from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from logging import debug, basicConfig, DEBUG
 from flask_caching import Cache
-# from hazm import *
 from flask_cors import CORS
 
 from ..payment import IDPay
 from say.celery import beat
+from say.date import *
 
 CELERY_TASK_LIST = [
     'say.tasks',
