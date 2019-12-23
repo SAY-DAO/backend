@@ -3,6 +3,7 @@ from sqlalchemy import Column, ForeignKey, String, Integer, Date, Boolean, \
 from sqlalchemy.orm import relationship, synonym, scoped_session, sessionmaker
 
 from say.api import base
+from say.date import *
 
 
 from .activity_model import ActivityModel

@@ -121,8 +121,9 @@ class NeedModel(base):
     def send_purchase_email(self):
         session = object_session(self)
         cc_emails = {user.emailAddress for user in self.child.families[0].users}
+        from say.models.need_family_model import NeedFamilyModel
         participants = participants = (
-                session.query(self.need_family.__class__)
+                session.query(NeedFamilyModel)
                 .filter_by(id_need=self.id)
                 .filter_by(isDeleted=False)
             )
