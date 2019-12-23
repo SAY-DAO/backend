@@ -22,3 +22,9 @@ class FamilyModel(base):
         'UserFamilyModel',
         back_populates='family',
     )
+
+    def current_members(self):
+        for member in self.members:
+            if member.isDeleted:
+                continue
+            yield member
