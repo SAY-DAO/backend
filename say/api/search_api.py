@@ -5,26 +5,13 @@ from . import *
 from say.api.child_api import get_child_by_id
 from say.models.child_model import ChildModel
 from say.models.child_need_model import ChildNeedModel
+from say.models.need_model import NeedModel
 from say.models.family_model import FamilyModel
 from say.models.user_family_model import UserFamilyModel
 from say.models.user_model import UserModel
 """
 Search APIs
 """
-
-
-def list_bias(array: list):
-    # array is a sorted list:  5, 4, 3,...
-    base = array[-1]
-    if base <= 0:
-        bias = abs(base) + 1
-    else:
-        return
-
-    for a in range(len(array)):
-        array[a] += bias
-
-    return
 
 
 class GetRandomSearchResult(Resource):
@@ -53,6 +40,9 @@ class GetRandomSearchResult(Resource):
                 .filter_by(isConfirmed=True) \
                 .filter_by(isDeleted=False) \
                 .filter_by(isMigrated=False) \
+                .join(NeedModel) \
+                .filter(NeedModel.status < 2) \
+                .filter(NeedModel.isConfirmed==True) \
                 .order_by(func.random()) \
                 .limit(1) \
                 .first()
