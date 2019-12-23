@@ -5,6 +5,7 @@ Child Model
 """
 
 
+# TODO: why it has N family instead of one?
 class ChildModel(base):
     __tablename__ = "child"
 
