@@ -5,6 +5,7 @@ Child Model
 """
 
 
+# TODO: why it has N family instead of one?
 class ChildModel(base):
     __tablename__ = "child"
 
@@ -58,3 +59,4 @@ class ChildModel(base):
         foreign_keys=id_social_worker,
         back_populates='children',
     )
+

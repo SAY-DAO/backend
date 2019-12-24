@@ -78,6 +78,20 @@ class NeedModel(base):
         back_populates='need',
     )
 
+    def get_ccs(self):
+        return {
+            member.user.emailAddress
+            for member in self.child.families[0].current_members()
+        }
+
+    def get_participants(self):
+        from say.models.need_family_model import NeedFamilyModel
+        session = object_session(self)
+
+        return session.query(NeedFamilyModel) \
+            .filter_by(id_need=self.id) \
+            .filter_by(isDeleted=False) \
+
     def update(self):
         from say.utils import digikala
         data = digikala.get_data(self.link)
@@ -118,17 +132,34 @@ class NeedModel(base):
                         )
         return data
 
-    def send_purchase_email(self):
-        session = object_session(self)
-        cc_emails = {user.emailAddress for user in self.child.families[0].users}
-        from say.models.need_family_model import NeedFamilyModel
-        participants = participants = (
-                session.query(NeedFamilyModel)
-                .filter_by(id_need=self.id)
-                .filter_by(isDeleted=False)
-            )
-
+    def send_done_email(self):
+        cc_emails = self.get_ccs()
         to_emails = set()
+
+        participants = self.get_participants()
+        for participate in participants:
+            to_emails.add(participate.user.emailAddress)
+
+        cc_emails -= to_emails
+
+        iran_date = JalaliDate(self.doneAt).localdateformat()
+        send_email.delay(
+            subject=f'یکی از نیازهای {self.child.sayName} کامل شد',
+            emails=list(to_emails),
+            cc=list(cc_emails),
+            html=render_template(
+                'status_done.html',
+                child=self.child,
+                need=self,
+                date=iran_date,
+            ),
+        )
+
+    def send_purchase_email(self):
+        cc_emails = self.get_ccs()
+        to_emails = set()
+
+        participants = self.get_participants()
         for participate in participants:
             to_emails.add(participate.user.emailAddress)
 
@@ -147,15 +178,10 @@ class NeedModel(base):
          )
 
     def send_child_delivery_product_email(self):
-        session = object_session(self)
-        cc_emails = {user.emailAddress for user in self.child.families[0].users}
-        participants = participants = (
-                session.query(self.need_family.__class__)
-                .filter_by(id_need=self.id)
-                .filter_by(isDeleted=False)
-            )
-
+        cc_emails = self.get_ccs()
         to_emails = set()
+
+        participants = self.get_participants()
         for participate in participants:
             to_emails.add(participate.user.emailAddress)
 
@@ -185,15 +211,10 @@ class NeedModel(base):
         )
 
     def send_child_delivery_service_email(self):
-        session = object_session(self)
-        cc_emails = {user.emailAddress for user in self.child.families[0].users}
-        participants = participants = (
-                session.query(self.need_family.__class__)
-                .filter_by(id_need=self.id)
-                .filter_by(isDeleted=False)
-            )
-
+        cc_emails = self.get_ccs()
         to_emails = set()
+
+        participants = self.get_participants()
         for participate in participants:
             to_emails.add(participate.user.emailAddress)
 
@@ -213,15 +234,10 @@ class NeedModel(base):
 
 
     def send_money_to_ngo_email(self):
-        session = object_session(self)
-        cc_emails = {user.emailAddress for user in self.child.families[0].users}
-        participants = participants = (
-                session.query(self.need_family.__class__)
-                .filter_by(id_need=self.id)
-                .filter_by(isDeleted=False)
-            )
-
+        cc_emails = self.get_ccs()
         to_emails = set()
+
+        participants = self.get_participants()
         for participate in participants:
             to_emails.add(participate.user.emailAddress)
 

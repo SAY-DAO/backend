@@ -6,6 +6,7 @@ User-Family Model
 """
 
 
+# TODO: FamilyMemberModel?
 class UserFamilyModel(base):
     __tablename__ = "user_family"
 
@@ -18,5 +19,13 @@ class UserFamilyModel(base):
     family = relationship(
         'FamilyModel',
         foreign_keys=id_family,
+        back_populates='members',
         uselist=False,
     )
+
+    user = relationship(
+        'UserModel',
+        foreign_keys=id_user,
+        uselist=False,
+    )
+

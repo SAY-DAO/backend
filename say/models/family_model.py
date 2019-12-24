@@ -18,8 +18,13 @@ class FamilyModel(base):
         back_populates="families",
         uselist=False,
     )
-    users = relationship(
-        'UserModel',
-        secondary='user_family',
-        back_populates='families',
+    members = relationship(
+        'UserFamilyModel',
+        back_populates='family',
     )
+
+    def current_members(self):
+        for member in self.members:
+            if member.isDeleted:
+                continue
+            yield member
