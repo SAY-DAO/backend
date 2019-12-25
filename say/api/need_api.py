@@ -893,33 +893,25 @@ class AddNeed(Resource):
             session.add(new_need)
             session.flush()
 
-            if "imageUrl" not in request.files:
-                resp = make_response(jsonify({"message": "ERROR OCCURRED IN FILE UPLOADING!"}), 500)
-                session.close()
-                return resp
-
-            file = request.files["imageUrl"]
-            if file.filename == "":
-                resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY FILE!"}), 500)
-                session.close()
-                return resp
-
             child_path = os.path.join(
                 app.config["UPLOAD_FOLDER"],
                 str(child.id) + "-child",
             )
-
+            needs_path = os.path.join(child_path, "needs")
             if not os.path.isdir(child_path):
                 os.makedirs(child_path, exist_ok=True)
 
-            needs_path = os.path.join(child_path, "needs")
             if not os.path.isdir(needs_path):
                 os.makedirs(needs_path, exist_ok=True)
 
             need_dir = str(new_need.id) + "-need"
 
-            if file and allowed_image(file.filename):
-                # filename = secure_filename(file.filename)
+            if "imageUrl" in request.files:
+                file = request.files["imageUrl"]
+                if not allowed_image(file.filename):
+                    resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY FILE!"}), 500)
+                    return
+
                 filename = str(new_need.id) + "." + file.filename.split(".")[-1]
                 temp_need_path = os.path.join(needs_path, need_dir)
 
@@ -932,6 +924,7 @@ class AddNeed(Resource):
 
                 file.save(image_path)
                 new_need.imageUrl = '/' + image_path
+
 
             if "receipts" in request.files.keys():
                 file2 = request.files["receipts"]
@@ -957,7 +950,6 @@ class AddNeed(Resource):
 
                     file2.save(receipt_path)
                     new_need.receipts = '/' + receipt_path
-
 
             session.commit()
 
