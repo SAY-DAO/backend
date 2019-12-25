@@ -24,6 +24,7 @@ Child APIs
 def filter_by_confirm(child_query, confirm):
     confirm =  int(confirm)
     if confirm != 2:
+        confirm = bool(confirm)
         return child_query.filter(ChildModel.isConfirmed==confirm)
 
     return child_query
@@ -285,6 +286,16 @@ class GetChildById(Resource):
 
             child_dict = obj_to_dict(child, relationships=True)
             if get_user_role() in [USER]:  # TODO: priv
+                user_id = get_user_id()
+                family_id = child.families[0].id
+                user_family = session.query(UserFamilyModel) \
+                    .filter_by(isDeleted=False) \
+                    .filter_by(id_user=user_id) \
+                    .filter_by(id_family=family_id) \
+                    .first()
+
+                child_dict['familyId'] = family_id
+                child_dict['userRole'] = user_family.userRole
                 del child_dict['social_worker']
                 del child_dict['ngo']
 
