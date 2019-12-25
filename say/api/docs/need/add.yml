@@ -22,7 +22,6 @@ parameters:
   - name: imageUrl
     in: formData
     type: file
-    required: true
 
   - name: name
     in: formData
