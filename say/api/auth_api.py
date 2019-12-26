@@ -77,7 +77,7 @@ class RegisterUser(Resource):
     def post(self):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "something is wrong"}
+        resp = {"message": "something is wrong"}, 500
         try:
             if "username" in request.json.keys():
                 username = request.json["username"].lower()
@@ -325,31 +325,34 @@ class Verify(Resource):
     def post(self, user_id):
         session_maker = sessionmaker(db)
         session = session_maker()
-        resp = {"message": "Something is Wrong"}
+        resp = {"message": "Something is Wrong"}, 500
 
         try:
             user_id = int(user_id)
             user = session.query(UserModel).filter_by(id=user_id).first()
             if user is None:
-                resp =  redirect('/', 302)
+                resp = {"message": "Something is Wrong"}, 500
                 return
 
             verify = session.query(VerifyModel).filter_by(user_id=user_id).first()
             sent_verify_code = request.form.get('verifyCode', 'invalid')
 
-            if not user.isVerified:
-                error = None
-                if (
-                    verify is None
-                    or str(verify.code) != sent_verify_code.replace('-', '')
-                ):
-                    error = 'Verify code is invalid'
+            if user.isVerified:
+                resp = {"message": "User Already verified"}, 600
+                return
 
-                elif verify.expire_at < datetime.utcnow():
-                    error = 'Verify code is expired'
+            error = None
+            if (
+                verify is None
+                or str(verify.code) != sent_verify_code.replace('-', '')
+            ):
+                error = 'Verify code is invalid'
 
-                if error:
-                    raise Exception(error)
+            elif verify.expire_at < datetime.utcnow():
+                error = 'Verify code is expired'
+
+            if error:
+                raise Exception(error)
 
             user.isVerified = True
 
@@ -430,7 +433,12 @@ class TokenRefresh(Resource):
         user = session.query(UserModel).get(id)
         session.close()
         access_token = create_user_access_token(user, fresh=True)
-        return jsonify({'accessToken': f'Bearer {access_token}'})
+        refresh_token = create_refresh_token(identity=user.id)
+
+        return jsonify({
+            'accessToken': f'Bearer {access_token}',
+            "refreshToken": f"Bearer {refresh_token}",
+        })
 
 
 """

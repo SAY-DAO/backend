@@ -288,6 +288,8 @@ class GetChildById(Resource):
             if get_user_role() in [USER]:  # TODO: priv
                 user_id = get_user_id()
                 family_id = child.families[0].id
+                child_family_member = []
+
                 user_family = session.query(UserFamilyModel) \
                     .filter_by(isDeleted=False) \
                     .filter_by(id_user=user_id) \
@@ -296,6 +298,23 @@ class GetChildById(Resource):
 
                 child_dict['familyId'] = family_id
                 child_dict['userRole'] = user_family.userRole
+
+                for member in child.families[0].current_members():
+                    child_family_member.append(dict(
+                        role=member.userRole,
+                        firstName=member.user.firstName,
+                        lastName=member.user.lastName,
+                    ))
+
+                child_dict["childFamilyMembers"] = child_family_member
+
+                confirmed_needs = []
+                for need in child_dict['needs']:
+                    if not need['isConfirmed']:
+                        continue
+                    confirmed_needs.append(need)
+                child_dict['needs'] = confirmed_needs
+
                 del child_dict['social_worker']
                 del child_dict['ngo']
 

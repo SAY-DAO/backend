@@ -58,7 +58,7 @@ class GetRandomSearchResult(Resource):
 
             child_dict = obj_to_dict(random_child)
             child_family_member = []
-            for member in random_child.families[0].members:
+            for member in random_child.families[0].current_members():
                 child_family_member.append(dict(
                     role=member.userRole,
                     firstName=member.user.firstName,
