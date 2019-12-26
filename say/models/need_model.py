@@ -49,6 +49,7 @@ class NeedModel(base):
     oncePurchased = Column(Boolean, nullable=False, default=False)
 
     def _set_cost(self, cost):
+        cost = int(str(cost).replace(',', ''))
         self._cost = cost
 
     def _get_cost(self):
@@ -70,7 +71,12 @@ class NeedModel(base):
     def progress(cls):
         return
 
-    child = relationship('ChildModel', foreign_keys=child_id, uselist=False)
+    child = relationship(
+        'ChildModel',
+        foreign_keys=child_id,
+        uselist=False,
+        back_populates='needs',
+    )
     payments = relationship('PaymentModel', back_populates='need')
     need_family = relationship(
         'NeedFamilyModel',

@@ -9,8 +9,10 @@ Dashboard API
 
 
 class DashboardDataFeed(Resource):
+    @authorize
     @swag_from("./docs/dashboard/feed.yml")
-    def get(self, user_id):
+    def get(self):
+        user_id = get_user_id()
         session_maker = sessionmaker(db)
         session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
@@ -43,4 +45,4 @@ class DashboardDataFeed(Resource):
 API URLs
 """
 
-api.add_resource(DashboardDataFeed, "/api/v2/dashboard/userId=<user_id>")
+api.add_resource(DashboardDataFeed, "/api/v2/dashboard")

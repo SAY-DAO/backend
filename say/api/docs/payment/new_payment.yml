@@ -5,16 +5,18 @@ tags:
   - Payment API
 
 parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+ 
   - in: body
     name: register
     required: true
     schema:
       properties:
         needId:
-          type: integer
-          required: true
-
-        userId:
           type: integer
           required: true
 

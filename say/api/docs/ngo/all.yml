@@ -7,6 +7,13 @@ Calling this API only affects ngo table by selecting rows from it.
 tags:
   - NGO API
 
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+ 
 responses:
   500:
     description: Error occurred somewhere!

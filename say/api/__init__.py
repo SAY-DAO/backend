@@ -35,6 +35,12 @@ from flask_cors import CORS
 from ..payment import IDPay
 from say.celery import beat
 from say.date import *
+from say.authorization import *
+from say.roles import *
+from say.exceptions import *
+
+
+DEFAULT_CHILD_ID = 104  # TODO: Remove this after implementing pre needs
 
 CELERY_TASK_LIST = [
     'say.tasks',
@@ -176,9 +182,22 @@ api = Api(app)
 # api_bp = Blueprint('api', __name__)
 # api = Api(api_bp)
 
+
 # this function converts an object to a python dictionary
-def obj_to_dict(obj):
-    return {c.key: getattr(obj, c.key) for c in columns(obj)}
+def obj_to_dict(obj, relationships=False):
+    result = {}
+    for c in columns(obj, relationships):
+        key, value = c.key, getattr(obj, c.key)
+
+        if isinstance(value, list):
+            result[key] = [obj_to_dict(item) for item in value]
+
+        elif isinstance(value, base):
+            result[key] = obj_to_dict(value)
+
+        else:
+            result[key] = value
+    return result
 
 
 def columns(obj, relationships=False, synonyms=True, composites=False,

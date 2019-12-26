@@ -19,6 +19,20 @@ consumes:
   - multipart/form-data
 
 parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - name: ngo_id
+    in: formData
+    type: integer
+
+  - name: sw_id
+    in: formData
+    type: integer
+
   - name: avatarUrl
     in: formData
     type: file
@@ -108,16 +122,6 @@ parameters:
   - name: status
     in: formData
     type: integer
-
-  - name: ngo_id
-    in: path
-    type: integer
-    required: true
-
-  - name: social_worker_id
-    in: path
-    type: integer
-    required: true
 
 responses:
   500:

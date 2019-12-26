@@ -5,6 +5,12 @@ tags:
   - Payment API
 
 parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
   - in: path
     name: id
     required: true

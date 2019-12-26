@@ -7,6 +7,8 @@ Privilege APIs
 
 
 class GetAllPrivileges(Resource):
+
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/privilege/all.yml")
     def get(self):
         session_maker = sessionmaker(db)
@@ -33,6 +35,8 @@ class GetAllPrivileges(Resource):
 
 
 class AddPrivilege(Resource):
+
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/privilege/add.yml")
     def post(self):
         session_maker = sessionmaker(db)
@@ -59,6 +63,8 @@ class AddPrivilege(Resource):
 
 
 class GetPrivilegeByName(Resource):
+
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/privilege/name.yml")
     def get(self, name):
         session_maker = sessionmaker(db)
@@ -85,6 +91,8 @@ class GetPrivilegeByName(Resource):
 
 
 class GetPrivilegeById(Resource):
+
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/privilege/id.yml")
     def get(self, privilege_id):
         session_maker = sessionmaker(db)
@@ -112,6 +120,8 @@ class GetPrivilegeById(Resource):
 
 
 class GetPrivilegeByPrivilege(Resource):
+
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/privilege/privilege.yml")
     def get(self, privilege_type):
         session_maker = sessionmaker(db)
@@ -140,6 +150,8 @@ class GetPrivilegeByPrivilege(Resource):
 
 
 class UpdatePrivilege(Resource):
+
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/privilege/update.yml")
     def patch(self, privilege_id):
         session_maker = sessionmaker(db)
