@@ -257,9 +257,13 @@ class GetNeedById(Resource):
                 resp = HTTP_NOT_FOUND()
                 return
 
-            need_dict = obj_to_dict(need, relationships=True)
-            if get_user_role() in [USER]:  # TODO: priv
-                del need_dict['child']
+            need_dict = obj_to_dict(need)
+
+            need_dict['Participants'] = get_need(
+                need,
+                session,
+                participants_only=True,
+            )
 
             resp = make_response(
                 jsonify(need_dict),
