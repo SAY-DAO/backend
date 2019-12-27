@@ -83,7 +83,7 @@ class AddNgo(Resource):
                 )
 
                 if not os.path.isdir(temp_logo_path):
-                    os.mkdir(temp_logo_path)
+                    os.makedirs(temp_logo_path, exist_ok=True)
 
                 path = os.path.join(
                     temp_logo_path, str(current_id) + "-logo_" + filename
@@ -261,7 +261,7 @@ class UpdateNgo(Resource):
                     )
 
                     if not os.path.isdir(temp_logo_path):
-                        os.mkdir(temp_logo_path)
+                        os.makedirs(temp_logo_path, exist_ok=True)
 
                     for obj in os.listdir(temp_logo_path):
                         check = str(base_ngo.id) + "-logo"

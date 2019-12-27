@@ -340,8 +340,7 @@ class UpdateNeedById(Resource):
                     )
 
                     if not os.path.isdir(temp_need_path):
-                        os.mkdir(temp_need_path)
-
+                        os.makedirs(temp_need_path, exist_ok=True)
 
                     for obj in os.listdir(temp_need_path):
                         check = str(need.id) + "-image"
@@ -382,7 +381,7 @@ class UpdateNeedById(Resource):
                         temp_need_path, str(need.id) + "-need"
                     )
                     if not os.path.isdir(temp_need_path):
-                        os.mkdir(temp_need_path)
+                        os.makedirs(temp_need_path, exist_ok=True)
 
                     receipt_path = os.path.join(
                         temp_need_path, str(need.id) + "-receipt_" + filename
