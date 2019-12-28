@@ -155,12 +155,12 @@ class GetAllNeeds(Resource):
 
         try:
             done = int(done)
-            needs = session.query(NeedModel).order_by(NeedModel.doneAt.desc())
+            needs = session.query(NeedModel) \
+                .filter(NeedModel.isDeleted==False) \
+                .order_by(NeedModel.doneAt.desc())
 
-            if int(confirm) == 2:
-                needs = needs.filter_by(isDeleted=False)
 
-            elif int(confirm) == 1:
+            if int(confirm) == 1:
                 needs = (
                     needs
                     .filter_by(isDeleted=False)
@@ -173,9 +173,6 @@ class GetAllNeeds(Resource):
                     .filter_by(isDeleted=False)
                     .filter_by(isConfirmed=False)
                 )
-
-            else:
-                return make_response(jsonify({"message": "wrong input"}), 500)
 
             if done == 1:
                 needs = needs.filter_by(isDone=True)
@@ -222,6 +219,7 @@ class GetAllNeeds(Resource):
                 res['childGeneratedCode'] = child.generatedCode
                 res['childFirstName'] = child.firstName
                 res['childLastName'] = child.lastName
+                res['childSayName'] = child.sayName
 
                 result['needs'].append(res)
 
