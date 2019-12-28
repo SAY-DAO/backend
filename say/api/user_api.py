@@ -351,7 +351,6 @@ class AddUser(Resource):
     def post(self):
         session_maker = sessionmaker(db)
         session = session_maker()
-        from pudb import set_trace; set_trace()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -442,7 +441,7 @@ class AddUser(Resource):
                     temp_user_path = os.path.join(app.config['UPLOAD_FOLDER'], str(current_id) + '-user')
 
                     if not os.path.isdir(temp_user_path):
-                        os.mkdir(temp_user_path)
+                        os.makedirs(temp_user_path, exist_ok=True)
 
                     path = os.path.join(temp_user_path, str(current_id) + '-avatar_' + filename)
 

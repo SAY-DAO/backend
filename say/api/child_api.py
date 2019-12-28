@@ -285,6 +285,13 @@ class GetChildById(Resource):
                 return
 
             child_dict = obj_to_dict(child, relationships=True)
+            needs = []
+            for need in child_dict['needs']:
+                if need['isDeleted']:
+                    continue
+                needs.append(need)
+            child_dict['needs'] = needs
+
             if get_user_role() in [USER]:  # TODO: priv
                 user_id = get_user_id()
                 family_id = child.families[0].id

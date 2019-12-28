@@ -69,7 +69,7 @@ BASE_FOLDER = os.getcwd()
 UPLOAD_FOLDER = "files"
 
 if not os.path.isdir(UPLOAD_FOLDER):
-    os.mkdir(UPLOAD_FOLDER)
+    os.makedirs(UPLOAD_FOLDER)
 
 FLAGS = os.path.join(BASE_FOLDER, "say")
 FLAGS = os.path.join(FLAGS, "flags")

@@ -255,9 +255,13 @@ class GetNeedById(Resource):
                 resp = HTTP_NOT_FOUND()
                 return
 
-            need_dict = obj_to_dict(need, relationships=True)
-            if get_user_role() in [USER]:  # TODO: priv
-                del need_dict['child']
+            need_dict = obj_to_dict(need)
+
+            need_dict['Participants'] = get_need(
+                need,
+                session,
+                participants_only=True,
+            )
 
             resp = make_response(
                 jsonify(need_dict),
@@ -338,8 +342,7 @@ class UpdateNeedById(Resource):
                     )
 
                     if not os.path.isdir(temp_need_path):
-                        os.mkdir(temp_need_path)
-
+                        os.makedirs(temp_need_path, exist_ok=True)
 
                     for obj in os.listdir(temp_need_path):
                         check = str(need.id) + "-image"
@@ -380,7 +383,7 @@ class UpdateNeedById(Resource):
                         temp_need_path, str(need.id) + "-need"
                     )
                     if not os.path.isdir(temp_need_path):
-                        os.mkdir(temp_need_path)
+                        os.makedirs(temp_need_path, exist_ok=True)
 
                     receipt_path = os.path.join(
                         temp_need_path, str(need.id) + "-receipt_" + filename
