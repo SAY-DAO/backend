@@ -267,7 +267,7 @@ class Login(Resource):
 
             else:
                 resp = Response(
-                    json.dumps({"message": "Please Register First"}), status=401
+                    json.dumps({"message": "Please Register First"}), status=400
                 )
 
         except Exception as e:
