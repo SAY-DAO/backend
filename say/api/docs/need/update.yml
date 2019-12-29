@@ -80,7 +80,11 @@ parameters:
     in: formData
     type: string
 
-  - name: delivery_date
+  - name: expected_delivery_date
+    in: formData
+    type: string
+
+  - name: ngo_delivery_date
     in: formData
     type: string
 

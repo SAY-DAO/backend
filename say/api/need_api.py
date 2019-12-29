@@ -409,6 +409,9 @@ class UpdateNeedById(Resource):
             if "link" in request.form.keys():
                 need.link = request.form["link"]
 
+                from say.tasks import update_need
+                update_need.delay(need.id)
+
             if "affiliateLinkUrl" in request.form.keys():
                 need.affiliateLinkUrl = request.form["affiliateLinkUrl"]
 
@@ -427,35 +430,56 @@ class UpdateNeedById(Resource):
             if "details" in request.form.keys():
                 need.details = request.form["details"]
 
-            if "delivery_date" in request.form.keys():
-                need.delivery_date = datetime.strptime(
-                    request.form["delivery_date"],
-                    '%Y-%m-%d',
-                )
+            if request.form.get("expected_delivery_date"):
+               if not(2 <= need.status <= 3):
+                  raise Exception(
+                      'Expected delivery date can not changed in this state'
+                  )
+               need.isReported = False
+               need.expected_delivery_date = parse_datetime(
+                   request.form["expected_delivery_date"]
+               )
 
             if "status" in request.form.keys():
                 new_status = int(request.form["status"])
                 prev_status = need.status
 
-                if new_status != 5 and new_status - prev_status == 1:
+                # For making sure that sending same status has no effect
+                if new_status == prev_status:
+                    pass
+
+                elif new_status != 5 and new_status - prev_status == 1:
                     if new_status == 4 and need.isReported != True:
                         raise Exception('Need has not been reported to ngo yet')
+
                     need.status = new_status
                     if need.type == 0:  # Service
                         if new_status == 3:
+                            need.ngo_delivery_date = datetime.utcnow()
                             need.send_money_to_ngo_email()
-                        if new_status == 4:
-                            need.send_child_delivery_service_email()
-                    if need.type == 1:  # Product
-                        if new_status == 3 and not need.oncePurchased:
-                            need.oncePurchased = True
-                            need.send_purchase_email()
-                        if new_status == 4:
-                            need.send_child_delivery_product_email()
 
-                elif need.type == 1 and prev_status == 3 and new_status == 2:
-                    need.status = new_status
-                    need.isReported = False
+                        if new_status == 4:
+                            need.child_delivery_date = datetime.utcnow()
+                            need.send_child_delivery_service_email()
+
+                    if need.type == 1:  # Product
+                        if new_status == 3:
+                            need.purchase_date = datetime.utcnow()
+                            need.send_purchase_email()
+
+                        if new_status == 4:
+                            need.ngo_delivery_date = parse_datetime(
+                                request.form.get('ngo_delivery_date')
+                            )
+
+                            if not(
+                                need.expected_delivery_date
+                                <= need.ngo_delivery_date <=
+                                datetime.utcnow()
+                            ):
+                                raise Exception('Invalid ngo_delivery_date')
+
+                            need.send_child_delivery_product_email()
 
                 else:
                     raise ValueError(
@@ -470,8 +494,6 @@ class UpdateNeedById(Resource):
             activity.diff = json.dumps(list(diff(temp, obj_to_dict(need))))
 
             session.commit()
-            from say.tasks import update_need
-            update_need.delay(need.id)
             resp = make_response(jsonify(secondary_need), 200)
 
         except Exception as e:
