@@ -196,7 +196,6 @@ class UpdateUserById(Resource):
 
                 if file and allowed_image(file.filename):
                     # filename = secure_filename(file.filename)
-                    from pudb import set_trace; set_trace()
                     filename = str(primary_user.id) + '.' + file.filename.split('.')[-1]
 
                     temp_user_path = os.path.join(
