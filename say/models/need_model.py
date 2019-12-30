@@ -62,6 +62,9 @@ class NeedModel(base):
 
     @hybrid_property
     def progress(self):
+        if self.isDone:
+            return 100
+
         try:
            return int(self.paid / self.cost * 100)
         except:
