@@ -215,7 +215,7 @@ class NeedModel(base):
             to_emails.add(participate.user.emailAddress)
 
         cc_emails -= to_emails
-        iran_date = JalaliDate(self.purchased_date).localdateformat()
+        iran_date = JalaliDate(self.purchase_date).localdateformat()
         send_email.delay(
             subject=f'رسید خرید کالای {self.child.sayName} توسط SAY',
             emails=list(to_emails),
