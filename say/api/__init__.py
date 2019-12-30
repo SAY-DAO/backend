@@ -185,6 +185,9 @@ api = Api(app)
 
 # this function converts an object to a python dictionary
 def obj_to_dict(obj, relationships=False):
+    if isinstance(obj, dict):
+        return obj
+
     result = {}
     for c in columns(obj, relationships):
         key, value = c.key, getattr(obj, c.key)

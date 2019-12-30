@@ -87,6 +87,44 @@ class NeedModel(base):
         back_populates='need',
     )
 
+    @hybrid_property
+    def participants(self):
+        from .user_model import UserModel
+        from .payment_model import PaymentModel
+
+        session = object_session(self)
+        participants_query = session.query(
+            func.sum(PaymentModel.amount),
+            UserModel.firstName,
+            UserModel.lastName,
+            UserModel.avatarUrl,
+        ) \
+            .filter(PaymentModel.id_need==self.id) \
+            .filter(PaymentModel.id_user==UserModel.id) \
+            .filter(PaymentModel.is_verified==True) \
+            .group_by(
+                PaymentModel.id_user,
+                PaymentModel.id_need,
+                UserModel.firstName,
+                UserModel.lastName,
+                UserModel.avatarUrl,
+            ) \
+
+        participants = []
+        for participant in participants_query:
+            participants.append(dict(
+                contribution=participant[0],
+                userFirstName=participant[1],
+                userLastName=participant[2],
+                avatarUrl=participant[3],
+            ))
+
+        return participants
+
+    @participants.expression
+    def participants(cls):
+        pass
+
     def get_ccs(self):
         return {
             member.user.emailAddress

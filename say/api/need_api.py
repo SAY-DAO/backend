@@ -108,7 +108,6 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
             .filter_by(id_user=participant.id_user)
             .filter_by(id_need=need.id)
             .filter_by(is_verified=True)
-            # .group_by(PaymentModel.id)
             .group_by(PaymentModel.id_user, PaymentModel.id_need)
             .first())[0]
         )
@@ -122,7 +121,6 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
         temp_participant['userAvatar'] = user_info[0]
         temp_participant['userFirstName'] = user_info[1]
         temp_participant['userLastName'] = user_info[2]
-
 
         users[str(participant.id_user)] = temp_participant
 

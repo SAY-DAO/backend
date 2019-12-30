@@ -285,12 +285,6 @@ class GetChildById(Resource):
                 return
 
             child_dict = obj_to_dict(child, relationships=True)
-            needs = []
-            for need in child_dict['needs']:
-                if need['isDeleted']:
-                    continue
-                needs.append(need)
-            child_dict['needs'] = needs
 
             if get_user_role() in [USER]:  # TODO: priv
                 user_id = get_user_id()
@@ -319,13 +313,61 @@ class GetChildById(Resource):
                 for need in child_dict['needs']:
                     if not need['isConfirmed']:
                         continue
+
                     confirmed_needs.append(need)
+
                 child_dict['needs'] = confirmed_needs
 
                 del child_dict['social_worker']
                 del child_dict['ngo']
 
             resp = make_response(jsonify(child_dict), 200)
+
+        except Exception as e:
+            print(e)
+
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
+
+        finally:
+            session.close()
+            return resp
+
+
+class GetChildNeeds(Resource):
+
+    @authorize(USER, SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
+               SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @swag_from("./docs/child/needs.yml")
+    def get(self, child_id):
+        session_maker = sessionmaker(db)
+        session = session_maker()
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+
+        try:
+            child_id = int(child_id)
+            child_query = session.query(ChildModel) \
+                .filter(ChildModel.isDeleted==False) \
+                .filter(ChildModel.isMigrated==False) \
+                .filter(ChildModel.id==child_id)
+
+            if child_id != DEFAULT_CHILD_ID:  # TODO: need needs
+                child_query = filter_by_privilege(child_query)
+
+            child = child_query.one_or_none()
+            if child is None:
+                resp = HTTP_NOT_FOUND()
+                return
+
+            confirmed_needs = []
+            for need in child.needs:
+                if not need.isConfirmed:
+                    continue
+
+                from pudb import set_trace; set_trace()
+                need_dict = obj_to_dict(need)
+                confirmed_needs.append(need_dict)
+
+            resp = make_response(jsonify(confirmed_needs), 200)
 
         except Exception as e:
             print(e)
@@ -1161,6 +1203,7 @@ API URLs
 """
 
 api.add_resource(GetChildById, "/api/v2/child/childId=<child_id>&confirm=<confirm>")
+api.add_resource(GetChildNeeds, "/api/v2/child/childId=<child_id>/needs")
 api.add_resource(GetAllChildren, "/api/v2/child/all/confirm=<confirm>")
 api.add_resource(
     AddChild,
