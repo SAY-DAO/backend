@@ -363,7 +363,6 @@ class GetChildNeeds(Resource):
                 if not need.isConfirmed:
                     continue
 
-                from pudb import set_trace; set_trace()
                 need_dict = obj_to_dict(need)
                 confirmed_needs.append(need_dict)
 
