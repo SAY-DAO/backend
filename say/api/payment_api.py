@@ -124,8 +124,13 @@ class Payment(Resource):
                 return
 
             need = session.query(NeedModel).get(need_id)
-            if need is None:
+
+            if need is None or need.isDeleted:
                 resp = {"message": "Need Not Found"}
+                return
+
+            if need.isDone:
+                resp = {"message": "Need is already done"}
                 return
 
             if not need.isConfirmed:
