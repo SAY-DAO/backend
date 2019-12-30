@@ -196,16 +196,26 @@ class UpdateUserById(Resource):
 
                 if file and allowed_image(file.filename):
                     # filename = secure_filename(file.filename)
-                    filename = str(primary_user.phoneNumber) + '.' + file.filename.split('.')[-1]
+                    from pudb import set_trace; set_trace()
+                    filename = str(primary_user.id) + '.' + file.filename.split('.')[-1]
 
-                    temp_user_path = os.path.join(app.config['UPLOAD_FOLDER'], str(primary_user.id) + '-user')
+                    temp_user_path = os.path.join(
+                        app.config['UPLOAD_FOLDER'],
+                        str(primary_user.id) + '-user',
+                    )
+
+                    if not os.path.isdir(temp_user_path):
+                        os.makedirs(temp_user_path, exist_ok=True)
 
                     for obj in os.listdir(temp_user_path):
                         check = str(primary_user.id) + '-avatar'
                         if obj.split('_')[0] == check:
                             os.remove(os.path.join(temp_user_path, obj))
 
-                    primary_user.avatarUrl = os.path.join(temp_user_path, str(primary_user.id) + '-avatar_' + filename)
+                    primary_user.avatarUrl = os.path.join(
+                        temp_user_path,
+                        str(primary_user.id) + '-avatar_' + filename,
+                    )
 
                     file.save(primary_user.avatarUrl)
 
