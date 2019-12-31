@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta
+
 from khayyam import JalaliDate
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import object_session
 from flask import render_template
+
 from say.tasks import send_email
 from . import *
 
@@ -52,6 +54,15 @@ class NeedModel(base):
     child_delivery_date = Column(DateTime)
     confirmDate = Column(DateTime, nullable=True)
 
+
+    @hybrid_property
+    def childSayName(self):
+        return self.child.sayName
+
+    @childSayName.expression
+    def childSayName(cls):
+        pass
+
     def _set_cost(self, cost):
         cost = int(str(cost).replace(',', ''))
         self._cost = cost
@@ -83,6 +94,7 @@ class NeedModel(base):
         foreign_keys=child_id,
         uselist=False,
         back_populates='needs',
+        lazy='selectin',
     )
     payments = relationship('PaymentModel', back_populates='need')
     need_family = relationship(
