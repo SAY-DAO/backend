@@ -61,6 +61,10 @@ parameters:
     type: string
     required: true
 
+  - name: sayName_fa
+    in: formData
+    type: string
+
   - name: phoneNumber
     in: formData
     type: string
@@ -94,6 +98,14 @@ parameters:
     in: formData
     type: string
     required: true
+
+  - name: bio_fa
+    in: formData
+    type: string
+
+  - name: bioSummary_fa
+    in: formData
+    type: string
 
   - name: birthPlace
     in: formData

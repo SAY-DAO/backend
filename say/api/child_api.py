@@ -480,10 +480,13 @@ class AddChild(Resource):
 
             phone_number = request.form["phoneNumber"]
             bio = request.form["bio"]
+            bio_fa = request.form.get('bio_fa', None)
             say_name = request.form["sayName"]
+            say_name_fa = request.form.get('sayName_fa', None)
             country = int(request.form["country"])
             city = int(request.form["city"])
             bio_summary = request.form["bioSummary"]
+            bio_summary_fa = request.form.get('bioSummary_fa', None)
             gender = True if request.form["gender"] == "true" else False
 
             avatar_url = avatar_path
@@ -508,14 +511,17 @@ class AddChild(Resource):
                 birthDate=birth_date,
                 address=address,
                 bio=bio,
+                bio_fa=bio_fa,
                 voiceUrl=voice_url,
                 id_ngo=ngo_id,
                 id_social_worker=sw_id,
                 sayName=say_name,
+                sayName_fa=say_name_fa,
                 country=country,
                 city=city,
                 gender=gender,
                 bioSummary=bio_summary,
+                bioSummary_fa=bio_summary_fa,
                 status=status,
                 lastUpdate=last_update,
                 generatedCode=code,
@@ -818,14 +824,23 @@ class UpdateChildById(Resource):
             if "address" in request.form.keys():
                 primary_child.address = request.form["address"]
 
+            if "sayName" in request.form.keys():
+                primary_child.sayName = request.form["sayName"]
+
             if "bio" in request.form.keys():
                 primary_child.bio = request.form["bio"]
 
             if "bioSummary" in request.form.keys():
                 primary_child.bioSummary = request.form["bioSummary"]
 
-            if "sayName" in request.form.keys():
-                primary_child.sayName = request.form["sayName"]
+            if "sayName_fa" in request.form.keys():
+                primary_child.sayName_fa = request.form["sayName_fa"]
+
+            if "bio_fa" in request.form.keys():
+                primary_child.bio_fa = request.form["bio_fa"]
+
+            if "bioSummary_fa" in request.form.keys():
+                primary_child.bioSummary_fa = request.form["bioSummary_fa"]
 
             primary_child.lastUpdate = datetime.utcnow()
 

@@ -45,6 +45,10 @@ parameters:
     in: formData
     type: string
 
+  - name: sayName_fa
+    in: formData
+    type: string
+
   - name: phoneNumber
     in: formData
     type: string
@@ -70,6 +74,14 @@ parameters:
     type: string
 
   - name: bioSummary
+    in: formData
+    type: string
+
+  - name: bio_fa
+    in: formData
+    type: string
+
+  - name: bioSummary_fa
     in: formData
     type: string
 

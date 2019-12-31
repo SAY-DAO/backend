@@ -13,6 +13,7 @@ class ChildModel(base):
     firstName = Column(String, nullable=True)
     lastName = Column(String, nullable=True)
     sayName = Column(String, nullable=False)
+    sayName_fa = Column(String, nullable=True)
     phoneNumber = Column(Integer, nullable=False)
     nationality = Column(Integer, nullable=True)  # 98:iranian | 93:afghan
     country = Column(
@@ -23,7 +24,9 @@ class ChildModel(base):
     sleptAvatarUrl = Column(String, nullable=False)
     gender = Column(Boolean, nullable=False)  # true:male | false:female
     bio = Column(Text, nullable=False)
+    bio_fa = Column(Text, nullable=True)
     bioSummary = Column(Text, nullable=False)
+    bioSummary_fa = Column(Text, nullable=True)
     voiceUrl = Column(String, nullable=False)
     birthPlace = Column(Text, nullable=True)  # 1:tehran | 2:karaj / [must be change after using real country/city api]
     birthDate = Column(Date, nullable=True)
