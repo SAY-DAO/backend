@@ -1,5 +1,6 @@
 from hashlib import md5
 
+from say.models import session, obj_to_dict
 from say.models.ngo_model import NgoModel
 from say.models.social_worker_model import SocialWorkerModel
 from . import *
@@ -13,8 +14,6 @@ class GetAllSocialWorkers(Resource):
     @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/social_worker/all.yml")
     def get(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(
             jsonify({"message": "major error occurred!"}),
             503,
@@ -55,8 +54,6 @@ class AddSocialWorker(Resource):
     @authorize(SUPER_ADMIN)  # TODO: priv
     @swag_from("./docs/social_worker/add.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(
             jsonify({"message": "major error occurred!"}),
             503,
@@ -315,8 +312,6 @@ class GetSocialWorkerById(Resource):
     @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/social_worker/id.yml")
     def get(self, social_worker_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(
             jsonify({"message": "major error occurred!"}),
             503,
@@ -359,8 +354,6 @@ class GetSocialWorkerByNgoId(Resource):
     @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/social_worker/ngo.yml")
     def get(self, ngo_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(
             jsonify({"message": "major error occurred!"}),
             503,
@@ -411,8 +404,6 @@ class UpdateSocialWorker(Resource):
     @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/social_worker/update.yml")
     def patch(self, social_worker_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(
             jsonify({"message": "major error occurred!"}),
             503,
@@ -662,8 +653,6 @@ class DeleteSocialWorker(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/social_worker/delete.yml")
     def patch(self, social_worker_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(
             jsonify({"message": "major error occurred!"}),
             503,
@@ -700,8 +689,6 @@ class DeactivateSocialWorker(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/social_worker/deactivate.yml")
     def patch(self, social_worker_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(
             jsonify({"message": "major error occurred!"}),
             503,
@@ -735,8 +722,6 @@ class ActivateSocialWorker(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/social_worker/activate.yml")
     def patch(self, social_worker_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(
             jsonify({"message": "major error occurred!"}),
             503,

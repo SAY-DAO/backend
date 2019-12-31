@@ -1,6 +1,7 @@
 from hashlib import md5
 
 from say.api.child_api import get_child_by_id, get_child_need
+from say.models import session, obj_to_dict
 from say.models.family_model import FamilyModel
 from say.models.need_family_model import NeedFamilyModel
 from say.models.payment_model import PaymentModel
@@ -95,8 +96,6 @@ class GetUserById(Resource):
     @me_or_user_id
     @swag_from("./docs/user/by_id.yml")
     def get(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -117,8 +116,6 @@ class GetUserChildren(Resource):
     @me_or_user_id
     @swag_from("./docs/user/children.yml")
     def get(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -144,8 +141,6 @@ class GetUserChildrenCount(Resource):
     @me_or_user_id
     @swag_from("./docs/user/children-count.yml")
     def get(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -174,8 +169,6 @@ class UpdateUserById(Resource):
     @me_or_user_id
     @swag_from("./docs/user/update.yml")
     def patch(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -211,12 +204,12 @@ class UpdateUserById(Resource):
                         if obj.split('_')[0] == check:
                             os.remove(os.path.join(temp_user_path, obj))
 
-                    file.save(primary_user.avatarUrl)
                     primary_user.avatarUrl = os.path.join(
-                        '/',
                         temp_user_path,
                         str(primary_user.id) + '-avatar_' + filename,
                     )
+                    file.save(primary_user.avatarUrl)
+                    primary_user.avatarUrl = '/' + primary_user.avatarUrl
 
 
             if "userName" in request.form.keys():
@@ -273,8 +266,6 @@ class DeleteUserById(Resource):
     @authorize(ADMIN, SUPER_ADMIN)
     @swag_from("./docs/user/delete.yml")
     def patch(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -324,8 +315,6 @@ class GetUserRole(Resource):
     @me_or_user_id
     @swag_from("./docs/user/role.yml")
     def get(self, user_id, child_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -359,8 +348,6 @@ class AddUser(Resource):
     @authorize(ADMIN, SUPER_ADMIN)
     @swag_from("./docs/user/add.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:

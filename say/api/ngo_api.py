@@ -1,5 +1,6 @@
 import traceback
 
+from say.models import session, obj_to_dict
 from say.models.ngo_model import NgoModel
 from say.models.social_worker_model import SocialWorkerModel
 from . import *
@@ -20,8 +21,6 @@ class GetAllNgo(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/ngo/all.yml")
     def get(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -49,8 +48,6 @@ class AddNgo(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/ngo/add.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -153,8 +150,6 @@ class GetNgoById(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/ngo/id.yml")
     def get(self, ngo_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -204,8 +199,6 @@ class UpdateNgo(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/ngo/update.yml")
     def patch(self, ngo_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -295,8 +288,6 @@ class DeleteNgo(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/ngo/delete.yml")
     def patch(self, ngo_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -326,8 +317,6 @@ class DeactivateNgo(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/ngo/deactivate.yml")
     def patch(self, ngo_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -357,8 +346,6 @@ class ActivateNgo(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/ngo/activate.yml")
     def patch(self, ngo_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:

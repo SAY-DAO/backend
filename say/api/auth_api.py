@@ -5,6 +5,7 @@ from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
 
 from . import *
+from say.models import session, obj_to_dict
 from say.models.revoked_token_model import RevokedTokenModel
 from say.models.user_model import UserModel
 from say.models.verify_model import VerifyModel
@@ -31,8 +32,6 @@ def send_verify_email(email, verify_code):
 
 class CheckUser(Resource):
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = {"message": "major error occurred!"}
 
         try:
@@ -75,8 +74,6 @@ class RegisterUser(Resource):
 
     @swag_from("./docs/auth/register.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = {"message": "something is wrong"}, 500
         try:
             if "username" in request.json.keys():
@@ -187,8 +184,6 @@ class Login(Resource):
 
     @swag_from("./docs/auth/login.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = {"message": "Something is Wrong!"}
 
         try:
@@ -283,8 +278,6 @@ class LogoutAccess(Resource):
     @authorize
     @swag_from("./docs/auth/logout-access.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         jti = get_raw_jwt()['jti']
         msg = None
         try:
@@ -303,8 +296,6 @@ class LogoutRefresh(Resource):
     @jwt_refresh_token_required
     @swag_from("./docs/auth/logout-refresh.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         jti = get_raw_jwt()['jti']
         try:
             revoked_token = RevokedTokenModel(jti=jti)
@@ -323,8 +314,6 @@ class Verify(Resource):
 
     @swag_from("./docs/auth/verify.yml")
     def post(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = {"message": "Something is Wrong"}, 500
 
         try:
@@ -387,8 +376,6 @@ class VerifyResend(Resource):
 
     @swag_from("./docs/auth/verify-resend.yml")
     def post(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = {"message": "Something is Wrong"}
 
         try:
@@ -427,8 +414,6 @@ class TokenRefresh(Resource):
     @jwt_refresh_token_required
     @swag_from("./docs/auth/refresh.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         id = get_jwt_identity()
         user = session.query(UserModel).get(id)
         session.close()

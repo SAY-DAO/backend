@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 from khayyam import JalaliDate
 
 from . import *
+from say.models import session, obj_to_dict
 from say.models.child_need_model import ChildNeedModel
 from say.models.family_model import FamilyModel
 from say.models.need_family_model import NeedFamilyModel
@@ -46,9 +47,6 @@ class GetAllPayment(Resource):
         except (ValueError, TypeError):
             return Response(status=400)
 
-        session_maker = sessionmaker(db)
-        session = session_maker()
-
         payments = session.query(self.model) \
             .filter_by(is_verified=True)
 
@@ -80,8 +78,6 @@ class GetPayment(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
     @swag_from("./docs/payment/id.yml")
     def get(self, id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         payment = session.query(self.model).get(id)
         session.close()
         if payment is None:
@@ -110,9 +106,6 @@ class Payment(Resource):
 
         amount = request.json['amount']
         need_id = request.json['needId']
-
-        session_maker = sessionmaker(db)
-        session = session_maker()
 
         try:
             donate = 0
@@ -227,9 +220,6 @@ class VerifyPayment(Resource):
     def post(self):
         paymentId = request.form['id']
         orderId = request.form['order_id']
-
-        session_maker = sessionmaker(db)
-        session = session_maker()
 
         pending_payment = session.query(PaymentModel) \
             .filter_by(paymentId = paymentId) \

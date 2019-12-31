@@ -2,6 +2,7 @@ import itertools
 from random import randrange
 
 from . import *
+from say.models import session, obj_to_dict
 from say.api.child_api import get_child_by_id
 from say.models.child_model import ChildModel
 from say.models.child_need_model import ChildNeedModel
@@ -19,8 +20,6 @@ class GetRandomSearchResult(Resource):
     @swag_from("./docs/search/random.yml")
     def get(self):
         user_id = get_user_id()
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}),
                              503)
 

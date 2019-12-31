@@ -1,3 +1,4 @@
+from say.models import session, obj_to_dict
 from say.models.family_model import FamilyModel
 from say.models.user_family_model import UserFamilyModel
 from say.models.need_family_model import NeedFamilyModel
@@ -13,8 +14,6 @@ class GetFamilyById(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
     @swag_from("./docs/family/get.yml")
     def get(self, family_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -60,8 +59,6 @@ class GetAllFamilies(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
     @swag_from("./docs/family/all.yml")
     def get(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -106,8 +103,6 @@ class AddUserToFamily(Resource):
     @swag_from("./docs/family/add.yml")
     def post(self, family_id):
         user_id = get_user_id()
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -161,8 +156,6 @@ class LeaveFamily(Resource):
     def patch(self, family_id):
         user_id = get_user_id()
 
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:

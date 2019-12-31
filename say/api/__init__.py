@@ -14,11 +14,7 @@ from flask import (
     render_template,
 )
 from flask_restful import Api, Resource
-from sqlalchemy import create_engine, inspect, or_, not_, and_, func
-from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.ext.associationproxy import ASSOCIATION_PROXY
-from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
+from sqlalchemy import create_engine
 from datetime import datetime
 from flasgger import Swagger
 from flasgger.utils import swag_from
@@ -27,7 +23,6 @@ from flask_mail import Mail
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_jwt_extended import JWTManager
-from flask_migrate import Migrate
 from logging import debug, basicConfig, DEBUG
 from flask_caching import Cache
 from flask_cors import CORS
@@ -58,11 +53,6 @@ except:
     pass
 
 db = create_engine(conf["dbUrl"])
-
-session_factory = sessionmaker(db)
-session = scoped_session(session_factory)
-base = declarative_base()
-base.metadata.bind = db
 
 BASE_FOLDER = os.getcwd()
 
@@ -174,56 +164,11 @@ mail = Mail(app)
 
 jwt = JWTManager(app)
 
-migrate = Migrate(app, db)
-
 idpay = IDPay(app.config['IDPAY_API_KEY'], app.config['SANDBOX'])
 
 api = Api(app)
 # api_bp = Blueprint('api', __name__)
 # api = Api(api_bp)
-
-
-# this function converts an object to a python dictionary
-def obj_to_dict(obj, relationships=False):
-    if isinstance(obj, dict):
-        return obj
-
-    result = {}
-    for c in columns(obj, relationships):
-        key, value = c.key, getattr(obj, c.key)
-
-        if isinstance(value, list):
-            result[key] = [obj_to_dict(item) for item in value]
-
-        elif isinstance(value, base):
-            result[key] = obj_to_dict(value)
-
-        else:
-            result[key] = value
-    return result
-
-
-def columns(obj, relationships=False, synonyms=True, composites=False,
-                 hybrids=True):
-    cls = obj.__class__
-
-    mapper = inspect(cls)
-    for k, c in mapper.all_orm_descriptors.items():
-
-        if k == '__mapper__':
-            continue
-
-        if c.extension_type == ASSOCIATION_PROXY:
-            continue
-
-        if (not hybrids and c.extension_type == HYBRID_PROPERTY) \
-                or (not relationships and k in mapper.relationships) \
-                or (not synonyms and k in mapper.synonyms) \
-                or (not composites and k in mapper.composites):
-            continue
-
-        yield getattr(cls, k)
-
 
 
 def allowed_voice(filename):

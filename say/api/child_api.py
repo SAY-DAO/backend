@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 from . import *
+from say.models import session, obj_to_dict
 from say.api.need_api import get_need
 from say.models.child_model import ChildModel
 from say.models.child_need_model import ChildNeedModel
@@ -215,9 +216,6 @@ class GetAllChildren(Resource):
 
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
-        session_maker = sessionmaker(db)
-        session = session_maker()
-
         try:
             confirm = int(confirm)
             children_query = (
@@ -263,8 +261,6 @@ class GetChildById(Resource):
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/child/id.yml")
     def get(self, child_id, confirm):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -339,8 +335,6 @@ class GetChildNeeds(Resource):
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/child/needs.yml")
     def get(self, child_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -402,8 +396,6 @@ class AddChild(Resource):
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/child/add.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -646,8 +638,6 @@ class UpdateChildById(Resource):
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/child/update.yml")
     def patch(self, child_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
         sw_role = get_user_role()
 
@@ -875,8 +865,6 @@ class DeleteChildById(Resource):
     def patch(self, child_id):
         sw_role = get_user_role()
 
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -953,8 +941,6 @@ class ConfirmChild(Resource):
     def patch(self, child_id):
         social_worker_id = get_user_id()
 
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -1114,8 +1100,6 @@ class MigrateChild(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/child/migrate.yml")
     def patch(self, child_id, social_worker_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:

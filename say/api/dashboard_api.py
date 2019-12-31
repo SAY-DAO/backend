@@ -1,3 +1,4 @@
+from say.models import session, obj_to_dict
 from say.api.need_api import get_all_urgent_needs
 from say.api.user_api import get_user_by_id, get_user_needs
 from say.models.user_model import UserModel
@@ -13,8 +14,6 @@ class DashboardDataFeed(Resource):
     @swag_from("./docs/dashboard/feed.yml")
     def get(self):
         user_id = get_user_id()
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:

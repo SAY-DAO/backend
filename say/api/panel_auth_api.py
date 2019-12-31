@@ -5,6 +5,7 @@ from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
 
 from . import *
+from say.models import session, obj_to_dict
 from say.models.revoked_token_model import RevokedTokenModel
 from say.models.social_worker_model import SocialWorkerModel
 
@@ -18,8 +19,6 @@ class PanelLogin(Resource):
 
     @swag_from("./docs/panel_auth/login.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = {"message": "Something is Wrong!"}
 
         try:
@@ -87,8 +86,6 @@ class PanelTokenRefresh(Resource):
     @jwt_refresh_token_required
     @swag_from("./docs/panel_auth/refresh.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         id = get_jwt_identity()
         social_worker = session.query(SocialWorkerModel).get(id)
         session.close()
@@ -101,8 +98,6 @@ class PanelLogoutAccess(Resource):
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/panel_auth/logout-access.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         jti = get_raw_jwt()['jti']
         msg = None
         try:
@@ -121,8 +116,6 @@ class PanelLogoutRefresh(Resource):
     @jwt_refresh_token_required
     @swag_from("./docs/panel_auth/logout-refresh.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         jti = get_raw_jwt()['jti']
         try:
             revoked_token = RevokedTokenModel(jti = jti)

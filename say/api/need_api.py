@@ -2,6 +2,7 @@ from collections import OrderedDict
 from dictdiffer import diff
 
 # from say.api.child_api import get_child_by_id
+from say.models import session, obj_to_dict
 from say.models.activity_model import ActivityModel
 from say.models.child_model import ChildModel
 from say.models.child_need_model import ChildNeedModel
@@ -147,8 +148,6 @@ class GetAllNeeds(Resource):
         is_reported = args.get('isReported', None)
         type_ = args.get('type', None)
 
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -238,8 +237,6 @@ class GetNeedById(Resource):
                SAY_SUPERVISOR, ADMIN, USER)  # TODO: priv
     @swag_from("./docs/need/id.yml")
     def get(self, need_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -281,8 +278,6 @@ class UpdateNeedById(Resource):
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/need/update.yml")
     def patch(self, need_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -511,8 +506,6 @@ class DeleteNeedById(Resource):
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/need/delete.yml")
     def patch(self, need_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -549,8 +542,6 @@ class ConfirmNeed(Resource):
     def patch(self, need_id):
         social_worker_id = get_user_id()
 
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -613,8 +604,6 @@ class AddNeed(Resource):
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/need/add.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
