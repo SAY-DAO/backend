@@ -211,12 +211,13 @@ class UpdateUserById(Resource):
                         if obj.split('_')[0] == check:
                             os.remove(os.path.join(temp_user_path, obj))
 
+                    file.save(primary_user.avatarUrl)
                     primary_user.avatarUrl = os.path.join(
+                        '/',
                         temp_user_path,
                         str(primary_user.id) + '-avatar_' + filename,
                     )
 
-                    file.save(primary_user.avatarUrl)
 
             if "userName" in request.form.keys():
                 primary_user.userName = request.form["userName"]
