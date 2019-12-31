@@ -38,6 +38,10 @@ parameters:
     type: string
     required: true
 
+  - name: name_fa
+    in: formData
+    type: string
+
   - name: category
     in: formData
     type: integer
@@ -57,6 +61,14 @@ parameters:
     in: formData
     type: string
     required: true
+
+  - name: description_fa
+    in: formData
+    type: string
+
+  - name: descriptionSummary_fa
+    in: formData
+    type: string
 
   - name: cost
     in: formData

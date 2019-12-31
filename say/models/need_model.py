@@ -21,11 +21,14 @@ class NeedModel(base):
     child_id = Column(Integer, ForeignKey('child.id'))
 
     name = Column(String, nullable=False)
+    name_fa = Column(String, nullable=True)
     imageUrl = Column(String, nullable=False)
     category = Column(Integer, nullable=False)  # 0:Growth | 1:Joy | 2:Health | 3:Surroundings
     isUrgent = Column(Boolean, nullable=False)
     description = Column(Text, nullable=False)
+    description_fa = Column(Text, nullable=True)
     descriptionSummary = Column(Text, nullable=False)
+    descriptionSummary_fa = Column(Text, nullable=True)
     details = Column(Text, nullable=True)
     _cost = Column(Integer, nullable=False)
     paid = Column(Integer, nullable=False, default=0)

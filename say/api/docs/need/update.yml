@@ -32,6 +32,10 @@ parameters:
     in: formData
     type: string
 
+  - name: name_fa
+    in: formData
+    type: string
+
   - name: category
     in: formData
     type: integer
@@ -45,6 +49,14 @@ parameters:
     type: string
 
   - name: descriptionSummary
+    in: formData
+    type: string
+
+  - name: description_fa
+    in: formData
+    type: string
+
+  - name: descriptionSummary_fa
     in: formData
     type: string
 
