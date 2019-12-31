@@ -1,6 +1,8 @@
 import itertools
 from random import randrange
 
+from sqlalchemy import func
+
 from . import *
 from say.models import session, obj_to_dict
 from say.api.child_api import get_child_by_id
