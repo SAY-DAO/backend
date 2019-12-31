@@ -307,7 +307,7 @@ class GetChildById(Resource):
 
                 confirmed_needs = []
                 for need in child_dict['needs']:
-                    if not need['isConfirmed']:
+                    if not need['isConfirmed'] or need['isDeleted']:
                         continue
 
                     confirmed_needs.append(need)
