@@ -5,7 +5,7 @@ from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
 
 from . import *
-from say.models import session, obj_to_dict
+from say.models import session, obj_to_dict, or_
 from say.models.revoked_token_model import RevokedTokenModel
 from say.models.user_model import UserModel
 from say.models.verify_model import VerifyModel
