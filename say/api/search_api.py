@@ -46,6 +46,7 @@ class GetRandomSearchResult(Resource):
                 .join(NeedModel) \
                 .filter(NeedModel.status < 2) \
                 .filter(NeedModel.isConfirmed==True) \
+                .filter(NeedModel.isDeleted==False) \
                 .order_by(func.random()) \
                 .limit(1) \
                 .first()
