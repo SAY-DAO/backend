@@ -132,6 +132,7 @@ def create_celery_app(app=None):
         @property
         def session(self):
             if self._session is None:
+                from say.models import session
                 self._session = session
 
             return self._session
