@@ -850,7 +850,7 @@ class AddNeed(Resource):
             receipts = receipt_path
 
             category = int(request.form["category"])
-            cost = request.form["cost"]
+            cost = request.form["cost"].replace(',', '')
             name = request.form["name"]
             is_urgent = True if request.form["isUrgent"] == "true" else False
             need_type = request.form["type"]
