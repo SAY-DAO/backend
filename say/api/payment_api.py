@@ -235,6 +235,9 @@ class VerifyPayment(Resource):
             .first()
 
         need = pending_payment.need
+        if need.isDone:
+            return make_response(dict(message='Need Already Done'), 409)
+
         amount = pending_payment.amount
 
         child = child_need.child
