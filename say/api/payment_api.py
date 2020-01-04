@@ -96,13 +96,13 @@ class Payment(Resource):
     def post(self):
         user_id = get_user_id()
 
-        resp = make_response({"message": "Something is Wrong!"}, 500)
+        resp = {"message": "Something is Wrong!"}
 
         if 'needId' not in request.json:
-            return make_response(jsonify({"message": "needId is required"}), 500)
+            return jsonify({"message": "needId is required"})
 
         if 'amount' not in request.json:
-            return make_response(jsonify({"message": "amount is required"}), 500)
+            return jsonify({"message": "amount is required"})
 
         amount = request.json['amount']
         need_id = request.json['needId']
@@ -113,32 +113,29 @@ class Payment(Resource):
                 donate = int(request.json['donate'])
 
             if donate < 0:
-                resp = make_response(
-                    {"message": "Donation Can Not Be Negetive"},
-                    500,
-                )
+                resp = {"message": "Donation Can Not Be Negetive"}
                 return
 
             need = session.query(NeedModel).get(need_id)
 
             if need is None or need.isDeleted:
-                resp = make_response({"message": "Need Not Found"}, 500)
+                resp = {"message": "Need Not Found"}
                 return
 
             if need.isDone:
-                resp = make_response({"message": "Need is already done"}, 500)
+                resp = {"message": "Need is already done"}
                 return
 
             if not need.isConfirmed:
                 resp = make_response(
                     jsonify({"message": "error: need is not confirmed yet!"}),
-                    500,
+                    422,
                 )
                 return resp
 
             user = session.query(UserModel).get(user_id)
             if user is None:
-                resp = make_response({"message": "User Not Found"}, 500)
+                resp = {"message": "User Not Found"}
                 return
 
             child_need = (
@@ -162,14 +159,14 @@ class Payment(Resource):
                 .first()
                 is None
             ):
-                resp = make_response(jsonify({"message": "payment must be added by the child's family!"}), 500)
+                resp = make_response(jsonify({"message": "payment must be added by the child's family!"}), 422)
                 return resp
 
 
             try:
                 amount = validate_amount(need, amount)
             except ValueError as e:
-                resp = make_response(jsonify({"message": str(e)}), 500)
+                resp = make_response(jsonify({"message": str(e)}), 422)
                 return
 
             order_id = str(user.id) \
@@ -212,7 +209,7 @@ class Payment(Resource):
             )
 
         except Exception as ex:
-            resp = make_response(str(ex), 500)
+            resp = make_response(str(ex), 422)
 
         finally:
             session.close()
@@ -226,12 +223,12 @@ class VerifyPayment(Resource):
 
         pending_payment = session.query(PaymentModel) \
             .filter_by(paymentId = paymentId) \
+            .with_for_update() \
             .first()
 
         if pending_payment is None:
             resp = dict(message='Invalid Payment ID')
             return make_response(resp, 422)
-
 
         child_need = session.query(ChildNeedModel) \
             .filter_by(id_need = pending_payment.need.id) \
@@ -245,6 +242,7 @@ class VerifyPayment(Resource):
 
         child = child_need.child
         need_url = f"/needPage/{need.id}/{child.id}/{pending_payment.id_user}"
+
         response = idpay.verify(paymentId, orderId)
         if 'error_code' in response or response['status'] != 100:
             #  TODO: what happens after unsusscesful payment
