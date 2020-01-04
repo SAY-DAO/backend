@@ -216,6 +216,7 @@ class Payment(Resource):
             return resp
 
 
+# FIXME: Race condition
 class VerifyPayment(Resource):
     def post(self):
         paymentId = request.form['id']
