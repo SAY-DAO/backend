@@ -89,8 +89,8 @@ class NgoModel(base):
 
         if len(products) != 0:
             for need in products:
-                if need.delivery_date:
-                    date = JalaliDate(need.delivery_date)
+                if need.expected_delivery_date:
+                    date = JalaliDate(need.expected_delivery_date)
                     need.delivere_at = format_jalali_date(date)
                 else:
                     need_delivere_at = None

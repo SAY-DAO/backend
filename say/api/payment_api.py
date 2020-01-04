@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 from khayyam import JalaliDate
 
 from . import *
+from say.models import session, obj_to_dict
 from say.models.child_need_model import ChildNeedModel
 from say.models.family_model import FamilyModel
 from say.models.need_family_model import NeedFamilyModel
@@ -28,6 +29,7 @@ def validate_amount(need, amount):
 class GetAllPayment(Resource):
     model = PaymentModel
 
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
     @swag_from("./docs/payment/all.yml")
     def get(self):
         args = request.args
@@ -44,9 +46,6 @@ class GetAllPayment(Resource):
                 raise ValueError()
         except (ValueError, TypeError):
             return Response(status=400)
-
-        session_maker = sessionmaker(db)
-        session = session_maker()
 
         payments = session.query(self.model) \
             .filter_by(is_verified=True)
@@ -76,10 +75,9 @@ class GetAllPayment(Resource):
 class GetPayment(Resource):
     model = PaymentModel
 
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
     @swag_from("./docs/payment/id.yml")
     def get(self, id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         payment = session.query(self.model).get(id)
         session.close()
         if payment is None:
@@ -93,24 +91,21 @@ class GetPayment(Resource):
 
 class Payment(Resource):
 
+    @authorize
     @swag_from("./docs/payment/new_payment.yml")
     def post(self):
+        user_id = get_user_id()
+
         resp = {"message": "Something is Wrong!"}
+
         if 'needId' not in request.json:
             return jsonify({"message": "needId is required"})
-
-        if 'userId' not in request.json:
-            return jsonify({"message": "userId is required"})
 
         if 'amount' not in request.json:
             return jsonify({"message": "amount is required"})
 
         amount = request.json['amount']
-        userId = request.json['userId']
-        needId = request.json['needId']
-
-        session_maker = sessionmaker(db)
-        session = session_maker()
+        need_id = request.json['needId']
 
         try:
             donate = 0
@@ -121,9 +116,14 @@ class Payment(Resource):
                 resp = {"message": "Donation Can Not Be Negetive"}
                 return
 
-            need = session.query(NeedModel).get(needId)
-            if need is None:
+            need = session.query(NeedModel).get(need_id)
+
+            if need is None or need.isDeleted:
                 resp = {"message": "Need Not Found"}
+                return
+
+            if need.isDone:
+                resp = {"message": "Need is already done"}
                 return
 
             if not need.isConfirmed:
@@ -133,14 +133,14 @@ class Payment(Resource):
                 )
                 return resp
 
-            user = session.query(UserModel).get(userId)
+            user = session.query(UserModel).get(user_id)
             if user is None:
                 resp = {"message": "User Not Found"}
                 return
 
             child_need = (
                 session.query(ChildNeedModel)
-                .filter_by(id_need=needId)
+                .filter_by(id_need=need_id)
                 .first()
             )
 
@@ -155,7 +155,7 @@ class Payment(Resource):
                 session.query(UserFamilyModel)
                 .filter_by(isDeleted=False)
                 .filter_by(id_family=family.id)
-                .filter_by(id_user=userId)
+                .filter_by(id_user=user_id)
                 .first()
                 is None
             ):
@@ -216,32 +216,34 @@ class Payment(Resource):
             return resp
 
 
+# FIXME: Race condition
 class VerifyPayment(Resource):
     def post(self):
         paymentId = request.form['id']
         orderId = request.form['order_id']
 
-        session_maker = sessionmaker(db)
-        session = session_maker()
-
         pending_payment = session.query(PaymentModel) \
             .filter_by(paymentId = paymentId) \
+            .with_for_update() \
             .first()
 
         if pending_payment is None:
             resp = dict(message='Invalid Payment ID')
             return make_response(resp, 422)
 
-
         child_need = session.query(ChildNeedModel) \
             .filter_by(id_need = pending_payment.need.id) \
             .first()
 
         need = pending_payment.need
+        if need.isDone:
+            return make_response(dict(message='Need Already Done'), 409)
+
         amount = pending_payment.amount
 
         child = child_need.child
         need_url = f"/needPage/{need.id}/{child.id}/{pending_payment.id_user}"
+
         response = idpay.verify(paymentId, orderId)
         if 'error_code' in response or response['status'] != 100:
             #  TODO: what happens after unsusscesful payment
@@ -310,47 +312,6 @@ class VerifyPayment(Resource):
             need_url=need_url,
         ))
 
-#@app.route('/payment/user/<int:user_id>' , methods =  ['GET'])
-#def getPaymentByUserId(user_id):
-#    try :
-#        Session = sessionmaker(db)
-#        session = Session()
-#
-#        base.metadata.create_all(db)
-#
-#        user_payment_data = session.query(paymentDB).filter_By(userId = user_id).all()
-#        user_payment_data = object_as_dict(user_payment_data)
-#
-#        resp = Response(json.dumps(user_payment_data) , status= 200 , mimetype='application/json')
-#
-#    except Exception as e :
-#        print(e)
-#        resp = Response(json.dumps({'message' : 'something is wrong !!!'}) , status= 500)
-#
-#    finally :
-#        return resp
-#
-#
-#@app.route('/payment/need/<int:need_id>' , methods =  ['GET'])
-#def getPaymentByNeedId(need_id):
-#    try :
-#        Session = sessionmaker(db)
-#        session = Session()
-#
-#        base.metadata.create_all(db)
-#
-#        need_payment_data = session.query(paymentDB).filter_By(needId = need_id).all()
-#        need_payment_data = object_as_dict(user_payment_data)
-#
-#        resp = Response(json.dumps(need_payment_data) , status= 200 , mimetype='application/json')
-#
-#    except Exception as e :
-#        print(e)
-#        resp = Response(json.dumps({'message' : 'something is wrong !!!'}) , status= 500)
-#
-#    finally :
-#        return resp
-#
 
 api.add_resource(Payment, "/api/v2/payment")
 api.add_resource(GetPayment, "/api/v2/payment/<int:id>")

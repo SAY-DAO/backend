@@ -10,20 +10,16 @@ tags:
   - Family API
 
 parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
   - in: path
     name: family_id
     required: true
     type: integer
-
-  - in: path
-    name: user_id
-    required: true
-    type: integer
-
-#  - in: body
-#    name: userRole
-#    required: true
-#    type: integer
 
   - in: body
     name: role

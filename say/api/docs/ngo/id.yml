@@ -7,6 +7,12 @@ tags:
   - NGO API
 
 parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+    
   - in: path
     name: ngo_id
     required: true

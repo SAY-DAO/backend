@@ -15,6 +15,12 @@ consumes:
   - multipart/form-data
 
 parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
   - name: avatarUrl
     in: formData
     type: file
@@ -36,6 +42,10 @@ parameters:
     type: string
 
   - name: sayName
+    in: formData
+    type: string
+
+  - name: sayName_fa
     in: formData
     type: string
 
@@ -64,6 +74,14 @@ parameters:
     type: string
 
   - name: bioSummary
+    in: formData
+    type: string
+
+  - name: bio_fa
+    in: formData
+    type: string
+
+  - name: bioSummary_fa
     in: formData
     type: string
 

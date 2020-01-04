@@ -1,6 +1,7 @@
 from hashlib import md5
 
 from say.api.child_api import get_child_by_id, get_child_need
+from say.models import session, obj_to_dict
 from say.models.family_model import FamilyModel
 from say.models.need_family_model import NeedFamilyModel
 from say.models.payment_model import PaymentModel
@@ -13,6 +14,33 @@ from . import *
 User APIs
 """
 
+
+def is_int(maybe_int):
+    try:
+        int(maybe_int)
+        return True
+    except:
+        return False
+
+
+def me_or_user_id(func):
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        user_id = kwargs['user_id']
+        user_role = get_user_role()
+
+        if user_id == 'me' and user_role == USER:
+            user_id = get_user_id()
+        elif is_int(user_id) and user_role in [ADMIN, SUPER_ADMIN]:
+            user_id = int(user_id)
+        else:
+            return make_response(jsonify({'message': 'Permission Denied'}), 403)
+
+        kwargs['user_id'] = user_id
+        return func(*args, **kwargs)
+
+    return wrapper
 
 def get_user_by_id(session, user_id):
     user = (
@@ -63,10 +91,11 @@ def get_user_needs(session, user, urgent=False):
 
 
 class GetUserById(Resource):
+
+    @authorize(USER, ADMIN, SUPER_ADMIN)
+    @me_or_user_id
     @swag_from("./docs/user/by_id.yml")
     def get(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -81,445 +110,12 @@ class GetUserById(Resource):
             return resp
 
 
-class GetUserByFullName(Resource):
-    @swag_from("./docs/user/by_fullname.yml")
-    def get(self, first_name, last_name):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            users = (
-                session.query(UserModel)
-                .filter_by(firstName=first_name)
-                .filter_by(lastName=last_name)
-                .filter_by(isDeleted=False)
-                .all()
-            )
-
-            res = {}
-            for user in users:
-                res[str(user.id)] = get_user_by_id(session, user.id)
-
-            resp = make_response(jsonify(res), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetUserByBirthPlace(Resource):
-    @swag_from("./docs/user/by_birthplace.yml")
-    def get(self, birth_place):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            users = (
-                session.query(UserModel)
-                .filter_by(birthPlace=birth_place)
-                .filter_by(isDeleted=False)
-                .all()
-            )
-
-            res = {}
-            for user in users:
-                res[str(user.id)] = get_user_by_id(session, user.id)
-
-            resp = make_response(jsonify(res), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetUserByBirthDate(Resource):
-    @swag_from("./docs/user/by_birth_date.yml")
-    def get(self, birth_date, is_after):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            if is_after.lower() == "true":
-                users = (
-                    session.query(UserModel)
-                    .filter(UserModel.birthDate >= birth_date)
-                    .filter_by(isDeleted=False)
-                    .all()
-                )
-            else:
-                users = (
-                    session.query(UserModel)
-                    .filter(UserModel.birthDate <= birth_date)
-                    .filter_by(isDeleted=False)
-                    .all()
-                )
-
-            res = {}
-            for user in users:
-                res[str(user.id)] = get_user_by_id(session, user.id)
-
-            resp = make_response(jsonify(res), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetUserByCountry(Resource):
-    @swag_from("./docs/user/by_country.yml")
-    def get(self, country):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            users = (
-                session.query(UserModel)
-                .filter_by(country=country)
-                .filter_by(isDeleted=False)
-                .all()
-            )
-
-            res = {}
-            for user in users:
-                res[str(user.id)] = get_user_by_id(session, user.id)
-
-            resp = make_response(jsonify(res), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetUserByCity(Resource):
-    @swag_from("./docs/user/by_city.yml")
-    def get(self, city):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            users = (
-                session.query(UserModel)
-                .filter_by(city=city)
-                .filter_by(isDeleted=False)
-                .all()
-            )
-
-            res = {}
-            for user in users:
-                res[str(user.id)] = get_user_by_id(session, user.id)
-
-            resp = make_response(jsonify(res), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetUserByUserName(Resource):
-    @swag_from("./docs/user/by_username.yml")
-    def get(self, username):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            user = session.query(UserModel).filter_by(userName=username).first()
-
-            if not user.isDeleted:
-                resp = make_response(jsonify(get_user_by_id(session, user.id)), 200)
-            else:
-                return make_response(jsonify({"message": "error occurred!"}), 500)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetUserByPhoneNumber(Resource):
-    @swag_from("./docs/user/by_phone.yml")
-    def get(self, phone):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            user = session.query(UserModel).filter_by(phoneNumber=phone).first()
-
-            if not user.isDeleted:
-                resp = make_response(jsonify(get_user_by_id(session, user.id)), 200)
-            else:
-                return make_response(jsonify({"message": "error occurred!"}), 500)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetAllUsers(Resource):
-    @swag_from("./docs/user/all.yml")
-    def get(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            users = session.query(UserModel).filter_by(isDeleted=False).all()
-
-            user_data = {}
-            for user in users:
-                user_data[str(user.id)] = get_user_by_id(session, user.id)
-
-            resp = make_response(jsonify(user_data), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetUserAvatar(Resource):
-    @swag_from("./docs/user/avatar.yml")
-    def get(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            user = session.query(UserModel).get(user_id)
-
-            if not user.isDeleted:
-                resp = make_response(jsonify({"avatarUrl": user.avatarUrl}), 200)
-            else:
-                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetUserEmailAddress(Resource):
-    @swag_from("./docs/user/email.yml")
-    def get(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            user = session.query(UserModel).get(user_id)
-
-            if not user.isDeleted:
-                resp = make_response(jsonify({"emailAddress": user.emailAddress}), 200)
-            else:
-                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetUserPhoneNumber(Resource):
-    @swag_from("./docs/user/phone.yml")
-    def get(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            user = session.query(UserModel).get(user_id)
-
-            if not user.isDeleted:
-                resp = make_response(jsonify({"phoneNumber": user.phoneNumber}), 200)
-            else:
-                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetUserUserName(Resource):
-    @swag_from("./docs/user/username.yml")
-    def get(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            user = session.query(UserModel).get(user_id)
-
-            if not user.isDeleted:
-                resp = make_response(jsonify({"userName": user.userName}), 200)
-            else:
-                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetUserFullName(Resource):
-    @swag_from("./docs/user/fullname.yml")
-    def get(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            user = session.query(UserModel).get(user_id)
-
-            if not user.isDeleted:
-                resp = make_response(jsonify({"firstName": user.firstName, "lastName": user.lastName}), 200)
-            else:
-                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetUserCredit(Resource):
-    @swag_from("./docs/user/credit.yml")
-    def get(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            user = session.query(UserModel).get(user_id)
-
-            if not user.isDeleted:
-                resp = make_response(jsonify({"credit": user.credit}), 200)
-            else:
-                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetUserRole(Resource):
-    @swag_from("./docs/user/role.yml")
-    def get(self, user_id, child_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            family = (
-                session.query(FamilyModel)
-                .filter_by(id_child=child_id)
-                .filter_by(isDeleted=False)
-                .first()
-            )
-
-            user = (
-                session.query(UserFamilyModel)
-                .filter_by(id_user=user_id)
-                .filter_by(id_family=family.id)
-                .filter_by(isDeleted=False)
-                .first()
-            )
-
-            resp = make_response(jsonify({"role": user.userRole}), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetUserSpentCredit(Resource):
-    @swag_from("./docs/user/spent.yml")
-    def get(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            user = session.query(UserModel).get(user_id)
-
-            if not user.isDeleted:
-                resp = make_response(jsonify({"spentCredit": user.spentCredit}), 200)
-            else:
-                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
 class GetUserChildren(Resource):
+
+    @authorize(USER, ADMIN, SUPER_ADMIN)
+    @me_or_user_id
     @swag_from("./docs/user/children.yml")
     def get(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -540,10 +136,11 @@ class GetUserChildren(Resource):
 
 
 class GetUserChildrenCount(Resource):
+
+    @authorize(USER, ADMIN, SUPER_ADMIN)
+    @me_or_user_id
     @swag_from("./docs/user/children-count.yml")
     def get(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -567,109 +164,11 @@ class GetUserChildrenCount(Resource):
             return resp
 
 
-class GetUserNeeds(Resource):
-    @swag_from("./docs/user/needs.yml")
-    def get(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            user = session.query(UserModel).get(user_id)
-
-            if not user.isDeleted:
-                resp = make_response(jsonify(get_user_needs(session, user)), 200)
-            else:
-                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetUserUrgentNeeds(Resource):
-    @swag_from("./docs/user/urgent.yml")
-    def get(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            user = session.query(UserModel).get(user_id)
-
-            if not user.isDeleted:
-                resp = make_response(jsonify(get_user_needs(session, user, True)), 200)
-            else:
-                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetUserFinancialReport(Resource):
-    @swag_from("./docs/user/report.yml")
-    def get(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            payments = session.query(PaymentModel).filter_by(id_user=user_id).all()
-
-            res = {}
-            for payment in payments:
-                res[str(payment.id)] = obj_to_dict(payment)
-
-            resp = make_response(jsonify(res), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetAllUsersNeeds(Resource):
-    @swag_from("./docs/user/all_needs.yml")
-    def get(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            users = session.query(UserModel).filter_by(isDeleted=False).all()
-
-            user_needs = {}
-            for user in users:
-                user_needs[str(user.id)] = get_user_needs(session, user)
-
-            resp = make_response(jsonify(user_needs), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
 class UpdateUserById(Resource):
+    @authorize(USER, ADMIN, SUPER_ADMIN)
+    @me_or_user_id
     @swag_from("./docs/user/update.yml")
     def patch(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -690,18 +189,28 @@ class UpdateUserById(Resource):
 
                 if file and allowed_image(file.filename):
                     # filename = secure_filename(file.filename)
-                    filename = str(primary_user.phoneNumber) + '.' + file.filename.split('.')[-1]
+                    filename = str(primary_user.id) + '.' + file.filename.split('.')[-1]
 
-                    temp_user_path = os.path.join(app.config['UPLOAD_FOLDER'], str(primary_user.id) + '-user')
+                    temp_user_path = os.path.join(
+                        app.config['UPLOAD_FOLDER'],
+                        str(primary_user.id) + '-user',
+                    )
+
+                    if not os.path.isdir(temp_user_path):
+                        os.makedirs(temp_user_path, exist_ok=True)
 
                     for obj in os.listdir(temp_user_path):
                         check = str(primary_user.id) + '-avatar'
                         if obj.split('_')[0] == check:
                             os.remove(os.path.join(temp_user_path, obj))
 
-                    primary_user.avatarUrl = os.path.join(temp_user_path, str(primary_user.id) + '-avatar_' + filename)
-
+                    primary_user.avatarUrl = os.path.join(
+                        temp_user_path,
+                        str(primary_user.id) + '-avatar_' + filename,
+                    )
                     file.save(primary_user.avatarUrl)
+                    primary_user.avatarUrl = '/' + primary_user.avatarUrl
+
 
             if "userName" in request.form.keys():
                 primary_user.userName = request.form["userName"]
@@ -710,9 +219,7 @@ class UpdateUserById(Resource):
                 primary_user.emailAddress = request.form["emailAddress"]
 
             if "password" in request.form.keys():
-                primary_user.password = md5(
-                    request.form["password"].encode()
-                ).hexdigest()
+                primary_user.password = request.form["password"]
 
             if "firstName" in request.form.keys():
                 primary_user.firstName = request.form["firstName"]
@@ -756,10 +263,9 @@ class UpdateUserById(Resource):
 
 
 class DeleteUserById(Resource):
+    @authorize(ADMIN, SUPER_ADMIN)
     @swag_from("./docs/user/delete.yml")
     def patch(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -804,21 +310,47 @@ class DeleteUserById(Resource):
             return resp
 
 
-class AddUser(Resource):
-    @swag_from("./docs/user/add.yml")
-    def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
+class GetUserRole(Resource):
+    @authorize(USER, ADMIN, SUPER_ADMIN)
+    @me_or_user_id
+    @swag_from("./docs/user/role.yml")
+    def get(self, user_id, child_id):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            # if len(session.query(UserModel).all()):
-            #     last_user = session.query(UserModel).order_by(UserModel.id.desc()).first()
-            #     current_id = last_user.id + 1
+            family = (
+                session.query(FamilyModel)
+                .filter_by(id_child=child_id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
 
-            # else:
-            #     current_id = 1
+            user = (
+                session.query(UserFamilyModel)
+                .filter_by(id_user=user_id)
+                .filter_by(id_family=family.id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
 
+            resp = make_response(jsonify({"role": user.userRole}), 200)
+
+        except Exception as e:
+            print(e)
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
+
+        finally:
+            session.close()
+            return resp
+
+
+class AddUser(Resource):
+    @authorize(ADMIN, SUPER_ADMIN)
+    @swag_from("./docs/user/add.yml")
+    def post(self):
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+
+        try:
             if "emailAddress" in request.form.keys():
                 email_address = request.form["emailAddress"]
             else:
@@ -844,8 +376,7 @@ class AddUser(Resource):
             else:
                 phone_number = None
 
-            phone_number = request.form['phoneNumber']
-            password = md5(request.form["password"].encode()).hexdigest()
+            password = request.form["password"]
             first_name = request.form["firstName"]
             last_name = request.form["lastName"]
             city = int(request.form["city"])
@@ -888,13 +419,11 @@ class AddUser(Resource):
                 lastLogin=last_login,
                 password=password,
                 flagUrl=flag_url,
-                # credit=11000  # TODO: remove it!
             )
 
             session.add(new_user)
             session.flush()
 
-            # path = None
             if 'avatarUrl' in request.files:
                 file = request.files['avatarUrl']
 
@@ -904,20 +433,18 @@ class AddUser(Resource):
                     return resp
 
                 if file and allowed_image(file.filename):
-                    # filename = secure_filename(file.filename)
                     filename = str(phone_number) + '.' + file.filename.split('.')[-1]
 
                     temp_user_path = os.path.join(app.config['UPLOAD_FOLDER'], str(current_id) + '-user')
 
                     if not os.path.isdir(temp_user_path):
-                        os.mkdir(temp_user_path)
+                        os.makedirs(temp_user_path, exist_ok=True)
 
                     path = os.path.join(temp_user_path, str(current_id) + '-avatar_' + filename)
 
                     file.save(path)
 
                 avatar_url = path
-            #     avatar_url = request.files["avatarUrl"]
             else:
                 avatar_url = None
 
@@ -936,107 +463,16 @@ class AddUser(Resource):
             return resp
 
 
-# class Foo(Resource):
-#     def get(self):
-#         session_maker = sessionmaker(db)
-#         session = session_maker()
-#         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-#         try:
-#             children = (
-#                 session.query(ChildModel)
-#                 .filter_by(isDeleted=False)
-#                 .filter_by(isMigrated=False)
-#                 .filter_by(isConfirmed=True)
-#                 .all()
-#             )
-#             users = (
-#                 session.query(UserModel)
-#                 .filter_by(isDeleted=False)
-#                 .all()
-#             )
-#             for c in children:
-#                 ids = []
-#                 child = get_child_by_id(session, c.id, with_need=True)
-#                 pay = 0
-
-#                 for n in child["Needs"].keys():
-#                     if str(child["Needs"][n]["isDone"]).lower() == 'true':
-#                         c.doneNeedCount += 1
-
-#                     ids.append(n)
-
-#                 payments = (
-#                     session.query(PaymentModel)
-#                     .filter(PaymentModel.id_need.in_(ids))
-#                     .filter_by(is_verified=True)
-#                 )
-
-#                 for p in payments:
-#                     pay += p.amount
-
-#                 c.spentCredit = pay
-
-#             for u in users:
-#                 payments = (
-#                     session.query(PaymentModel)
-#                     .filter_by(id_user=u.id)
-#                 )
-#                 for p in payments:
-#                     u.spentCredit += p.amount
-
-#             tag = (
-#                 session.query(NeedFamilyModel)
-#                 .filter_by(id_need=6)
-#                 .filter_by(isDeleted=True)
-#                 .first()
-#             )
-#             if tag is not None:
-#                 tag.isDeleted = False
-
-#             session.commit()
-
-#             resp = make_response(dict(message="children done need counts and user spent credit fixed"), 200)
-
-#         except Exception as e:
-#             print(e)
-#             resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-#         finally:
-#             session.close()
-#             return resp
-
 
 """
 API URLs
 """
 
-# api.add_resource(Foo, "/api/v2/foo")
 api.add_resource(GetUserById, "/api/v2/user/userId=<user_id>")
-api.add_resource(GetUserByFullName, "/api/v2/user/name=<first_name>&<last_name>")
-api.add_resource(GetUserByBirthPlace, "/api/v2/user/birthPlace=<birth_place>")
-api.add_resource(
-    GetUserByBirthDate, "/api/v2/user/birthDate=<birth_date>&isAfter=<is_after>"
-)
-api.add_resource(GetUserByCountry, "/api/v2/user/country=<country>")
-api.add_resource(GetUserByCity, "/api/v2/user/city=<city>")
-api.add_resource(GetUserByUserName, "/api/v2/user/username=<username>")
-api.add_resource(GetUserByPhoneNumber, "/api/v2/user/phone=<phone>")
-api.add_resource(GetAllUsers, "/api/v2/user/all")
-api.add_resource(GetUserAvatar, "/api/v2/user/avatar/userId=<user_id>")
-api.add_resource(GetUserEmailAddress, "/api/v2/user/email/userId=<user_id>")
-api.add_resource(GetUserPhoneNumber, "/api/v2/user/phone/userId=<user_id>")
-api.add_resource(GetUserUserName, "/api/v2/user/username/userId=<user_id>")
-api.add_resource(GetUserFullName, "/api/v2/user/fullName/userId=<user_id>")
-api.add_resource(GetUserCredit, "/api/v2/user/credit/userId=<user_id>")
-api.add_resource(GetUserRole, "/api/v2/user/role/userId=<user_id>&childId=<child_id>")
-api.add_resource(GetUserSpentCredit, "/api/v2/user/credit/spent/userId=<user_id>")
 api.add_resource(GetUserChildren, "/api/v2/user/children/userId=<user_id>")
 api.add_resource(GetUserChildrenCount, "/api/v2/user/children/count/userId=<user_id>")
-api.add_resource(GetUserNeeds, "/api/v2/user/needs/userId=<user_id>")
-api.add_resource(GetUserFinancialReport, "/api/v2/user/report/userId=<user_id>")
-api.add_resource(GetAllUsersNeeds, "/api/v2/user/needs/all")
 api.add_resource(UpdateUserById, "/api/v2/user/update/userId=<user_id>")
 api.add_resource(DeleteUserById, "/api/v2/user/delete/userId=<user_id>")
-api.add_resource(GetUserUrgentNeeds, "/api/v2/user/needs/urgent/userId=<user_id>")
 api.add_resource(AddUser, "/api/v2/user/add")
+api.add_resource(GetUserRole, "/api/v2/user/role/userId=<user_id>&childId=<child_id>")
+

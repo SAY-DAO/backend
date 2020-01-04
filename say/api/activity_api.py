@@ -1,3 +1,4 @@
+from say.models import session, obj_to_dict
 from say.models.activity_model import ActivityModel
 from . import *
 """
@@ -8,8 +9,6 @@ Activity APIs
 class GetActivityById(Resource):
     @swag_from("./docs/activity/id.yml")
     def get(self, activity_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}),
                              503)
 
@@ -38,8 +37,6 @@ class GetActivityById(Resource):
 class GetActivityBySocialWorker(Resource):
     @swag_from("./docs/activity/social_worker.yml")
     def get(self, social_worker_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}),
                              503)
 
@@ -77,8 +74,6 @@ class GetActivityBySocialWorker(Resource):
 class GetActivityByType(Resource):
     @swag_from("./docs/activity/type.yml")
     def get(self, activity_code):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}),
                              503)
 
@@ -116,8 +111,6 @@ class GetActivityByType(Resource):
 class GetAllActivities(Resource):
     @swag_from("./docs/activity/all.yml")
     def get(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}),
                              503)
 
@@ -150,8 +143,6 @@ class GetAllActivities(Resource):
 class AddActivity(Resource):
     @swag_from("./docs/activity/add.yml")
     def post(self, social_worker_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}),
                              503)
 

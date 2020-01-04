@@ -1,7 +1,10 @@
 from collections import OrderedDict
 from dictdiffer import diff
 
+from sqlalchemy import func
+
 # from say.api.child_api import get_child_by_id
+from say.models import session, obj_to_dict
 from say.models.activity_model import ActivityModel
 from say.models.child_model import ChildModel
 from say.models.child_need_model import ChildNeedModel
@@ -17,6 +20,39 @@ from . import *
 """
 Need APIs
 """
+
+
+def filter_by_privilege(query):  # TODO: priv
+    user_role = get_user_role()
+    user_id = get_user_id()
+    ngo_id = get_sw_ngo_id()
+
+    if user_role in [SOCIAL_WORKER, COORDINATOR]:
+        query = query \
+            .join(ChildModel) \
+            .filter(or_(
+                ChildModel.id_social_worker==user_id,
+                ChildModel.id==DEFAULT_CHILD_ID,
+             ))
+
+    elif user_role in [NGO_SUPERVISOR]:
+        query = query \
+            .join(ChildModel) \
+            .join(SocialWorkerModel) \
+            .filter(or_(
+                SocialWorkerModel.id_ngo==ngo_id,
+                ChildModel.id==DEFAULT_CHILD_ID,
+             ))
+
+    elif user_role in [USER]:
+        query = query \
+            .join(ChildModel) \
+            .join(FamilyModel) \
+            .join(UserFamilyModel) \
+            .filter(UserFamilyModel.id_user==user_id) \
+            .filter(UserFamilyModel.isDeleted==False) \
+
+    return query
 
 
 def get_all_urgent_needs(session):
@@ -75,7 +111,6 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
             .filter_by(id_user=participant.id_user)
             .filter_by(id_need=need.id)
             .filter_by(is_verified=True)
-            # .group_by(PaymentModel.id)
             .group_by(PaymentModel.id_user, PaymentModel.id_need)
             .first())[0]
         )
@@ -90,7 +125,6 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
         temp_participant['userFirstName'] = user_info[1]
         temp_participant['userLastName'] = user_info[2]
 
-
         users[str(participant.id_user)] = temp_participant
 
     if participants_only:
@@ -101,54 +135,31 @@ def get_need(need, session, participants_only=False, with_participants=True, wit
     return need_data
 
 
-class GetNeedById(Resource):
-    @swag_from("./docs/need/id.yml")
-    def get(self, need_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            need = (
-                session.query(NeedModel)
-                .filter_by(isDeleted=False)
-                .filter_by(id=need_id)
-                .first()
-            )
-
-            resp = make_response(jsonify(get_need(need, session)), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
 class GetAllNeeds(Resource):
+
+    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
+               SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/need/all.yml")
     def get(self, confirm):
+        sw_role = get_user_role()
         args = request.args
         done = args.get('done', -1)
         status = args.get('status', None)
         ngo_id = args.get('ngoId', None)
+
         is_reported = args.get('isReported', None)
         type_ = args.get('type', None)
 
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             done = int(done)
-            needs = session.query(NeedModel).order_by(NeedModel.doneAt.desc())
+            needs = session.query(NeedModel) \
+                .filter(NeedModel.isDeleted==False) \
+                .order_by(NeedModel.doneAt.desc())
 
-            if int(confirm) == 2:
-                needs = needs.filter_by(isDeleted=False)
 
-            elif int(confirm) == 1:
+            if int(confirm) == 1:
                 needs = (
                     needs
                     .filter_by(isDeleted=False)
@@ -161,9 +172,6 @@ class GetAllNeeds(Resource):
                     .filter_by(isDeleted=False)
                     .filter_by(isConfirmed=False)
                 )
-
-            else:
-                return make_response(jsonify({"message": "wrong input"}), 500)
 
             if done == 1:
                 needs = needs.filter_by(isDone=True)
@@ -183,12 +191,16 @@ class GetAllNeeds(Resource):
                 is_reported = bool(int(is_reported))
                 needs = needs.filter_by(isReported=is_reported)
 
-            if ngo_id:
+            if ngo_id and sw_role in [
+                SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+            ]:
                 ngo_id = int(ngo_id)
                 needs = needs \
-                    .join(ChildNeedModel) \
                     .join(ChildModel) \
-                    .filter(ChildModel.id_ngo==ngo_id)
+                    .join(SocialWorkerModel) \
+                    .filter(SocialWorkerModel.id_ngo==ngo_id)
+
+            needs = filter_by_privilege(needs)
 
             result = OrderedDict(
                 totalCount=needs.count(),
@@ -206,6 +218,7 @@ class GetAllNeeds(Resource):
                 res['childGeneratedCode'] = child.generatedCode
                 res['childFirstName'] = child.firstName
                 res['childLastName'] = child.lastName
+                res['childSayName'] = child.sayName
 
                 result['needs'].append(res)
 
@@ -220,256 +233,37 @@ class GetAllNeeds(Resource):
             return resp
 
 
-class GetNeedByCategory(Resource):
-    @swag_from("./docs/need/category.yml")
-    def get(self, category):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+class GetNeedById(Resource):
 
-        try:
-            needs = (
-                session.query(NeedModel)
-                .filter_by(isDeleted=False)
-                .filter_by(category=category)
-                .all()
-            )
-
-            res = {}
-            for need in needs:
-                res[str(need.id)] = get_need(need, session)
-
-            resp = make_response(jsonify(res), 200)
-
-        except Exception as e:
-            print(e)
-
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetNeedByType(Resource):
-    @swag_from("./docs/need/type.yml")
-    def get(self, need_type):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            needs = (
-                session.query(NeedModel)
-                .filter_by(isDeleted=False)
-                .filter_by(type=need_type)
-                .all()
-            )
-
-            res = {}
-            for need in needs:
-                res[str(need.id)] = get_need(need, session)
-
-            resp = make_response(jsonify(res), 200)
-
-        except Exception as e:
-            print(e)
-
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetNeedParticipants(Resource):
-    @swag_from("./docs/need/participants.yml")
+    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
+               SAY_SUPERVISOR, ADMIN, USER)  # TODO: priv
+    @swag_from("./docs/need/id.yml")
     def get(self, need_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            need = (
-                session.query(NeedModel)
+            need_query = session.query(NeedModel) \
+                .filter_by(isDeleted=False) \
                 .filter_by(id=need_id)
-                .filter_by(isDeleted=False)
-                .first()
+
+            need = filter_by_privilege(need_query).first()
+
+            if need is None:
+                resp = HTTP_NOT_FOUND()
+                return
+
+            need_dict = obj_to_dict(need)
+
+            need_dict['Participants'] = get_need(
+                need,
+                session,
+                participants_only=True,
             )
 
-            resp = make_response(jsonify(get_need(need, session, participants_only=True)), 200)
-
-        except Exception as e:
-            print(e)
-
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetNeedReceipts(Resource):
-    @swag_from("./docs/need/receipts.yml")
-    def get(self, need_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            need = (
-                session.query(NeedModel)
-                .filter_by(id=need_id)
-                .filter_by(isDeleted=False)
-                .first()
+            resp = make_response(
+                jsonify(need_dict),
+                200,
             )
-
-            resp = make_response(jsonify({"NeedReceipts": need.receipts}), 200)
-
-        except Exception as e:
-            print(e)
-
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetAllUrgentNeeds(Resource):
-    @swag_from("./docs/need/all_urgent.yml")
-    def get(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            resp = make_response(jsonify(get_all_urgent_needs(session)), 200)
-
-        except Exception as e:
-            print(e)
-
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class AddPaymentForNeed(Resource):
-    @swag_from("./docs/need/payment.yml")
-    def post(self, need_id, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            amount = int(request.form["amount"])
-            created_at = datetime.utcnow()
-
-            need = (
-                session.query(NeedModel)
-                .filter_by(isDeleted=False)
-                .filter_by(id=need_id)
-                .first()
-            )
-
-            if not need.isConfirmed:
-                resp = make_response(jsonify({"message": "error: need is not confirmed yet!"}), 500)
-                session.close()
-                return resp
-
-            user = (
-                session.query(UserModel)
-                .filter_by(isDeleted=False)
-                .filter_by(id=user_id)
-                .first()
-            )
-            child = need.child
-            family = (
-                session.query(FamilyModel)
-                .filter_by(id_child=child.id_child)
-                .filter_by(isDeleted=False)
-                .first()
-            )
-
-            if (
-                session.query(UserFamilyModel)
-                .filter_by(isDeleted=False)
-                .filter_by(id_family=family.id)
-                .filter_by(id_user=user_id)
-                .first()
-                is None
-            ):
-                resp = make_response(jsonify({"message": "payment must be added by the child's family!"}), 500)
-                session.close()
-                return resp
-
-            if amount > need.cost - need.paid:
-                resp = make_response(jsonify({"message": f"you can pay {need.cost - need.paid} at most!"}), 500)
-                session.close()
-                return resp
-
-            elif amount > user.credit:
-                resp = make_response(jsonify({"message": f"your credit is less than {amount}! you have {user.credit}."}), 500)
-                session.close()
-                return resp
-
-            elif amount <= 0:
-                resp = make_response(jsonify({"message": "amount can not be 0 or less!"}), 500)
-                session.close()
-                return resp
-
-            else:
-                new_payment = PaymentModel(
-                    id_need=need_id,
-                    id_user=user_id,
-                    amount=amount,
-                    createdAt=created_at,
-                )
-
-                session.add(new_payment)
-
-                participant = (
-                    session.query(NeedFamilyModel)
-                    .filter_by(id_need=need_id)
-                    .filter_by(id_user=user_id)
-                    .filter_by(isDeleted=False)
-                    .first()
-                )
-                if participant is None:
-                    new_participant = NeedFamilyModel(
-                        id_family=family.id, id_user=user_id, id_need=need_id
-                    )
-
-                    session.add(new_participant)
-
-                session.commit()
-
-                user.credit -= amount
-                user.spentCredit += amount
-                need.paid += amount
-
-                child.spentCredit += amount
-                if need.paid == need.cost:
-                    need.isDone = True
-                    # user.doneNeedCount += 1  # TODO: which one is correct?
-
-                    participants = (
-                        session.query(NeedFamilyModel)
-                        .filter_by(id_need=need_id)
-                        .filter_by(isDeleted=False)
-                        .all()
-                    )
-
-                    for participate in participants:
-                        participate.user.doneNeedCount += 1
-
-                    child.doneNeedCount += 1
-
-                session.commit()
-
-                resp = make_response(jsonify({"message": "payment added successfully!"}), 200)
 
         except Exception as e:
             print(e)
@@ -481,26 +275,31 @@ class AddPaymentForNeed(Resource):
 
 
 class UpdateNeedById(Resource):
+
+    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
+               SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/need/update.yml")
     def patch(self, need_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            need = (
-                session.query(NeedModel)
-                .filter_by(id=need_id)
+            need_query = session.query(NeedModel) \
+                .filter_by(id=need_id) \
                 .filter_by(isDeleted=False)
-                .first()
-            )
+
+            need = filter_by_privilege(need_query).first()
+
+            if need is None:
+                resp = HTTP_NOT_FOUND()
+                return
+
             temp = obj_to_dict(need)
             child = need.child
 
             activity = ActivityModel(
-                id_social_worker=child.id_social_worker,
+                id_social_worker=get_user_id(),
                 model=NeedModel.__tablename__,
-                activityCode=11,
+                activityCode=11,  # TODO: wrong code
             )
             session.add(activity)
 
@@ -510,7 +309,7 @@ class UpdateNeedById(Resource):
                     return
 
                 # if not need.isConfirmed:
-                need._cost = int(request.form["cost"])
+                need.cost = request.form["cost"]
 
                 # else:
                 #     resp = make_response(jsonify({"message": "error: cannot change cost for confirmed need!"}), 500)
@@ -538,8 +337,7 @@ class UpdateNeedById(Resource):
                     )
 
                     if not os.path.isdir(temp_need_path):
-                        os.mkdir(temp_need_path)
-
+                        os.makedirs(temp_need_path, exist_ok=True)
 
                     for obj in os.listdir(temp_need_path):
                         check = str(need.id) + "-image"
@@ -580,7 +378,7 @@ class UpdateNeedById(Resource):
                         temp_need_path, str(need.id) + "-need"
                     )
                     if not os.path.isdir(temp_need_path):
-                        os.mkdir(temp_need_path)
+                        os.makedirs(temp_need_path, exist_ok=True)
 
                     receipt_path = os.path.join(
                         temp_need_path, str(need.id) + "-receipt_" + filename
@@ -608,6 +406,9 @@ class UpdateNeedById(Resource):
             if "link" in request.form.keys():
                 need.link = request.form["link"]
 
+                from say.tasks import update_need
+                update_need.delay(need.id)
+
             if "affiliateLinkUrl" in request.form.keys():
                 need.affiliateLinkUrl = request.form["affiliateLinkUrl"]
 
@@ -620,41 +421,71 @@ class UpdateNeedById(Resource):
             if "name" in request.form.keys():
                 need.name = request.form["name"]
 
+            if "description_fa" in request.form.keys():
+                need.description_fa = request.form["description_fa"]
+
+            if "descriptionSummary_fa" in request.form.keys():
+                need.descriptionSummary_fa = request.form["descriptionSummary_fa"]
+
+            if "name_fa" in request.form.keys():
+                need.name_fa = request.form["name_fa"]
+
             if "doing_duration" in request.form.keys():
                 need.doing_duration = int(request.form["doing_duration"])
 
             if "details" in request.form.keys():
                 need.details = request.form["details"]
 
-            if "delivery_date" in request.form.keys():
-                need.delivery_date = datetime.strptime(
-                    request.form["delivery_date"],
-                    '%Y-%m-%d',
-                )
+            if request.form.get("expected_delivery_date"):
+               if not(2 <= need.status <= 3):
+                  raise Exception(
+                      'Expected delivery date can not changed in this status'
+                  )
+               need.isReported = False
+               need.expected_delivery_date = parse_datetime(
+                   request.form["expected_delivery_date"]
+               )
 
             if "status" in request.form.keys():
                 new_status = int(request.form["status"])
                 prev_status = need.status
 
-                if new_status != 5 and new_status - prev_status == 1:
+                # For making sure that sending same status has no effect
+                if new_status == prev_status:
+                    pass
+
+                elif new_status != 5 and new_status - prev_status == 1:
                     if new_status == 4 and need.isReported != True:
                         raise Exception('Need has not been reported to ngo yet')
+
                     need.status = new_status
                     if need.type == 0:  # Service
                         if new_status == 3:
+                            need.ngo_delivery_date = datetime.utcnow()
                             need.send_money_to_ngo_email()
-                        if new_status == 4:
-                            need.send_child_delivery_service_email()
-                    if need.type == 1:  # Product
-                        if new_status == 3 and not need.oncePurchased:
-                            need.oncePurchased = True
-                            need.send_purchase_email()
-                        if new_status == 4:
-                            need.send_child_delivery_product_email()
 
-                elif need.type == 1 and prev_status == 3 and new_status == 2:
-                    need.status = new_status
-                    need.isReported = False
+                        if new_status == 4:
+                            need.child_delivery_date = datetime.utcnow()
+                            need.send_child_delivery_service_email()
+
+                    if need.type == 1:  # Product
+                        if new_status == 3:
+                            need.purchase_date = datetime.utcnow()
+                            need.send_purchase_email()
+
+                        if new_status == 4:
+                            need.ngo_delivery_date = parse_datetime(
+                                request.form.get('ngo_delivery_date')
+                            )
+
+                            if not(
+                                need.expected_delivery_date
+                                <= need.ngo_delivery_date <=
+                                datetime.utcnow()
+                            ):
+                                raise Exception('Invalid ngo_delivery_date')
+
+                            need.send_child_delivery_product_email()
 
                 else:
                     raise ValueError(
@@ -669,8 +500,6 @@ class UpdateNeedById(Resource):
             activity.diff = json.dumps(list(diff(temp, obj_to_dict(need))))
 
             session.commit()
-            from say.tasks import update_need
-            update_need.delay(need.id)
             resp = make_response(jsonify(secondary_need), 200)
 
         except Exception as e:
@@ -683,25 +512,19 @@ class UpdateNeedById(Resource):
 
 
 class DeleteNeedById(Resource):
+
+    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
+               SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/need/delete.yml")
     def patch(self, need_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            need = (
-                session.query(NeedModel)
-                .filter_by(id=need_id)
+            need_query = session.query(NeedModel) \
+                .filter_by(id=need_id) \
                 .filter_by(isDeleted=False)
-                .first()
-            )
-            children = (
-                session.query(ChildNeedModel)
-                .filter_by(id_need=need_id)
-                .filter_by(isDeleted=False)
-                .all()
-            )
+
+            need = filter_by_privilege(need_query).first()
 
             if need.isConfirmed:
                 if need.paid != 0:
@@ -724,10 +547,12 @@ class DeleteNeedById(Resource):
 
 
 class ConfirmNeed(Resource):
+
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/need/confirm.yml")
-    def patch(self, need_id, social_worker_id, child_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
+    def patch(self, need_id):
+        social_worker_id = get_user_id()
+
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -743,31 +568,19 @@ class ConfirmNeed(Resource):
                 session.close()
                 return resp
 
-            child = (
-                session.query(ChildModel)
-                .filter_by(id=child_id)
-                .filter_by(isDeleted=False)
-                .filter_by(isMigrated=False)
-                .filter_by(isConfirmed=True)
-                .first()
-            )
-
-            social_worker = (
-                session.query(SocialWorkerModel)
-                .filter_by(id=child.id_social_worker)
-                .filter_by(isDeleted=False)
-                .first()
-            )
+            child = primary_need.child
 
             primary_need.isConfirmed = True
             primary_need.confirmUser = social_worker_id
             primary_need.confirmDate = datetime.utcnow()
 
-            new_child_need = ChildNeedModel(id_child=child_id, id_need=primary_need.id)
+            new_child_need = ChildNeedModel(
+                id_child=child.id,
+                id_need=primary_need.id,
+            )
 
-            if social_worker:
-                social_worker.needCount += 1
-                social_worker.currentNeedCount += 1
+            child.social_worker.needCount += 1
+            child.social_worker.currentNeedCount += 1
 
             session.add(new_child_need)
             session.commit()
@@ -783,52 +596,29 @@ class ConfirmNeed(Resource):
             return resp
 
 
-class AddParticipantToNeed(Resource):
-    @swag_from("./docs/need/add_participant.yml")
-    def post(self, user_id, need_id, family_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            if (
-                session.query(UserFamilyModel)
-                .filter_by(isDeleted=False)
-                .filter_by(id_family=family_id)
-                .filter_by(id_user=user_id)
-                .first()
-                is None
-            ):
-                resp = make_response(jsonify({"message": "participant must be from the child's family!"}), 500)
-                session.close()
-                return resp
-
-            new_participant = NeedFamilyModel(
-                id_family=family_id, id_user=user_id, id_need=need_id
-            )
-
-            session.add(new_participant)
-            session.commit()
-
-            resp = make_response(jsonify({"message": "participant added successfully!"}), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
 class AddNeed(Resource):
+
+    def check_privilege(self, sw_id, allowed_sw_ids):  # TODO: priv
+        sw_role = get_user_role()
+
+        if sw_role in [SOCIAL_WORKER, COORDINATOR]:
+            if sw_id != get_user_id():
+                return HTTP_PERMISION_DENIED()
+
+        elif sw_role in [NGO_SUPERVISOR]:
+            if sw_id not in allowed_sw_ids:
+                return HTTP_PERMISION_DENIED()
+
+        return None
+
+    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
+               SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/need/add.yml")
-    def post(self, child_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
+    def post(self):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
+            child_id = int(request.form["child_id"])
             child = (
                 session.query(ChildModel)
                 .filter_by(id=child_id)
@@ -837,7 +627,24 @@ class AddNeed(Resource):
                 .filter_by(isConfirmed=True)
                 .first()
             )
-            debug(f'child: {obj_to_dict(child)}')
+
+            sw_id = int(request.form.get("sw_id", get_user_id()))
+            sw_role = get_user_role()
+
+            allowed_sw_ids = []
+            if sw_role in [NGO_SUPERVISOR]:
+                allowed_sw_ids_tuple = session.query(SocialWorkerModel.id) \
+                    .filter_by(isDeleted=False) \
+                    .filter_by(id_ngo=get_sw_ngo_id()) \
+                    .distinct() \
+                    .all()
+
+                allowed_sw_ids = [item[0] for item in allowed_sw_ids_tuple]
+
+            error = self.check_privilege(sw_id, allowed_sw_ids)
+            if error:
+                resp = error
+                return
 
             if not child.isConfirmed:
                 resp = make_response(jsonify({"message": "error: child is not confirmed yet!"}), 500)
@@ -852,10 +659,16 @@ class AddNeed(Resource):
             category = int(request.form["category"])
             cost = request.form["cost"].replace(',', '')
             name = request.form["name"]
+            name_fa = request.form.get('name_fa', None)
             is_urgent = True if request.form["isUrgent"] == "true" else False
             need_type = request.form["type"]
             description = request.form["description"]
+            description_fa = request.form.get('description_fa', None)
             description_summary = request.form["descriptionSummary"]
+            description_summary_fa = request.form.get(
+                'descriptionSummary_fa',
+                None,
+            )
             details = request.form.get("details", '')
             created_at = datetime.utcnow()
             last_update = datetime.utcnow()
@@ -874,12 +687,15 @@ class AddNeed(Resource):
             new_need = NeedModel(
                 imageUrl=image_url,
                 name=name,
+                name_fa=name_fa,
                 createdAt=created_at,
                 category=category,
                 cost=cost,
                 isUrgent=is_urgent,
                 descriptionSummary=description_summary,
+                descriptionSummary_fa=description_summary_fa,
                 description=description,
+                description_fa=description_fa,
                 affiliateLinkUrl=affiliate_link_url,
                 link=link,
                 receipts=receipts,
@@ -964,74 +780,16 @@ class AddNeed(Resource):
             return resp
 
 
-# class Foo(Resource):
-#     def get(self):
-#         session_maker = sessionmaker(db)
-#         session = session_maker()
-#         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-#         try:
-#             children = (
-#                 session.query(ChildModel)
-#                 .filter_by(isDeleted=False)
-#                 .filter_by(isMigrated=False)
-#                 .filter_by(isConfirmed=True)
-#                 .all()
-#             )
-#             users = (
-#                 session.query(UserModel)
-#                 .filter_by(isDeleted=False)
-#                 .all()
-#             )
-#             for c in children:
-#                 child = get_child_by_id(session, c.id, with_need=True)
-#                 for n in child["Needs"].keys():
-#                     if child["Needs"][n].isDone:
-#                         c.doneNeedCount += 1
-
-#             for u in users:
-#                 payments = (
-#                     session.query(PaymentModel)
-#                     .filter_by(id_user=u.id)
-#                     .all()
-#                 )
-#                 for p in payments:
-#                     u.spentCredit += p.amount
-
-#             resp = make_response(dict(message="ماست‌مالی انجام شد :)"), 200)
-
-#         except Exception as e:
-#             print(e)
-#             resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-#         finally:
-#             session.close()
-#             return resp
-
-
 """
 API URLs
 """
 
-# api.add_resource(Foo, "/api/v2/need/foo")
 api.add_resource(GetNeedById, "/api/v2/need/needId=<need_id>")
 api.add_resource(GetAllNeeds, "/api/v2/need/all/confirm=<confirm>")
-api.add_resource(GetNeedByCategory, "/api/v2/need/category=<category>")
-api.add_resource(GetNeedByType, "/api/v2/need/type=<need_type>")
-api.add_resource(GetNeedParticipants, "/api/v2/need/participants/needId=<need_id>")
-api.add_resource(GetNeedReceipts, "/api/v2/need/receipts/needId=<need_id>")
-api.add_resource(GetAllUrgentNeeds, "/api/v2/need/urgent/all")
-api.add_resource(
-    AddPaymentForNeed, "/api/v2/need/payment/needId=<need_id>&userId=<user_id>"
-)
 api.add_resource(UpdateNeedById, "/api/v2/need/update/needId=<need_id>")
 api.add_resource(DeleteNeedById, "/api/v2/need/delete/needId=<need_id>")
 api.add_resource(
     ConfirmNeed,
-    "/api/v2/need/confirm/needId=<need_id>&socialWorkerId=<social_worker_id>&childId=<child_id>",
+    "/api/v2/need/confirm/needId=<need_id>",
 )
-api.add_resource(
-    AddParticipantToNeed,
-    "/api/v2/need/participants/add/needId=<need_id>&userId=<user_id>&familyId=<family_id>",
-)
-api.add_resource(AddNeed, "/api/v2/need/add/childId=<child_id>")
+api.add_resource(AddNeed, "/api/v2/need/")

@@ -19,6 +19,20 @@ consumes:
   - multipart/form-data
 
 parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - name: ngo_id
+    in: formData
+    type: integer
+
+  - name: sw_id
+    in: formData
+    type: integer
+
   - name: avatarUrl
     in: formData
     type: file
@@ -46,6 +60,10 @@ parameters:
     in: formData
     type: string
     required: true
+
+  - name: sayName_fa
+    in: formData
+    type: string
 
   - name: phoneNumber
     in: formData
@@ -81,6 +99,14 @@ parameters:
     type: string
     required: true
 
+  - name: bio_fa
+    in: formData
+    type: string
+
+  - name: bioSummary_fa
+    in: formData
+    type: string
+
   - name: birthPlace
     in: formData
     type: string
@@ -108,16 +134,6 @@ parameters:
   - name: status
     in: formData
     type: integer
-
-  - name: ngo_id
-    in: path
-    type: integer
-    required: true
-
-  - name: social_worker_id
-    in: path
-    type: integer
-    required: true
 
 responses:
   500:

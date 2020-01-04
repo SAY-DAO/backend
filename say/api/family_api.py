@@ -1,5 +1,7 @@
+from say.models import session, obj_to_dict
 from say.models.family_model import FamilyModel
 from say.models.user_family_model import UserFamilyModel
+from say.models.need_family_model import NeedFamilyModel
 from . import *
 
 """
@@ -8,10 +10,10 @@ Family APIs
 
 
 class GetFamilyById(Resource):
+
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
     @swag_from("./docs/family/get.yml")
     def get(self, family_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -53,10 +55,10 @@ class GetFamilyById(Resource):
 
 
 class GetAllFamilies(Resource):
+
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
     @swag_from("./docs/family/all.yml")
     def get(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
@@ -97,16 +99,15 @@ class GetAllFamilies(Resource):
 
 
 class AddUserToFamily(Resource):
+    @authorize
     @swag_from("./docs/family/add.yml")
-    def post(self, user_id, family_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
+    def post(self, family_id):
+        user_id = get_user_id()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
             id_user = user_id
             id_family = family_id
-            # user_role = int(request.json['user_role'])
             user_role = int(request.json["userRole"])
 
             duplicate_family = (
@@ -116,7 +117,7 @@ class AddUserToFamily(Resource):
                 .filter_by(isDeleted=False)
                 .first()
             )
-            
+
             if duplicate_family is not None:
                 resp = make_response(jsonify({"message": "You already had this child in your family!"}), 499)
                 session.close()
@@ -148,12 +149,67 @@ class AddUserToFamily(Resource):
             return resp
 
 
+class LeaveFamily(Resource):
+
+    @authorize
+    @swag_from("./docs/family/leave.yml")
+    def patch(self, family_id):
+        user_id = get_user_id()
+
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+
+        try:
+            family = (
+                session.query(FamilyModel)
+                .filter_by(id=family_id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
+            user_family = (
+                session.query(UserFamilyModel)
+                .filter_by(id_user=user_id)
+                .filter_by(id_family=family_id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
+            participation = (
+                session.query(NeedFamilyModel)
+                .filter_by(id_user=user_id)
+                .filter_by(id_family=user_id)
+                .filter_by(isDeleted=False)
+            )
+
+            # TODO: WHY?
+            for participate in participation:
+                participate.isDeleted = True
+
+            family.child.sayFamilyCount -= 1
+            user_family.isDeleted = True
+
+            session.commit()
+
+            resp = make_response(jsonify({"message": "DELETED SUCCESSFULLY!"}), 200)
+
+        except Exception as e:
+            print(e)
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
+
+        finally:
+            session.close()
+            return resp
+
+
 """
 API URLs
 """
 
 api.add_resource(GetFamilyById, "/api/v2/family/familyId=<family_id>")
 api.add_resource(
-    AddUserToFamily, "/api/v2/family/add/userId=<user_id>&familyId=<family_id>"
+    AddUserToFamily, "/api/v2/family/add/familyId=<family_id>"
 )
 api.add_resource(GetAllFamilies, "/api/v2/family/all")
+api.add_resource(
+    LeaveFamily,
+    "/api/v2/family/<family_id>/leave",
+)
+

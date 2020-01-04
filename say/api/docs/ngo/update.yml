@@ -14,6 +14,12 @@ consumes:
   - multipart/form-data
 
 parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+    
   - name: ngo_id
     in: path
     type: integer

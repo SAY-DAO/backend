@@ -5,11 +5,12 @@ tags:
   - Search API
 
 parameters:
-  - in: path
-    name: user_id
+  - name: Authorization
+    in: header
+    description: Access Token
     required: true
-    type: integer
-
+    type: string
+    
 responses:
   499:
     description: No more child is avaliable

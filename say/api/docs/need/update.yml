@@ -13,6 +13,12 @@ consumes:
   - multipart/form-data
 
 parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+ 
   - name: need_id
     in: path
     type: integer
@@ -23,6 +29,10 @@ parameters:
     type: file
 
   - name: name
+    in: formData
+    type: string
+
+  - name: name_fa
     in: formData
     type: string
 
@@ -39,6 +49,14 @@ parameters:
     type: string
 
   - name: descriptionSummary
+    in: formData
+    type: string
+
+  - name: description_fa
+    in: formData
+    type: string
+
+  - name: descriptionSummary_fa
     in: formData
     type: string
 
@@ -74,7 +92,11 @@ parameters:
     in: formData
     type: string
 
-  - name: delivery_date
+  - name: expected_delivery_date
+    in: formData
+    type: string
+
+  - name: ngo_delivery_date
     in: formData
     type: string
 

@@ -1,26 +1,20 @@
-get child needs
-Returns information of all child's needs as a json object.
-Json key is need id and json value is need data.
-Calling this API affects on child, need, child_need, need_family and user tables.
-It contains need info and their participants.
-Confirm tag determines the type of output:
-[0]for not confirmed needs only, [1]for confirmed needs only, [2]for both confirmed and not confirmed needs
+get child needs 
 ---
 
 tags:
   - Child API
 
 parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
   - in: path
     name: child_id
     required: true
     type: integer
-
-  - in: path
-    name: confirm
-    required: true
-    type: integer
-
 
 responses:
   500:
@@ -31,3 +25,5 @@ responses:
 
     schema:
       id: need_model
+
+

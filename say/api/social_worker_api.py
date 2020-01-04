@@ -1,5 +1,6 @@
 from hashlib import md5
 
+from say.models import session, obj_to_dict
 from say.models.ngo_model import NgoModel
 from say.models.social_worker_model import SocialWorkerModel
 from . import *
@@ -9,23 +10,30 @@ Social Worker APIs
 
 
 class GetAllSocialWorkers(Resource):
+
+    @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/social_worker/all.yml")
     def get(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}),
-                             503)
+        resp = make_response(
+            jsonify({"message": "major error occurred!"}),
+            503,
+        )
 
         try:
-            social_workers = (session.query(SocialWorkerModel).filter_by(
-                isDeleted=False).all())
+            social_workers = session.query(SocialWorkerModel) \
+                .filter_by(isDeleted=False)
+
+            if get_user_role() in [COORDINATOR, NGO_SUPERVISOR]:  # TODO: priv
+                user_id = get_user_id()
+                user = session.query(SocialWorkerModel).get(user_id)
+                social_workers = social_workers \
+                    .filter_by(id_ngo=user.id_ngo)
 
             fetch = {}
             for social_worker in social_workers:
                 data = obj_to_dict(social_worker)
                 data['typeName'] = social_worker.privilege.name
                 data['ngoName'] = social_worker.ngo.name
-                # data['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
                 fetch[str(social_worker.id)] = data
 
             resp = make_response(jsonify(fetch), 200)
@@ -43,12 +51,13 @@ class GetAllSocialWorkers(Resource):
 class AddSocialWorker(Resource):
     panel_users = 0
 
+    @authorize(SUPER_ADMIN)  # TODO: priv
     @swag_from("./docs/social_worker/add.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}),
-                             503)
+        resp = make_response(
+            jsonify({"message": "major error occurred!"}),
+            503,
+        )
 
         try:
             if "country" in request.form.keys():
@@ -202,7 +211,7 @@ class AddSocialWorker(Resource):
                     str(current_id) + "-socialworker")
 
                 if not os.path.isdir(temp_avatar_path):
-                    os.mkdir(temp_avatar_path)
+                    os.makedirs(temp_avatar_path, exist_ok=True)
 
                 avatar = os.path.join(temp_avatar_path,
                                       str(current_id) + "-avatar_" + filename3)
@@ -231,7 +240,7 @@ class AddSocialWorker(Resource):
                         str(current_id) + "-socialworker")
 
                     if not os.path.isdir(temp_idcard_path):
-                        os.mkdir(temp_idcard_path)
+                        os.makedirs(temp_idcard_path, exist_ok=True)
 
                     id_card = os.path.join(
                         temp_idcard_path,
@@ -265,7 +274,7 @@ class AddSocialWorker(Resource):
                         str(current_id) + "-socialworker")
 
                     if not os.path.isdir(temp_passport_path):
-                        os.mkdir(temp_passport_path)
+                        os.makedirs(temp_passport_path, exist_ok=True)
 
                     passport = os.path.join(
                         temp_passport_path,
@@ -299,16 +308,27 @@ class AddSocialWorker(Resource):
 
 
 class GetSocialWorkerById(Resource):
+
+    @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/social_worker/id.yml")
     def get(self, social_worker_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}),
-                             503)
+        resp = make_response(
+            jsonify({"message": "major error occurred!"}),
+            503,
+        )
 
         try:
-            social_worker = (session.query(SocialWorkerModel).filter_by(
-                id=social_worker_id).filter_by(isDeleted=False).first())
+            social_worker_query = session.query(SocialWorkerModel) \
+                .filter_by(id=social_worker_id) \
+                .filter_by(isDeleted=False)
+
+            if get_user_role() in [COORDINATOR, NGO_SUPERVISOR]:  # TODO: priv
+                user_id = get_user_id()
+                user = session.query(SocialWorkerModel).get(user_id)
+                social_worker_query = social_worker_query \
+                    .filter_by(id_ngo=user.id_ngo)
+
+            social_worker = social_worker_query.first()
 
             if not social_worker:
                 resp = make_response(jsonify({"message": "null error"}), 500)
@@ -329,301 +349,31 @@ class GetSocialWorkerById(Resource):
             return resp
 
 
-class GetSocialWorkerByGeneratedCode(Resource):
-    @swag_from("./docs/social_worker/code.yml")
-    def get(self, generated_code):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}),
-                             503)
-
-        try:
-            social_worker = (session.query(SocialWorkerModel).filter_by(
-                generatedCode=generated_code).filter_by(
-                    isDeleted=False).first())
-
-            if not social_worker:
-                resp = make_response(jsonify({"message": "error"}), 500)
-                session.close()
-                return resp
-
-            res = obj_to_dict(social_worker)
-            res['typeName'] = social_worker.privilege.name
-            res['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
-            resp = make_response(jsonify(res), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "error"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
 class GetSocialWorkerByNgoId(Resource):
+
+    @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/social_worker/ngo.yml")
     def get(self, ngo_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}),
-                             503)
+        resp = make_response(
+            jsonify({"message": "major error occurred!"}),
+            503,
+        )
 
         try:
-            social_workers = (session.query(SocialWorkerModel).filter_by(
-                id_ngo=ngo_id).filter_by(isDeleted=False).all())
+            ngo_id = int(ngo_id)
+            social_workers = session.query(SocialWorkerModel) \
+                .filter_by(id_ngo=ngo_id) \
+                .filter_by(isDeleted=False)
 
-            fetch = {}
-            for social_worker in social_workers:
-                if not social_worker:
-                    resp = make_response(jsonify({"message": "error"}), 500)
-                    session.close()
-                    return resp
-
-                data = obj_to_dict(social_worker)
-                data['typeName'] = social_worker.privilege.name
-                data['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
-
-                fetch[str(social_worker.id)] = data
-
-            resp = make_response(jsonify(fetch), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "error"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetSocialWorkerByIdNumber(Resource):
-    @swag_from("./docs/social_worker/id_number.yml")
-    def get(self, id_number):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}),
-                             503)
-
-        try:
-            social_workers = (session.query(SocialWorkerModel).filter_by(
-                idNumber=id_number).filter_by(isDeleted=False).all())
-
-            fetch = {}
-            for social_worker in social_workers:
-                if not social_worker:
-                    resp = make_response(jsonify({"message": "error"}), 500)
-                    session.close()
-                    return resp
-
-                data = obj_to_dict(social_worker)
-                data['typeName'] = social_worker.privilege.name
-                data['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
-
-                fetch[str(social_worker.id)] = data
-
-            resp = make_response(jsonify(fetch), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "error"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetSocialWorkerByPhoneNumber(Resource):
-    @swag_from("./docs/social_worker/phone.yml")
-    def get(self, phone_number):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}),
-                             503)
-
-        try:
-            social_workers = (session.query(SocialWorkerModel).filter_by(
-                phoneNumber=phone_number).filter_by(isDeleted=False).all())
-
-            fetch = {}
-            for social_worker in social_workers:
-                if not social_worker:
-                    resp = make_response(jsonify({"message": "error"}), 500)
-                    session.close()
-                    return resp
-
-                data = obj_to_dict(social_worker)
-                data['typeName'] = social_worker.privilege.name
-                data['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
-
-                fetch[str(social_worker.id)] = data
-
-            resp = make_response(jsonify(fetch), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "error"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetSocialWorkerByPassportNumber(Resource):
-    @swag_from("./docs/social_worker/passport.yml")
-    def get(self, passport_number):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}),
-                             503)
-
-        try:
-            social_workers = (session.query(SocialWorkerModel).filter_by(
-                passportNumber=passport_number).filter_by(
-                    isDeleted=False).all())
-
-            fetch = {}
-            for social_worker in social_workers:
-                if not social_worker:
-                    resp = make_response(jsonify({"message": "error"}), 500)
-                    session.close()
-                    return resp
-
-                data = obj_to_dict(social_worker)
-                data['typeName'] = social_worker.privilege.name
-                data['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
-
-                fetch[str(social_worker.id)] = data
-
-            resp = make_response(jsonify(fetch), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "error"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetSocialWorkerByUserName(Resource):
-    @swag_from("./docs/social_worker/username.yml")
-    def get(self, username):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}),
-                             503)
-
-        try:
-            social_workers = (session.query(SocialWorkerModel).filter_by(
-                userName=username).filter_by(isDeleted=False).all())
-
-            fetch = {}
-            for social_worker in social_workers:
-                if not social_worker:
-                    resp = make_response(jsonify({"message": "error"}), 500)
-                    session.close()
-                    return resp
-
-                data = obj_to_dict(social_worker)
-                data['typeName'] = social_worker.privilege.name
-                data['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
-
-                fetch[str(social_worker.id)] = data
-
-            resp = make_response(jsonify(fetch), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "error"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetSocialWorkerByBirthCertificateNumber(Resource):
-    @swag_from("./docs/social_worker/bc_number.yml")
-    def get(self, bc_number):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}),
-                             503)
-
-        try:
-            social_workers = (session.query(SocialWorkerModel).filter_by(
-                birthCertificateNumber=bc_number).filter_by(
-                    isDeleted=False).all())
-
-            fetch = {}
-            for social_worker in social_workers:
-                if not social_worker:
-                    resp = make_response(jsonify({"message": "error"}), 500)
-                    session.close()
-                    return resp
-
-                data = obj_to_dict(social_worker)
-
-                fetch[str(social_worker.id)] = data
-
-            resp = make_response(jsonify(fetch), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "error"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetSocialWorkerByEmailAddress(Resource):
-    @swag_from("./docs/social_worker/email.yml")
-    def get(self, email):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}),
-                             503)
-
-        try:
-            social_workers = (session.query(SocialWorkerModel).filter_by(
-                emailAddress=email).filter_by(isDeleted=False).all())
-
-            fetch = {}
-            for social_worker in social_workers:
-                if not social_worker:
-                    resp = make_response(jsonify({"message": "error"}), 500)
-                    session.close()
-                    return resp
-
-                data = obj_to_dict(social_worker)
-                data['typeName'] = social_worker.privilege.name
-                data['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
-
-                fetch[str(social_worker.id)] = data
-
-            resp = make_response(jsonify(fetch), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "error"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
-
-class GetSocialWorkerByTelegramId(Resource):
-    @swag_from("./docs/social_worker/telegram.yml")
-    def get(self, telegram_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}),
-                             503)
-
-        try:
-            social_workers = (session.query(SocialWorkerModel).filter_by(
-                telegramId=telegram_id).filter_by(isDeleted=False).all())
+            if get_user_role() in [COORDINATOR, NGO_SUPERVISOR]:  # TODO: priv
+                user_id = get_user_id()
+                user = session.query(SocialWorkerModel).get(user_id)
+                if user.id_ngo != ngo_id:
+                    resp = make_response(jsonify(
+                        message='Permission Denied'),
+                        403,
+                    )
+                    return
 
             fetch = {}
             for social_worker in social_workers:
@@ -650,19 +400,33 @@ class GetSocialWorkerByTelegramId(Resource):
 
 
 class UpdateSocialWorker(Resource):
+
+    @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/social_worker/update.yml")
     def patch(self, social_worker_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}),
-                             503)
+        resp = make_response(
+            jsonify({"message": "major error occurred!"}),
+            503,
+        )
 
         ngo_change = False
         previous_ngo = None
 
         try:
-            base_social_worker = (session.query(SocialWorkerModel).filter_by(
-                id=social_worker_id).filter_by(isDeleted=False).first())
+            base_social_worker = session.query(SocialWorkerModel) \
+                .filter_by(id=social_worker_id) \
+                .filter_by(isDeleted=False) \
+                .first()
+
+            if get_user_role() in [COORDINATOR, NGO_SUPERVISOR]:  # TODO: priv
+                user_id = get_user_id()
+                user = session.query(SocialWorkerModel).get(user_id)
+                if user.id_ngo != base_social_worker.id_ngo:
+                    resp = make_response(
+                        jsonify(message='Permission Denied'),
+                        403,
+                    )
+                    return
 
             if "idCardUrl" in request.files.keys():
                 file1 = request.files["idCardUrl"]
@@ -685,7 +449,7 @@ class UpdateSocialWorker(Resource):
                     )
 
                     if not os.path.isdir(temp_idcard_path):
-                        os.mkdir(temp_idcard_path)
+                        os.makedirs(temp_idcard_path, exist_ok=True)
 
                     for obj in os.listdir(temp_idcard_path):
                         check = str(base_social_worker.id) + "-idcard"
@@ -723,7 +487,7 @@ class UpdateSocialWorker(Resource):
                     )
 
                     if not os.path.isdir(temp_passport_path):
-                        os.mkdir(temp_passport_path)
+                        os.makedirs(temp_passport_path, exist_ok=True)
 
                     for obj in os.listdir(temp_passport_path):
                         check = str(base_social_worker.id) + "-passport"
@@ -760,7 +524,7 @@ class UpdateSocialWorker(Resource):
                     )
 
                     if not os.path.isdir(temp_avatar_path):
-                        os.mkdir(temp_avatar_path)
+                        os.makedirs(temp_avatar_path, exist_ok=True)
 
                     for obj in os.listdir(temp_avatar_path):
                         check = str(base_social_worker.id) + "-avatar"
@@ -885,21 +649,24 @@ class UpdateSocialWorker(Resource):
 
 
 class DeleteSocialWorker(Resource):
+
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/social_worker/delete.yml")
     def patch(self, social_worker_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}),
-                             503)
+        resp = make_response(
+            jsonify({"message": "major error occurred!"}),
+            503,
+        )
 
         try:
             base_social_worker = (session.query(SocialWorkerModel).filter_by(
                 id=social_worker_id).filter_by(isDeleted=False).first())
 
             base_social_worker.isDeleted = True
-            this_ngo = (session.query(NgoModel).filter_by(
-                id=base_social_worker.id_ngo).filter_by(
-                    isDeleted=False).first())
+            this_ngo = session.query(NgoModel) \
+                .filter_by(id=base_social_worker.id_ngo) \
+                .filter_by(isDeleted=False) \
+                .first()
 
             this_ngo.currentChildrenCount -= base_social_worker.currentChildCount
             this_ngo.currentSocialWorkerCount -= 1
@@ -918,23 +685,28 @@ class DeleteSocialWorker(Resource):
 
 
 class DeactivateSocialWorker(Resource):
+
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/social_worker/deactivate.yml")
     def patch(self, social_worker_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}),
-                             503)
+        resp = make_response(
+            jsonify({"message": "major error occurred!"}),
+            503,
+        )
 
         try:
-            base_social_worker = (session.query(SocialWorkerModel).filter_by(
-                id=social_worker_id).filter_by(isDeleted=False).first())
+            base_social_worker = session.query(SocialWorkerModel) \
+                .filter_by(id=social_worker_id) \
+                .filter_by(isDeleted=False) \
+                .first()
 
             base_social_worker.isActive = False
 
             session.commit()
             resp = make_response(
                 jsonify({"message": "social worker deactivated successfully!"}),
-                200)
+                200,
+            )
 
         except Exception as e:
             print(e)
@@ -946,16 +718,20 @@ class DeactivateSocialWorker(Resource):
 
 
 class ActivateSocialWorker(Resource):
+
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/social_worker/activate.yml")
     def patch(self, social_worker_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = make_response(jsonify({"message": "major error occurred!"}),
-                             503)
+        resp = make_response(
+            jsonify({"message": "major error occurred!"}),
+            503,
+        )
 
         try:
-            base_social_worker = (session.query(SocialWorkerModel).filter_by(
-                id=social_worker_id).filter_by(isDeleted=False).first())
+            base_social_worker = session.query(SocialWorkerModel) \
+                .filter_by(id=social_worker_id) \
+                .filter_by(isDeleted=False) \
+                .first()
 
             base_social_worker.isActive = True
 
@@ -979,35 +755,19 @@ API URLs
 
 api.add_resource(GetAllSocialWorkers, "/api/v2/socialWorker/all")
 api.add_resource(AddSocialWorker, "/api/v2/socialWorker/add")
-api.add_resource(GetSocialWorkerById,
-                 "/api/v2/socialWorker/socialWorkerId=<social_worker_id>")
 api.add_resource(
-    GetSocialWorkerByGeneratedCode,
-    "/api/v2/socialWorker/generatedCode=<generated_code>",
+    GetSocialWorkerById,
+    "/api/v2/socialWorker/socialWorkerId=<social_worker_id>",
 )
 api.add_resource(GetSocialWorkerByNgoId, "/api/v2/socialWorker/ngoId=<ngo_id>")
-api.add_resource(GetSocialWorkerByIdNumber,
-                 "/api/v2/socialWorker/idNumber=<id_number>")
-api.add_resource(GetSocialWorkerByPhoneNumber,
-                 "/api/v2/socialWorker/phone=<phone_number>")
-api.add_resource(
-    GetSocialWorkerByPassportNumber,
-    "/api/v2/socialWorker/passportNumber=<passport_number>",
-)
-api.add_resource(GetSocialWorkerByUserName,
-                 "/api/v2/socialWorker/username=<username>")
-api.add_resource(GetSocialWorkerByBirthCertificateNumber,
-                 "/api/v2/socialWorker/bcNumber=<bc_number>")
-api.add_resource(GetSocialWorkerByEmailAddress,
-                 "/api/v2/socialWorker/email=<email>")
-api.add_resource(GetSocialWorkerByTelegramId,
-                 "/api/v2/socialWorker/telegramId=<telegram_id>")
 api.add_resource(
     UpdateSocialWorker,
-    "/api/v2/socialWorker/update/socialWorkerId=<social_worker_id>")
+    "/api/v2/socialWorker/update/socialWorkerId=<social_worker_id>",
+)
 api.add_resource(
     DeleteSocialWorker,
-    "/api/v2/socialWorker/delete/socialWorkerId=<social_worker_id>")
+    "/api/v2/socialWorker/delete/socialWorkerId=<social_worker_id>",
+)
 api.add_resource(
     DeactivateSocialWorker,
     "/api/v2/socialWorker/deactivate/socialWorkerId=<social_worker_id>",

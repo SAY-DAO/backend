@@ -7,6 +7,12 @@ tags:
   - Privilege API
 
 parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+  
   - in: path
     name: privilege_id
     required: true

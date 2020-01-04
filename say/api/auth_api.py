@@ -1,36 +1,20 @@
-from urllib.parse import urljoin
 from datetime import datetime, timedelta
 from random import randint
 
-from flask_jwt_extended import (
-    create_access_token, create_refresh_token, jwt_required,
+from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
-)
 
 from . import *
+from say.models import session, obj_to_dict, or_
+from say.models.revoked_token_model import RevokedTokenModel
 from say.models.user_model import UserModel
 from say.models.verify_model import VerifyModel
-from say.models.revoked_token_model import RevokedTokenModel
 from say.tasks import send_email
 
 
 """
 Authentication APIs
 """
-
-
-def create_user_access_token(user, fresh=False):
-    return create_access_token(
-        identity=user.id,
-        fresh=fresh,
-        user_claims=dict(
-            username=user.userName,
-            firstName=user.firstName,
-            lastName=user.lastName,
-            avatarUrl=user.avatarUrl,
-        )
-    )
-
 
 def datetime_converter(o):
     if isinstance(o, datetime):
@@ -48,8 +32,6 @@ def send_verify_email(email, verify_code):
 
 class CheckUser(Resource):
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = {"message": "major error occurred!"}
 
         try:
@@ -92,9 +74,7 @@ class RegisterUser(Resource):
 
     @swag_from("./docs/auth/register.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = {"message": "something is wrong"}
+        resp = {"message": "something is wrong"}, 500
         try:
             if "username" in request.json.keys():
                 username = request.json["username"].lower()
@@ -204,8 +184,6 @@ class Login(Resource):
 
     @swag_from("./docs/auth/login.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = {"message": "Something is Wrong!"}
 
         try:
@@ -284,7 +262,7 @@ class Login(Resource):
 
             else:
                 resp = Response(
-                    json.dumps({"message": "Please Register First"}), status=401
+                    json.dumps({"message": "Please Register First"}), status=400
                 )
 
         except Exception as e:
@@ -297,11 +275,9 @@ class Login(Resource):
 
 
 class LogoutAccess(Resource):
-    @jwt_required
+    @authorize
     @swag_from("./docs/auth/logout-access.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         jti = get_raw_jwt()['jti']
         msg = None
         try:
@@ -320,8 +296,6 @@ class LogoutRefresh(Resource):
     @jwt_refresh_token_required
     @swag_from("./docs/auth/logout-refresh.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         jti = get_raw_jwt()['jti']
         try:
             revoked_token = RevokedTokenModel(jti=jti)
@@ -340,33 +314,34 @@ class Verify(Resource):
 
     @swag_from("./docs/auth/verify.yml")
     def post(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
-        resp = {"message": "Something is Wrong"}
+        resp = {"message": "Something is Wrong"}, 500
 
         try:
             user_id = int(user_id)
             user = session.query(UserModel).filter_by(id=user_id).first()
             if user is None:
-                resp =  redirect('/', 302)
+                resp = {"message": "Something is Wrong"}, 500
                 return
 
             verify = session.query(VerifyModel).filter_by(user_id=user_id).first()
             sent_verify_code = request.form.get('verifyCode', 'invalid')
 
-            if not user.isVerified:
-                error = None
-                if (
-                    verify is None
-                    or str(verify.code) != sent_verify_code.replace('-', '')
-                ):
-                    error = 'Verify code is invalid'
+            if user.isVerified:
+                resp = {"message": "User Already verified"}, 600
+                return
 
-                elif verify.expire_at < datetime.utcnow():
-                    error = 'Verify code is expired'
+            error = None
+            if (
+                verify is None
+                or str(verify.code) != sent_verify_code.replace('-', '')
+            ):
+                error = 'Verify code is invalid'
 
-                if error:
-                    raise Exception(error)
+            elif verify.expire_at < datetime.utcnow():
+                error = 'Verify code is expired'
+
+            if error:
+                raise Exception(error)
 
             user.isVerified = True
 
@@ -401,8 +376,6 @@ class VerifyResend(Resource):
 
     @swag_from("./docs/auth/verify-resend.yml")
     def post(self, user_id):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = {"message": "Something is Wrong"}
 
         try:
@@ -441,13 +414,16 @@ class TokenRefresh(Resource):
     @jwt_refresh_token_required
     @swag_from("./docs/auth/refresh.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         id = get_jwt_identity()
         user = session.query(UserModel).get(id)
         session.close()
         access_token = create_user_access_token(user, fresh=True)
-        return jsonify({'accessToken': f'Bearer {access_token}'})
+        refresh_token = create_refresh_token(identity=user.id)
+
+        return jsonify({
+            'accessToken': f'Bearer {access_token}',
+            "refreshToken": f"Bearer {refresh_token}",
+        })
 
 
 """

@@ -9,6 +9,7 @@ def report_to_ngos(self):
         report_to_ngo.delay(ngo.id)
     return
 
+
 @celery.task(base=celery.DBTask, bind=True)
 def report_to_ngo(self, ngo_id):
     ngo = self.session.query(NgoModel).get(ngo_id)

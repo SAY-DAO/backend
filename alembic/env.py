@@ -1,3 +1,5 @@
+import os
+import sys
 from logging.config import fileConfig
 
 from flask import json
@@ -5,6 +7,8 @@ from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 
+
+sys.path.insert(0, os.getcwd())
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -18,7 +22,8 @@ fileConfig(config.config_file_name)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = None
+from say.models import base
+target_metadata = base.metadata
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")

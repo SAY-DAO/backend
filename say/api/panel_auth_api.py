@@ -1,40 +1,24 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from hashlib import md5
-from random import randint
-from flask_jwt_extended import (
-    create_access_token, create_refresh_token, jwt_required,
+
+from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
-)
+
 from . import *
-from say.models.social_worker_model import SocialWorkerModel
+from say.models import session, obj_to_dict
 from say.models.revoked_token_model import RevokedTokenModel
+from say.models.social_worker_model import SocialWorkerModel
 
 
 """
 Panel Authentication APIs
 """
 
-def create_sw_access_token(social_worker, fresh=False):
-    return create_access_token(
-        identity=social_worker.id,
-        fresh=fresh,
-        user_claims=dict(
-            username=social_worker.userName,
-            firstName=social_worker.firstName,
-            lastName=social_worker.lastName,
-            avatarUrl=social_worker.avatarUrl,
-            role=social_worker.id_type,
-            ngoId=social_worker.id_ngo,
-        )
-    )
-
 
 class PanelLogin(Resource):
 
     @swag_from("./docs/panel_auth/login.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         resp = {"message": "Something is Wrong!"}
 
         try:
@@ -102,8 +86,6 @@ class PanelTokenRefresh(Resource):
     @jwt_refresh_token_required
     @swag_from("./docs/panel_auth/refresh.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         id = get_jwt_identity()
         social_worker = session.query(SocialWorkerModel).get(id)
         session.close()
@@ -112,11 +94,10 @@ class PanelTokenRefresh(Resource):
 
 
 class PanelLogoutAccess(Resource):
-    @jwt_required
+    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
+               SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from("./docs/panel_auth/logout-access.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         jti = get_raw_jwt()['jti']
         msg = None
         try:
@@ -135,8 +116,6 @@ class PanelLogoutRefresh(Resource):
     @jwt_refresh_token_required
     @swag_from("./docs/panel_auth/logout-refresh.yml")
     def post(self):
-        session_maker = sessionmaker(db)
-        session = session_maker()
         jti = get_raw_jwt()['jti']
         try:
             revoked_token = RevokedTokenModel(jti = jti)

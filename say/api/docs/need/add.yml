@@ -14,10 +14,20 @@ consumes:
   - multipart/form-data
 
 parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
   - name: child_id
-    in: path
+    in: formData
     type: integer
     required: true
+
+  - name: sw_id
+    in: formData
+    type: integer
 
   - name: imageUrl
     in: formData
@@ -27,6 +37,10 @@ parameters:
     in: formData
     type: string
     required: true
+
+  - name: name_fa
+    in: formData
+    type: string
 
   - name: category
     in: formData
@@ -47,6 +61,14 @@ parameters:
     in: formData
     type: string
     required: true
+
+  - name: description_fa
+    in: formData
+    type: string
+
+  - name: descriptionSummary_fa
+    in: formData
+    type: string
 
   - name: cost
     in: formData
