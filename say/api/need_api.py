@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from dictdiffer import diff
 
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 # from say.api.child_api import get_child_by_id
 from say.models import session, obj_to_dict
