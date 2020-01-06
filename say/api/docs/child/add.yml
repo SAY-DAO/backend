@@ -65,6 +65,21 @@ parameters:
     in: formData
     type: string
 
+  - name: sayname_translations
+    in: formData
+    type: json
+    required: true
+
+  - name: bio_translations
+    in: formData
+    type: json
+    required: true
+
+  - name: bio_summary_translations
+    in: formData
+    type: json
+    required: true
+
   - name: phoneNumber
     in: formData
     type: string

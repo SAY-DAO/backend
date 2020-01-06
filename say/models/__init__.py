@@ -9,9 +9,12 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.associationproxy import ASSOCIATION_PROXY
 from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
 from sqlalchemy.sql.schema import MetaData
+from sqlalchemy_utils import TranslationHybrid
 
 from say.api import db
 from say.date import *
+from say.langs import LANGS
+
 
 session_factory = sessionmaker(db)
 session = scoped_session(session_factory)
@@ -44,6 +47,16 @@ def commit(func):
 
     return wrapper
 
+    
+def get_locale():
+    return request.args.get('_lang', LANGS.en)
+
+
+translation_hybrid = TranslationHybrid(
+    current_locale=get_locale,
+    default_locale=LANGS.en
+)
+
 
 from .activity_model import ActivityModel
 from .child_model import ChildModel
@@ -67,8 +80,8 @@ def obj_to_dict(obj, relationships=False):
         return obj
 
     result = {}
-    for c in columns(obj, relationships):
-        key, value = c.key, getattr(obj, c.key)
+    for k, c in columns(obj, relationships):
+        key, value = k, getattr(obj, k)
 
         if isinstance(value, list):
             result[key] = [obj_to_dict(item) for item in value]
@@ -100,6 +113,6 @@ def columns(obj, relationships=False, synonyms=True, composites=False,
                 or (not composites and k in mapper.composites):
             continue
 
-        yield getattr(cls, k)
+        yield k, getattr(cls, k)
 
 

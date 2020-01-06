@@ -37,6 +37,18 @@ parameters:
     in: formData
     type: string
 
+  - name: sayname_translations
+    in: formData
+    type: json
+
+  - name: bio_translations
+    in: formData
+    type: json
+
+  - name: bio_summary_translations
+    in: formData
+    type: json
+
   - name: lastName
     in: formData
     type: string

@@ -1,5 +1,7 @@
 from collections import OrderedDict
 
+import ujson
+
 from . import *
 from say.models import session, obj_to_dict
 from say.api.need_api import get_need
@@ -849,6 +851,21 @@ class UpdateChildById(Resource):
 
             if "bioSummary_fa" in request.form.keys():
                 primary_child.bioSummary_fa = request.form["bioSummary_fa"]
+
+            if "sayname_translations" in request.form.keys():
+                primary_child.sayname_translations = ujson.loads(
+                    request.form["sayname_translations"],
+                )
+
+            if "bio_translations" in request.form.keys():
+                primary_child.bio_translations = ujson.loads(
+                    request.form["bio_translations"],
+                )
+
+            if "bio_summary_translations" in request.form.keys():
+                primary_child.bio_summary_translations = ujson.loads(
+                    request.form["bio_summary_translations"],
+                )
 
             primary_child.lastUpdate = datetime.utcnow()
 
