@@ -413,23 +413,20 @@ class UpdateNeedById(Resource):
             if "affiliateLinkUrl" in request.form.keys():
                 need.affiliateLinkUrl = request.form["affiliateLinkUrl"]
 
-            if "description" in request.form.keys():
-                need.description = request.form["description"]
+            if "nameTranslations" in request.form.keys():
+                need.name_translations = ujson.loads(
+                    request.form["nameTranslations"],
+                )
 
-            if "descriptionSummary" in request.form.keys():
-                need.descriptionSummary = request.form["descriptionSummary"]
+            if "descriptionTranslations" in request.form.keys():
+                need.description_translations = ujson.loads(
+                    request.form["descriptionTranslations"],
+                )
 
-            if "name" in request.form.keys():
-                need.name = request.form["name"]
-
-            if "description_fa" in request.form.keys():
-                need.description_fa = request.form["description_fa"]
-
-            if "descriptionSummary_fa" in request.form.keys():
-                need.descriptionSummary_fa = request.form["descriptionSummary_fa"]
-
-            if "name_fa" in request.form.keys():
-                need.name_fa = request.form["name_fa"]
+            if "descriptionSummaryTranslations" in request.form.keys():
+                need.description_summary_translations = ujson.loads(
+                    request.form["descriptionSummaryTranslations"],
+                )
 
             if "doing_duration" in request.form.keys():
                 need.doing_duration = int(request.form["doing_duration"])
