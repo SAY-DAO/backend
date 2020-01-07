@@ -37,27 +37,26 @@ parameters:
     in: formData
     type: string
 
-  - name: sayname_translations
+  - name: saynameTranslations
     in: formData
-    type: json
+    type: string
+    description: '{"en": "Bob", "fa": "بابک"}'
 
-  - name: bio_translations
+  - name: bioTranslations
     in: formData
-    type: json
+    type: string
+    description: '{"en": "Lorem ipsome", "fa": "لورم ایپسون"}'
 
-  - name: bio_summary_translations
+  - name: bioSummaryTranslations
     in: formData
-    type: json
+    type: string
+    description: '{"en": "Lorem ipsome", "fa": "لورم ایپسون"}'
 
   - name: lastName
     in: formData
     type: string
 
   - name: sayName
-    in: formData
-    type: string
-
-  - name: sayName_fa
     in: formData
     type: string
 
@@ -80,22 +79,6 @@ parameters:
   - name: gender
     in: formData
     type: boolean
-
-  - name: bio
-    in: formData
-    type: string
-
-  - name: bioSummary
-    in: formData
-    type: string
-
-  - name: bio_fa
-    in: formData
-    type: string
-
-  - name: bioSummary_fa
-    in: formData
-    type: string
 
   - name: birthPlace
     in: formData

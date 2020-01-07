@@ -839,19 +839,19 @@ class UpdateChildById(Resource):
             if "bioSummary" in request.form.keys():
                 primary_child.bioSummary = request.form["bioSummary"]
 
-            if "sayname_translations" in request.form.keys():
+            if "saynameTranslations" in request.form.keys():
                 primary_child.sayname_translations = ujson.loads(
-                    request.form["sayname_translations"],
+                    request.form["saynameTranslations"],
                 )
 
-            if "bio_translations" in request.form.keys():
+            if "bioTranslations" in request.form.keys():
                 primary_child.bio_translations = ujson.loads(
-                    request.form["bio_translations"],
+                    request.form["bioTranslations"],
                 )
 
-            if "bio_summary_translations" in request.form.keys():
+            if "bioSummaryTranslations" in request.form.keys():
                 primary_child.bio_summary_translations = ujson.loads(
-                    request.form["bio_summary_translations"],
+                    request.form["bioSummaryTranslations"],
                 )
 
             primary_child.lastUpdate = datetime.utcnow()
