@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from dictdiffer import diff
 
+import ujson
 from sqlalchemy import func, or_
 
 # from say.api.child_api import get_child_by_id
@@ -658,17 +659,20 @@ class AddNeed(Resource):
 
             category = int(request.form["category"])
             cost = request.form["cost"].replace(',', '')
-            name = request.form["name"]
-            name_fa = request.form.get('name_fa', None)
+
+            name_translations = ujson.loads(
+                request.form["nameTranslations"]
+            )
+            description_translations = ujson.loads(
+                request.form["descriptionTranslations"],
+            )
+            description_summary_translations = ujson.loads(
+                request.form["descriptionSummaryTranslations"],
+            )
+
             is_urgent = True if request.form["isUrgent"] == "true" else False
             need_type = request.form["type"]
-            description = request.form["description"]
-            description_fa = request.form.get('description_fa', None)
-            description_summary = request.form["descriptionSummary"]
-            description_summary_fa = request.form.get(
-                'descriptionSummary_fa',
-                None,
-            )
+
             details = request.form.get("details", '')
             created_at = datetime.utcnow()
             last_update = datetime.utcnow()
@@ -685,17 +689,14 @@ class AddNeed(Resource):
                 doing_duration = 5
 
             new_need = NeedModel(
+                name_translations=name_translations,
+                description_summary_translations=description_summary_translations,
+                description_translations=description_translations,
                 imageUrl=image_url,
-                name=name,
-                name_fa=name_fa,
                 createdAt=created_at,
                 category=category,
                 cost=cost,
                 isUrgent=is_urgent,
-                descriptionSummary=description_summary,
-                descriptionSummary_fa=description_summary_fa,
-                description=description,
-                description_fa=description_fa,
                 affiliateLinkUrl=affiliate_link_url,
                 link=link,
                 receipts=receipts,

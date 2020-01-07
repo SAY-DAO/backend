@@ -33,14 +33,23 @@ parameters:
     in: formData
     type: file
 
-  - name: name
+  - name: nameTranslations
     in: formData
     type: string
     required: true
+    description: '{"en": "Bob", "fa": "بابک"}'
 
-  - name: name_fa
+  - name: descriptionTranslations
     in: formData
     type: string
+    required: true
+    description: '{"en": "Lorem ipsome", "fa": "لورم ایپسون"}'
+
+  - name: descriptionSummaryTranslations
+    in: formData
+    type: string
+    required: true
+    description: '{"en": "Lorem ipsome", "fa": "لورم ایپسون"}'
 
   - name: category
     in: formData
@@ -51,24 +60,6 @@ parameters:
     in: formData
     type: boolean
     required: true
-
-  - name: description
-    in: formData
-    type: string
-    required: true
-
-  - name: descriptionSummary
-    in: formData
-    type: string
-    required: true
-
-  - name: description_fa
-    in: formData
-    type: string
-
-  - name: descriptionSummary_fa
-    in: formData
-    type: string
 
   - name: cost
     in: formData

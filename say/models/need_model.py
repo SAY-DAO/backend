@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from khayyam import JalaliDate
+from sqlalchemy.dialects.postgresql import HSTORE
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import object_session
 from flask import render_template
@@ -20,15 +21,15 @@ class NeedModel(base):
 
     child_id = Column(Integer, ForeignKey('child.id'))
 
-    name = Column(String, nullable=False)
-    name_fa = Column(String, nullable=True)
+    name_translations = Column(HSTORE)
+    name = translation_hybrid(name_translations)
+    description_translations = Column(HSTORE)
+    description = translation_hybrid(description_translations)
+    description_summary_translations = Column(HSTORE)
+    descriptionSummary = translation_hybrid(description_summary_translations)
     imageUrl = Column(String, nullable=False)
     category = Column(Integer, nullable=False)  # 0:Growth | 1:Joy | 2:Health | 3:Surroundings
     isUrgent = Column(Boolean, nullable=False)
-    description = Column(Text, nullable=False)
-    description_fa = Column(Text, nullable=True)
-    descriptionSummary = Column(Text, nullable=False)
-    descriptionSummary_fa = Column(Text, nullable=True)
     details = Column(Text, nullable=True)
     _cost = Column(Integer, nullable=False)
     paid = Column(Integer, nullable=False, default=0)
