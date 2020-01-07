@@ -489,14 +489,13 @@ class AddChild(Resource):
                 family_count = None
 
             phone_number = request.form["phoneNumber"]
-            bio = request.form["bio"]
-            bio_fa = request.form.get('bio_fa', None)
-            say_name = request.form["sayName"]
-            say_name_fa = request.form.get('sayName_fa', None)
             country = int(request.form["country"])
             city = int(request.form["city"])
-            bio_summary = request.form["bioSummary"]
-            bio_summary_fa = request.form.get('bioSummary_fa', None)
+            sayname_translations = ujson.loads(
+                request.form["saynameTranslations"]
+            )
+            bio_translations = ujson.loads(request.form["bioTranslations"])
+            bio_summary_translations = ujson.loads(request.form["bioSummaryTranslations"])
             gender = True if request.form["gender"] == "true" else False
 
             avatar_url = avatar_path
@@ -520,18 +519,15 @@ class AddChild(Resource):
                 birthPlace=birth_place,
                 birthDate=birth_date,
                 address=address,
-                bio=bio,
-                bio_fa=bio_fa,
                 voiceUrl=voice_url,
                 id_ngo=ngo_id,
                 id_social_worker=sw_id,
-                sayName=say_name,
-                sayName_fa=say_name_fa,
+                sayname_translations=sayname_translations,
+                bio_translations=bio_translations,
+                bio_summary_translations=bio_summary_translations,
                 country=country,
                 city=city,
                 gender=gender,
-                bioSummary=bio_summary,
-                bioSummary_fa=bio_summary_fa,
                 status=status,
                 lastUpdate=last_update,
                 generatedCode=code,
@@ -842,15 +838,6 @@ class UpdateChildById(Resource):
 
             if "bioSummary" in request.form.keys():
                 primary_child.bioSummary = request.form["bioSummary"]
-
-            if "sayName_fa" in request.form.keys():
-                primary_child.sayName_fa = request.form["sayName_fa"]
-
-            if "bio_fa" in request.form.keys():
-                primary_child.bio_fa = request.form["bio_fa"]
-
-            if "bioSummary_fa" in request.form.keys():
-                primary_child.bioSummary_fa = request.form["bioSummary_fa"]
 
             if "sayname_translations" in request.form.keys():
                 primary_child.sayname_translations = ujson.loads(
