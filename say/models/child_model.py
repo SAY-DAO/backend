@@ -21,6 +21,7 @@ class ChildModel(base):
 
     sayname_translations = Column(HSTORE)
     sayName = translation_hybrid(sayname_translations)
+
     phoneNumber = Column(Integer, nullable=False)
     nationality = Column(Integer, nullable=True)  # 98:iranian | 93:afghan
     country = Column(
@@ -30,10 +31,13 @@ class ChildModel(base):
     avatarUrl = Column(String, nullable=False)
     sleptAvatarUrl = Column(String, nullable=False)
     gender = Column(Boolean, nullable=False)  # true:male | false:female
+
     bio_translations = Column(HSTORE)
     bio = translation_hybrid(bio_translations)
+
     bio_summary_translations = Column(HSTORE)
     bioSummary = translation_hybrid(bio_summary_translations)
+
     voiceUrl = Column(String, nullable=False)
     birthPlace = Column(Text, nullable=True)  # 1:tehran | 2:karaj / [must be change after using real country/city api]
     birthDate = Column(Date, nullable=True)
