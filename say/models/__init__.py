@@ -1,3 +1,6 @@
+import functools
+
+from flask import request
 from sqlalchemy import Column, ForeignKey, String, Integer, Date, Boolean, \
     Text, Numeric, DateTime, FLOAT
 from sqlalchemy.orm import relationship, synonym, scoped_session, sessionmaker
@@ -22,6 +25,25 @@ metadata = MetaData(
     }
 )
 base = declarative_base(metadata=metadata)
+
+
+def commit(func):
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+
+        try:
+            result = func(*args, **kwargs)
+            session.commit()
+            return result
+
+        except Exception as ex:
+            if session.is_active:
+                session.rollback()
+            raise
+
+    return wrapper
+
 
 from .activity_model import ActivityModel
 from .child_model import ChildModel
