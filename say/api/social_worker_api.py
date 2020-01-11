@@ -1,8 +1,8 @@
 from hashlib import md5
 
 from say.models import session, obj_to_dict
-from say.models.ngo_model import NgoModel
-from say.models.social_worker_model import SocialWorkerModel
+from say.models.ngo_model import Ngo
+from say.models.social_worker_model import SocialWorker
 from . import *
 """
 Social Worker APIs
@@ -20,12 +20,12 @@ class GetAllSocialWorkers(Resource):
         )
 
         try:
-            social_workers = session.query(SocialWorkerModel) \
+            social_workers = session.query(SocialWorker) \
                 .filter_by(isDeleted=False)
 
             if get_user_role() in [COORDINATOR, NGO_SUPERVISOR]:  # TODO: priv
                 user_id = get_user_id()
-                user = session.query(SocialWorkerModel).get(user_id)
+                user = session.query(SocialWorker).get(user_id)
                 social_workers = social_workers \
                     .filter_by(id_ngo=user.id_ngo)
 
@@ -125,11 +125,10 @@ class AddSocialWorker(Resource):
             email_address = request.form["emailAddress"]
 
             register_date = datetime.utcnow()
-            last_update_date = datetime.utcnow()
             last_login_date = datetime.utcnow()
 
             if id_ngo != 0:
-                ngo = (session.query(NgoModel).filter_by(
+                ngo = (session.query(Ngo).filter_by(
                     isDeleted=False).filter_by(id=id_ngo).first())
                 generated_code = format(id_ngo, "03d") + format(
                     ngo.socialWorkerCount + 1, "03d")
@@ -144,7 +143,7 @@ class AddSocialWorker(Resource):
 
             username = f'{ngo.name}-sw{generated_code}'
 
-            new_social_worker = SocialWorkerModel(
+            new_social_worker = SocialWorker(
                 id_ngo=id_ngo,
                 country=country,
                 city=city,
@@ -165,7 +164,6 @@ class AddSocialWorker(Resource):
                 bankAccountShebaNumber=bank_account_sheba_number,
                 bankAccountCardNumber=bank_account_card_number,
                 registerDate=register_date,
-                lastUpdateDate=last_update_date,
                 lastLoginDate=last_login_date,
                 passportNumber=passport_number,
                 generatedCode=generated_code,
@@ -318,13 +316,13 @@ class GetSocialWorkerById(Resource):
         )
 
         try:
-            social_worker_query = session.query(SocialWorkerModel) \
+            social_worker_query = session.query(SocialWorker) \
                 .filter_by(id=social_worker_id) \
                 .filter_by(isDeleted=False)
 
             if get_user_role() in [COORDINATOR, NGO_SUPERVISOR]:  # TODO: priv
                 user_id = get_user_id()
-                user = session.query(SocialWorkerModel).get(user_id)
+                user = session.query(SocialWorker).get(user_id)
                 social_worker_query = social_worker_query \
                     .filter_by(id_ngo=user.id_ngo)
 
@@ -361,13 +359,13 @@ class GetSocialWorkerByNgoId(Resource):
 
         try:
             ngo_id = int(ngo_id)
-            social_workers = session.query(SocialWorkerModel) \
+            social_workers = session.query(SocialWorker) \
                 .filter_by(id_ngo=ngo_id) \
                 .filter_by(isDeleted=False)
 
             if get_user_role() in [COORDINATOR, NGO_SUPERVISOR]:  # TODO: priv
                 user_id = get_user_id()
-                user = session.query(SocialWorkerModel).get(user_id)
+                user = session.query(SocialWorker).get(user_id)
                 if user.id_ngo != ngo_id:
                     resp = make_response(jsonify(
                         message='Permission Denied'),
@@ -413,14 +411,14 @@ class UpdateSocialWorker(Resource):
         previous_ngo = None
 
         try:
-            base_social_worker = session.query(SocialWorkerModel) \
+            base_social_worker = session.query(SocialWorker) \
                 .filter_by(id=social_worker_id) \
                 .filter_by(isDeleted=False) \
                 .first()
 
             if get_user_role() in [COORDINATOR, NGO_SUPERVISOR]:  # TODO: priv
                 user_id = get_user_id()
-                user = session.query(SocialWorkerModel).get(user_id)
+                user = session.query(SocialWorker).get(user_id)
                 if user.id_ngo != base_social_worker.id_ngo:
                     resp = make_response(
                         jsonify(message='Permission Denied'),
@@ -615,14 +613,13 @@ class UpdateSocialWorker(Resource):
                 base_social_worker.password = md5(
                     request.form["password"].encode()).hexdigest()
 
-            base_social_worker.lastUpdateDate = datetime.utcnow()
 
             res = obj_to_dict(base_social_worker)
 
             if ngo_change:
-                that_ngo = (session.query(NgoModel).filter_by(
+                that_ngo = (session.query(Ngo).filter_by(
                     id=previous_ngo).filter_by(isDeleted=False).first())
-                this_ngo = (session.query(NgoModel).filter_by(
+                this_ngo = (session.query(Ngo).filter_by(
                     id=base_social_worker.id_ngo).filter_by(
                         isDeleted=False).first())
 
@@ -659,11 +656,11 @@ class DeleteSocialWorker(Resource):
         )
 
         try:
-            base_social_worker = (session.query(SocialWorkerModel).filter_by(
+            base_social_worker = (session.query(SocialWorker).filter_by(
                 id=social_worker_id).filter_by(isDeleted=False).first())
 
             base_social_worker.isDeleted = True
-            this_ngo = session.query(NgoModel) \
+            this_ngo = session.query(Ngo) \
                 .filter_by(id=base_social_worker.id_ngo) \
                 .filter_by(isDeleted=False) \
                 .first()
@@ -695,7 +692,7 @@ class DeactivateSocialWorker(Resource):
         )
 
         try:
-            base_social_worker = session.query(SocialWorkerModel) \
+            base_social_worker = session.query(SocialWorker) \
                 .filter_by(id=social_worker_id) \
                 .filter_by(isDeleted=False) \
                 .first()
@@ -728,7 +725,7 @@ class ActivateSocialWorker(Resource):
         )
 
         try:
-            base_social_worker = session.query(SocialWorkerModel) \
+            base_social_worker = session.query(SocialWorker) \
                 .filter_by(id=social_worker_id) \
                 .filter_by(isDeleted=False) \
                 .first()

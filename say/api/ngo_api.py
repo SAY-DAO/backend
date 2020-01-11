@@ -1,8 +1,8 @@
 import traceback
 
 from say.models import session, obj_to_dict
-from say.models.ngo_model import NgoModel
-from say.models.social_worker_model import SocialWorkerModel
+from say.models.ngo_model import Ngo
+from say.models.social_worker_model import SocialWorker
 from . import *
 
 """
@@ -24,7 +24,7 @@ class GetAllNgo(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            base_ngos = session.query(NgoModel).filter_by(isDeleted=False).all()
+            base_ngos = session.query(Ngo).filter_by(isDeleted=False).all()
 
             fetch = {}
             for n in base_ngos:
@@ -51,8 +51,8 @@ class AddNgo(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            if len(session.query(NgoModel).all()):
-                last_ngo = session.query(NgoModel).order_by(NgoModel.id.desc()).first()
+            if len(session.query(Ngo).all()):
+                last_ngo = session.query(Ngo).order_by(Ngo.id.desc()).first()
                 current_id = last_ngo.id + 1
             else:
                 current_id = 1
@@ -108,9 +108,8 @@ class AddNgo(Resource):
                 website = None
 
             register_date = datetime.utcnow()
-            last_update_date = datetime.utcnow()
 
-            new_ngo = NgoModel(
+            new_ngo = Ngo(
                 name=name,
                 country=country,
                 city=city,
@@ -121,7 +120,6 @@ class AddNgo(Resource):
                 logoUrl=logo_url,
                 balance=balance,
                 registerDate=register_date,
-                lastUpdateDate=last_update_date,
                 website=website,
             )
 
@@ -154,7 +152,7 @@ class GetNgoById(Resource):
 
         try:
             base_ngo = (
-                session.query(NgoModel)
+                session.query(Ngo)
                 .filter_by(id=ngo_id)
                 .filter_by(isDeleted=False)
                 .first()
@@ -167,7 +165,7 @@ class GetNgoById(Resource):
 
             res = obj_to_dict(base_ngo)
             coordinator = (
-                session.query(SocialWorkerModel.firstName, SocialWorkerModel.lastName)
+                session.query(SocialWorker.firstName, SocialWorker.lastName)
                 .filter_by(id=base_ngo.coordinatorId)
                 .filter_by(isDeleted=False)
                 .first()
@@ -176,14 +174,12 @@ class GetNgoById(Resource):
             res['coordinatorFirstName'] = coordinator[0]
             res['coordinatorLastName'] = coordinator[1]
             res['socialWorkers'] = sw_list(
-                session.query(SocialWorkerModel)
+                session.query(SocialWorker)
                 .filter_by(id_ngo=base_ngo.id)
                 .filter_by(isDeleted=False)
                 .all()
             )
-            # rd = ', "registerDate": ' + str(res.pop('registerDate'))
-            # lu = ', "lastUpdateDate": ' + str(res.pop('lastUpdateDate'))
-            # out = str(eval(str(res).encode('utf-8'))).replace("'", '"').replace('}', rd + lu + '}')
+
             resp = make_response(jsonify(res), 200)
 
         except Exception as e:
@@ -203,7 +199,7 @@ class UpdateNgo(Resource):
 
         try:
             base_ngo = (
-                session.query(NgoModel)
+                session.query(Ngo)
                 .filter_by(id=ngo_id)
                 .filter_by(isDeleted=False)
                 .first()
@@ -269,8 +265,6 @@ class UpdateNgo(Resource):
                     file.save(base_ngo.logoUrl)
                     base_ngo.logoUrl = '/' + base_ngo.logoUrl
 
-            base_ngo.lastUpdateDate = datetime.utcnow()
-
             res = obj_to_dict(base_ngo)
 
             resp = make_response(jsonify(res), 200)
@@ -292,7 +286,7 @@ class DeleteNgo(Resource):
 
         try:
             base_ngo = (
-                session.query(NgoModel)
+                session.query(Ngo)
                 .filter_by(id=ngo_id)
                 .filter_by(isDeleted=False)
                 .first()
@@ -321,7 +315,7 @@ class DeactivateNgo(Resource):
 
         try:
             base_ngo = (
-                session.query(NgoModel)
+                session.query(Ngo)
                 .filter_by(id=ngo_id)
                 .filter_by(isActive=True)
                 .filter_by(isDeleted=False)
@@ -350,7 +344,7 @@ class ActivateNgo(Resource):
 
         try:
             base_ngo = (
-                session.query(NgoModel)
+                session.query(Ngo)
                 .filter_by(id=ngo_id)
                 .filter_by(isActive=False)
                 .filter_by(isDeleted=False)

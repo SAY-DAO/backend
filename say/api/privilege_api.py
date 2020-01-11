@@ -1,5 +1,5 @@
 from say.models import session, obj_to_dict
-from say.models.privilege_model import PrivilegeModel
+from say.models.privilege_model import Privilege
 from . import *
 
 """
@@ -15,7 +15,7 @@ class GetAllPrivileges(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            privileges = session.query(PrivilegeModel).all()
+            privileges = session.query(Privilege).all()
 
             result = {}
             for privilege in privileges:
@@ -43,7 +43,7 @@ class AddPrivilege(Resource):
         try:
             name = request.form["name"]
             privilege = request.form["privilege"]
-            new_privilege = PrivilegeModel(name=name, privilege=privilege)
+            new_privilege = Privilege(name=name, privilege=privilege)
 
             session.add(new_privilege)
             session.commit()
@@ -67,7 +67,7 @@ class GetPrivilegeByName(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            privilege_list = session.query(PrivilegeModel).filter_by(name=name).all()
+            privilege_list = session.query(Privilege).filter_by(name=name).all()
 
             result = {}
             for privilege in privilege_list:
@@ -93,7 +93,7 @@ class GetPrivilegeById(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            privilege = session.query(PrivilegeModel).filter_by(id=privilege_id).first()
+            privilege = session.query(Privilege).filter_by(id=privilege_id).first()
 
             if not privilege:
                 resp = make_response(jsonify({"message": "something is Wrong !!"}), 500)
@@ -121,7 +121,7 @@ class GetPrivilegeByPrivilege(Resource):
 
         try:
             privilege_list = (
-                session.query(PrivilegeModel).filter_by(privilege=privilege_type).all()
+                session.query(Privilege).filter_by(privilege=privilege_type).all()
             )
 
             result = {}
@@ -149,7 +149,7 @@ class UpdatePrivilege(Resource):
 
         try:
             base_privilege = (
-                session.query(PrivilegeModel).filter_by(id=privilege_id).first()
+                session.query(Privilege).filter_by(id=privilege_id).first()
             )
 
             if "name" in request.form.keys():

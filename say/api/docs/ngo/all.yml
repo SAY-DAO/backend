@@ -102,7 +102,7 @@ responses:
           type: string
           description: registeration date
 
-        lastUpdateDate:
+        updated:
           type: string
           description: last update date
 

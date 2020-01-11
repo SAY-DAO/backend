@@ -100,11 +100,11 @@ responses:
           description: the user's total credit spent
           default: 0
 
-        createdAt:
+        created:
           type: string
           description: the date that the user has been created
 
-        lastUpdate:
+        updated:
           type: string
           description: the last date that the user has been updated
 

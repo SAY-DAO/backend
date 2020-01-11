@@ -148,11 +148,11 @@ responses:
           description: total credit spent on child
           default: 0
 
-        createdAt:
+        created:
           type: string
           description: the date that the child has been created
 
-        lastUpdate:
+        updated:
           type: string
           description: the last date that the child has been updated
 

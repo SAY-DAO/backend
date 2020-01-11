@@ -1,5 +1,5 @@
 from say.models import session, obj_to_dict
-from say.models.activity_model import ActivityModel
+from say.models.activity_model import Activity
 from . import *
 """
 Activity APIs
@@ -13,7 +13,7 @@ class GetActivityById(Resource):
                              503)
 
         try:
-            activity = session.query(ActivityModel).filter_by(
+            activity = session.query(Activity).filter_by(
                 id=activity_id).first()
 
             if not activity:
@@ -41,7 +41,7 @@ class GetActivityBySocialWorker(Resource):
                              503)
 
         try:
-            activities = (session.query(ActivityModel).filter_by(
+            activities = (session.query(Activity).filter_by(
                 id_social_worker=social_worker_id).all())
 
             if not activities:
@@ -78,7 +78,7 @@ class GetActivityByType(Resource):
                              503)
 
         try:
-            activities = (session.query(ActivityModel).filter_by(
+            activities = (session.query(Activity).filter_by(
                 activityCode=activity_code).all())
 
             if not activities:
@@ -115,7 +115,7 @@ class GetAllActivities(Resource):
                              503)
 
         try:
-            activities = session.query(ActivityModel).all()
+            activities = session.query(Activity).all()
 
             if not activities:
                 resp = make_response(
@@ -150,7 +150,7 @@ class AddActivity(Resource):
             id_social_worker = social_worker_id
             activity_code = int(request.form["activityCode"])
 
-            new_activity = ActivityModel(id_social_worker=id_social_worker,
+            new_activity = Activity(id_social_worker=id_social_worker,
                                          activityCode=activity_code)
 
             session.add(new_activity)

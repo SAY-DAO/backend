@@ -12,14 +12,13 @@ User Model
 """
 
 
-class UserModel(base):
+class User(base, Timestamp):
     __tablename__ = "user"
 
     id = Column(Integer, nullable=False, primary_key=True, unique=True)
     firstName = Column(String, nullable=False)
     lastName = Column(String, nullable=False)
     userName = Column(String, nullable=False, unique=True)
-    credit = Column(Integer, nullable=False, default=0)
     avatarUrl = Column(String, nullable=True)
     flagUrl = Column(String, nullable=True)
     phoneNumber = Column(String, nullable=True)
@@ -29,17 +28,50 @@ class UserModel(base):
     country = Column(Integer, nullable=False)
     isDeleted = Column(Boolean, nullable=False, default=False)
     isVerified = Column(Boolean, nullable=False, default=False)
-    createdAt = Column(Date, nullable=False)
-    lastUpdate = Column(Date, nullable=False)
     birthDate = Column(Date, nullable=True)
     birthPlace = Column(Integer, nullable=True)  # 1:tehran | 2:karaj
     lastLogin = Column(Date, nullable=False)
     _password = Column(String, nullable=False)
-    spentCredit = Column(Integer, nullable=False, default=0)
-    doneNeedCount = Column(Integer, nullable=False, default=0)
     locale = Column(LocaleType, default=Locale('fa'), nullable=False)
 
-    payments = relationship('PaymentModel', back_populates='user')
+    @aggregated('participations.need', Column(Integer, default=0, nullable=False))
+    def done_needs_count(cls):
+        from . import Need
+        # passing a dummy '1' to count
+        return func.count('1') \
+            .filter(Need.status > 1)
+
+    @aggregated('payments', Column(Integer, default=0, nullable=False))
+    def spent(cls):
+        from . import Payment
+        return coalesce(
+            func.sum(Payment.need_amount),
+            0,
+        )
+
+    @aggregated('payments', Column(Integer, default=0, nullable=False))
+    def credit(cls):
+        from . import Payment
+        return coalesce(
+            func.sum(-Payment.credit_amount),
+            0,
+        )
+
+    payments = relationship(
+        'Payment',
+        back_populates='user',
+        primaryjoin=
+            'and_(User.id==Payment.id_user, Payment.verified.isnot(None))',
+    )
+    user_families = relationship(
+        'UserFamily',
+        back_populates='user',
+        primaryjoin='and_(UserFamily.id_user==User.id, ~UserFamily.isDeleted)',
+    )
+    participations = relationship(
+        'NeedFamily',
+        back_populates='user',
+    )
 
     def _hash_password(cls, password):
         password = str(password)
@@ -73,4 +105,16 @@ class UserModel(base):
         hashed_pass = sha256()
         hashed_pass.update((password + self.password[:64]).encode('utf-8'))
         return self.password[64:] == hashed_pass.hexdigest()
+
+    def charge(self, amount):
+        from . import Payment
+        session = object_session(self)
+
+        payment = Payment(
+            credit_amount=-amount,
+            use_credit=True,
+        )
+        payment.verify()
+        self.payments.append(payment)
+        session.add(payment)
 

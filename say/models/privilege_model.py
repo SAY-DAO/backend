@@ -5,7 +5,7 @@ Privilege Model
 """
 
 
-class PrivilegeModel(base):
+class Privilege(base, Timestamp):
     __tablename__ = "social_worker_type"
 
     id = Column(Integer, primary_key=True, unique=True, nullable=False)

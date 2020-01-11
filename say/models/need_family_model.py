@@ -8,7 +8,7 @@ Need-Family Model
 
 
 # TODO: ParticipantModel?
-class NeedFamilyModel(base):
+class NeedFamily(base, Timestamp):
     __tablename__ = "need_family"
 
     id = Column(Integer, nullable=False, primary_key=True)
@@ -17,16 +17,26 @@ class NeedFamilyModel(base):
     id_need = Column(Integer, ForeignKey('need.id'), nullable=False)
     isDeleted = Column(Boolean, nullable=False, default=False)
 
+    @aggregated('need.payments', Column(Integer, default=0))
+    def paid(cls):
+        from . import Payment
+        return func.sum(Payment.need_amount) \
+            .filter(Payment.id_user==cls.id_user) \
+
     family = relationship(
-        "FamilyModel",
-        foreign_keys="NeedFamilyModel.id_family",
+        "Family",
+        foreign_keys="NeedFamily.id_family",
+        lazy='selectin',
     )
     user = relationship(
-        'UserModel',
+        'User',
         foreign_keys=id_user,
+        back_populates='participations',
+        lazy='selectin',
     )
     need = relationship(
-        "NeedModel",
+        "Need",
         foreign_keys=id_need,
-        back_populates='need_family',
+        back_populates='participants',
+        lazy='selectin',
     )

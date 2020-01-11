@@ -10,7 +10,7 @@ NGO Model
 """
 
 
-class NgoModel(base):
+class Ngo(base, Timestamp):
     __tablename__ = "ngo"
 
     id = Column(Integer, primary_key=True, nullable=False, unique=True)
@@ -31,28 +31,27 @@ class NgoModel(base):
     childrenCount = Column(Integer, nullable=False, default=0)
     currentChildrenCount = Column(Integer, nullable=False, default=0)
     registerDate = Column(DateTime, nullable=False)
-    lastUpdateDate = Column(DateTime, nullable=False)
     isActive = Column(Boolean, nullable=False, default=True)
     isDeleted = Column(Boolean, nullable=False, default=False)
 
     coordinator = relationship(
-        'SocialWorkerModel',
+        'SocialWorker',
         foreign_keys=coordinatorId,
         uselist=False,
     )
 
     def send_report_to_ngo(self):
         session = object_session(self)
-        from .need_model import NeedModel
-        from .child_model import ChildModel
-        from .child_need_model import ChildNeedModel
+        from .need_model import Need
+        from .child_model import Child
+        from .child_need_model import ChildNeed
 
-        needs = session.query(NeedModel) \
-            .filter(NeedModel.isReported != True) \
-            .filter(NeedModel.status == 3) \
-            .join(ChildNeedModel) \
-            .join(ChildModel) \
-            .filter(ChildModel.id_ngo==self.id)
+        needs = session.query(Need) \
+            .filter(Need.isReported != True) \
+            .filter(Need.status == 3) \
+            .join(ChildNeed) \
+            .join(Child) \
+            .filter(Child.id_ngo==self.id)
 
         services = []
         products = []
@@ -68,7 +67,7 @@ class NgoModel(base):
 
         # This date show when the needs status updated to 3
         date = datetime.utcnow() - timedelta(days=1)
-        say = session.query(NgoModel).filter_by(name='SAY').first()
+        say = session.query(Ngo).filter_by(name='SAY').first()
         bcc = [say.coordinator.emailAddress]
         coordinator_email = self.coordinator.emailAddress
         locale = self.coordinator.locale

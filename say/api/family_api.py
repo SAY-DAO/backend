@@ -1,7 +1,7 @@
 from say.models import session, obj_to_dict
-from say.models.family_model import FamilyModel
-from say.models.user_family_model import UserFamilyModel
-from say.models.need_family_model import NeedFamilyModel
+from say.models.family_model import Family
+from say.models.user_family_model import UserFamily
+from say.models.need_family_model import NeedFamily
 from . import *
 
 """
@@ -18,13 +18,13 @@ class GetFamilyById(Resource):
 
         try:
             family = (
-                session.query(FamilyModel)
+                session.query(Family)
                 .filter_by(id=family_id)
                 .filter_by(isDeleted=False)
                 .first()
             )
             members = (
-                session.query(UserFamilyModel)
+                session.query(UserFamily)
                 .filter_by(id_family=family_id)
                 .filter_by(isDeleted=False)
                 .all()
@@ -62,12 +62,12 @@ class GetAllFamilies(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            families = session.query(FamilyModel).filter_by(isDeleted=False).all()
+            families = session.query(Family).filter_by(isDeleted=False).all()
 
             res = {}
             for family in families:
                 members = (
-                    session.query(UserFamilyModel)
+                    session.query(UserFamily)
                     .filter_by(id_family=family.id)
                     .filter_by(isDeleted=False)
                     .all()
@@ -111,7 +111,7 @@ class AddUserToFamily(Resource):
             user_role = int(request.json["userRole"])
 
             duplicate_family = (
-                session.query(UserFamilyModel)
+                session.query(UserFamily)
                 .filter_by(id_user=user_id)
                 .filter_by(id_family=family_id)
                 .filter_by(isDeleted=False)
@@ -123,12 +123,12 @@ class AddUserToFamily(Resource):
                 session.close()
                 return resp
 
-            new_member = UserFamilyModel(
+            new_member = UserFamily(
                 id_user=id_user, id_family=id_family, userRole=user_role
             )
 
             family = (
-                session.query(FamilyModel)
+                session.query(Family)
                 .filter_by(id=id_family)
                 .filter_by(isDeleted=False)
                 .first()
@@ -160,28 +160,28 @@ class LeaveFamily(Resource):
 
         try:
             family = (
-                session.query(FamilyModel)
+                session.query(Family)
                 .filter_by(id=family_id)
                 .filter_by(isDeleted=False)
                 .first()
             )
             user_family = (
-                session.query(UserFamilyModel)
+                session.query(UserFamily)
                 .filter_by(id_user=user_id)
                 .filter_by(id_family=family_id)
                 .filter_by(isDeleted=False)
                 .first()
             )
-            participation = (
-                session.query(NeedFamilyModel)
-                .filter_by(id_user=user_id)
-                .filter_by(id_family=user_id)
-                .filter_by(isDeleted=False)
-            )
-
-            # TODO: WHY?
-            for participate in participation:
-                participate.isDeleted = True
+#            participation = (
+#                session.query(NeedFamily)
+#                .filter_by(id_user=user_id)
+#                .filter_by(id_family=user_id)
+#                .filter_by(isDeleted=False)
+#            )
+#
+#            # TODO: WHY?
+#            for participate in participation:
+#                participate.isDeleted = True
 
             family.child.sayFamilyCount -= 1
             user_family.isDeleted = True

@@ -8,6 +8,8 @@ class IDPay:
 
     API_URL = "https://api.idpay.ir/v1.1/payment"
 
+    MIN_AMOUNT = 100 # TOMAN
+
     RESPONSES = {
         1: "پرداخت انجام نشده است",
         2: "پرداخت ناموفق بوده است",
@@ -56,6 +58,7 @@ class IDPay:
             return None
 
     def new_transaction(self, order_id: str, amount: int, callback: str, name: str = None, phone: str = None, mail: str = None, desc: str = None, reseller: int = None):
+        amount *= 10 # RIAL to TOMAN
         return self.request("", order_id=order_id, amount=amount, callback=callback, name=name, phone=phone, mail=mail, desc=desc, reseller=reseller)
 
     def verify(self, id, order_id):
