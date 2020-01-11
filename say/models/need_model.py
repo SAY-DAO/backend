@@ -1,13 +1,17 @@
+from decimal import Decimal
 from datetime import datetime, timedelta
 
 from khayyam import JalaliDate
 from sqlalchemy import event
 from sqlalchemy.dialects.postgresql import HSTORE
 from sqlalchemy.orm import object_session
+from sqlalchemy import event
 
 from say.statuses import NeedStatuses
 from say.api import render_template, int_formatter
 from say.tasks import send_email, send_embeded_subject_email
+
+from .payment_model import Payment
 from . import *
 
 """
@@ -15,7 +19,7 @@ Need Model
 """
 
 
-class NeedModel(base):
+class Need(base, Timestamp):
     __tablename__ = "need"
 
     id = Column(Integer, nullable=False, primary_key=True, unique=True)
@@ -51,8 +55,6 @@ class NeedModel(base):
     title = Column(Text, nullable=True)
     oncePurchased = Column(Boolean, nullable=False, default=False)
     # Dates:
-    createdAt = Column(DateTime, nullable=False)
-    lastUpdate = Column(DateTime, nullable=False)
     doneAt = Column(DateTime, nullable=True)
     purchase_date = Column(DateTime)
     expected_delivery_date = Column(DateTime)
@@ -60,20 +62,7 @@ class NeedModel(base):
     child_delivery_date = Column(DateTime)
     confirmDate = Column(DateTime, nullable=True)
 
-    child = relationship(
-        'ChildModel',
-        foreign_keys=child_id,
-        uselist=False,
-        back_populates='needs',
-        lazy='selectin',
-    )
-    payments = relationship('PaymentModel', back_populates='need')
-    need_family = relationship(
-        'NeedFamilyModel',
-        uselist=False,
-        back_populates='need',
-    )
-
+    # TODO: Change this to @observers
     @hybrid_property
     def childSayName(self):
         return self.child.sayName
@@ -133,7 +122,58 @@ class NeedModel(base):
 
     @progress.expression
     def progress(cls):
-        return
+        return cls.paid / cls.cost * 100
+
+    @hybrid_property
+    def isDone(self):
+        return self.status >= 2
+
+    '''
+    aggregated generated query:
+UPDATE need SET paid=(
+    SELECT coalesce(
+        sum(payment.need_amount),
+        , 0
+    ) AS coalesce_1
+    FROM payment
+    WHERE need.id = payment.id_need AND payment.verified IS NOT NULL)
+WHERE need.id IN (502);
+    '''
+    @aggregated('payments', Column(Integer, nullable=False, default=0))
+    def paid(cls):
+        from . import Payment
+        return coalesce(
+            func.sum(Payment.need_amount),
+            0,
+        )
+
+    @aggregated('payments', Column(Integer, nullable=False, default=0))
+    def donated(cls):
+        from . import Payment
+        return coalesce(
+            func.sum(Payment.donation_amount),
+            0,
+        )
+
+    @observes('payments.verified')
+    def payments_observer(self, _):
+        session = object_session(self)
+        if self.status > 2:
+            return
+
+        paid = sum(
+            payment.need_amount if payment.verified else 0
+            for payment in self.payments
+        )
+
+        if paid == 0:
+            self.status = 0
+
+        elif paid < self.cost:
+            self.status = 1
+
+        elif paid == self.cost:
+            self.done()
 
     @hybrid_property
     def type_name(self):
@@ -157,28 +197,53 @@ class NeedModel(base):
     def status_description(cls):
         pass
 
-    @hybrid_property
-    def participants(self):
-        from .user_model import UserModel
-        from .payment_model import PaymentModel
+    child = relationship(
+        'Child',
+        foreign_keys=child_id,
+        uselist=False,
+        back_populates='needs',
+        lazy='selectin',
+    )
+
+    payments = relationship(
+        'Payment',
+        back_populates='need',
+        primaryjoin=
+            'and_(Need.id==Payment.id_need, Payment.verified.isnot(None))',
+    )
+
+    participants = relationship(
+        'NeedFamily',
+        back_populates='need',
+        primaryjoin='and_(Need.id==NeedFamily.id_need, ~NeedFamily.isDeleted)',
+    )
+
+    def done(self):
+        self.status = 2
+        self.send_done_email()
+
+    # TODO: Remove this and replace it with participants model
+    def get_participants(self):
+        from .user_model import User
+        from .payment_model import Payment
 
         session = object_session(self)
         participants_query = session.query(
-            func.sum(PaymentModel.amount),
-            UserModel.firstName,
-            UserModel.lastName,
-            UserModel.avatarUrl,
+            func.sum(Payment.need_amount),
+            User.firstName,
+            User.lastName,
+            User.avatarUrl,
         ) \
-            .filter(PaymentModel.id_need==self.id) \
-            .filter(PaymentModel.id_user==UserModel.id) \
-            .filter(PaymentModel.is_verified==True) \
+            .filter(Payment.id_need==self.id) \
+            .filter(Payment.id_user==User.id) \
+            .filter(Payment.verified.isnot(None)) \
             .group_by(
-                PaymentModel.id_user,
-                PaymentModel.id_need,
-                UserModel.firstName,
-                UserModel.lastName,
-                UserModel.avatarUrl,
-            ) \
+                Payment.id_user,
+                Payment.id_need,
+                User.firstName,
+                User.lastName,
+                User.avatarUrl,
+            )
 
         participants = []
         for participant in participants_query:
@@ -191,24 +256,37 @@ class NeedModel(base):
 
         return participants
 
-    @participants.expression
-    def participants(cls):
-        pass
-
     @property
     def family(self):
-        return [
+        return {
             member.user
-            for member in self.child.families[0].current_members()
-        ]
+            for member in self.child.family.current_members()
+        }
 
-    def get_participants(self):
-        from say.models.need_family_model import NeedFamilyModel
-        session = object_session(self)
+    def refund_extra_credit(self):
+        # There is nothing to refund
+        if self.cost >= self.paid:
+            return
 
-        return session.query(NeedFamilyModel) \
-            .filter_by(id_need=self.id) \
-            .filter_by(isDeleted=False)
+        total_refund = Decimal(self.paid) - Decimal(self.cost)
+
+        for participant in self.participants:
+
+            participation_ratio = Decimal(participant.paid) / Decimal(self.paid)
+
+            refund_amount = Decimal(participation_ratio) * Decimal(total_refund)
+            if refund_amount <= 0:
+                continue
+
+            refund_payment = Payment(
+                need=self,
+                user=participant.user,
+                need_amount=-refund_amount,
+                credit_amount=-refund_amount,
+                desc='Refund payment',
+            )
+            self.payments.append(refund_payment)
+            refund_payment.verify()
 
     def update(self):
         from say.utils import digikala
@@ -232,9 +310,9 @@ class NeedModel(base):
                 session = object_session(self)
 
                 from say.api import app
-                from say.models import NgoModel
+                from say.models import Ngo
 
-                SAY_ngo = session.query(NgoModel).filter_by(name='SAY').first()
+                SAY_ngo = session.query(Ngo).filter_by(name='SAY').first()
                 if self.child.ngo.name != SAY_ngo.name:
                     with app.app_context():
                         send_email.delay(
@@ -269,4 +347,47 @@ def status_event(need, new_status, old_status, initiator):
         return
 
     need.status_updated_at = datetime.utcnow()
+
+
+@event.listens_for(Need.status, "set")
+def status_event(need, new_status, old_status, initiator):
+    if new_status == old_status:
+        return
+
+    elif new_status == 4 and need.isReported != True:
+        raise Exception('Need has not been reported to ngo yet')
+
+    elif need.status == 2:
+        need.done()
+
+    elif need.type == 0:  # Service
+        if new_status == 3:
+            need.ngo_delivery_date = datetime.utcnow()
+            need.send_money_to_ngo_email()
+
+        elif new_status == 4:
+            need.child_delivery_date = datetime.utcnow()
+            need.child_delivery_product()
+            need.refund_extra_credit()
+
+    elif need.type == 1:  # Product
+        if new_status == 3:
+            need.purchase_date = datetime.utcnow()
+            need.send_purchase_email()
+
+        elif new_status == 4:
+            need.ngo_delivery_date = parse_datetime(
+                request.form.get('ngo_delivery_date')
+            )
+
+            if not(
+                need.expected_delivery_date
+                <= need.ngo_delivery_date <=
+                datetime.utcnow()
+            ):
+                raise Exception('Invalid ngo_delivery_date')
+
+            need.send_child_delivery_product_email()
+            need.refund_extra_credit()
+
 

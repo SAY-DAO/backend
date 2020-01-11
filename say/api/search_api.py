@@ -5,13 +5,12 @@ from sqlalchemy import func
 
 from . import *
 from say.models import session, obj_to_dict
-from say.api.child_api import get_child_by_id
-from say.models.child_model import ChildModel
-from say.models.child_need_model import ChildNeedModel
-from say.models.need_model import NeedModel
-from say.models.family_model import FamilyModel
-from say.models.user_family_model import UserFamilyModel
-from say.models.user_model import UserModel
+from say.models.child_model import Child
+from say.models.child_need_model import ChildNeed
+from say.models.need_model import Need
+from say.models.family_model import Family
+from say.models.user_family_model import UserFamily
+from say.models.user_model import User
 """
 Search APIs
 """
@@ -26,11 +25,11 @@ class GetRandomSearchResult(Resource):
                              503)
 
         try:
-            user_children_ids_tuple = session.query(ChildModel.id) \
-                .join(FamilyModel) \
-                .join(UserFamilyModel) \
-                .filter(UserFamilyModel.id_user==user_id) \
-                .filter(UserFamilyModel.isDeleted==False) \
+            user_children_ids_tuple = session.query(Child.id) \
+                .join(Family) \
+                .join(UserFamily) \
+                .filter(UserFamily.id_user==user_id) \
+                .filter(UserFamily.isDeleted==False) \
                 .all()
 
             # Flating a nested list like [(1,), (2,)] to [1, 2]
@@ -38,15 +37,15 @@ class GetRandomSearchResult(Resource):
                 itertools.chain.from_iterable(user_children_ids_tuple)
             )
 
-            random_child = session.query(ChildModel) \
-                .filter(ChildModel.id.notin_(user_children_ids)) \
+            random_child = session.query(Child) \
+                .filter(Child.id.notin_(user_children_ids)) \
                 .filter_by(isConfirmed=True) \
                 .filter_by(isDeleted=False) \
                 .filter_by(isMigrated=False) \
-                .join(NeedModel) \
-                .filter(NeedModel.isDone==False) \
-                .filter(NeedModel.isConfirmed==True) \
-                .filter(NeedModel.isDeleted==False) \
+                .join(Need) \
+                .filter(Need.isDone==False) \
+                .filter(Need.isConfirmed==True) \
+                .filter(Need.isDeleted==False) \
                 .order_by(func.random()) \
                 .limit(1) \
                 .first()
@@ -60,7 +59,7 @@ class GetRandomSearchResult(Resource):
 
             child_dict = obj_to_dict(random_child)
             child_family_member = []
-            for member in random_child.families[0].current_members():
+            for member in random_child.family.current_members():
                 child_family_member.append(dict(
                     role=member.userRole,
                     firstName=member.user.firstName,
@@ -68,7 +67,7 @@ class GetRandomSearchResult(Resource):
                 ))
 
             child_dict["childFamilyMembers"] = child_family_member
-            child_dict["familyId"] = random_child.families[0].id
+            child_dict["familyId"] = random_child.family.id
 
             resp = jsonify(child_dict)
             return resp

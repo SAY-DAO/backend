@@ -4,18 +4,17 @@ from dictdiffer import diff
 import ujson
 from sqlalchemy import func, or_
 
-# from say.api.child_api import get_child_by_id
-from say.models import session, obj_to_dict
-from say.models.activity_model import ActivityModel
-from say.models.child_model import ChildModel
-from say.models.child_need_model import ChildNeedModel
-from say.models.family_model import FamilyModel
-from say.models.need_family_model import NeedFamilyModel
-from say.models.need_model import NeedModel
-from say.models.payment_model import PaymentModel
-from say.models.social_worker_model import SocialWorkerModel
-from say.models.user_family_model import UserFamilyModel
-from say.models.user_model import UserModel
+from say.models import session, obj_to_dict, commit
+from say.models.activity_model import Activity
+from say.models.child_model import Child
+from say.models.child_need_model import ChildNeed
+from say.models.family_model import Family
+from say.models.need_family_model import NeedFamily
+from say.models.need_model import Need
+from say.models.payment_model import Payment
+from say.models.social_worker_model import SocialWorker
+from say.models.user_family_model import UserFamily
+from say.models.user_model import User
 from . import *
 
 """
@@ -30,110 +29,30 @@ def filter_by_privilege(query):  # TODO: priv
 
     if user_role in [SOCIAL_WORKER, COORDINATOR]:
         query = query \
-            .join(ChildModel) \
+            .join(Child) \
             .filter(or_(
-                ChildModel.id_social_worker==user_id,
-                ChildModel.id==DEFAULT_CHILD_ID,
+                Child.id_social_worker==user_id,
+                Child.id==DEFAULT_CHILD_ID,
              ))
 
     elif user_role in [NGO_SUPERVISOR]:
         query = query \
-            .join(ChildModel) \
-            .join(SocialWorkerModel) \
+            .join(Child) \
+            .join(SocialWorker) \
             .filter(or_(
-                SocialWorkerModel.id_ngo==ngo_id,
-                ChildModel.id==DEFAULT_CHILD_ID,
+                SocialWorker.id_ngo==ngo_id,
+                Child.id==DEFAULT_CHILD_ID,
              ))
 
     elif user_role in [USER]:
         query = query \
-            .join(ChildModel) \
-            .join(FamilyModel) \
-            .join(UserFamilyModel) \
-            .filter(UserFamilyModel.id_user==user_id) \
-            .filter(UserFamilyModel.isDeleted==False) \
+            .join(Child) \
+            .join(Family) \
+            .join(UserFamily) \
+            .filter(UserFamily.id_user==user_id) \
+            .filter(UserFamily.isDeleted==False) \
 
     return query
-
-
-def get_all_urgent_needs(session):
-    needs = (
-        session.query(NeedModel)
-        .filter_by(isUrgent=True)
-        .filter_by(isDeleted=False)
-        .filter_by(isConfirmed=True)
-        .all()
-    )
-
-    needs_data = {}
-    for need in needs:
-        needs_data[str(need.id)] = get_need(need, session)
-
-    return needs_data
-
-
-def get_need(need, session, participants_only=False, with_participants=True, with_child_id=True):
-    need_data = obj_to_dict(need)
-
-    if not with_participants and not with_child_id:
-        return need_data
-
-    child = need.child
-    need_data['ChildName'] = child.sayName
-
-    if not with_participants and with_child_id:
-        return need_data
-
-    participant_ids = session.query(NeedFamilyModel).filter_by(id_need=need.id).filter_by(isDeleted=False).all()
-    ids = [p.id_user for p in participant_ids]
-
-    participants = (
-        session.query(UserFamilyModel)
-        .filter(UserFamilyModel.id_user.in_(ids))
-        # .filter_by(isDeleted=False)
-    )
-
-#    if len(participant_ids) > 0:
-#        family = list(participant_ids)[0].id_family
-#        participants = participants.filter_by(id_family=family)
-#
-#    participants = participants.all()
-
-    if len(participant_ids) > 0:
-        family_id = list(participant_ids)[0].id_family
-        participants = participants.filter_by(id_family=family_id)
-
-    users = {}
-    for participant in participants:
-        temp_participant = obj_to_dict(participant)
-
-        temp_participant['Contribution'] = (
-            (session.query(func.sum(PaymentModel.amount))
-            .filter_by(id_user=participant.id_user)
-            .filter_by(id_need=need.id)
-            .filter_by(is_verified=True)
-            .group_by(PaymentModel.id_user, PaymentModel.id_need)
-            .first())[0]
-        )
-
-        user_info = (
-            session.query(UserModel.avatarUrl, UserModel.firstName, UserModel.lastName)
-            .filter_by(id=participant.id_user)
-            .filter_by(isDeleted=False)
-            .first()
-        )
-        temp_participant['userAvatar'] = user_info[0]
-        temp_participant['userFirstName'] = user_info[1]
-        temp_participant['userLastName'] = user_info[2]
-
-        users[str(participant.id_user)] = temp_participant
-
-    if participants_only:
-        return users
-
-    need_data["Participants"] = users
-
-    return need_data
 
 
 class GetAllNeeds(Resource):
@@ -155,9 +74,9 @@ class GetAllNeeds(Resource):
 
         try:
             done = int(done)
-            needs = session.query(NeedModel) \
-                .filter(NeedModel.isDeleted==False) \
-                .order_by(NeedModel.doneAt.desc())
+            needs = session.query(Need) \
+                .filter(Need.isDeleted==False) \
+                .order_by(Need.doneAt.desc())
 
 
             if int(confirm) == 1:
@@ -197,9 +116,9 @@ class GetAllNeeds(Resource):
             ]:
                 ngo_id = int(ngo_id)
                 needs = needs \
-                    .join(ChildModel) \
-                    .join(SocialWorkerModel) \
-                    .filter(SocialWorkerModel.id_ngo==ngo_id)
+                    .join(Child) \
+                    .join(SocialWorker) \
+                    .filter(SocialWorker.id_ngo==ngo_id)
 
             needs = filter_by_privilege(needs)
 
@@ -243,7 +162,7 @@ class GetNeedById(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            need_query = session.query(NeedModel) \
+            need_query = session.query(Need) \
                 .filter_by(isDeleted=False) \
                 .filter_by(id=need_id)
 
@@ -255,12 +174,29 @@ class GetNeedById(Resource):
 
             need_dict = obj_to_dict(need)
 
-            need_dict['Participants'] = get_need(
-                need,
-                session,
-                participants_only=True,
-            )
+            participants = session.query(
+                User.firstName,
+                User.lastName,
+                User.avatarUrl,
+                UserFamily.userRole,
+                NeedFamily.paid,
+            ) \
+                .filter(NeedFamily.id_need==need.id) \
+                .filter(NeedFamily.id_user==User.id) \
+                .filter(UserFamily.id_family==NeedFamily.id_family) \
+                .filter(UserFamily.id_user==User.id)
 
+            need_dict['participants'] = [
+                {
+                    'firstName': p[0],
+                    'lastName': p[1],
+                    'avatarUrl': p[2],
+                    'role': p[3],
+                    'paid': p[4],
+
+                }
+                for p in participants
+            ]
             resp = make_response(
                 jsonify(need_dict),
                 200,
@@ -279,12 +215,14 @@ class UpdateNeedById(Resource):
 
     @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @commit
     @swag_from("./docs/need/update.yml")
     def patch(self, need_id):
+        sw_role = get_user_role()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            need_query = session.query(NeedModel) \
+            need_query = session.query(Need) \
                 .filter_by(id=need_id) \
                 .filter_by(isDeleted=False)
 
@@ -297,30 +235,32 @@ class UpdateNeedById(Resource):
             temp = obj_to_dict(need)
             child = need.child
 
-            activity = ActivityModel(
+            activity = Activity(
                 id_social_worker=get_user_id(),
-                model=NeedModel.__tablename__,
+                model=Need.__tablename__,
                 activityCode=11,  # TODO: wrong code
             )
             session.add(activity)
 
+            new_cost = None
             if "cost" in request.form.keys():
                 new_cost = int(request.form['cost'].replace(',', ''))
 
-                if need.isDone and new_cost != need._cost:
+                if (
+                    (
+                        (sw_role in [SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR]
+                            and need.isDone) or
+                        (need.status >= 4)
+                    ) and new_cost != need._cost
+                ):
+
                     resp = make_response(
                         jsonify({"message": "Can not change cost when need is done"}),
                         503,
                     )
                     return
 
-                # if not need.isConfirmed:
                 need.cost = new_cost
-
-                # else:
-                #     resp = make_response(jsonify({"message": "error: cannot change cost for confirmed need!"}), 500)
-                #     session.close()
-                #     return resp
 
             if "imageUrl" in request.files.keys():
                 file = request.files["imageUrl"]
@@ -457,43 +397,17 @@ class UpdateNeedById(Resource):
                         raise Exception('Need has not been reported to ngo yet')
 
                     need.status = new_status
-                    if need.type == 0:  # Service
-                        if new_status == 3:
-                            need.ngo_delivery_date = datetime.utcnow()
-
-                        if new_status == 4:
-                            need.child_delivery_date = datetime.utcnow()
-
-                    if need.type == 1:  # Product
-                        if new_status == 3:
-                            need.purchase_date = datetime.utcnow()
-
-                        if new_status == 4:
-                            need.ngo_delivery_date = parse_datetime(
-                                request.form.get('ngo_delivery_date')
-                            )
-
-                            if not (
-                                need.expected_delivery_date
-                                <= need.ngo_delivery_date <=
-                                datetime.utcnow()
-                            ):
-                                raise Exception('Invalid ngo_delivery_date')
-
-                            need.child_delivery_product()
                 else:
                     raise ValueError(
                         f'Can not change status from '
                         f'{prev_status} to {new_status}'
                     )
 
-            need.lastUpdate = datetime.utcnow()
-
-            secondary_need = obj_to_dict(need)
 
             activity.diff = json.dumps(list(diff(temp, obj_to_dict(need))))
 
             session.commit()
+            secondary_need = obj_to_dict(need)
             resp = make_response(jsonify(secondary_need), 200)
 
         except Exception as e:
@@ -514,7 +428,7 @@ class DeleteNeedById(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            need_query = session.query(NeedModel) \
+            need_query = session.query(Need) \
                 .filter_by(id=need_id) \
                 .filter_by(isDeleted=False)
 
@@ -551,7 +465,7 @@ class ConfirmNeed(Resource):
 
         try:
             primary_need = (
-                session.query(NeedModel)
+                session.query(Need)
                 .filter_by(id=need_id)
                 .filter_by(isDeleted=False)
                 .first()
@@ -568,7 +482,7 @@ class ConfirmNeed(Resource):
             primary_need.confirmUser = social_worker_id
             primary_need.confirmDate = datetime.utcnow()
 
-            new_child_need = ChildNeedModel(
+            new_child_need = ChildNeed(
                 id_child=child.id,
                 id_need=primary_need.id,
             )
@@ -614,7 +528,7 @@ class AddNeed(Resource):
         try:
             child_id = int(request.form["child_id"])
             child = (
-                session.query(ChildModel)
+                session.query(Child)
                 .filter_by(id=child_id)
                 .filter_by(isDeleted=False)
                 .filter_by(isMigrated=False)
@@ -627,7 +541,7 @@ class AddNeed(Resource):
 
             allowed_sw_ids = []
             if sw_role in [NGO_SUPERVISOR]:
-                allowed_sw_ids_tuple = session.query(SocialWorkerModel.id) \
+                allowed_sw_ids_tuple = session.query(SocialWorker.id) \
                     .filter_by(isDeleted=False) \
                     .filter_by(id_ngo=get_sw_ngo_id()) \
                     .distinct() \
@@ -664,7 +578,6 @@ class AddNeed(Resource):
             need_type = request.form["type"]
 
             details = request.form.get("details", '')
-            created_at = datetime.utcnow()
             last_update = datetime.utcnow()
             link = request.form.get('link', None)
 
@@ -678,11 +591,10 @@ class AddNeed(Resource):
             else:
                 doing_duration = 5
 
-            new_need = NeedModel(
+            new_need = Need(
                 name_translations=name_translations,
                 description_translations=description_translations,
                 imageUrl=image_url,
-                createdAt=created_at,
                 category=category,
                 cost=cost,
                 isUrgent=is_urgent,
@@ -690,7 +602,6 @@ class AddNeed(Resource):
                 link=link,
                 receipts=receipts,
                 type=need_type,
-                lastUpdate=last_update,
                 child=child,
                 doing_duration=doing_duration,
                 details=details,

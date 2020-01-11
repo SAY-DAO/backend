@@ -88,7 +88,7 @@ responses:
           description: determines if the need is deleted or not
           default: false
 
-        createdAt:
+        created:
           type: string
           description: the date that the need has been created
 
@@ -114,7 +114,7 @@ responses:
           description: the need's type (donate or affiliate)
           example: 0
 
-        lastUpdate:
+        updated:
           type: string
           description: the last date that the need has been updated
 

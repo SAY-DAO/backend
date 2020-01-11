@@ -5,7 +5,7 @@ Family Model
 """
 
 
-class FamilyModel(base):
+class Family(base, Timestamp):
     __tablename__ = "family"
 
     id = Column(Integer, nullable=False, primary_key=True)
@@ -13,13 +13,13 @@ class FamilyModel(base):
     isDeleted = Column(Boolean, nullable=False, default=False)
 
     child = relationship(
-        "ChildModel",
+        "Child",
         foreign_keys=id_child,
-        back_populates="families",
+        back_populates="family",
         uselist=False,
     )
     members = relationship(
-        'UserFamilyModel',
+        'UserFamily',
         back_populates='family',
     )
 

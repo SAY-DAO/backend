@@ -8,8 +8,7 @@ Child Model
 """
 
 
-# TODO: why it has N family instead of one?
-class ChildModel(base):
+class Child(base, Timestamp):
     __tablename__ = "child"
 
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
@@ -54,10 +53,6 @@ class ChildModel(base):
         Integer, nullable=True
     )  # -3:Deprived of education | -2:Kinder garden | -1:Not attending | 0:Pre-school | 1:1st grade | 2:2nd grade | ... | 13:University
     status = Column(Integer, nullable=True)  # happy, sad, etc
-    doneNeedCount = Column(Integer, nullable=False, default=0)
-    spentCredit = Column(Integer, nullable=False, default=0)
-    createdAt = Column(DateTime, nullable=False)
-    lastUpdate = Column(DateTime, nullable=False)
     isDeleted = Column(Boolean, nullable=False, default=False)
     isConfirmed = Column(Boolean, nullable=False, default=False)
     confirmUser = Column(Integer, nullable=True)
@@ -67,11 +62,30 @@ class ChildModel(base):
     migratedId = Column(Integer, nullable=True)
     migrateDate = Column(Date, nullable=True)
 
-    needs = relationship('NeedModel', back_populates='child', lazy='selectin')
-    families = relationship('FamilyModel', back_populates='child')
-    ngo = relationship("NgoModel", foreign_keys="ChildModel.id_ngo")
+    @aggregated('needs', Column(Integer, default=0, nullable=False))
+    def done_needs_count(cls):
+        from . import Need
+        # passing a dummy '1' to count
+        return func.count('1') \
+            .filter(Need.status > 1) \
+
+    @aggregated('needs.payments', Column(Integer, default=0, nullable=False))
+    def spent_credit(cls):
+        from . import Payment
+        return coalesce(
+            func.sum(Payment.need_amount),
+            0,
+        )
+
+    needs = relationship(
+        'Need',
+        back_populates='child',
+        primaryjoin='and_(Need.child_id==Child.id, ~Need.isDeleted)',
+    )
+    family = relationship('Family', back_populates='child', uselist=False)
+    ngo = relationship("Ngo", foreign_keys="Child.id_ngo")
     social_worker = relationship(
-        "SocialWorkerModel",
+        "SocialWorker",
         foreign_keys=id_social_worker,
         back_populates='children',
     )

@@ -7,7 +7,7 @@ from babel import Locale
 
 from . import *
 from say.models import session, obj_to_dict, or_, commit,  ResetPassword, \
-    VerifyModel, UserModel, RevokedTokenModel
+    Verification, User, RevokedToken,
 from say.tasks import send_email
 
 
@@ -45,7 +45,7 @@ class CheckUser(Resource):
                 )
 
             alreadyTaken = (
-                session.query(UserModel)
+                session.query(User)
                 .filter_by(isDeleted=False)
                 .filter_by(userName=username)
                 .first()
@@ -120,11 +120,11 @@ class RegisterUser(Resource):
             locale = Locale(lang)
 
             alreadyExist = (
-                session.query(UserModel)
+                session.query(User)
                 .filter_by(isDeleted=False)
                 .filter(or_(
-                    UserModel.userName==username,
-                    UserModel.emailAddress==email,
+                    User.userName==username,
+                    User.emailAddress==email,
                 ))
                 .first()
             )
@@ -137,10 +137,8 @@ class RegisterUser(Resource):
                     status=500,
                 )
             else:
-                created_at = datetime.utcnow()
-                last_update = datetime.utcnow()
                 last_login = datetime.utcnow()
-                new_user = UserModel(
+                new_user = User(
                     firstName=first_name,
                     lastName=last_name,
                     userName=username,
@@ -150,8 +148,6 @@ class RegisterUser(Resource):
                     gender=None,
                     city=0,
                     country=0,
-                    createdAt=created_at,
-                    lastUpdate=last_update,
                     birthDate=None,
                     birthPlace=None,
                     lastLogin=last_login,
@@ -163,7 +159,7 @@ class RegisterUser(Resource):
                 session.flush()
 
                 code = randint(100000, 999999)
-                verify = VerifyModel(user=new_user, code=code)
+                verify = Verification(user=new_user, code=code)
                 session.add(verify)
 
                 send_verify_email(new_user, verify.code)
@@ -211,7 +207,7 @@ class Login(Resource):
                 return
 
             user = (
-                session.query(UserModel)
+                session.query(User)
                 .filter_by(isDeleted=False)
                 .filter_by(userName=username)
                 .first()
@@ -219,12 +215,12 @@ class Login(Resource):
             if user is not None:
                 if user.validate_password(password):
                     if not user.isVerified:
-                        verify = session.query(VerifyModel) \
+                        verify = session.query(Verification) \
                             .filter_by(user_id=user.id) \
                             .first()
 
                         if verify is None:
-                            verify = VerifyModel(user=user)
+                            verify = Verification(user=user)
                             session.add(verify)
 
                         verify.code = randint(100000, 999999)
@@ -289,7 +285,7 @@ class LogoutAccess(Resource):
         jti = get_raw_jwt()['jti']
         msg = None
         try:
-            revoked_token = RevokedTokenModel(jti=jti)
+            revoked_token = RevokedToken(jti=jti)
             session.add(revoked_token)
             session.commit()
             msg = {'message': 'Access token has been revoked'}
@@ -306,7 +302,7 @@ class LogoutRefresh(Resource):
     def post(self):
         jti = get_raw_jwt()['jti']
         try:
-            revoked_token = RevokedTokenModel(jti=jti)
+            revoked_token = RevokedToken(jti=jti)
             session.add(revoked_token)
             session.commit()
             msg = {'message': 'Refresh token has been revoked'}
@@ -326,12 +322,12 @@ class Verify(Resource):
 
         try:
             user_id = int(user_id)
-            user = session.query(UserModel).filter_by(id=user_id).first()
+            user = session.query(User).filter_by(id=user_id).first()
             if user is None:
                 resp = {"message": "Something is Wrong"}, 500
                 return
 
-            verify = session.query(VerifyModel).filter_by(user_id=user_id).first()
+            verify = session.query(Verification).filter_by(user_id=user_id).first()
             sent_verify_code = request.form.get('verifyCode', 'invalid')
 
             if user.isVerified:
@@ -387,16 +383,16 @@ class VerifyResend(Resource):
         resp = {"message": "Something is Wrong"}
 
         try:
-            user = session.query(UserModel).filter_by(id=user_id).first()
+            user = session.query(User).filter_by(id=user_id).first()
             if user.isVerified:
                 resp = Response(
                     json.dumps({"message": "User is already verified."}), status=200
                 )
                 return
 
-            verify = session.query(VerifyModel).filter_by(user_id=user_id).first()
+            verify = session.query(Verification).filter_by(user_id=user_id).first()
             if verify is None:
-                verify = VerifyModel(user=user)
+                verify = Verification(user=user)
                 session.add(verify)
 
             verify.code = randint(100000, 999999)
@@ -423,7 +419,7 @@ class TokenRefresh(Resource):
     @swag_from("./docs/auth/refresh.yml")
     def post(self):
         id = get_jwt_identity()
-        user = session.query(UserModel).get(id)
+        user = session.query(User).get(id)
         session.close()
         access_token = create_user_access_token(user, fresh=True)
         refresh_token = create_refresh_token(identity=user.id)

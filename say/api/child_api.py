@@ -4,16 +4,15 @@ import ujson
 
 from . import *
 from say.models import session, obj_to_dict
-from say.api.need_api import get_need
-from say.models.child_model import ChildModel
-from say.models.child_need_model import ChildNeedModel
-from say.models.family_model import FamilyModel
-from say.models.need_family_model import NeedFamilyModel
-from say.models.need_model import NeedModel
-from say.models.ngo_model import NgoModel
-from say.models.social_worker_model import SocialWorkerModel
-from say.models.user_family_model import UserFamilyModel
-from say.models.user_model import UserModel
+from say.models.child_model import Child
+from say.models.child_need_model import ChildNeed
+from say.models.family_model import Family
+from say.models.need_family_model import NeedFamily
+from say.models.need_model import Need
+from say.models.ngo_model import Ngo
+from say.models.social_worker_model import SocialWorker
+from say.models.user_family_model import UserFamily
+from say.models.user_model import User
 
 
 # api_bp = Blueprint('api', __name__)
@@ -28,7 +27,7 @@ def filter_by_confirm(child_query, confirm):
     confirm =  int(confirm)
     if confirm != 2:
         confirm = bool(confirm)
-        return child_query.filter(ChildModel.isConfirmed==confirm)
+        return child_query.filter(Child.isConfirmed==confirm)
 
     return child_query
 
@@ -55,10 +54,10 @@ def filter_by_user(query):  # TODO: priv
     user_id = get_user_id()
 
     query = query \
-        .join(FamilyModel) \
-        .join(UserFamilyModel) \
-        .filter(UserFamilyModel.id_user==user_id) \
-        .filter(UserFamilyModel.isDeleted==False) \
+        .join(Family) \
+        .join(UserFamily) \
+        .filter(UserFamily.id_user==user_id) \
+        .filter(UserFamily.isDeleted==False) \
 
     return query
 
@@ -78,107 +77,6 @@ def filter_by_query(child_query):
         child_query = child_query.filter_by(id_ngo=ngo_id)
 
     return child_query
-
-
-def get_child_by_id(session, child_id, is_migrate=False, confirm=1, with_need=False):  # 2:all | 1:only confirmed | 0:only not confirmed
-    if is_migrate:
-        if int(confirm) == 0:
-            child = (
-                session.query(ChildModel)
-                .filter_by(id=child_id)
-                .filter_by(isDeleted=False)
-                .filter_by(isConfirmed=False)
-                .first()
-            )
-        elif int(confirm) == 1:
-            child = (
-                session.query(ChildModel)
-                .filter_by(id=child_id)
-                .filter_by(isDeleted=False)
-                .filter_by(isConfirmed=True)
-                .first()
-            )
-        elif int(confirm) == 2:
-            child = (
-                session.query(ChildModel)
-                .filter_by(id=child_id)
-                .filter_by(isDeleted=False)
-                .first()
-            )
-        else:
-            return {'message': 'wrong input'}
-    else:
-        if int(confirm) == 0:
-            child = (
-                session.query(ChildModel)
-                .filter_by(id=child_id)
-                .filter_by(isDeleted=False)
-                .filter_by(isConfirmed=False)
-                .filter_by(isMigrated=False)
-                .first()
-            )
-        elif int(confirm) == 1:
-            child = (
-                session.query(ChildModel)
-                .filter_by(id=child_id)
-                .filter_by(isDeleted=False)
-                .filter_by(isConfirmed=True)
-                .filter_by(isMigrated=False)
-                .first()
-            )
-        elif int(confirm) == 2:
-            child = (
-                session.query(ChildModel)
-                .filter_by(id=child_id)
-                .filter_by(isDeleted=False)
-                .filter_by(isMigrated=False)
-                .first()
-            )
-        else:
-            return {'message': 'wrong input'}
-
-    child_data = obj_to_dict(child)
-
-    if with_need:
-        child_data['Needs'] = get_child_need(session, child_id)
-
-    child_data['ngoName'] = child.ngo.name
-    child_data['socialWorkerFirstName'] = child.social_worker.firstName
-    child_data['socialWorkerLastName'] = child.social_worker.lastName
-
-    return child_data
-
-
-def get_child_need(session, child_id, urgent=False, done=False,
-                   with_participants=False, confirm=True):
-    needs = session.query(NeedModel) \
-        .filter_by(child_id=child_id) \
-        .filter_by(isDeleted=False) \
-
-    if confirm != 2:
-        needs = needs.filter_by(isConfirmed=bool(confirm))
-
-    child_needs, check = {}, False
-    for need in needs:
-        if done:
-           if need.isDone:
-                need_data = get_need(need, session, with_participants=with_participants, with_child_id=False)
-                child_needs[str(need.id)] = need_data
-
-        elif not urgent:
-            need_data = get_need(need, session, with_participants=with_participants, with_child_id=False)
-            child_needs[str(need.id)] = need_data
-
-        else:
-            if need.isUrgent:
-                check = True
-                need_data = get_need(need, session, with_participants=with_participants, with_child_id=False)
-                child_needs[str(need.id)] = need_data
-
-    if not check and urgent:
-        return {'message': 'no urgent needs'}
-
-    return child_needs
 
 
 class GetAllChildren(Resource):
@@ -221,7 +119,7 @@ class GetAllChildren(Resource):
         try:
             confirm = int(confirm)
             children_query = (
-                session.query(ChildModel)
+                session.query(Child)
                 .filter_by(isDeleted=False)
                 .filter_by(isMigrated=False)
             )
@@ -235,7 +133,7 @@ class GetAllChildren(Resource):
                 children_query = children_query.filter_by(isConfirmed=True)
 
             children_query = children_query \
-                .order_by(ChildModel.generatedCode.asc())
+                .order_by(Child.generatedCode.asc())
 
             children = children_query.offset(skip).limit(take)
 
@@ -267,10 +165,10 @@ class GetChildById(Resource):
 
         try:
             child_id = int(child_id)
-            child_query = session.query(ChildModel) \
-                .filter(ChildModel.isDeleted==False) \
-                .filter(ChildModel.isMigrated==False) \
-                .filter(ChildModel.id==child_id)
+            child_query = session.query(Child) \
+                .filter(Child.isDeleted==False) \
+                .filter(Child.isMigrated==False) \
+                .filter(Child.id==child_id)
 
             if child_id != DEFAULT_CHILD_ID:  # TODO: need needs
                 child_query = filter_by_privilege(child_query)
@@ -282,22 +180,14 @@ class GetChildById(Resource):
                 resp = HTTP_NOT_FOUND()
                 return
 
-            child_dict = obj_to_dict(child, relationships=True)
-
-            needs = []
-            for need in child_dict['needs']:
-                if need['isDeleted']:
-                    continue
-                needs.append(need)
-
-            child_dict['needs'] = needs
+            child_dict = obj_to_dict(child)
 
             if get_user_role() in [USER]:  # TODO: priv
                 user_id = get_user_id()
-                family_id = child.families[0].id
+                family_id = child.family.id
                 child_family_member = []
 
-                user_family = session.query(UserFamilyModel) \
+                user_family = session.query(UserFamily) \
                     .filter_by(isDeleted=False) \
                     .filter_by(id_user=user_id) \
                     .filter_by(id_family=family_id) \
@@ -306,7 +196,7 @@ class GetChildById(Resource):
                 child_dict['familyId'] = family_id
                 child_dict['userRole'] = user_family.userRole
 
-                for member in child.families[0].current_members():
+                for member in child.family.current_members():
                     child_family_member.append(dict(
                         role=member.userRole,
                         firstName=member.user.firstName,
@@ -314,18 +204,6 @@ class GetChildById(Resource):
                     ))
 
                 child_dict["childFamilyMembers"] = child_family_member
-
-                confirmed_needs = []
-                for need in child_dict['needs']:
-                    if not need['isConfirmed']:
-                        continue
-
-                    confirmed_needs.append(need)
-
-                child_dict['needs'] = confirmed_needs
-
-                del child_dict['social_worker']
-                del child_dict['ngo']
 
             resp = make_response(jsonify(child_dict), 200)
 
@@ -349,10 +227,10 @@ class GetChildNeeds(Resource):
 
         try:
             child_id = int(child_id)
-            child_query = session.query(ChildModel) \
-                .filter(ChildModel.isDeleted==False) \
-                .filter(ChildModel.isMigrated==False) \
-                .filter(ChildModel.id==child_id)
+            child_query = session.query(Child) \
+                .filter(Child.isDeleted==False) \
+                .filter(Child.isMigrated==False) \
+                .filter(Child.id==child_id)
 
             if child_id != DEFAULT_CHILD_ID:  # TODO: need needs
                 child_query = filter_by_privilege(child_query)
@@ -362,15 +240,24 @@ class GetChildNeeds(Resource):
                 resp = HTTP_NOT_FOUND()
                 return
 
-            confirmed_needs = []
+            needs = []
             for need in child.needs:
-                if not need.isConfirmed:
+                if not need.isConfirmed \
+                        and get_user_role() in [USER]:
                     continue
 
                 need_dict = obj_to_dict(need)
-                confirmed_needs.append(need_dict)
+                need_dict['participants'] = [
+                    {'avatarUrl': p.user.avatarUrl}
+                    for p in need.participants
+                ]
+                needs.append(need_dict)
 
-            resp = make_response(jsonify(confirmed_needs), 200)
+            result = dict(
+                total_count=len(needs),
+                needs=needs,
+            )
+            resp = make_response(jsonify(result), 200)
 
         except Exception as e:
             print(e)
@@ -415,7 +302,7 @@ class AddChild(Resource):
 
             allowed_sw_ids = []
             if sw_role in [NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN]:
-                allowed_sw_ids_tuple = session.query(SocialWorkerModel.id) \
+                allowed_sw_ids_tuple = session.query(SocialWorker.id) \
                     .filter_by(isDeleted=False) \
                     .filter_by(id_ngo=ngo_id) \
                     .distinct() \
@@ -428,7 +315,7 @@ class AddChild(Resource):
                 resp = error
                 return
 
-            sw = session.query(SocialWorkerModel) \
+            sw = session.query(SocialWorker) \
                 .filter_by(id=sw_id) \
                 .filter_by(isDeleted=False) \
                 .first()
@@ -503,10 +390,7 @@ class AddChild(Resource):
             slept_avatar_url = slept_avatar_path
             voice_url = voice_path
 
-            created_at = datetime.utcnow()
-            last_update = datetime.utcnow()
-
-            new_child = ChildModel(
+            new_child = Child(
                 phoneNumber=phone_number,
                 nationality=nationality,
                 avatarUrl=avatar_url,
@@ -516,7 +400,6 @@ class AddChild(Resource):
                 lastName_translations=last_name_translations,
                 familyCount=family_count,
                 education=education,
-                createdAt=created_at,
                 birthPlace=birth_place,
                 birthDate=birth_date,
                 address=address,
@@ -530,7 +413,6 @@ class AddChild(Resource):
                 city=city,
                 gender=gender,
                 status=status,
-                lastUpdate=last_update,
                 generatedCode=code,
             )
 
@@ -656,7 +538,7 @@ class UpdateChildById(Resource):
 
         try:
             primary_child = (
-                session.query(ChildModel)
+                session.query(Child)
                 .filter_by(id=child_id)
                 .filter_by(isDeleted=False)
                 .filter_by(isMigrated=False)
@@ -665,7 +547,7 @@ class UpdateChildById(Resource):
 
             allowed_sw_ids = []
             if sw_role in [NGO_SUPERVISOR]:
-                allowed_sw_ids_tuple = session.query(SocialWorkerModel.id) \
+                allowed_sw_ids_tuple = session.query(SocialWorker.id) \
                     .filter_by(isDeleted=False) \
                     .filter_by(id_ngo=primary_child.id_ngo) \
                     .distinct() \
@@ -854,14 +736,9 @@ class UpdateChildById(Resource):
                     request.form["bio_summary_translations"],
                 )
 
-            primary_child.lastUpdate = datetime.utcnow()
-
-            # secondary_child = obj_to_dict(primary_child)
-            secondary_child = get_child_by_id(session, primary_child.id, confirm=2)
-
             session.commit()
 
-            resp = make_response(jsonify(secondary_child), 200)
+            resp = make_response(jsonify(primary_child), 200)
 
         except Exception as e:
             print(e)
@@ -896,7 +773,7 @@ class DeleteChildById(Resource):
 
         try:
             child = (
-                session.query(ChildModel)
+                session.query(Child)
                 .filter_by(id=child_id)
                 .filter_by(isDeleted=False)
                 .filter_by(isMigrated=False)
@@ -905,7 +782,7 @@ class DeleteChildById(Resource):
 
             allowed_sw_ids = []
             if sw_role in [NGO_SUPERVISOR]:
-                allowed_sw_ids_tuple = session.query(SocialWorkerModel.id) \
+                allowed_sw_ids_tuple = session.query(SocialWorker.id) \
                     .filter_by(isDeleted=False) \
                     .filter_by(id_ngo=child.id_ngo) \
                     .distinct() \
@@ -925,13 +802,13 @@ class DeleteChildById(Resource):
 
             if not child.isConfirmed:
                 family = (
-                    session.query(FamilyModel)
+                    session.query(Family)
                     .filter_by(isDeleted=False)
                     .filter_by(id_child=child_id)
                     .first()
                 )
                 needs = (
-                    session.query(ChildNeedModel)
+                    session.query(ChildNeed)
                     .filter_by(isDeleted=False)
                     .filter_by(id_child=child_id)
                 )
@@ -972,7 +849,7 @@ class ConfirmChild(Resource):
 
         try:
             child = (
-                session.query(ChildModel)
+                session.query(Child)
                 .filter_by(id=child_id)
                 .filter_by(isDeleted=False)
                 .filter_by(isMigrated=False)
@@ -995,7 +872,7 @@ class ConfirmChild(Resource):
 
                 primary_child.social_worker.currentChildCount += 1
 
-                new_family = FamilyModel(id_child=primary_child.id)
+                new_family = Family(id_child=primary_child.id)
 
                 session.add(new_family)
                 session.commit()
@@ -1013,19 +890,19 @@ class ConfirmChild(Resource):
                 secondary_child.confirmDate = datetime.utcnow()
 
                 primary_child = (
-                    session.query(ChildModel)
+                    session.query(Child)
                     .filter_by(id=secondary_child.migratedId)
                     .filter_by(isDeleted=False)
                     .first()
                 )
                 needs = (
-                    session.query(ChildNeedModel)
+                    session.query(ChildNeed)
                     .filter_by(id_child=secondary_child.migratedId)
                     .filter_by(isDeleted=False)
                     .all()
                 )
                 family = (
-                    session.query(FamilyModel)
+                    session.query(Family)
                     .filter_by(id_child=secondary_child.migratedId)
                     .filter_by(isDeleted=False)
                     .first()
@@ -1036,7 +913,7 @@ class ConfirmChild(Resource):
                     != primary_child.id_ngo
                 ):
                     previous_ngo = (
-                        session.query(NgoModel)
+                        session.query(Ngo)
                         .filter_by(id=primary_child.id_ngo)
                         .filter_by(isDeleted=False)
                         .first()
@@ -1131,7 +1008,7 @@ class MigrateChild(Resource):
 
         try:
             child = (
-                session.query(ChildModel)
+                session.query(Child)
                 .filter_by(id=child_id)
                 .filter_by(isDeleted=False)
                 .filter_by(isMigrated=False)
@@ -1149,13 +1026,13 @@ class MigrateChild(Resource):
                 return resp
 
             social_worker = (
-                session.query(SocialWorkerModel)
+                session.query(SocialWorker)
                 .filter_by(id=social_worker_id)
                 .filter_by(isDeleted=False)
                 .first()
             )
 
-            new_child = ChildModel(
+            new_child = Child(
                 firstName_translations=child.firstName_translations,
                 lastName_translations=child.lastName_translations,
                 phoneNumber=child.phoneNumber,
@@ -1181,11 +1058,10 @@ class MigrateChild(Resource):
                 id_ngo=social_worker.id_ngo,
                 id_social_worker=social_worker_id,
                 spentCredit=child.spentCredit,
-                createdAt=child.createdAt,
-                lastUpdate=datetime.utcnow(),
                 isConfirmed=child.isConfirmed,
                 confirmUser=child.confirmUser,
                 confirmDate=child.confirmDate,
+                created=child.created,
                 generatedCode=social_worker.generatedCode
                     + format(social_worker.childCount + 1, "04d"),
                 isMigrated=False,
