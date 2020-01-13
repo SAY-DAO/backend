@@ -309,7 +309,7 @@ class UpdateNeedById(Resource):
                     return
 
                 # if not need.isConfirmed:
-                need.cost = request.form["cost"]
+                need.cost = request.form["cost"].replace(',', '')
 
                 # else:
                 #     resp = make_response(jsonify({"message": "error: cannot change cost for confirmed need!"}), 500)
