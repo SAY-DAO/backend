@@ -215,7 +215,6 @@ class Payment(Resource):
             return resp
 
 
-# FIXME: Race condition
 class VerifyPayment(Resource):
     @commit
     def post(self):
@@ -238,14 +237,13 @@ class VerifyPayment(Resource):
             .filter_by(id_need = pending_payment.need.id) \
             .first()
 
+        child = child_need.child
         need_url = f"/needPage/{need.id}/{child.id}/{pending_payment.id_user}"
 
         if need.isDone:
             return redirect(need_url, 302)
 
         amount = pending_payment.amount
-
-        child = child_need.child
 
         response = idpay.verify(paymentId, orderId)
         if 'error_code' in response or response['status'] != 100:
