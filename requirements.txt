@@ -24,4 +24,4 @@ redis
 khayyam
 celery-redbeat
 ujson
-
+babel
