@@ -45,12 +45,6 @@ parameters:
     required: true
     description: '{"en": "Lorem ipsome", "fa": "لورم ایپسون"}'
 
-  - name: descriptionSummaryTranslations
-    in: formData
-    type: string
-    required: true
-    description: '{"en": "Lorem ipsome", "fa": "لورم ایپسون"}'
-
   - name: category
     in: formData
     type: integer

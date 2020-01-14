@@ -27,9 +27,6 @@ class NeedModel(base):
     description_translations = Column(HSTORE)
     description = translation_hybrid(description_translations)
 
-    description_summary_translations = Column(HSTORE)
-    descriptionSummary = translation_hybrid(description_summary_translations)
-
     imageUrl = Column(String, nullable=False)
     category = Column(Integer, nullable=False)  # 0:Growth | 1:Joy | 2:Health | 3:Surroundings
     isUrgent = Column(Boolean, nullable=False)

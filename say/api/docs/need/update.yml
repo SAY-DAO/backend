@@ -38,11 +38,6 @@ parameters:
     type: string
     description: '{"en": "Lorem ipsome", "fa": "لورم ایپسون"}'
 
-  - name: descriptionSummaryTranslations
-    in: formData
-    type: string
-    description: '{"en": "Lorem ipsome", "fa": "لورم ایپسون"}'
-
   - name: category
     in: formData
     type: integer

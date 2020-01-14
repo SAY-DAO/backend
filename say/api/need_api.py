@@ -423,11 +423,6 @@ class UpdateNeedById(Resource):
                     request.form["descriptionTranslations"],
                 )
 
-            if "descriptionSummaryTranslations" in request.form.keys():
-                need.description_summary_translations = ujson.loads(
-                    request.form["descriptionSummaryTranslations"],
-                )
-
             if "doing_duration" in request.form.keys():
                 need.doing_duration = int(request.form["doing_duration"])
 
@@ -663,9 +658,6 @@ class AddNeed(Resource):
             description_translations = ujson.loads(
                 request.form["descriptionTranslations"],
             )
-            description_summary_translations = ujson.loads(
-                request.form["descriptionSummaryTranslations"],
-            )
 
             is_urgent = True if request.form["isUrgent"] == "true" else False
             need_type = request.form["type"]
@@ -687,7 +679,6 @@ class AddNeed(Resource):
 
             new_need = NeedModel(
                 name_translations=name_translations,
-                description_summary_translations=description_summary_translations,
                 description_translations=description_translations,
                 imageUrl=image_url,
                 createdAt=created_at,
