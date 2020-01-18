@@ -495,7 +495,7 @@ class AddChild(Resource):
                 request.form["sayname_translations"]
             )
             bio_translations = ujson.loads(request.form["bio_translations"])
-            bio_summary_translations = ujson.loads(request.form["bioSummary_translations"])
+            bio_summary_translations = ujson.loads(request.form["bio_summary_translations"])
             gender = True if request.form["gender"] == "true" else False
 
             avatar_url = avatar_path
@@ -836,8 +836,8 @@ class UpdateChildById(Resource):
             if "bio" in request.form.keys():
                 primary_child.bio = request.form["bio"]
 
-            if "bioSummary" in request.form.keys():
-                primary_child.bioSummary = request.form["bioSummary"]
+            if "bio_summary" in request.form.keys():
+                primary_child.bio_summary = request.form["bio_summary"]
 
             if "sayname_translations" in request.form.keys():
                 primary_child.sayname_translations = ujson.loads(
@@ -849,9 +849,9 @@ class UpdateChildById(Resource):
                     request.form["bio_translations"],
                 )
 
-            if "bioSummary_translations" in request.form.keys():
+            if "bio_summary_translations" in request.form.keys():
                 primary_child.bio_summary_translations = ujson.loads(
-                    request.form["bioSummary_translations"],
+                    request.form["bio_summary_translations"],
                 )
 
             primary_child.lastUpdate = datetime.utcnow()
@@ -1159,7 +1159,6 @@ class MigrateChild(Resource):
             new_child = ChildModel(
                 firstName=child.firstName,
                 lastName=child.lastName,
-                sayName=child.sayName,
                 phoneNumber=child.phoneNumber,
                 nationality=child.nationality,
                 country=child.country,
@@ -1167,8 +1166,9 @@ class MigrateChild(Resource):
                 avatarUrl=child.avatarUrl,
                 sleptAvatarUrl=child.sleptAvatarUrl,
                 gender=child.gender,
-                bio=child.bio,
-                bioSummary=child.bioSummary,
+                sayname_translations=child.sayname_translations,
+                bio_translation=child.bio_translations,
+                bio_summary_translations=child.bio_summary_translations,
                 voiceUrl=child.voiceUrl,
                 birthPlace=child.birthPlace,
                 birthDate=child.birthDate,
