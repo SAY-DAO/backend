@@ -413,14 +413,14 @@ class UpdateNeedById(Resource):
             if "affiliateLinkUrl" in request.form.keys():
                 need.affiliateLinkUrl = request.form["affiliateLinkUrl"]
 
-            if "nameTranslations" in request.form.keys():
+            if "name_translations" in request.form.keys():
                 need.name_translations = ujson.loads(
-                    request.form["nameTranslations"],
+                    request.form["name_translations"],
                 )
 
-            if "descriptionTranslations" in request.form.keys():
+            if "description_translations" in request.form.keys():
                 need.description_translations = ujson.loads(
-                    request.form["descriptionTranslations"],
+                    request.form["description_translations"],
                 )
 
             if "doing_duration" in request.form.keys():
@@ -653,10 +653,10 @@ class AddNeed(Resource):
             cost = request.form["cost"].replace(',', '')
 
             name_translations = ujson.loads(
-                request.form["nameTranslations"]
+                request.form["name_translations"]
             )
             description_translations = ujson.loads(
-                request.form["descriptionTranslations"],
+                request.form["description_translations"],
             )
 
             is_urgent = True if request.form["isUrgent"] == "true" else False

@@ -37,17 +37,17 @@ parameters:
     in: formData
     type: string
 
-  - name: saynameTranslations
+  - name: sayname_translations
     in: formData
     type: string
     description: '{"en": "Bob", "fa": "بابک"}'
 
-  - name: bioTranslations
+  - name: bio_translations
     in: formData
     type: string
     description: '{"en": "Lorem ipsome", "fa": "لورم ایپسون"}'
 
-  - name: bioSummaryTranslations
+  - name: bioSummary_translations
     in: formData
     type: string
     description: '{"en": "Lorem ipsome", "fa": "لورم ایپسون"}'

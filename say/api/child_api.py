@@ -492,10 +492,10 @@ class AddChild(Resource):
             country = int(request.form["country"])
             city = int(request.form["city"])
             sayname_translations = ujson.loads(
-                request.form["saynameTranslations"]
+                request.form["sayname_translations"]
             )
-            bio_translations = ujson.loads(request.form["bioTranslations"])
-            bio_summary_translations = ujson.loads(request.form["bioSummaryTranslations"])
+            bio_translations = ujson.loads(request.form["bio_translations"])
+            bio_summary_translations = ujson.loads(request.form["bioSummary_translations"])
             gender = True if request.form["gender"] == "true" else False
 
             avatar_url = avatar_path
@@ -839,19 +839,19 @@ class UpdateChildById(Resource):
             if "bioSummary" in request.form.keys():
                 primary_child.bioSummary = request.form["bioSummary"]
 
-            if "saynameTranslations" in request.form.keys():
+            if "sayname_translations" in request.form.keys():
                 primary_child.sayname_translations = ujson.loads(
-                    request.form["saynameTranslations"],
+                    request.form["sayname_translations"],
                 )
 
-            if "bioTranslations" in request.form.keys():
+            if "bio_translations" in request.form.keys():
                 primary_child.bio_translations = ujson.loads(
-                    request.form["bioTranslations"],
+                    request.form["bio_translations"],
                 )
 
-            if "bioSummaryTranslations" in request.form.keys():
+            if "bioSummary_translations" in request.form.keys():
                 primary_child.bio_summary_translations = ujson.loads(
-                    request.form["bioSummaryTranslations"],
+                    request.form["bioSummary_translations"],
                 )
 
             primary_child.lastUpdate = datetime.utcnow()
