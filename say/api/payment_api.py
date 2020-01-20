@@ -304,7 +304,7 @@ class VerifyPayment(Resource):
             need.send_done_email()
 
         return make_response(render_template(
-            'succesful_payment.html',
+            'successful_payment.html',
             payment=pending_payment,
             user=pending_payment.user,
             need_url=need_url,
