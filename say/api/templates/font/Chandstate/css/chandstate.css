@@ -1,0 +1,9 @@
+@font-face {
+	font-family: chandstate;
+	font-style: normal;
+	font-weight: bold;
+	src: url('../fonts/eot/Chandstate.eot');
+	src: url('../fonts/eot/Chandstate.eot?#iefix') format('embedded-opentype'),  /* IE6-8 */
+		 url('../fonts/woff/Chandstate.woff') format('woff'),  /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
+		 url('../fonts/ttf/Chandstate.ttf') format('truetype');
+}

@@ -1,0 +1,9 @@
+@font-face {
+	font-family: roboto;
+	font-style: normal;
+	/* font-weight: bold; */
+	src: url('../fonts/eot/Roboto-Regular.eot');
+	src: url('../fonts/eot/Roboto-Regular.eot?#iefix') format('embedded-opentype'),  /* IE6-8 */
+		 url('../fonts/woff/Roboto-Regular.woff') format('woff'),  /* FF3.6+, IE9, Chrome6+, Saf5.1+*/
+		 url('../fonts/ttf/Roboto-Regular.ttf') format('truetype');
+}
