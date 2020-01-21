@@ -22,7 +22,6 @@ def datetime_converter(o):
 
 
 def send_verify_email(email, verify_code):
-
     send_email.delay(
         subject='SAY Email Verification',
         emails=email,

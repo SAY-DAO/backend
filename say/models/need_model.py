@@ -4,8 +4,8 @@ from khayyam import JalaliDate
 from sqlalchemy.dialects.postgresql import HSTORE
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import object_session
-from flask import render_template
 
+from say.api import render_template
 from say.tasks import send_email
 from . import *
 
@@ -184,17 +184,18 @@ class NeedModel(base):
                 from say.models import NgoModel
 
                 SAY_ngo = session.query(NgoModel).filter_by(name='SAY').first()
-                if child.ngo.name != SAY_ngo.name:
+                if self.child.ngo.name != SAY_ngo.name:
                     with app.app_context():
                         send_email.delay(
                             subject=f'تغییر وضعیت کالا {dkp}',
                             emails=SAY_ngo.coordinator.emailAddress,
                             html=render_template(
                                 'product_status_changed.html',
-                                 child=self.child,
-                                 need=self,
-                                 dkp=dkp,
-                                 details=cost,
+                                _translate=False,
+                                child=self.child,
+                                need=self,
+                                dkp=dkp,
+                                details=cost,
                             ),
                         )
         return data

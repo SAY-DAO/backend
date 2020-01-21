@@ -49,7 +49,7 @@ def commit(func):
 
     
 def get_locale():
-    return request.args.get('_lang', LANGS.en)
+    return request.args.get('_lang', LANGS.fa)
 
 
 translation_hybrid = TranslationHybrid(

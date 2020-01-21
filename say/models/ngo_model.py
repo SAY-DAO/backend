@@ -1,6 +1,6 @@
 from sqlalchemy.orm import object_session
-from flask import render_template
 
+from say.api import render_template
 from say.tasks import send_email
 from say.utils import surname
 from . import *

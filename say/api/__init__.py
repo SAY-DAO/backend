@@ -172,6 +172,17 @@ api = Api(app)
 # api = Api(api_bp)
 
 
+def render_template(path, *args, _translate=True, **kwargs):
+    from flask import render_template
+    from ..models import get_locale
+    if not _translate:
+        return render_template(path, *args, **kwargs)
+
+    locale_path = os.path.join(get_locale(), path)
+    return render_template(locale_path, *args, **kwargs)
+
+
+
 def allowed_voice(filename):
     if (
         "." in filename
