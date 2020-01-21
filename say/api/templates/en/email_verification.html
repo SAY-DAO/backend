@@ -1,10 +1,13 @@
-        <!--importing FA font - but it does not work in sending html email-->
-        <link type="text/css" href="https://sayapp.company/public/resources/font/iranYekan/css/fontiran.css"></link>
-        
         <!--adding EN font for english Roboto font-->
+        <link rel="stylesheet" href="../font/Roboto/css/roboto.css" />
         <link href="https://fonts.googleapis.com/css?family=Roboto:100,400&display=swap" rel="stylesheet" type="text/css">
         
-    <body style="padding:0; margin:0; background-color: #f3f3f3;">
+    <body style="
+            font-family: roboto,'Roboto';
+            padding:0;
+            margin:0;
+            background-color: #f3f3f3;
+            ">
         
         <!--the whole container-->
         <div id="container" style="
@@ -65,10 +68,23 @@
                 <img src="https://sayapp.company/public/resources/img/verification.png" style="height: 100px;" />
                 <div class="content-paragraph">
 
-                    <p class="en-paragraph" style="font-family: 'Roboto', Roboto; font-size: 14px; margin: 20px 0; color: #515151;">Enter the code below on the App</p>
+                    <p class="en-paragraph" style="
+                                                font-size: 14px;
+                                                margin: 20px 0;
+                                                color: #515151;
+                                                ">
+                        Enter the code below on the App
+                    </p>
                     
                     <!--the verification code-->
-                    <p class="en-paragraph generated" style="font-family: 'Roboto', Roboto; font-size: 42px; margin-top: 20px; margin: 10px 0; color: #515151;">{{code[:3]}}-{{code[3:]}}</p>
+                    <p class="en-paragraph generated" style="
+                                                        font-size: 42px;
+                                                        margin-top: 20px;
+                                                        margin: 10px 0;
+                                                        color: #515151;
+                                                        ">
+                        {{code[:3]}}-{{code[3:]}}
+                    </p>
                 </div>
                 <div id="logo_wrapper" style="
                                     width: 100%;
@@ -115,7 +131,14 @@
             <!--the SAY address-->
             <div id="address" style="width: 100%; text-align:center; padding-bottom: 60px;">
 
-                <p class="en-paragraph" style="font-family: 'Roboto', Roboto; font-size: 12px; margin: 10px 5px; color: #515151; font-weight: 100;">4th Floor, No 22, Azarshahr St, Iranshahr St, Karimkhan Zand St, Tehran, Iran</p>
+                <p class="en-paragraph" style="
+                                            font-size: 12px;
+                                            margin: 10px 5px;
+                                            color: #515151;
+                                            font-weight: 100;
+                                            ">
+                    4th Floor, No 22, Azarshahr St, Iranshahr St, Karimkhan Zand St, Tehran, Iran
+                </p>
             </div>
         </div>
     </body>

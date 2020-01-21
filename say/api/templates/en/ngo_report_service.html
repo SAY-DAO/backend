@@ -1,14 +1,11 @@
-<!-- Status 4 - PRODUCT -->
-<!-- NOT USED -->
-
-        <!--importing FA font - but it does not work in sending html email-->
-        <link rel="stylesheet" href="../font/iranYekan/css/fontiran.css" />
-        <link rel="stylesheet" href="https://sayapp.company/public/resources/font/iranYekan/css/fontiran.css" />
+        <!--adding EN font for english Roboto font-->
+        <link rel="stylesheet" href="../font/Roboto/css/roboto.css" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto:100,400&display=swap" rel="stylesheet" type="text/css">
         
     <body style="
-            font-family: iranyekan, Tahoma;
-            padding:0;
-            margin:0;
+            font-family: roboto, 'Roboto'; 
+            padding:0; 
+            margin:0; 
             background-color: #f3f3f3;
             ">
         
@@ -68,41 +65,125 @@
             -o-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
             text-align: center;">
 
-                <img src="https://sayapp.company/public/resources/img/ngo_delivered.png" style="height: 100px;" />
+                <img src="https://sayapp.company/public/resources/img/ngo_report_service.png" style="height: 100px;" />
                 <div class="content-paragraph">
 
                     <!-- the title -->
                     <p style="
+                            font-family: roboto, 'Roboto'; 
                             font-size: 16px;
                             font-weight: bold;
-                            margin: 20px 0; 
-                            padding: 0 10px;
+                            margin: 20px 0;
+                            padding: 0 10px; 
                             color: #515151;
-                            direction: rtl;">
-                        اطلاع از تحویل کالا به انجمن
+                            direction: ltr;">
+                        Money transferred notification
                     </p>
                     
                     <!--the main paragraph-->
                     <p style="
+                            font-family: roboto, 'Roboto'; 
                             font-size: 16px;
                             font-weight: lighter; 
                             max-width: 500px; 
-                            margin: 30px auto; 
-                            padding: 0 10px;
+                            margin: 10px auto;
+                            padding: 0 10px; 
                             color: #515151;
-                            direction: rtl;">
-                        در روز {{date}} {{need.name}} به انجمن تحویل داده شد.
+                            direction: ltr;
+                            /* text-align: justify; */
+                            ">
+                        Dear {{ngo.coordinator.firstName}} {{ngo.coordinator.lastName}}
+                    </p>
+                    
+                    <p style="
+                            font-family: roboto, 'Roboto'; 
+                            font-size: 16px;
+                            font-weight: lighter; 
+                            max-width: 500px; 
+                            margin: 20px auto 30px;
+                            padding: 0 10px; 
+                            color: #515151;
+                            direction: ltr;
+                            /* text-align: justify; */
+                            ">
+                        <!-- TODO: Review the date -->
+                         This is to notify you, the amount of cash is deposited into the NGO’s bank account, on 08.12.2019 {{date}}. Please find the details in the attachment.
                     </p>
 
+                    <table style="
+                            border: 2px solid #cccccc;
+                            border-collapse: collapse;
+                            font-family: roboto, 'Roboto'; 
+                            color: #515151;
+                            direction: ltr;
+                            text-align: center;
+                            font-weight: normal;
+                            width: 90%;
+                            max-width: 500px; 
+                            margin: 0 auto 30px;">
+                        <thead>
+                            <tr>
+                                <!-- ** -->
+                                <td style="
+                                    font-family: roboto, 'Roboto'; 
+                                    border: 2px solid #cccccc;
+                                    padding: 20px 2px;
+                                    ">Item number</td> 
+                                <td style="
+                                    font-family: roboto, 'Roboto'; 
+                                    border: 2px solid #cccccc;
+                                    padding: 20px 2px;
+                                    ">Child</td>
+                                <td style="
+                                    font-family: roboto, 'Roboto'; 
+                                    border: 2px solid #cccccc;
+                                    padding: 20px 2px;
+                                    ">Service</td>
+                                <td style="
+                                    font-family: roboto, 'Roboto'; 
+                                    border: 2px solid #cccccc;
+                                    padding: 20px 2px;
+                                    ">Amount</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for need in needs %}
+                            <tr>
+                                <td style="
+                                    font-family: roboto, 'Roboto'; 
+                                    padding: 20px 2px;
+                                    border: 2px solid #cccccc;
+                                    ">{{loop.index}}</td>
+                                <td style="
+                                    font-family: roboto, 'Roboto'; 
+                                    padding: 20px 2px;
+                                    border: 2px solid #cccccc;
+                                    ">{{need.child.firstName}} {{need.child.lastName}}</td>
+                                <td style="
+                                    font-family: roboto, 'Roboto'; 
+                                    padding: 20px 2px;
+                                    border: 2px solid #cccccc;
+                                    ">{{need.name}}</td>
+                                <td style="
+                                    font-family: roboto, 'Roboto'; 
+                                    padding: 20px 2px;
+                                    border: 2px solid #cccccc;
+                                ">{{need.cost}} Tomans</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
                     <p style="
+                            font-family: roboto, 'Roboto'; 
                             font-size: 12px; 
                             font-weight: lighter;
                             margin-top: 20px; 
                             margin: 10px 0;
                             padding: 0 10px; 
                             color: #515151;
-                            direction: rtl;">
-                        ما به شما گوش می‌دهیم، با ما تماس بگیرید.
+                            direction: ltr;">
+                        At SAY, we listen to you.
                     </p>
 
                 </div>
@@ -156,11 +237,12 @@
             <div id="address" style="width: 100%; text-align:center; padding-bottom: 60px;">
 
                 <p class="en-paragraph" style="
+                                            font-family: roboto, 'Roboto'; 
                                             font-size: 12px; 
                                             margin: 10px 5px; 
                                             color: #515151; 
                                             font-weight: 100;">
-                    ایران - تهران - ایرانشهر - خیابان آذرشهر - پلاک 22 - واحد 4
+                    4th Floor, No 22, Azarshahr St, Iranshahr St, Karimkhan Zand St, Tehran, Iran
                 </p>
             </div>
         </div>

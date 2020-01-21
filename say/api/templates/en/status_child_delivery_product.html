@@ -1,12 +1,11 @@
-<!-- Status 4 - PRODUCT -->
-<!-- NOT USED -->
-
-        <!--importing FA font - but it does not work in sending html email-->
-        <link rel="stylesheet" href="../font/iranYekan/css/fontiran.css" />
-        <link rel="stylesheet" href="https://sayapp.company/public/resources/font/iranYekan/css/fontiran.css" />
+<!-- Status 5 - PRODUCT -->
+        
+        <!--adding EN font for english Roboto font-->
+        <link rel="stylesheet" href="../font/Roboto/css/roboto.css" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto:100,400&display=swap" rel="stylesheet" type="text/css">
         
     <body style="
-            font-family: iranyekan, Tahoma;
+            font-family: roboto, 'Roboto';
             padding:0;
             margin:0;
             background-color: #f3f3f3;
@@ -68,18 +67,18 @@
             -o-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
             text-align: center;">
 
-                <img src="https://sayapp.company/public/resources/img/ngo_delivered.png" style="height: 100px;" />
+                <img src="https://sayapp.company/public/resources/img/child_delivered.png" style="height: 100px;" />
                 <div class="content-paragraph">
 
                     <!-- the title -->
                     <p style="
                             font-size: 16px;
                             font-weight: bold;
-                            margin: 20px 0; 
-                            padding: 0 10px;
+                            margin: 20px 0;
+                            padding: 0 10px; 
                             color: #515151;
-                            direction: rtl;">
-                        اطلاع از تحویل کالا به انجمن
+                            ">
+                        Product delivered to {{child.sayName}}
                     </p>
                     
                     <!--the main paragraph-->
@@ -87,11 +86,12 @@
                             font-size: 16px;
                             font-weight: lighter; 
                             max-width: 500px; 
-                            margin: 30px auto; 
-                            padding: 0 10px;
+                            margin: 30px auto;
+                            padding: 0 10px; 
                             color: #515151;
-                            direction: rtl;">
-                        در روز {{date}} {{need.name}} به انجمن تحویل داده شد.
+                            ">
+                        <!-- TODO: Review the date -->
+                        {{need.name}} is delivered to {{child.sayName}} on 08.12.2019 {{date}}.
                     </p>
 
                     <p style="
@@ -101,8 +101,8 @@
                             margin: 10px 0;
                             padding: 0 10px; 
                             color: #515151;
-                            direction: rtl;">
-                        ما به شما گوش می‌دهیم، با ما تماس بگیرید.
+                            ">
+                        At SAY, we listen to you.
                     </p>
 
                 </div>
@@ -160,7 +160,7 @@
                                             margin: 10px 5px; 
                                             color: #515151; 
                                             font-weight: 100;">
-                    ایران - تهران - ایرانشهر - خیابان آذرشهر - پلاک 22 - واحد 4
+                    4th Floor, No 22, Azarshahr St, Iranshahr St, Karimkhan Zand St, Tehran, Iran
                 </p>
             </div>
         </div>
