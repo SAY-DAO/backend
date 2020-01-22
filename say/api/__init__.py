@@ -26,6 +26,7 @@ from flask_jwt_extended import JWTManager
 from logging import debug, basicConfig, DEBUG
 from flask_caching import Cache
 from flask_cors import CORS
+from khayyam import JalaliDate
 
 from ..payment import IDPay
 from say.celery import beat
@@ -33,6 +34,7 @@ from say.date import *
 from say.authorization import *
 from say.roles import *
 from say.exceptions import *
+from say.langs import LANGS
 
 
 DEFAULT_CHILD_ID = 104  # TODO: Remove this after implementing pre needs
@@ -172,15 +174,32 @@ api = Api(app)
 # api = Api(api_bp)
 
 
-def render_template(path, *args, _translate=True, **kwargs):
+def expose_datetime(dt, locale):
+    if locale == LANGS.en:
+        return dt.strftime('%Y.%m.%d')
+    elif locale == LANGS.fa:
+        return JalaliDate(dt).localdateformat()
+
+    return dt
+
+
+def render_template(path, *args, _translate=True, _locale=None,
+                    **kwargs):
+
     from flask import render_template
     from ..models import get_locale
+
     if not _translate:
         return render_template(path, *args, **kwargs)
 
-    locale_path = os.path.join(get_locale(), path)
-    return render_template(locale_path, *args, **kwargs)
+    locale = _locale or get_locale()
+    locale_path = os.path.join(locale, path)
 
+    for k, v in kwargs.items():
+        if isinstance(v, datetime):
+            kwargs[k] = expose_datetime(v, locale=locale)
+
+    return render_template(locale_path, *args, **kwargs)
 
 
 def allowed_voice(filename):

@@ -6,7 +6,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import object_session
 
 from say.api import render_template
-from say.tasks import send_email
+from say.tasks import send_email, send_embeded_subject_email
 from . import *
 
 """
@@ -57,7 +57,6 @@ class NeedModel(base):
     ngo_delivery_date = Column(DateTime)
     child_delivery_date = Column(DateTime)
     confirmDate = Column(DateTime, nullable=True)
-
 
     @hybrid_property
     def childSayName(self):
@@ -210,8 +209,7 @@ class NeedModel(base):
 
         cc_emails -= to_emails
 
-        iran_date = JalaliDate(self.doneAt).localdateformat()
-        send_email.delay(
+        send_embeded_subject_email.delay(
             subject=f'یکی از نیازهای {self.child.sayName} کامل شد',
             emails=list(to_emails),
             cc=list(cc_emails),
@@ -219,7 +217,7 @@ class NeedModel(base):
                 'status_done.html',
                 child=self.child,
                 need=self,
-                date=iran_date,
+                date=self.doneAt,
             ),
         )
 
@@ -232,16 +230,14 @@ class NeedModel(base):
             to_emails.add(participate.user.emailAddress)
 
         cc_emails -= to_emails
-        iran_date = JalaliDate(self.purchase_date).localdateformat()
-        send_email.delay(
-            subject=f'رسید خرید کالای {self.child.sayName} توسط SAY',
+        send_embeded_subject_email.delay(
             emails=list(to_emails),
             cc=list(cc_emails),
             html=render_template(
                 'status_purchased.html',
                  child=self.child,
                  need=self,
-                 date=iran_date,
+                 date=self.purchase_date,
             ),
          )
 
@@ -255,21 +251,16 @@ class NeedModel(base):
 
         cc_emails -= to_emails
 
-        # Using ngo_delivery_date for now because we dont have the accuret
-        # data yet. It must be replaced with child_delivery_date
-        iran_date = JalaliDate(self.ngo_delivery_date).localdateformat()
-
         from say.api import app
         deliver_to_child_delay = datetime.utcnow() \
             + timedelta(seconds=app.config['DELIVER_TO_CHILD_DELAY'])
-        send_email.apply_async((
-               f'اطلاع از رسیدن کالا به {self.child.sayName}',
+        send_embeded_subject_email.apply_async((
                list(to_emails),
                render_template(
                    'status_child_delivery_product.html',
                     child=self.child,
                     need=self,
-                    date=iran_date,
+                    date=self.ngo_delivery_date,
                ),
                list(cc_emails),
             ),
@@ -282,7 +273,6 @@ class NeedModel(base):
             eta=deliver_to_child_delay,
         )
 
-
     def send_child_delivery_service_email(self):
         cc_emails = self.get_ccs()
         to_emails = set()
@@ -292,19 +282,16 @@ class NeedModel(base):
             to_emails.add(participate.user.emailAddress)
 
         cc_emails -= to_emails
-        iran_date = JalaliDate(self.child_delivery_date).localdateformat()
-        send_email.delay(
-            subject=f'{self.name} به دست {self.child.sayName} رسید',
+        send_embeded_subject_email.delay(
             emails=list(to_emails),
             cc=list(cc_emails),
             html=render_template(
                 'status_child_delivery_service.html',
                  child=self.child,
                  need=self,
-                 date=iran_date,
+                 date=self.child_delivery_date,
             ),
          )
-
 
     def send_money_to_ngo_email(self):
         cc_emails = self.get_ccs()
@@ -315,16 +302,14 @@ class NeedModel(base):
             to_emails.add(participate.user.emailAddress)
 
         cc_emails -= to_emails
-        iran_date = JalaliDate(self.ngo_delivery_date).localdateformat()
-        send_email.delay(
-            subject=f'رسید انتقال وجه به انجمن توسط SAY',
+        send_embeded_subject_email.delay(
             emails=list(to_emails),
             cc=list(cc_emails),
             html=render_template(
                 'status_money_to_ngo.html',
                  need=self,
                  child=self.child,
-                 date=iran_date,
+                 date=self.ngo_delivery_date,
             ),
         )
 

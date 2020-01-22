@@ -3,6 +3,7 @@ from khayyam import JalaliDate
 
 
 DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+DATE_FORMAT = '%Y-%m-%d'
 
 
 def format_jalali_date(date):

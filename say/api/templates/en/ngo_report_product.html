@@ -69,7 +69,7 @@
                 <div class="content-paragraph">
 
                     <!-- the title -->
-                    <p style="
+                    <p id="subject" style="
                             font-family: roboto, 'Roboto'; 
                             font-size: 16px;
                             font-weight: bold;
@@ -95,39 +95,38 @@
                         Dear {{ngo.coordinator.firstName}} {{ngo.coordinator.lastName}}
                     </p>
 
-                    <!-- IF one product - start -->
-                    <p style="
-                            font-family: roboto, 'Roboto'; 
-                            font-size: 16px;
-                            font-weight: lighter; 
-                            max-width: 500px; 
-                            margin: 20px auto 30px;
-                            padding: 0 10px; 
-                            color: #515151;
-                            direction: ltr;
-                            /* text-align: justify; */
-                            ">
-                        <!-- TODO: Review the date -->
-                        This is to notify you that the product is purchased on 08.12.2019 {{date}}. Please find the details in the attachment.
-                    </p>
-                    <!-- IF one product - end -->
-
                     <!-- IF more than one product - start -->
-                    <p style="
-                            font-family: roboto, 'Roboto'; 
-                            font-size: 16px;
-                            font-weight: lighter; 
-                            max-width: 500px; 
-                            margin: 20px auto 30px;
-                            padding: 0 10px; 
-                            color: #515151;
-                            direction: ltr;
-                            /* text-align: justify; */
-                            ">
-                        <!-- TODO: Review the date -->
-                        This is to notify you that products are purchased on 08.12.2019 {{date}}. Please find the details in the attachment.
-                    </p>
-                    <!-- IF more than one product - end -->
+                    {% if use_plural %}
+                        <p style="
+                                font-family: roboto, 'Roboto'; 
+                                font-size: 16px;
+                                font-weight: lighter; 
+                                max-width: 500px; 
+                                margin: 20px auto 30px;
+                                padding: 0 10px; 
+                                color: #515151;
+                                direction: ltr;
+                                /* text-align: justify; */
+                                ">
+                            This is to notify you that products are purchased on {{date}}. Please find the details in the attachment.
+                        </p>
+                    {% else %}
+                    <!-- IF one product - start -->
+                        <p style="
+                                font-family: roboto, 'Roboto'; 
+                                font-size: 16px;
+                                font-weight: lighter; 
+                                max-width: 500px; 
+                                margin: 20px auto 30px;
+                                padding: 0 10px; 
+                                color: #515151;
+                                direction: ltr;
+                                /* text-align: justify; */
+                                ">
+                            This is to notify you that the product is purchased on {{date}}. Please find the details in the attachment.
+                        </p>
+                    <!-- IF one product - end -->
+                    {% endif %}
 
                     <table style="
                             border: 2px solid #cccccc;
@@ -188,7 +187,7 @@
                                     font-family: roboto, 'Roboto'; 
                                     padding: 20px 2px;
                                     border: 2px solid #cccccc;
-                                ">{{need.delivere_at}}</td>
+                                ">{{ date_formater(need.expected_delivery_date) }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>

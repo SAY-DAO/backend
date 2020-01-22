@@ -69,7 +69,7 @@
                 <div class="content-paragraph">
 
                     <!-- the title -->
-                    <p style="
+                    <p id="subject" style="
                             font-family: iranyekan, Tahoma; 
                             font-size: 16px;
                             font-weight: bold;
@@ -179,7 +179,7 @@
                                     font-family: iranyekan, Tahoma; 
                                     padding: 20px 2px;
                                     border: 2px solid #cccccc;
-                                ">{{need.delivere_at}}</td>
+                                ">{{ date_formater(need.expected_delivery_date) }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>

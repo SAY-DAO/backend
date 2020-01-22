@@ -47,14 +47,20 @@ def commit(func):
 
     return wrapper
 
-    
+
 def get_locale():
-    return request.args.get('_lang', LANGS.fa)
+    locale = LANGS.en
+    try:
+        locale = request.args.get('_lang') or locale
+    except:
+        pass
+
+    return locale
 
 
 translation_hybrid = TranslationHybrid(
     current_locale=get_locale,
-    default_locale=LANGS.en
+    default_locale=LANGS.fa
 )
 
 
