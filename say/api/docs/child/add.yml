@@ -48,11 +48,11 @@ parameters:
     type: file
     required: true
 
-  - name: firstName_translations
+  - name: firstName
     in: formData
     type: string
 
-  - name: lastName_translations
+  - name: lastName
     in: formData
     type: string
 
@@ -68,7 +68,7 @@ parameters:
     required: true
     description: '{"en": "Lorem ipsome", "fa": "لورم ایپسون"}'
 
-  - name: bio_summary_translations
+  - name: bioSummary_translations
     in: formData
     type: string
     required: true

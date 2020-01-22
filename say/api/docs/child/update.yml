@@ -33,7 +33,7 @@ parameters:
     in: formData
     type: file
 
-  - name: firstName_translations
+  - name: firstName
     in: formData
     type: string
 
@@ -47,12 +47,12 @@ parameters:
     type: string
     description: '{"en": "Lorem ipsome", "fa": "لورم ایپسون"}'
 
-  - name: bio_summary_translations
+  - name: bioSummary_translations
     in: formData
     type: string
     description: '{"en": "Lorem ipsome", "fa": "لورم ایپسون"}'
 
-  - name: lastName_translations
+  - name: lastName
     in: formData
     type: string
 
