@@ -11,7 +11,9 @@ class ChildModel(base):
 
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
     firstName = Column(String, nullable=True)
+    firstName_fa = Column(String, nullable=True)
     lastName = Column(String, nullable=True)
+    lastName_fa = Column(String, nullable=True)
     sayName = Column(String, nullable=False)
     sayName_fa = Column(String, nullable=True)
     phoneNumber = Column(Integer, nullable=False)
