@@ -458,6 +458,16 @@ class AddChild(Resource):
             else:
                 last_name = None
 
+            if "firstName_fa" in request.form.keys():
+                first_name_fa = request.form["firstName_fa"]
+            else:
+                first_name_fa = None
+
+            if "lastName_fa" in request.form.keys():
+                last_name_fa = request.form["lastName_fa"]
+            else:
+                last_name_fa = None
+
             if "birthPlace" in request.form.keys():
                 birth_place = request.form["birthPlace"]
             else:
@@ -512,7 +522,9 @@ class AddChild(Resource):
                 sleptAvatarUrl=avatar_url,
                 housingStatus=housing_status,
                 firstName=first_name,
+                firstName_fa=first_name_fa,
                 lastName=last_name,
+                lastName_fa=last_name_fa,
                 familyCount=family_count,
                 education=education,
                 createdAt=created_at,
@@ -799,6 +811,12 @@ class UpdateChildById(Resource):
             if "lastName" in request.form.keys():
                 primary_child.lastName = request.form["lastName"]
 
+            if "firstName_fa" in request.form.keys():
+                primary_child.firstName_fa = request.form["firstName_fa"]
+
+            if "lastName_fa" in request.form.keys():
+                primary_child.lastName_fa = request.form["lastName_fa"]
+
             if "gender" in request.form.keys():
                 primary_child.gender = (
                     True if request.form["gender"] == "true" else False
@@ -829,9 +847,6 @@ class UpdateChildById(Resource):
 
             if "address" in request.form.keys():
                 primary_child.address = request.form["address"]
-
-            if "sayName" in request.form.keys():
-                primary_child.sayName = request.form["sayName"]
 
             if "bio" in request.form.keys():
                 primary_child.bio = request.form["bio"]
@@ -1158,7 +1173,9 @@ class MigrateChild(Resource):
 
             new_child = ChildModel(
                 firstName=child.firstName,
+                firstName_fa=child.firstName_fa,
                 lastName=child.lastName,
+                lastName_fa=child.lastName_fa,
                 phoneNumber=child.phoneNumber,
                 nationality=child.nationality,
                 country=child.country,
