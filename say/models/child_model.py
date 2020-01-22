@@ -16,10 +16,11 @@ class ChildModel(base):
     id_ngo = Column(Integer, ForeignKey('ngo.id'), nullable=False)
     id_social_worker = Column(Integer, ForeignKey('social_worker.id'), nullable=False)
 
-    firstName = Column(String, nullable=True)
-    firstName_fa = Column(String, nullable=True)
-    lastName = Column(String, nullable=True)
-    lastName_fa = Column(String, nullable=True)
+    firstName_translations = Column(HSTORE)
+    firstName = translation_hybrid(firstName_translations)
+
+    lastName_translations = Column(HSTORE)
+    lastName = translation_hybrid(lastName_translations)
 
     sayname_translations = Column(HSTORE)
     sayName = translation_hybrid(sayname_translations)
