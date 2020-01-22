@@ -28,6 +28,13 @@ parameters:
         password:
           type: string
 
+  - in: query
+    name: _lang
+    required: true
+    type: string
+    default: fa
+
+
 responses:
   500:
     description: Error occurred somewhere!

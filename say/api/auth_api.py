@@ -3,6 +3,7 @@ from random import randint
 
 from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
+from babel import Locale
 
 from . import *
 from say.models import session, obj_to_dict, or_
@@ -113,6 +114,9 @@ class RegisterUser(Resource):
                 )
                 return
 
+            lang = request.args.get('_lang')
+            locale = Locale(lang)
+
             alreadyExist = (
                 session.query(UserModel)
                 .filter_by(isDeleted=False)
@@ -151,6 +155,7 @@ class RegisterUser(Resource):
                     lastLogin=last_login,
                     password=password,
                     flagUrl="",
+                    locale=locale,
                 )
                 session.add(new_user)
                 session.flush()
@@ -236,6 +241,8 @@ class Login(Resource):
                         )
                         return
 
+                    lang = request.args.get('_lang')
+                    user.locale = Locale(lang)
                     user.lastLogin = datetime.utcnow()
                     session.commit()
 
@@ -266,7 +273,7 @@ class Login(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "something is wrong"}), status=400)
+            resp = Response(json.dumps({"message": str(e)}), status=400)
 
         finally:
             session.close()

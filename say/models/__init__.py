@@ -1,5 +1,6 @@
 import functools
 
+from babel import Locale
 from flask import request
 from sqlalchemy import Column, ForeignKey, String, Integer, Date, Boolean, \
     Text, Numeric, DateTime, FLOAT
@@ -48,10 +49,20 @@ def commit(func):
     return wrapper
 
 
+# FIXME: this is not thread safe!
+_locale = None
+_default_locale = LANGS.fa
+
+
+def set_locale(locale):
+    global _locale
+    _locale = locale
+
+
 def get_locale():
-    locale = LANGS.en
+    locale = None
     try:
-        locale = request.args.get('_lang') or locale
+        locale = _locale or request.args.get('_lang') or _default_locale
     except:
         pass
 
@@ -94,6 +105,9 @@ def obj_to_dict(obj, relationships=False):
 
         elif isinstance(value, base):
             result[key] = obj_to_dict(value)
+
+        elif isinstance(value, Locale):
+            result[key] = str(value)
 
         else:
             result[key] = value

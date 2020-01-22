@@ -187,12 +187,15 @@ def render_template(path, *args, _translate=True, _locale=None,
                     **kwargs):
 
     from flask import render_template
-    from ..models import get_locale
+    from ..models import get_locale, set_locale
 
     if not _translate:
         return render_template(path, *args, **kwargs)
 
-    locale = _locale or get_locale()
+    if _locale:
+        set_locale(_locale)
+
+    locale = get_locale()
     locale_path = os.path.join(locale, path)
 
     for k, v in kwargs.items():

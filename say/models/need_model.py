@@ -218,6 +218,7 @@ class NeedModel(base):
                 child=self.child,
                 need=self,
                 date=self.doneAt,
+                _locale=str(participants[0].user.locale),
             ),
         )
 
@@ -238,6 +239,7 @@ class NeedModel(base):
                  child=self.child,
                  need=self,
                  date=self.purchase_date,
+                _locale='en',#str(participants[0].user.locale),
             ),
          )
 
@@ -261,6 +263,7 @@ class NeedModel(base):
                     child=self.child,
                     need=self,
                     date=self.ngo_delivery_date,
+                    _locale=str(participants[0].user.locale),
                ),
                list(cc_emails),
             ),
@@ -287,9 +290,10 @@ class NeedModel(base):
             cc=list(cc_emails),
             html=render_template(
                 'status_child_delivery_service.html',
-                 child=self.child,
-                 need=self,
-                 date=self.child_delivery_date,
+                child=self.child,
+                need=self,
+                date=self.child_delivery_date,
+                locale=str(participants[0].user.locale),
             ),
          )
 
@@ -307,9 +311,10 @@ class NeedModel(base):
             cc=list(cc_emails),
             html=render_template(
                 'status_money_to_ngo.html',
-                 need=self,
-                 child=self.child,
-                 date=self.ngo_delivery_date,
+                need=self,
+                child=self.child,
+                date=self.ngo_delivery_date,
+                _locale=str(participants[0].user.locale),
             ),
         )
 

@@ -1,6 +1,9 @@
 import os
 from hashlib import sha256
 
+from sqlalchemy_utils import LocaleType
+from babel import Locale
+
 from . import *
 
 
@@ -34,6 +37,7 @@ class UserModel(base):
     _password = Column(String, nullable=False)
     spentCredit = Column(Integer, nullable=False, default=0)
     doneNeedCount = Column(Integer, nullable=False, default=0)
+    locale = Column(LocaleType, default=Locale('fa'), nullable=False)
 
     payments = relationship('PaymentModel', back_populates='user')
 
