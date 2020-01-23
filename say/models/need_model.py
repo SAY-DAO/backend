@@ -208,18 +208,20 @@ class NeedModel(base):
             to_emails.add(participate.user.emailAddress)
 
         cc_emails -= to_emails
+        locale = str(participants[0].user.locale)
 
-        send_embeded_subject_email.delay(
-            emails=list(to_emails),
-            cc=list(cc_emails),
-            html=render_template(
-                'status_done.html',
-                child=self.child,
-                need=self,
-                date=self.doneAt,
-                _locale=str(participants[0].user.locale),
-            ),
-        )
+        with ChangeLocaleTo(locale):
+            send_embeded_subject_email.delay(
+                emails=list(to_emails),
+                cc=list(cc_emails),
+                html=render_template(
+                    'status_done.html',
+                    child=self.child,
+                    need=self,
+                    date=self.doneAt,
+                    _locale=locale,
+                ),
+            )
 
     def send_purchase_email(self):
         cc_emails = self.get_ccs()
@@ -230,17 +232,19 @@ class NeedModel(base):
             to_emails.add(participate.user.emailAddress)
 
         cc_emails -= to_emails
-        send_embeded_subject_email.delay(
-            emails=list(to_emails),
-            cc=list(cc_emails),
-            html=render_template(
-                'status_purchased.html',
-                 child=self.child,
-                 need=self,
-                 date=self.purchase_date,
-                _locale='en',#str(participants[0].user.locale),
-            ),
-         )
+        locale = str(participants[0].user.locale)
+
+        with ChangeLocaleTo(locale):
+            send_embeded_subject_email.delay(
+                emails=list(to_emails),
+                cc=list(cc_emails),
+                html=render_template(
+                    'status_purchased.html',
+                     child=self.child,
+                     need=self,
+                     date=self.purchase_date,
+                ),
+             )
 
     def send_child_delivery_product_email(self):
         cc_emails = self.get_ccs()
@@ -255,19 +259,23 @@ class NeedModel(base):
         from say.api import app
         deliver_to_child_delay = datetime.utcnow() \
             + timedelta(seconds=app.config['DELIVER_TO_CHILD_DELAY'])
-        send_embeded_subject_email.apply_async((
-               list(to_emails),
-               render_template(
-                   'status_child_delivery_product.html',
-                    child=self.child,
-                    need=self,
-                    date=self.ngo_delivery_date,
-                    _locale=str(participants[0].user.locale),
-               ),
-               list(cc_emails),
-            ),
-            eta=deliver_to_child_delay,
-        )
+
+        locale = str(participants[0].user.locale)
+
+        with ChangeLocaleTo(locale):
+            send_embeded_subject_email.apply_async(
+                (
+                    list(to_emails),
+                    render_template(
+                        'status_child_delivery_product.html',
+                        child=self.child,
+                        need=self,
+                        date=self.ngo_delivery_date,
+                    ),
+                    list(cc_emails),
+                ),
+                eta=deliver_to_child_delay,
+            )
 
         from say.tasks.update_needs import change_need_status_to_delivered
         change_need_status_to_delivered.apply_async(
@@ -284,17 +292,20 @@ class NeedModel(base):
             to_emails.add(participate.user.emailAddress)
 
         cc_emails -= to_emails
-        send_embeded_subject_email.delay(
-            emails=list(to_emails),
-            cc=list(cc_emails),
-            html=render_template(
-                'status_child_delivery_service.html',
-                child=self.child,
-                need=self,
-                date=self.child_delivery_date,
-                locale=str(participants[0].user.locale),
-            ),
-         )
+
+        locale = str(participants[0].user.locale)
+
+        with ChangeLocaleTo(locale):
+            send_embeded_subject_email.delay(
+                emails=list(to_emails),
+                cc=list(cc_emails),
+                html=render_template(
+                    'status_child_delivery_service.html',
+                    child=self.child,
+                    need=self,
+                    date=self.child_delivery_date,
+                ),
+             )
 
     def send_money_to_ngo_email(self):
         cc_emails = self.get_ccs()
@@ -305,15 +316,17 @@ class NeedModel(base):
             to_emails.add(participate.user.emailAddress)
 
         cc_emails -= to_emails
-        send_embeded_subject_email.delay(
-            emails=list(to_emails),
-            cc=list(cc_emails),
-            html=render_template(
-                'status_money_to_ngo.html',
-                need=self,
-                child=self.child,
-                date=self.ngo_delivery_date,
-                _locale=str(participants[0].user.locale),
-            ),
-        )
+        locale = str(participants[0].user.locale)
+
+        with ChangeLocaleTo(locale):
+            send_embeded_subject_email.delay(
+                emails=list(to_emails),
+                cc=list(cc_emails),
+                html=render_template(
+                    'status_money_to_ngo.html',
+                    need=self,
+                    child=self.child,
+                    date=self.ngo_delivery_date,
+                ),
+            )
 

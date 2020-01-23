@@ -70,11 +70,13 @@ class NgoModel(base):
         date = datetime.utcnow() - timedelta(days=1)
         say = session.query(NgoModel).filter_by(name='SAY').first()
         bcc = [say.coordinator.emailAddress]
+        coordinator_email = self.coordinator.emailAddress
+        locale = str(self.coordinator.locale)
 
-        if len(services) != 0:
-            with app.app_context():
+        with app.app_context(), ChangeLocaleTo(locale):
+            if len(services) != 0:
                 send_embeded_subject_email.delay(
-                    emails=self.coordinator.emailAddress,
+                    emails=coordinator_email,
                     bcc=bcc,
                     html=render_template(
                         'ngo_report_service.html',
@@ -85,11 +87,14 @@ class NgoModel(base):
                     ),
                  )
 
-        if len(products) != 0:
-            use_plural = False if len(products) == 1 else True
-            with app.app_context():
-                send_embeded_subject_email(
-                    emails=self.coordinator.emailAddress,
+            for need in services:
+                need.isReported = True
+
+
+            if len(products) != 0:
+                use_plural = False if len(products) == 1 else True
+                send_embeded_subject_email.delay(
+                    emails=coordinator_email,
                     bcc=bcc,
                     html=render_template(
                         'ngo_report_product.html',
@@ -103,8 +108,8 @@ class NgoModel(base):
                     ),
                  )
 
-        for need in needs:
-            need.isReported = True
+            for need in products:
+                need.isReported = True
 
         session.commit()
         return [need.id for need in needs]
