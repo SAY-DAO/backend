@@ -69,7 +69,10 @@
                 -o-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
                 text-align: center;"
             >
-                {% block img %}{% endblock %}
+
+                {% micro render_img(src) -%}
+                    <img src="{{ src }}" style="height: 100px;" />
+                {%- endmicro %}
 
                 <!-- the title content -->
                 <p 
