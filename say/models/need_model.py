@@ -210,7 +210,6 @@ class NeedModel(base):
         cc_emails -= to_emails
 
         send_embeded_subject_email.delay(
-            subject=f'یکی از نیازهای {self.child.sayName} کامل شد',
             emails=list(to_emails),
             cc=list(cc_emails),
             html=render_template(
