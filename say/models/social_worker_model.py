@@ -1,3 +1,5 @@
+from sqlalchemy_utils import LocaleType
+from babel import Locale
 
 from . import *
 
@@ -47,6 +49,7 @@ class SocialWorkerModel(base):
     lastLogoutDate = Column(Date, nullable=True)
     isActive = Column(Boolean, nullable=False, default=True)
     isDeleted = Column(Boolean, nullable=False, default=False)
+    locale = Column(LocaleType, default=Locale('fa'), nullable=False)
 
     privilege = relationship("PrivilegeModel", foreign_keys=id_type)
     ngo = relationship("NgoModel", foreign_keys=id_ngo)

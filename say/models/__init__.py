@@ -1,7 +1,7 @@
 import functools
 
 from babel import Locale
-from flask import request
+from flask import request, g
 from sqlalchemy import Column, ForeignKey, String, Integer, Date, Boolean, \
     Text, Numeric, DateTime, FLOAT
 from sqlalchemy.orm import relationship, synonym, scoped_session, sessionmaker
@@ -49,29 +49,38 @@ def commit(func):
     return wrapper
 
 
-# FIXME: this is not thread safe!
-_locale = None
-_default_locale = LANGS.fa
+class ChangeLocaleTo:
+    def __init__(self, locale):
+        self.locale = locale
+
+    def __enter__(self):
+        self.prev_locale = get_locale()
+        set_locale(self.locale)
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        set_locale(self.prev_locale)
+
+
+default_locale = LANGS.fa
 
 
 def set_locale(locale):
-    global _locale
-    _locale = locale
+    g.locale = locale
 
 
 def get_locale():
-    locale = None
-    try:
-        locale = _locale or request.args.get('_lang') or _default_locale
-    except:
-        pass
+    if hasattr(g, 'locale'):
+        return g.locale
 
-    return locale
+    try:
+        return request.args['_lang']
+    except:
+        return default_locale
 
 
 translation_hybrid = TranslationHybrid(
     current_locale=get_locale,
-    default_locale=LANGS.fa
+    default_locale=default_locale,
 )
 
 
