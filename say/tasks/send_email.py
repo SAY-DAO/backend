@@ -17,14 +17,11 @@ def get_subject_from_html(html):
 
 
 @celery.task()
-def send_email(subject, emails, html, cc=[], bcc=[]):
-
-    if type(emails) is str:
-        emails = [emails]
+def send_email(subject, to, html, cc=[], bcc=[]):
 
     email = Message(
         subject=subject,
-        recipients=emails,
+        recipients=[to],
         html=html,
         cc=cc,
         bcc=bcc,
@@ -33,7 +30,14 @@ def send_email(subject, emails, html, cc=[], bcc=[]):
 
 
 @celery.task()
-def send_embeded_subject_email(emails, html, cc=[], bcc=[]):
+def send_embeded_subject_email(to, html, cc=[], bcc=[]):
     subject = get_subject_from_html(html).strip()
-    return send_email(subject, emails, html, cc=[], bcc=[])
 
+    email = Message(
+        subject=subject,
+        recipients=[to],
+        html=html,
+        cc=cc,
+        bcc=bcc,
+    )
+    mail.send(email)

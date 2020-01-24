@@ -35,6 +35,7 @@ from say.authorization import *
 from say.roles import *
 from say.exceptions import *
 from say.langs import LANGS
+from say.locale import ChangeLocaleTo
 
 
 DEFAULT_CHILD_ID = 104  # TODO: Remove this after implementing pre needs
@@ -183,26 +184,24 @@ def expose_datetime(dt, locale):
     return dt
 
 
-def render_template(path, *args, _translate=True, _locale=None,
+def render_template(path, *args, locale=None,
                     **kwargs):
 
     from flask import render_template
-    from ..models import get_locale, set_locale
 
-    if not _translate:
+    if not locale:
         return render_template(path, *args, **kwargs)
 
-    if _locale:
-        set_locale(_locale)
+    # locale is str or Locale object, so we need to make sure it is str
+    locale = str(locale)
+    with ChangeLocaleTo(locale):
+        locale_path = os.path.join(locale, path)
 
-    locale = get_locale()
-    locale_path = os.path.join(locale, path)
+        for k, v in kwargs.items():
+            if isinstance(v, datetime):
+                kwargs[k] = expose_datetime(v, locale=locale)
 
-    for k, v in kwargs.items():
-        if isinstance(v, datetime):
-            kwargs[k] = expose_datetime(v, locale=locale)
-
-    return render_template(locale_path, *args, **kwargs)
+        return render_template(locale_path, *args, **kwargs)
 
 
 def allowed_voice(filename):

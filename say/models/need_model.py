@@ -144,11 +144,12 @@ class NeedModel(base):
     def participants(cls):
         pass
 
-    def get_ccs(self):
-        return {
-            member.user.emailAddress
+    @property
+    def family(self):
+        return [
+            member.user
             for member in self.child.families[0].current_members()
-        }
+        ]
 
     def get_participants(self):
         from say.models.need_family_model import NeedFamilyModel
@@ -156,7 +157,7 @@ class NeedModel(base):
 
         return session.query(NeedFamilyModel) \
             .filter_by(id_need=self.id) \
-            .filter_by(isDeleted=False) \
+            .filter_by(isDeleted=False)
 
     def update(self):
         from say.utils import digikala
@@ -187,10 +188,9 @@ class NeedModel(base):
                     with app.app_context():
                         send_email.delay(
                             subject=f'تغییر وضعیت کالا {dkp}',
-                            emails=SAY_ngo.coordinator.emailAddress,
+                            to=SAY_ngo.coordinator.emailAddress,
                             html=render_template(
                                 'product_status_changed.html',
-                                _translate=False,
                                 child=self.child,
                                 need=self,
                                 dkp=dkp,
@@ -200,83 +200,74 @@ class NeedModel(base):
         return data
 
     def send_done_email(self):
-        cc_emails = self.get_ccs()
-        to_emails = set()
+        to_user = self.get_participants()[0].user
+        to = self.get_participants()[0].user.emailAddress
 
-        participants = self.get_participants()
-        for participate in participants:
-            to_emails.add(participate.user.emailAddress)
+        ccs = {user.emailAddress for user in self.family} \
+            - {to}
 
-        cc_emails -= to_emails
+        locale = to_user.locale
 
-        locale = str(participants[0].user.locale)
-
-        with ChangeLocaleTo(locale):
-            send_embeded_subject_email.delay(
-                emails=list(to_emails),
-                cc=list(cc_emails),
-                html=render_template(
-                    'status_done.html',
-                    child=self.child,
-                    need=self,
-                    date=self.doneAt,
-                    _locale=locale,
-                ),
-            )
+        send_embeded_subject_email.delay(
+            to=to,
+            cc=list(ccs),
+            html=render_template(
+                'status_done.html',
+                child=self.child,
+                need=self,
+                date=self.doneAt,
+                locale=locale,
+            ),
+        )
 
     def send_purchase_email(self):
-        cc_emails = self.get_ccs()
-        to_emails = set()
+        to_user = self.get_participants()[0].user
+        to = self.get_participants()[0].user.emailAddress
 
-        participants = self.get_participants()
-        for participate in participants:
-            to_emails.add(participate.user.emailAddress)
+        ccs = {user.emailAddress for user in self.family} \
+            - {to}
 
-        cc_emails -= to_emails
-        locale = str(participants[0].user.locale)
+        locale = to_user.locale
 
-        with ChangeLocaleTo(locale):
-            send_embeded_subject_email.delay(
-                emails=list(to_emails),
-                cc=list(cc_emails),
-                html=render_template(
-                    'status_purchased.html',
-                     child=self.child,
-                     need=self,
-                     date=self.purchase_date,
-                ),
-             )
+        send_embeded_subject_email.delay(
+            to=to,
+            cc=list(ccs),
+            html=render_template(
+                'status_purchased.html',
+                child=self.child,
+                need=self,
+                date=self.purchase_date,
+                locale=locale,
+            ),
+        )
 
     def send_child_delivery_product_email(self):
-        cc_emails = self.get_ccs()
-        to_emails = set()
+        to_user = self.get_participants()[0].user
+        to = self.get_participants()[0].user.emailAddress
 
-        participants = self.get_participants()
-        for participate in participants:
-            to_emails.add(participate.user.emailAddress)
+        ccs = {user.emailAddress for user in self.family} \
+            - {to}
 
-        cc_emails -= to_emails
+        locale = to_user.locale
 
         from say.api import app
         deliver_to_child_delay = datetime.utcnow() \
             + timedelta(seconds=app.config['DELIVER_TO_CHILD_DELAY'])
 
-        locale = str(participants[0].user.locale)
-
-        with ChangeLocaleTo(locale):
-            send_embeded_subject_email.apply_async(
-                (
-                    list(to_emails),
-                    render_template(
-                        'status_child_delivery_product.html',
-                        child=self.child,
-                        need=self,
-                        date=self.ngo_delivery_date,
-                    ),
-                    list(cc_emails),
+        send_embeded_subject_email.apply_async(
+            (
+                to,
+                render_template(
+                    'status_child_delivery_product.html',
+                    child=self.child,
+                    need=self,
+                    date=self.ngo_delivery_date,
+                    locale=locale,
                 ),
-                eta=deliver_to_child_delay,
-            )
+                list(ccs),
+            ),
+            eta=deliver_to_child_delay,
+        )
 
         from say.tasks.update_needs import change_need_status_to_delivered
         change_need_status_to_delivered.apply_async(
@@ -285,49 +276,44 @@ class NeedModel(base):
         )
 
     def send_child_delivery_service_email(self):
-        cc_emails = self.get_ccs()
-        to_emails = set()
+        to_user = self.get_participants()[0].user
+        to = self.get_participants()[0].user.emailAddress
 
-        participants = self.get_participants()
-        for participate in participants:
-            to_emails.add(participate.user.emailAddress)
+        ccs = {user.emailAddress for user in self.family} \
+            - {to}
 
-        cc_emails -= to_emails
+        locale = to_user.locale
 
-        locale = str(participants[0].user.locale)
-
-        with ChangeLocaleTo(locale):
-            send_embeded_subject_email.delay(
-                emails=list(to_emails),
-                cc=list(cc_emails),
-                html=render_template(
-                    'status_child_delivery_service.html',
-                    child=self.child,
-                    need=self,
-                    date=self.child_delivery_date,
-                ),
-             )
+        send_embeded_subject_email.delay(
+            to=to,
+            cc=list(ccs),
+            html=render_template(
+                'status_child_delivery_service.html',
+                child=self.child,
+                need=self,
+                date=self.child_delivery_date,
+                locale=locale,
+            ),
+         )
 
     def send_money_to_ngo_email(self):
-        cc_emails = self.get_ccs()
-        to_emails = set()
+        to_user = self.get_participants()[0].user
+        to = self.get_participants()[0].user.emailAddress
 
-        participants = self.get_participants()
-        for participate in participants:
-            to_emails.add(participate.user.emailAddress)
+        ccs = {user.emailAddress for user in self.family} \
+            - {to}
 
-        cc_emails -= to_emails
-        locale = str(participants[0].user.locale)
+        locale = to_user.locale
 
-        with ChangeLocaleTo(locale):
-            send_embeded_subject_email.delay(
-                emails=list(to_emails),
-                cc=list(cc_emails),
-                html=render_template(
-                    'status_money_to_ngo.html',
-                    need=self,
-                    child=self.child,
-                    date=self.ngo_delivery_date,
-                ),
-            )
+        send_embeded_subject_email.delay(
+            to=to,
+            cc=list(ccs),
+            html=render_template(
+                'status_money_to_ngo.html',
+                need=self,
+                child=self.child,
+                date=self.ngo_delivery_date,
+                locale=locale,
+            ),
+        )
 

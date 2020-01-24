@@ -308,6 +308,7 @@ class VerifyPayment(Resource):
             payment=pending_payment,
             user=pending_payment.user,
             need_url=need_url,
+            locale=user.locale,
         ))
 
 

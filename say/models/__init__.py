@@ -15,6 +15,7 @@ from sqlalchemy_utils import TranslationHybrid
 from say.api import db
 from say.date import *
 from say.langs import LANGS
+from say.locale import get_locale, DEFAULT_LOCALE
 
 
 session_factory = sessionmaker(db)
@@ -49,38 +50,10 @@ def commit(func):
     return wrapper
 
 
-class ChangeLocaleTo:
-    def __init__(self, locale):
-        self.locale = locale
-
-    def __enter__(self):
-        self.prev_locale = get_locale()
-        set_locale(self.locale)
-
-    def __exit__(self, exception_type, exception_value, traceback):
-        set_locale(self.prev_locale)
-
-
-default_locale = LANGS.fa
-
-
-def set_locale(locale):
-    g.locale = locale
-
-
-def get_locale():
-    if hasattr(g, 'locale'):
-        return g.locale
-
-    try:
-        return request.args['_lang']
-    except:
-        return default_locale
-
 
 translation_hybrid = TranslationHybrid(
     current_locale=get_locale,
-    default_locale=default_locale,
+    default_locale=DEFAULT_LOCALE,
 )
 
 
