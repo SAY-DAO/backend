@@ -20,13 +20,12 @@ tar -zcf /tmp/$CI_PROJECT_NAME_NIGTHLY.tar.gz --exclude=.git $CI_PROJECT_NAME
 cd /tmp
 scp $CI_PROJECT_NAME_NIGTHLY.tar.gz $SERVER_USER@$SERVER:$CI_PROJECT_DIR_NIGTHLY
 ssh -t $SERVER_USER@$SERVER "
-mkdir -p $CI_PROJECT_DIR_NIGTHLY &&
 cd $CI_PROJECT_DIR_NIGTHLY &&
 tar -xvf $CI_PROJECT_NAME_NIGTHLY.tar.gz &&
 cd $CI_PROJECT_NAME &&
 docker build -t $IMAGE_NAME . -f Dockerfile_nigthly &&
 cd /home/server/say-installer &&
 docker-compose up -d &&
-rm -rf $CI_PROJECT_NAME
+rm -rf $CI_PROJECT_NAME $CI_PROJECT_NAME_NIGTHLY.tar.gz
 "
 echo 'DONE'
