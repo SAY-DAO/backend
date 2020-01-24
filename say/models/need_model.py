@@ -208,6 +208,7 @@ class NeedModel(base):
             to_emails.add(participate.user.emailAddress)
 
         cc_emails -= to_emails
+
         locale = str(participants[0].user.locale)
 
         with ChangeLocaleTo(locale):
