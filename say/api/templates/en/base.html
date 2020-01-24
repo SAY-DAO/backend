@@ -70,9 +70,9 @@
                 text-align: center;"
             >
 
-                {% micro render_img(src) -%}
+                {% macro render_img(src) -%}
                     <img src="{{ src }}" style="height: 100px;" />
-                {%- endmicro %}
+                {%- endmacro %}
 
                 <!-- the title content -->
                 <p 
