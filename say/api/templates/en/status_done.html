@@ -1,7 +1,12 @@
 <!-- Status 2 - SERVICE and PRODUCT -->
+
 {% extends "en/base.html" %}
-{% block title %}Money transfer receipt{% endblock %}
-{{ render_img('https://sayapp.company/public/resources/img/done.png') }}
+{% block title %}
+    Money transfer receipt
+{% endblock %}
+{% block img %}
+    <img src="https://sayapp.company/public/resources/img/done.png" style="height: 100px;" />
+{% endblock %}
 {% block tcontent %}
     One of {{child.sayName}}’s needs is completely done
 {% endblock %}

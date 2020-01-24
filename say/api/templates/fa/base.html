@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <!--adding EN font for english Roboto font-->
-        <link rel="stylesheet" href="../font/Roboto/css/roboto.css" />
-        <link href="https://fonts.googleapis.com/css?family=Roboto:100,400&display=swap" rel="stylesheet" type="text/css">
+        <!--importing FA font - but it does not work in sending html email-->
+        <link rel="stylesheet" href="../font/iranYekan/css/fontiran.css" />
+        <link rel="stylesheet" href="https://sayapp.company/public/resources/font/iranYekan/css/fontiran.css" />
         <title>{% block title %}{% endblock %}</title>
     </head>
     <body 
         style="padding:0;
         margin:0;
         background-color: #f3f3f3;
-        font-family: roboto, 'Roboto';"
+        font-family: iranyekan, Tahoma;"
     >
         <!--the whole container-->
         <div 
@@ -80,7 +80,8 @@
                     margin: 20px 0;
                     padding: 0 10px; 
                     color: #515151;
-                    font-family: roboto, 'Roboto';"
+                    direction: rtl;
+                    font-family: iranyekan, Tahoma;"
                 >
                     {% block tcontent %}{% endblock %}
                 </p>
@@ -94,7 +95,8 @@
                     margin: 30px auto;
                     padding: 0 10px; 
                     color: #515151;
-                    font-family: roboto, 'Roboto';"
+                    direction: rtl;
+                    font-family: iranyekan, Tahoma;"
                 >
                     {% block mcontent %}{% endblock %}
                 </p>
@@ -107,9 +109,10 @@
                     margin: 10px 0;
                     padding: 0 10px; 
                     color: #515151;
-                    font-family: roboto, 'Roboto';"
+                    direction: rtl;
+                    font-family: iranyekan, Tahoma;"
                 >
-                    At SAY, we listen to you.
+                    ما به شما گوش می‌دهیم، با ما تماس بگیرید.
                 </p>
 
                 <!-- the SAY logo -->
@@ -170,8 +173,9 @@
                         margin: 10px 5px; 
                         color: #515151; 
                         font-weight: 100;
-                        font-family: roboto, 'Roboto';">
-                    4th Floor, No 22, Azarshahr St, Iranshahr St, Karimkhan Zand St, Tehran, Iran
+                        direction: rtl;
+                        font-family: iranyekan, Tahoma;">
+                    ایران - تهران - ایرانشهر - خیابان آذرشهر - پلاک ۲۲ - واحد ۴
                 </p>
             </div>
         </div>
