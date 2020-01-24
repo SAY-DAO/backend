@@ -229,6 +229,10 @@ class VerifyPayment(Resource):
         if pending_payment is None:
             abort(404)
 
+        user = session.query(UserModel) \
+            .with_for_update() \
+            .get(pending_payment.id_user)
+
         need = session.query(NeedModel) \
             .with_for_update() \
             .get(pending_payment.id_need)
@@ -306,7 +310,7 @@ class VerifyPayment(Resource):
         return make_response(render_template(
             'successful_payment.html',
             payment=pending_payment,
-            user=pending_payment.user,
+            user=user,
             need_url=need_url,
             locale=user.locale,
         ))
