@@ -73,6 +73,10 @@ class NeedModel(base):
     def _get_cost(self):
         return self._cost
 
+    @property
+    def pretty_cost(self):
+        return format(self.cost)
+
     cost = synonym(
         '_cost',
         descriptor=property(_get_cost, _set_cost),
