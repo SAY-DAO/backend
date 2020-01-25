@@ -189,8 +189,10 @@ def render_template(path, *args, locale=None,
 
     from flask import render_template
 
+    int_formatter = lambda integer, fmt: format(integer, ftm)
+
     if not locale:
-        return render_template(path, *args, **kwargs)
+        return render_template(path, *args, int_formatter=int_formatter, **kwargs)
 
     # locale is str or Locale object, so we need to make sure it is str
     locale = str(locale)
@@ -201,7 +203,12 @@ def render_template(path, *args, locale=None,
             if isinstance(v, datetime):
                 kwargs[k] = expose_datetime(v, locale=locale)
 
-        return render_template(locale_path, *args, **kwargs)
+        return render_template(
+            locale_path,
+            *args,
+            int_formatter=int_formatter,
+            **kwargs
+        )
 
 
 def allowed_voice(filename):
