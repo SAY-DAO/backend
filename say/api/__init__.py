@@ -189,7 +189,7 @@ def render_template(path, *args, locale=None,
 
     from flask import render_template
 
-    int_formatter = lambda integer, fmt: format(integer, ftm)
+    int_formatter = lambda integer, fmt: format(integer, fmt)
 
     if not locale:
         return render_template(path, *args, int_formatter=int_formatter, **kwargs)
