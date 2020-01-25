@@ -244,15 +244,22 @@ class VerifyPayment(Resource):
         child = child_need.child
         need_url = f"/needPage/{need.id}/{child.id}/{pending_payment.id_user}"
 
+        unsuccessful_response = render_template(
+            'unsuccessful_payment.html',
+            payment=pending_payment,
+            user=user,
+            need_url=need_url,
+            locale=user.locale,
+        )
+
         if need.isDone:
-            return redirect(need_url, 302)
+            return make_response(unsuccessful_response)
 
         amount = pending_payment.amount
 
         response = idpay.verify(paymentId, orderId)
         if 'error_code' in response or response['status'] != 100:
-            #  TODO: what happens after unsusscesful payment
-            return redirect(need_url, 302)
+            return make_response(unsuccessful_response)
 
         pending_payment.is_verified = True
         pending_payment.date = datetime.fromtimestamp(int(
