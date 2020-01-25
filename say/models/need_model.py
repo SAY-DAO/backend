@@ -204,13 +204,11 @@ class NeedModel(base):
         return data
 
     def send_done_email(self):
-        to_user = self.get_participants()[0].user
-        to = self.get_participants()[0].user.emailAddress
+        to_users = [user.user for user in self.get_participants()]
+        to = [user.emailAddress for user in to_users]
 
         ccs = {user.emailAddress for user in self.family} \
-            - {to}
-
-        locale = to_user.locale
+            - {email for email in to}
 
         send_embeded_subject_email.delay(
             to=to,
@@ -220,18 +218,16 @@ class NeedModel(base):
                 child=self.child,
                 need=self,
                 date=self.doneAt,
-                locale=locale,
+                locale=DEFAULT_LOCALE,
             ),
         )
 
     def send_purchase_email(self):
-        to_user = self.get_participants()[0].user
-        to = self.get_participants()[0].user.emailAddress
+        to_users = [user.user for user in self.get_participants()]
+        to = [user.emailAddress for user in to_users]
 
         ccs = {user.emailAddress for user in self.family} \
-            - {to}
-
-        locale = to_user.locale
+            - {email for email in to}
 
         send_embeded_subject_email.delay(
             to=to,
@@ -241,18 +237,16 @@ class NeedModel(base):
                 child=self.child,
                 need=self,
                 date=self.purchase_date,
-                locale=locale,
+                locale=DEFAULT_LOCALE,
             ),
         )
 
     def send_child_delivery_product_email(self):
-        to_user = self.get_participants()[0].user
-        to = self.get_participants()[0].user.emailAddress
+        to_users = [user.user for user in self.get_participants()]
+        to = [user.emailAddress for user in to_users]
 
         ccs = {user.emailAddress for user in self.family} \
-            - {to}
-
-        locale = to_user.locale
+            - {email for email in to}
 
         from say.api import app
         deliver_to_child_delay = datetime.utcnow() \
@@ -266,7 +260,7 @@ class NeedModel(base):
                     child=self.child,
                     need=self,
                     date=self.ngo_delivery_date,
-                    locale=locale,
+                    locale=DEFAULT_LOCALE,
                 ),
                 list(ccs),
             ),
@@ -280,13 +274,11 @@ class NeedModel(base):
         )
 
     def send_child_delivery_service_email(self):
-        to_user = self.get_participants()[0].user
-        to = self.get_participants()[0].user.emailAddress
+        to_users = [user.user for user in self.get_participants()]
+        to = [user.emailAddress for user in to_users]
 
         ccs = {user.emailAddress for user in self.family} \
-            - {to}
-
-        locale = to_user.locale
+            - {email for email in to}
 
         send_embeded_subject_email.delay(
             to=to,
@@ -296,18 +288,16 @@ class NeedModel(base):
                 child=self.child,
                 need=self,
                 date=self.child_delivery_date,
-                locale=locale,
+                locale=DEFAULT_LOCALE,
             ),
          )
 
     def send_money_to_ngo_email(self):
-        to_user = self.get_participants()[0].user
-        to = self.get_participants()[0].user.emailAddress
+        to_users = [user.user for user in self.get_participants()]
+        to = [user.emailAddress for user in to_users]
 
         ccs = {user.emailAddress for user in self.family} \
-            - {to}
-
-        locale = to_user.locale
+            - {email for email in to}
 
         send_embeded_subject_email.delay(
             to=to,
@@ -317,7 +307,7 @@ class NeedModel(base):
                 need=self,
                 child=self.child,
                 date=self.ngo_delivery_date,
-                locale=locale,
+                locale=DEFAULT_LOCALE,
             ),
         )
 
