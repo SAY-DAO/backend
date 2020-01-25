@@ -18,7 +18,7 @@ def get_subject_from_html(html):
 
 @celery.task()
 def send_email(subject, to, html, cc=[], bcc=[]):
-    if isinctance(to, str):
+    if isinstance(to, str):
         to = [to]
 
     email = Message(
@@ -34,6 +34,8 @@ def send_email(subject, to, html, cc=[], bcc=[]):
 @celery.task()
 def send_embeded_subject_email(to, html, cc=[], bcc=[]):
     subject = get_subject_from_html(html).strip()
+    if isinstance(to, str):
+        to = [to]
 
     email = Message(
         subject=subject,
