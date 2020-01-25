@@ -48,22 +48,31 @@ parameters:
     type: file
     required: true
 
-  - name: firstName
+  - name: firstName_translations
     in: formData
     type: string
 
-  - name: lastName
+  - name: lastName_translations
     in: formData
     type: string
 
-  - name: sayName
+  - name: sayname_translations
     in: formData
     type: string
     required: true
+    description: '{"en": "Bob", "fa": "بابک"}'
 
-  - name: sayName_fa
+  - name: bio_translations
     in: formData
     type: string
+    required: true
+    description: '{"en": "Lorem ipsome", "fa": "لورم ایپسون"}'
+
+  - name: bio_summary_translations
+    in: formData
+    type: string
+    required: true
+    description: '{"en": "Lorem ipsome", "fa": "لورم ایپسون"}'
 
   - name: phoneNumber
     in: formData
@@ -88,24 +97,6 @@ parameters:
     in: formData
     type: boolean
     required: true
-
-  - name: bio
-    in: formData
-    type: string
-    required: true
-
-  - name: bioSummary
-    in: formData
-    type: string
-    required: true
-
-  - name: bio_fa
-    in: formData
-    type: string
-
-  - name: bioSummary_fa
-    in: formData
-    type: string
 
   - name: birthPlace
     in: formData

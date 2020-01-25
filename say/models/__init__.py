@@ -1,6 +1,7 @@
 import functools
 
-from flask import request
+from babel import Locale
+from flask import request, g
 from sqlalchemy import Column, ForeignKey, String, Integer, Date, Boolean, \
     Text, Numeric, DateTime, FLOAT
 from sqlalchemy.orm import relationship, synonym, scoped_session, sessionmaker
@@ -9,9 +10,13 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.associationproxy import ASSOCIATION_PROXY
 from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
 from sqlalchemy.sql.schema import MetaData
+from sqlalchemy_utils import TranslationHybrid
 
 from say.api import db
 from say.date import *
+from say.langs import LANGS
+from say.locale import get_locale, DEFAULT_LOCALE
+
 
 session_factory = sessionmaker(db)
 session = scoped_session(session_factory)
@@ -45,6 +50,13 @@ def commit(func):
     return wrapper
 
 
+
+translation_hybrid = TranslationHybrid(
+    current_locale=get_locale,
+    default_locale=DEFAULT_LOCALE,
+)
+
+
 from .activity_model import ActivityModel
 from .child_model import ChildModel
 from .child_need_model import ChildNeedModel
@@ -67,14 +79,17 @@ def obj_to_dict(obj, relationships=False):
         return obj
 
     result = {}
-    for c in columns(obj, relationships):
-        key, value = c.key, getattr(obj, c.key)
+    for k, c in columns(obj, relationships):
+        key, value = k, getattr(obj, k)
 
         if isinstance(value, list):
             result[key] = [obj_to_dict(item) for item in value]
 
         elif isinstance(value, base):
             result[key] = obj_to_dict(value)
+
+        elif isinstance(value, Locale):
+            result[key] = str(value)
 
         else:
             result[key] = value
@@ -100,6 +115,6 @@ def columns(obj, relationships=False, synonyms=True, composites=False,
                 or (not composites and k in mapper.composites):
             continue
 
-        yield getattr(cls, k)
+        yield k, getattr(cls, k)
 
 

@@ -1,0 +1,15 @@
+<!-- Status 5 - PRODUCT -->
+       
+{% extends "en/base.html" %}
+{% block title %}
+    Product delivery receipt
+{% endblock %}
+{% block img %}
+    <img src="https://sayapp.company/public/resources/img/child_delivered.png" style="height: 100px;" />
+{% endblock %}
+{% block tcontent %}
+    Product delivered to {{child.sayName}}
+{% endblock %}
+{% block mcontent %}
+    {{need.name}} is delivered to {{child.sayName}} on {{date}}.
+{% endblock %}

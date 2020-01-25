@@ -1,11 +1,12 @@
 from datetime import datetime, timedelta
 
 from khayyam import JalaliDate
+from sqlalchemy.dialects.postgresql import HSTORE
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import object_session
-from flask import render_template
 
-from say.tasks import send_email
+from say.api import render_template
+from say.tasks import send_email, send_embeded_subject_email
 from . import *
 
 """
@@ -20,15 +21,15 @@ class NeedModel(base):
 
     child_id = Column(Integer, ForeignKey('child.id'))
 
-    name = Column(String, nullable=False)
-    name_fa = Column(String, nullable=True)
+    name_translations = Column(HSTORE)
+    name = translation_hybrid(name_translations)
+
+    description_translations = Column(HSTORE)
+    description = translation_hybrid(description_translations)
+
     imageUrl = Column(String, nullable=False)
     category = Column(Integer, nullable=False)  # 0:Growth | 1:Joy | 2:Health | 3:Surroundings
     isUrgent = Column(Boolean, nullable=False)
-    description = Column(Text, nullable=False)
-    description_fa = Column(Text, nullable=True)
-    descriptionSummary = Column(Text, nullable=False)
-    descriptionSummary_fa = Column(Text, nullable=True)
     details = Column(Text, nullable=True)
     _cost = Column(Integer, nullable=False)
     paid = Column(Integer, nullable=False, default=0)
@@ -57,7 +58,6 @@ class NeedModel(base):
     child_delivery_date = Column(DateTime)
     confirmDate = Column(DateTime, nullable=True)
 
-
     @hybrid_property
     def childSayName(self):
         return self.child.sayName
@@ -72,6 +72,10 @@ class NeedModel(base):
 
     def _get_cost(self):
         return self._cost
+
+    @property
+    def pretty_cost(self):
+        return format(self.cost)
 
     cost = synonym(
         '_cost',
@@ -144,11 +148,12 @@ class NeedModel(base):
     def participants(cls):
         pass
 
-    def get_ccs(self):
-        return {
-            member.user.emailAddress
+    @property
+    def family(self):
+        return [
+            member.user
             for member in self.child.families[0].current_members()
-        }
+        ]
 
     def get_participants(self):
         from say.models.need_family_model import NeedFamilyModel
@@ -156,7 +161,7 @@ class NeedModel(base):
 
         return session.query(NeedFamilyModel) \
             .filter_by(id_need=self.id) \
-            .filter_by(isDeleted=False) \
+            .filter_by(isDeleted=False)
 
     def update(self):
         from say.utils import digikala
@@ -183,93 +188,81 @@ class NeedModel(base):
                 from say.models import NgoModel
 
                 SAY_ngo = session.query(NgoModel).filter_by(name='SAY').first()
-                if child.ngo.name != SAY_ngo.name:
+                if self.child.ngo.name != SAY_ngo.name:
                     with app.app_context():
                         send_email.delay(
                             subject=f'تغییر وضعیت کالا {dkp}',
-                            emails=SAY_ngo.coordinator.emailAddress,
+                            to=SAY_ngo.coordinator.emailAddress,
                             html=render_template(
                                 'product_status_changed.html',
-                                 child=self.child,
-                                 need=self,
-                                 dkp=dkp,
-                                 details=cost,
+                                child=self.child,
+                                need=self,
+                                dkp=dkp,
+                                details=cost,
                             ),
                         )
         return data
 
     def send_done_email(self):
-        cc_emails = self.get_ccs()
-        to_emails = set()
+        to_users = [user.user for user in self.get_participants()]
+        to = [user.emailAddress for user in to_users]
 
-        participants = self.get_participants()
-        for participate in participants:
-            to_emails.add(participate.user.emailAddress)
+        ccs = {user.emailAddress for user in self.family} \
+            - {email for email in to}
 
-        cc_emails -= to_emails
-
-        iran_date = JalaliDate(self.doneAt).localdateformat()
-        send_email.delay(
-            subject=f'یکی از نیازهای {self.child.sayName} کامل شد',
-            emails=list(to_emails),
-            cc=list(cc_emails),
+        send_embeded_subject_email.delay(
+            to=to,
+            cc=list(ccs),
             html=render_template(
                 'status_done.html',
                 child=self.child,
                 need=self,
-                date=iran_date,
+                date=self.doneAt,
+                locale=DEFAULT_LOCALE,
             ),
         )
 
     def send_purchase_email(self):
-        cc_emails = self.get_ccs()
-        to_emails = set()
+        to_users = [user.user for user in self.get_participants()]
+        to = [user.emailAddress for user in to_users]
 
-        participants = self.get_participants()
-        for participate in participants:
-            to_emails.add(participate.user.emailAddress)
+        ccs = {user.emailAddress for user in self.family} \
+            - {email for email in to}
 
-        cc_emails -= to_emails
-        iran_date = JalaliDate(self.purchase_date).localdateformat()
-        send_email.delay(
-            subject=f'رسید خرید کالای {self.child.sayName} توسط SAY',
-            emails=list(to_emails),
-            cc=list(cc_emails),
+        send_embeded_subject_email.delay(
+            to=to,
+            cc=list(ccs),
             html=render_template(
                 'status_purchased.html',
-                 child=self.child,
-                 need=self,
-                 date=iran_date,
+                child=self.child,
+                need=self,
+                date=self.purchase_date,
+                locale=DEFAULT_LOCALE,
             ),
-         )
+        )
 
     def send_child_delivery_product_email(self):
-        cc_emails = self.get_ccs()
-        to_emails = set()
+        to_users = [user.user for user in self.get_participants()]
+        to = [user.emailAddress for user in to_users]
 
-        participants = self.get_participants()
-        for participate in participants:
-            to_emails.add(participate.user.emailAddress)
-
-        cc_emails -= to_emails
-
-        # Using ngo_delivery_date for now because we dont have the accuret
-        # data yet. It must be replaced with child_delivery_date
-        iran_date = JalaliDate(self.ngo_delivery_date).localdateformat()
+        ccs = {user.emailAddress for user in self.family} \
+            - {email for email in to}
 
         from say.api import app
         deliver_to_child_delay = datetime.utcnow() \
             + timedelta(seconds=app.config['DELIVER_TO_CHILD_DELAY'])
-        send_email.apply_async((
-               f'اطلاع از رسیدن کالا به {self.child.sayName}',
-               list(to_emails),
-               render_template(
-                   'status_child_delivery_product.html',
+
+        send_embeded_subject_email.apply_async(
+            (
+                to,
+                render_template(
+                    'status_child_delivery_product.html',
                     child=self.child,
                     need=self,
-                    date=iran_date,
-               ),
-               list(cc_emails),
+                    date=self.ngo_delivery_date,
+                    locale=DEFAULT_LOCALE,
+                ),
+                list(ccs),
             ),
             eta=deliver_to_child_delay,
         )
@@ -280,49 +273,41 @@ class NeedModel(base):
             eta=deliver_to_child_delay,
         )
 
-
     def send_child_delivery_service_email(self):
-        cc_emails = self.get_ccs()
-        to_emails = set()
+        to_users = [user.user for user in self.get_participants()]
+        to = [user.emailAddress for user in to_users]
 
-        participants = self.get_participants()
-        for participate in participants:
-            to_emails.add(participate.user.emailAddress)
+        ccs = {user.emailAddress for user in self.family} \
+            - {email for email in to}
 
-        cc_emails -= to_emails
-        iran_date = JalaliDate(self.child_delivery_date).localdateformat()
-        send_email.delay(
-            subject=f'{self.name} به دست {self.child.sayName} رسید',
-            emails=list(to_emails),
-            cc=list(cc_emails),
+        send_embeded_subject_email.delay(
+            to=to,
+            cc=list(ccs),
             html=render_template(
                 'status_child_delivery_service.html',
-                 child=self.child,
-                 need=self,
-                 date=iran_date,
+                child=self.child,
+                need=self,
+                date=self.child_delivery_date,
+                locale=DEFAULT_LOCALE,
             ),
          )
 
-
     def send_money_to_ngo_email(self):
-        cc_emails = self.get_ccs()
-        to_emails = set()
+        to_users = [user.user for user in self.get_participants()]
+        to = [user.emailAddress for user in to_users]
 
-        participants = self.get_participants()
-        for participate in participants:
-            to_emails.add(participate.user.emailAddress)
+        ccs = {user.emailAddress for user in self.family} \
+            - {email for email in to}
 
-        cc_emails -= to_emails
-        iran_date = JalaliDate(self.ngo_delivery_date).localdateformat()
-        send_email.delay(
-            subject=f'رسید انتقال وجه به انجمن توسط SAY',
-            emails=list(to_emails),
-            cc=list(cc_emails),
+        send_embeded_subject_email.delay(
+            to=to,
+            cc=list(ccs),
             html=render_template(
                 'status_money_to_ngo.html',
-                 need=self,
-                 child=self.child,
-                 date=iran_date,
+                need=self,
+                child=self.child,
+                date=self.ngo_delivery_date,
+                locale=DEFAULT_LOCALE,
             ),
         )
 

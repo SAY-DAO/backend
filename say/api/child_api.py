@@ -1,5 +1,7 @@
 from collections import OrderedDict
 
+import ujson
+
 from . import *
 from say.models import session, obj_to_dict
 from say.api.need_api import get_need
@@ -446,25 +448,19 @@ class AddChild(Resource):
             else:
                 housing_status = None
 
-            if "firstName" in request.form.keys():
-                first_name = request.form["firstName"]
+            if "firstName_translations" in request.form.keys():
+                first_name_translations = ujson.loads(
+                    request.form["firstName_translations"],
+                )
             else:
-                first_name = None
+                first_name_translations = None
 
-            if "lastName" in request.form.keys():
-                last_name = request.form["lastName"]
+            if "lastName_translations" in request.form.keys():
+                last_name_translations = ujson.loads(
+                    request.form["lastName_translations"],
+                )
             else:
-                last_name = None
-
-            if "firstName_fa" in request.form.keys():
-                first_name_fa = request.form["firstName_fa"]
-            else:
-                first_name_fa = None
-
-            if "lastName_fa" in request.form.keys():
-                last_name_fa = request.form["lastName_fa"]
-            else:
-                last_name_fa = None
+                last_name_translations = None
 
             if "birthPlace" in request.form.keys():
                 birth_place = request.form["birthPlace"]
@@ -497,14 +493,13 @@ class AddChild(Resource):
                 family_count = None
 
             phone_number = request.form["phoneNumber"]
-            bio = request.form["bio"]
-            bio_fa = request.form.get('bio_fa', None)
-            say_name = request.form["sayName"]
-            say_name_fa = request.form.get('sayName_fa', None)
             country = int(request.form["country"])
             city = int(request.form["city"])
-            bio_summary = request.form["bioSummary"]
-            bio_summary_fa = request.form.get('bioSummary_fa', None)
+            sayname_translations = ujson.loads(
+                request.form["sayname_translations"]
+            )
+            bio_translations = ujson.loads(request.form["bio_translations"])
+            bio_summary_translations = ujson.loads(request.form["bio_summary_translations"])
             gender = True if request.form["gender"] == "true" else False
 
             avatar_url = avatar_path
@@ -520,28 +515,23 @@ class AddChild(Resource):
                 avatarUrl=avatar_url,
                 sleptAvatarUrl=avatar_url,
                 housingStatus=housing_status,
-                firstName=first_name,
-                firstName_fa=first_name_fa,
-                lastName=last_name,
-                lastName_fa=last_name_fa,
+                firstName_translations=first_name_translations,
+                lastName_translations=last_name_translations,
                 familyCount=family_count,
                 education=education,
                 createdAt=created_at,
                 birthPlace=birth_place,
                 birthDate=birth_date,
                 address=address,
-                bio=bio,
-                bio_fa=bio_fa,
                 voiceUrl=voice_url,
                 id_ngo=ngo_id,
                 id_social_worker=sw_id,
-                sayName=say_name,
-                sayName_fa=say_name_fa,
+                sayname_translations=sayname_translations,
+                bio_translations=bio_translations,
+                bio_summary_translations=bio_summary_translations,
                 country=country,
                 city=city,
                 gender=gender,
-                bioSummary=bio_summary,
-                bioSummary_fa=bio_summary_fa,
                 status=status,
                 lastUpdate=last_update,
                 generatedCode=code,
@@ -807,17 +797,13 @@ class UpdateChildById(Resource):
             if "housingStatus" in request.form.keys():
                 primary_child.housingStatus = int(request.form["housingStatus"])
 
-            if "firstName" in request.form.keys():
-                primary_child.firstName = request.form["firstName"]
+            if "firstName_translations" in request.form.keys():
+                primary_child.firstName_translations = \
+                    ujson.loads(request.form["firstName_translations"])
 
-            if "lastName" in request.form.keys():
-                primary_child.lastName = request.form["lastName"]
-
-            if "firstName_fa" in request.form.keys():
-                primary_child.firstName_fa = request.form["firstName_fa"]
-
-            if "lastName_fa" in request.form.keys():
-                primary_child.lastName_fa = request.form["lastName_fa"]
+            if "lastName_translations" in request.form.keys():
+                primary_child.lastName_translations = \
+                    ujson.loads(request.form["lastName_translations"])
 
             if "gender" in request.form.keys():
                 primary_child.gender = (
@@ -850,23 +836,26 @@ class UpdateChildById(Resource):
             if "address" in request.form.keys():
                 primary_child.address = request.form["address"]
 
-            if "sayName" in request.form.keys():
-                primary_child.sayName = request.form["sayName"]
-
             if "bio" in request.form.keys():
                 primary_child.bio = request.form["bio"]
 
-            if "bioSummary" in request.form.keys():
-                primary_child.bioSummary = request.form["bioSummary"]
+            if "bio_summary" in request.form.keys():
+                primary_child.bio_summary = request.form["bio_summary"]
 
-            if "sayName_fa" in request.form.keys():
-                primary_child.sayName_fa = request.form["sayName_fa"]
+            if "sayname_translations" in request.form.keys():
+                primary_child.sayname_translations = ujson.loads(
+                    request.form["sayname_translations"],
+                )
 
-            if "bio_fa" in request.form.keys():
-                primary_child.bio_fa = request.form["bio_fa"]
+            if "bio_translations" in request.form.keys():
+                primary_child.bio_translations = ujson.loads(
+                    request.form["bio_translations"],
+                )
 
-            if "bioSummary_fa" in request.form.keys():
-                primary_child.bioSummary_fa = request.form["bioSummary_fa"]
+            if "bio_summary_translations" in request.form.keys():
+                primary_child.bio_summary_translations = ujson.loads(
+                    request.form["bio_summary_translations"],
+                )
 
             primary_child.lastUpdate = datetime.utcnow()
 
@@ -1171,11 +1160,8 @@ class MigrateChild(Resource):
             )
 
             new_child = ChildModel(
-                firstName=child.firstName,
-                firstName_fa=child.firstName_fa,
-                lastName=child.lastName,
-                lastName_fa=child.lastName_fa,
-                sayName=child.sayName,
+                firstName_translations=child.firstName_translations,
+                lastName_translations=child.lastName_translations,
                 phoneNumber=child.phoneNumber,
                 nationality=child.nationality,
                 country=child.country,
@@ -1183,8 +1169,9 @@ class MigrateChild(Resource):
                 avatarUrl=child.avatarUrl,
                 sleptAvatarUrl=child.sleptAvatarUrl,
                 gender=child.gender,
-                bio=child.bio,
-                bioSummary=child.bioSummary,
+                sayname_translations=child.sayname_translations,
+                bio_translation=child.bio_translations,
+                bio_summary_translations=child.bio_summary_translations,
                 voiceUrl=child.voiceUrl,
                 birthPlace=child.birthPlace,
                 birthDate=child.birthDate,

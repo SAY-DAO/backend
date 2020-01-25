@@ -1,7 +1,7 @@
 from sqlalchemy.orm import object_session
-from flask import render_template
 
-from say.tasks import send_email
+from say.api import render_template, expose_datetime
+from say.tasks import send_email, send_embeded_subject_email
 from say.utils import surname
 from . import *
 
@@ -57,9 +57,9 @@ class NgoModel(base):
         services = []
         products = []
         for need in needs:
-            if need.type == 0: # service
+            if need.type == 0:
                 services.append(need)
-            elif need.type == 1: # product
+            elif need.type == 1 and need.expected_delivery_date:
                 products.append(need)
             else:
                 continue
@@ -67,51 +67,50 @@ class NgoModel(base):
         from say.api import app
 
         # This date show when the needs status updated to 3
-        date = JalaliDate(datetime.utcnow() - timedelta(days=1))
-        formated_date = format_jalali_date(date)
+        date = datetime.utcnow() - timedelta(days=1)
         say = session.query(NgoModel).filter_by(name='SAY').first()
         bcc = [say.coordinator.emailAddress]
+        coordinator_email = self.coordinator.emailAddress
+        locale = self.coordinator.locale
 
-        if len(services) != 0:
-            with app.app_context():
-                send_email.delay(
-                    subject='اطلاع از واریز وجه توسط SAY',
-                    emails=self.coordinator.emailAddress,
+        with app.app_context():
+            if len(services) != 0:
+                send_embeded_subject_email.delay(
+                    to=coordinator_email,
                     bcc=bcc,
                     html=render_template(
                         'ngo_report_service.html',
                         needs=services,
                         ngo=self,
                         surname=surname(self.coordinator.gender),
-                        date=formated_date,
+                        date=date,
+                        locale=locale,
                     ),
                  )
 
-        if len(products) != 0:
-            for need in products:
-                if need.expected_delivery_date:
-                    date = JalaliDate(need.expected_delivery_date)
-                    need.delivere_at = format_jalali_date(date)
-                else:
-                    need_delivere_at = None
+                for need in services:
+                    need.isReported = True
 
-            with app.app_context():
-                send_email.delay(
-                    subject='اطلاع‌رسانی خرید کالا توسط SAY',
-                    emails=self.coordinator.emailAddress,
+            if len(products) != 0:
+                use_plural = False if len(products) == 1 else True
+                send_embeded_subject_email.delay(
+                    to=coordinator_email,
                     bcc=bcc,
                     html=render_template(
                         'ngo_report_product.html',
                         needs=products,
                         ngo=self,
                         surname=surname(self.coordinator.gender),
-                        date=formated_date,
-                        miladi_to_jalali=JalaliDate
+                        date=date,
+                        use_plural=use_plural,
+                        date_formater=
+                            lambda dt: expose_datetime(dt, locale=get_locale()),
+                        locale=locale,
                     ),
                  )
 
-        for need in needs:
-            need.isReported = True
+                for need in products:
+                    need.isReported = True
 
         session.commit()
         return [need.id for need in needs]

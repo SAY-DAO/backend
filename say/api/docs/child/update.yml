@@ -33,19 +33,30 @@ parameters:
     in: formData
     type: file
 
-  - name: firstName
+  - name: firstName_translations
     in: formData
     type: string
 
-  - name: lastName
+  - name: sayname_translations
+    in: formData
+    type: string
+    description: '{"en": "Bob", "fa": "بابک"}'
+
+  - name: bio_translations
+    in: formData
+    type: string
+    description: '{"en": "Lorem ipsome", "fa": "لورم ایپسون"}'
+
+  - name: bio_summary_translations
+    in: formData
+    type: string
+    description: '{"en": "Lorem ipsome", "fa": "لورم ایپسون"}'
+
+  - name: lastName_translations
     in: formData
     type: string
 
   - name: sayName
-    in: formData
-    type: string
-
-  - name: sayName_fa
     in: formData
     type: string
 
@@ -68,22 +79,6 @@ parameters:
   - name: gender
     in: formData
     type: boolean
-
-  - name: bio
-    in: formData
-    type: string
-
-  - name: bioSummary
-    in: formData
-    type: string
-
-  - name: bio_fa
-    in: formData
-    type: string
-
-  - name: bioSummary_fa
-    in: formData
-    type: string
 
   - name: birthPlace
     in: formData

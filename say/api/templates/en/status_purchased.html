@@ -1,0 +1,15 @@
+<!-- Status 3 - PRODUCT -->
+
+{% extends "en/base.html" %}
+{% block title %}
+    Product purchase receipt
+{% endblock %}
+{% block img %}
+    <img src="https://sayapp.company/public/resources/img/purchased.png" style="height: 100px;" />
+{% endblock %}
+{% block tcontent %}
+    Purchase receipt for {{child.sayName}}’s needs
+{% endblock %}
+{% block mcontent %}
+    {{need.name}} is ordered for {{child.sayName}} on {{date}}.
+{% endblock %}

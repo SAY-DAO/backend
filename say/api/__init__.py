@@ -26,6 +26,7 @@ from flask_jwt_extended import JWTManager
 from logging import debug, basicConfig, DEBUG
 from flask_caching import Cache
 from flask_cors import CORS
+from khayyam import JalaliDate
 
 from ..payment import IDPay
 from say.celery import beat
@@ -33,6 +34,8 @@ from say.date import *
 from say.authorization import *
 from say.roles import *
 from say.exceptions import *
+from say.langs import LANGS
+from say.locale import ChangeLocaleTo
 
 
 DEFAULT_CHILD_ID = 104  # TODO: Remove this after implementing pre needs
@@ -98,7 +101,7 @@ app.config.update({
 app.config['VERIFICATION_EMAIL_MAXAGE'] = 2 # minutes
 
 app.config.update(
-    broker_url='pyamqp://',
+    broker_url='redis://localhost:6379/0',
     result_backend='rpc://',
     redbeat_redis_url = "redis://localhost:6379/0"
 )
@@ -170,6 +173,42 @@ idpay = IDPay(app.config['IDPAY_API_KEY'], app.config['SANDBOX'])
 api = Api(app)
 # api_bp = Blueprint('api', __name__)
 # api = Api(api_bp)
+
+
+def expose_datetime(dt, locale):
+    if locale == LANGS.en:
+        return dt.strftime('%Y.%m.%d')
+    elif locale == LANGS.fa:
+        return JalaliDate(dt).localdateformat()
+
+    return dt
+
+
+def render_template(path, *args, locale=None,
+                    **kwargs):
+
+    from flask import render_template
+
+    int_formatter = lambda integer, fmt: format(integer, fmt)
+
+    if not locale:
+        return render_template(path, *args, int_formatter=int_formatter, **kwargs)
+
+    # locale is str or Locale object, so we need to make sure it is str
+    locale = str(locale)
+    with ChangeLocaleTo(locale):
+        locale_path = os.path.join(locale, path)
+
+        for k, v in kwargs.items():
+            if isinstance(v, datetime):
+                kwargs[k] = expose_datetime(v, locale=locale)
+
+        return render_template(
+            locale_path,
+            *args,
+            int_formatter=int_formatter,
+            **kwargs
+        )
 
 
 def allowed_voice(filename):

@@ -3,6 +3,7 @@ from random import randint
 
 from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
+from babel import Locale
 
 from . import *
 from say.models import session, obj_to_dict, or_
@@ -21,12 +22,15 @@ def datetime_converter(o):
         return o.__str__()
 
 
-def send_verify_email(email, verify_code):
-
+def send_verify_email(to_user, verify_code):
     send_email.delay(
         subject='SAY Email Verification',
-        emails=email,
-        html=render_template('email_verification.html', code=str(verify_code)),
+        to=to_user.emailAddress,
+        html=render_template(
+            'email_verification.html',
+            code=str(verify_code),
+            locale=to_user.locale,
+        ),
     )
 
 
@@ -114,6 +118,9 @@ class RegisterUser(Resource):
                 )
                 return
 
+            lang = request.args.get('_lang')
+            locale = Locale(lang)
+
             alreadyExist = (
                 session.query(UserModel)
                 .filter_by(isDeleted=False)
@@ -152,6 +159,7 @@ class RegisterUser(Resource):
                     lastLogin=last_login,
                     password=password,
                     flagUrl="",
+                    locale=locale,
                 )
                 session.add(new_user)
                 session.flush()
@@ -160,7 +168,7 @@ class RegisterUser(Resource):
                 verify = VerifyModel(user=new_user, code=code)
                 session.add(verify)
 
-                send_verify_email(new_user.emailAddress, verify.code)
+                send_verify_email(new_user, verify.code)
 
                 resp = make_response(
                     jsonify(obj_to_dict(new_user)),
@@ -227,7 +235,7 @@ class Login(Resource):
                         )
 
                         session.commit()
-                        send_verify_email(user.emailAddress, verify.code)
+                        send_verify_email(user, verify.code)
 
                         resp = make_response(
                             jsonify({
@@ -237,6 +245,8 @@ class Login(Resource):
                         )
                         return
 
+                    lang = request.args.get('_lang')
+                    user.locale = Locale(lang)
                     user.lastLogin = datetime.utcnow()
                     session.commit()
 
@@ -267,7 +277,7 @@ class Login(Resource):
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "something is wrong"}), status=400)
+            resp = Response(json.dumps({"message": str(e)}), status=400)
 
         finally:
             session.close()
@@ -397,7 +407,7 @@ class VerifyResend(Resource):
             )
 
             session.commit()
-            send_verify_email(user.emailAddress, verify.code)
+            send_verify_email(user, verify.code)
             resp = Response(json.dumps({"message": "Verify Email Sent."}), status=200)
 
         except Exception as e:

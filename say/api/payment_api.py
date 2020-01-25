@@ -229,6 +229,10 @@ class VerifyPayment(Resource):
         if pending_payment is None:
             abort(404)
 
+        user = session.query(UserModel) \
+            .with_for_update() \
+            .get(pending_payment.id_user)
+
         need = session.query(NeedModel) \
             .with_for_update() \
             .get(pending_payment.id_need)
@@ -240,15 +244,22 @@ class VerifyPayment(Resource):
         child = child_need.child
         need_url = f"/needPage/{need.id}/{child.id}/{pending_payment.id_user}"
 
+        unsuccessful_response = render_template(
+            'unsuccessful_payment.html',
+            payment=pending_payment,
+            user=user,
+            need_url=need_url,
+            locale=user.locale,
+        )
+
         if need.isDone:
-            return redirect(need_url, 302)
+            return make_response(unsuccessful_response)
 
         amount = pending_payment.amount
 
         response = idpay.verify(paymentId, orderId)
         if 'error_code' in response or response['status'] != 100:
-            #  TODO: what happens after unsusscesful payment
-            return redirect(need_url, 302)
+            return make_response(unsuccessful_response)
 
         pending_payment.is_verified = True
         pending_payment.date = datetime.fromtimestamp(int(
@@ -304,10 +315,11 @@ class VerifyPayment(Resource):
             need.send_done_email()
 
         return make_response(render_template(
-            'succesful_payment.html',
+            'successful_payment.html',
             payment=pending_payment,
-            user=pending_payment.user,
+            user=user,
             need_url=need_url,
+            locale=user.locale,
         ))
 
 

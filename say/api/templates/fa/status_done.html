@@ -1,0 +1,15 @@
+<!-- Status 2 - SERVICE and PRODUCT -->
+     
+{% extends "fa/base.html" %}
+{% block title %}
+    رسید دریافت پول
+{% endblock %}
+{% block img %}
+    <img src="https://sayapp.company/public/resources/img/done.png" style="height: 100px;" />
+{% endblock %}
+{% block tcontent %}
+    یکی از نیازهای {{child.sayName}} کامل شد
+{% endblock %}
+{% block mcontent %}
+    در روز {{date}} با هم‌راهی شما هزینه {{need.name}} برای {{child.sayName}} پرداخت شد.
+{% endblock %}

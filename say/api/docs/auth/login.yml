@@ -15,6 +15,12 @@ parameters:
     required: true
     type: string
 
+  - in: query
+    name: _lang
+    required: true
+    type: string
+    default: fa
+
 responses:
   400:
     description: Username or Password is Wrong 

@@ -1,0 +1,15 @@
+<!-- Status 3 - PRODUCT -->
+
+{% extends "fa/base.html" %}
+{% block title %}
+    رسید سفارش کالا
+{% endblock %}
+{% block img %}
+    <img src="https://sayapp.company/public/resources/img/purchased.png" style="height: 100px;" />
+{% endblock %}
+{% block tcontent %}
+    رسید خرید کالای {{child.sayName}} توسط SAY
+{% endblock %}
+{% block mcontent %}
+    در روز {{date}} {{need.name}} برای {{child.sayName}} سفارش داده شد.
+{% endblock %}
