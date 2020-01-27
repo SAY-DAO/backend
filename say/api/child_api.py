@@ -1170,7 +1170,7 @@ class MigrateChild(Resource):
                 sleptAvatarUrl=child.sleptAvatarUrl,
                 gender=child.gender,
                 sayname_translations=child.sayname_translations,
-                bio_translation=child.bio_translations,
+                bio_translations=child.bio_translations,
                 bio_summary_translations=child.bio_summary_translations,
                 voiceUrl=child.voiceUrl,
                 birthPlace=child.birthPlace,
