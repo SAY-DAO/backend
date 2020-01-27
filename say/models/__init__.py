@@ -11,6 +11,7 @@ from sqlalchemy.ext.associationproxy import ASSOCIATION_PROXY
 from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
 from sqlalchemy.sql.schema import MetaData
 from sqlalchemy_utils import TranslationHybrid
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from say.api import db
 from say.date import *
@@ -71,6 +72,7 @@ from .social_worker_model import SocialWorkerModel
 from .user_family_model import UserFamilyModel
 from .user_model import UserModel
 from .verify_model import VerifyModel
+from .reset_password_model import ResetPassword
 
 
 # this function converts an object to a python dictionary
