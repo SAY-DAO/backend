@@ -1138,7 +1138,6 @@ class MigrateChild(Resource):
                 .filter_by(id=child_id)
                 .filter_by(isDeleted=False)
                 .filter_by(isMigrated=False)
-                .filter_by(isConfirmed=True)
                 .first()
             )
 
