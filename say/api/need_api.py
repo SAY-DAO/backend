@@ -365,7 +365,7 @@ class UpdateNeedById(Resource):
                     session.close()
                     return resp
 
-                if file2 and allowed_image(file2.filename):
+                if file2 and allowed_receipt(file2.filename):
                     # filename = secure_filename(file2.filename)
                     if need.receipts is not None:
                         filename = (
@@ -743,7 +743,7 @@ class AddNeed(Resource):
                     session.close()
                     return resp
 
-                if file2 and allowed_image(file2.filename):
+                if file2 and allowed_receipt(file2.filename):
                     filename = secure_filename(file2.filename)
                     # filename = str(0) + "." + file2.filename.split(".")[-1]
 
