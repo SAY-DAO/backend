@@ -1,7 +1,6 @@
 import re
 import requests
 from ..api import cache
-from say.tasks import send_email
 
 
 COST_PATTERN = r's-rrp-price ">(.*?)<|js-price-value">(.*?)<'
@@ -72,7 +71,7 @@ def parse_img(c):
     return img
 
 
-#@cache.memoize(timeout=12 * 3600)
+@cache.memoize(timeout=1 * 3600)
 def get_data(url):
     dkp = parse_dkp(url)
     try:
