@@ -174,6 +174,7 @@ api = Api(app)
 # api_bp = Blueprint('api', __name__)
 # api = Api(api_bp)
 
+int_formatter = lambda integer: format(integer, ',d')
 
 def expose_datetime(dt, locale):
     if locale == LANGS.en:
@@ -188,8 +189,6 @@ def render_template(path, *args, locale=None,
                     **kwargs):
 
     from flask import render_template
-
-    int_formatter = lambda integer, fmt: format(integer, fmt)
 
     if not locale:
         return render_template(path, *args, int_formatter=int_formatter, **kwargs)

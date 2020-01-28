@@ -5,7 +5,7 @@ from sqlalchemy.dialects.postgresql import HSTORE
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import object_session
 
-from say.api import render_template
+from say.api import render_template, int_formatter
 from say.tasks import send_email, send_embeded_subject_email
 from . import *
 
@@ -73,14 +73,34 @@ class NeedModel(base):
     def _get_cost(self):
         return self._cost
 
-    @property
-    def pretty_cost(self):
-        return format(self.cost)
-
     cost = synonym(
         '_cost',
         descriptor=property(_get_cost, _set_cost),
     )
+
+    @hybrid_property
+    def pretty_cost(self):
+        return int_formatter(self.cost)
+
+    @pretty_cost.expression
+    def pretty_cost(cls):
+        pass
+
+    @hybrid_property
+    def pretty_paid(self):
+        return int_formatter(self.paid)
+
+    @pretty_paid.expression
+    def pretty_paid(cls):
+        pass
+
+    @hybrid_property
+    def pretty_donated(self):
+        return int_formatter(self.donated)
+
+    @pretty_paid.expression
+    def pretty_donated(self):
+        return self.donated
 
     @hybrid_property
     def progress(self):
