@@ -467,10 +467,6 @@ class AddChild(Resource):
             else:
                 birth_place = None
 
-            if "birthDate" in request.form.keys():
-                birth_date = datetime.strptime(request.form["birthDate"], "%Y-%m-%d")
-            else:
-                birth_date = None
 
             if "address" in request.form.keys():
                 address = request.form["address"]
@@ -492,6 +488,7 @@ class AddChild(Resource):
             else:
                 family_count = None
 
+            birth_date = datetime.strptime(request.form["birthDate"], "%Y-%m-%d")
             phone_number = request.form["phoneNumber"]
             country = int(request.form["country"])
             city = int(request.form["city"])
