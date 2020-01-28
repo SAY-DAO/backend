@@ -1183,16 +1183,23 @@ class MigrateChild(Resource):
                 spentCredit=child.spentCredit,
                 createdAt=child.createdAt,
                 lastUpdate=datetime.utcnow(),
-                isConfirmed=False,
+                isConfirmed=child.isConfirmed,
+                confirmUser=child.confirmUser,
+                confirmDate=child.confirmDate,
                 generatedCode=social_worker.generatedCode
-                + format(social_worker.childCount + 1, "04d"),
+                    + format(social_worker.childCount + 1, "04d"),
                 isMigrated=False,
                 migratedId=child.id,
                 migrateDate=datetime.utcnow(),
             )
 
-            child.isMigrated = True
+            social_worker.childCount += 1
 
+            if child.isConfirmed:
+                social_worker.currentChildCount += 1
+                child.social_worker.currentChildCount -= 1
+
+            child.isMigrated = True
             session.add(new_child)
             session.commit()
 
