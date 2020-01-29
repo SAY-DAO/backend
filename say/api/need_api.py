@@ -460,31 +460,27 @@ class UpdateNeedById(Resource):
                     if need.type == 0:  # Service
                         if new_status == 3:
                             need.ngo_delivery_date = datetime.utcnow()
-                            need.send_money_to_ngo_email()
 
                         if new_status == 4:
                             need.child_delivery_date = datetime.utcnow()
-                            need.send_child_delivery_service_email()
 
                     if need.type == 1:  # Product
                         if new_status == 3:
                             need.purchase_date = datetime.utcnow()
-                            need.send_purchase_email()
 
                         if new_status == 4:
                             need.ngo_delivery_date = parse_datetime(
                                 request.form.get('ngo_delivery_date')
                             )
 
-                            if not(
+                            if not (
                                 need.expected_delivery_date
                                 <= need.ngo_delivery_date <=
                                 datetime.utcnow()
                             ):
                                 raise Exception('Invalid ngo_delivery_date')
 
-                            need.send_child_delivery_product_email()
-
+                            need.child_delivery_product()
                 else:
                     raise ValueError(
                         f'Can not change status from '
