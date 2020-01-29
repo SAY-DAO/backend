@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 
 from khayyam import JalaliDate
 from sqlalchemy.dialects.postgresql import HSTORE
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import object_session
 
 from say.api import render_template, int_formatter

@@ -6,10 +6,8 @@ from flask_jwt_extended import create_refresh_token, \
 from babel import Locale
 
 from . import *
-from say.models import session, obj_to_dict, or_
-from say.models.revoked_token_model import RevokedTokenModel
-from say.models.user_model import UserModel
-from say.models.verify_model import VerifyModel
+from say.models import session, obj_to_dict, or_, commit,  ResetPassword, \
+    VerifyModel, UserModel, RevokedTokenModel
 from say.tasks import send_email
 
 
@@ -436,6 +434,70 @@ class TokenRefresh(Resource):
         })
 
 
+class ResetPasswordApi(Resource):
+
+    decorators = [limiter.limit("2/minute")]
+
+    @commit
+    @swag_from("./docs/auth/reset_password.yml")
+    def post(self, email):
+
+        user = session.query(UserModel) \
+            .filter_by(emailAddress=email) \
+            .first()
+
+        if user is None:
+            return make_response({'message': 'Email is wrong'}, 400)
+
+        reset_password = ResetPassword(user=user)
+        session.add(reset_password)
+        session.flush()
+        reset_password.send_email()
+
+        return make_response({'message': 'reset password email sent'})
+
+
+class ConfirmResetPassword(Resource):
+
+    decorators = [limiter.limit("2/minute")]
+
+    @commit
+    @swag_from("./docs/auth/confirm_reset_password.yml")
+    def post(self, token):
+
+        reset_password = session.query(ResetPassword) \
+            .filter_by(token=token) \
+            .filter(ResetPassword.is_used==False) \
+            .filter(ResetPassword.is_expired==False) \
+            .first()
+
+        if reset_password is None:
+            return make_response({'message': 'Bad request'}, 400)
+
+        new_password = request.form['password']
+        confirm_new_password = request.form['confirm_password']
+        if new_password != confirm_new_password:
+            return make_response({'message': 'passwords dose not match'}, 499)
+
+        user = session.query(UserModel).get(reset_password.user_id)
+
+        user.password = new_password
+        reset_password.is_used = True
+
+        access_token = create_user_access_token(user)
+        refresh_token = create_refresh_token(identity=user.id)
+
+        resp = make_response(
+            {
+                'message': 'Password Changed Successfully',
+                'accessToken': f'Bearer {access_token}',
+                'refreshToken': f'Bearer {refresh_token}',
+                'user': obj_to_dict(user),
+            },
+        )
+
+        return resp
+
 """
 API URLs
 """
@@ -449,3 +511,8 @@ api.add_resource(LogoutRefresh, "/api/v2/auth/logout/refresh")
 api.add_resource(TokenRefresh, "/api/v2/auth/refresh")
 api.add_resource(Verify, "/api/v2/auth/verify/userid=<user_id>")
 api.add_resource(VerifyResend, "/api/v2/auth/verify/resend/userid=<user_id>")
+api.add_resource(ResetPasswordApi, "/api/v2/auth/password/reset/email=<email>")
+api.add_resource(
+    ConfirmResetPassword,
+    "/api/v2/auth/password/reset/confirm/token=<token>",
+)
