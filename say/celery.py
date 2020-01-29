@@ -4,7 +4,7 @@ from celery.schedules import crontab
 beat = {
     'report-to-ngos': {
         'task': 'say.tasks.report_to_ngo.report_to_ngos',
-        'schedule': 15 * 60 #crontab(minute=0, hour=9),
+        'schedule': crontab(minute=0, hour=9),
     },
     'update-needs': {
         'task': 'say.tasks.update_needs.update_needs',
@@ -12,7 +12,7 @@ beat = {
     },
     'report_to_family': {
         'task': 'say.tasks.report_to_family.report_to_families',
-        'schedule': crontab(minute=0, hour='7'),
+        'schedule': crontab(minute=0, hour='23'),
     },
 }
 
