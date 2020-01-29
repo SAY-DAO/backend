@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
 
 from khayyam import JalaliDate
+from sqlalchemy import event
 from sqlalchemy.dialects.postgresql import HSTORE
 from sqlalchemy.orm import object_session
 
+from say.statuses import NeedStatuses
 from say.api import render_template, int_formatter
 from say.tasks import send_email, send_embeded_subject_email
 from . import *
@@ -43,6 +45,7 @@ class NeedModel(base):
     type = Column(Integer, nullable=False)  # 0:service | 1:product
     doing_duration = Column(Integer, nullable=False, default=5)
     status = Column(Integer, nullable=False, default=0)
+    status_updated_at = Column(DateTime, nullable=True)
     isReported = Column(Boolean, default=False)
     img = Column(Text, nullable=True)
     title = Column(Text, nullable=True)
@@ -56,6 +59,20 @@ class NeedModel(base):
     ngo_delivery_date = Column(DateTime)
     child_delivery_date = Column(DateTime)
     confirmDate = Column(DateTime, nullable=True)
+
+    child = relationship(
+        'ChildModel',
+        foreign_keys=child_id,
+        uselist=False,
+        back_populates='needs',
+        lazy='selectin',
+    )
+    payments = relationship('PaymentModel', back_populates='need')
+    need_family = relationship(
+        'NeedFamilyModel',
+        uselist=False,
+        back_populates='need',
+    )
 
     @hybrid_property
     def childSayName(self):
@@ -81,6 +98,7 @@ class NeedModel(base):
     def pretty_cost(self):
         return int_formatter(self.cost)
 
+    # TODO: proper expression
     @pretty_cost.expression
     def pretty_cost(cls):
         pass
@@ -89,6 +107,7 @@ class NeedModel(base):
     def pretty_paid(self):
         return int_formatter(self.paid)
 
+    # TODO: proper expression
     @pretty_paid.expression
     def pretty_paid(cls):
         pass
@@ -97,9 +116,10 @@ class NeedModel(base):
     def pretty_donated(self):
         return int_formatter(self.donated)
 
+    # TODO: proper expression
     @pretty_paid.expression
     def pretty_donated(self):
-        return self.donated
+        pass
 
     @hybrid_property
     def progress(self):
@@ -115,19 +135,27 @@ class NeedModel(base):
     def progress(cls):
         return
 
-    child = relationship(
-        'ChildModel',
-        foreign_keys=child_id,
-        uselist=False,
-        back_populates='needs',
-        lazy='selectin',
-    )
-    payments = relationship('PaymentModel', back_populates='need')
-    need_family = relationship(
-        'NeedFamilyModel',
-        uselist=False,
-        back_populates='need',
-    )
+    @hybrid_property
+    def type_name(self):
+        if self.type == 0:
+            return 'service'
+        elif self.type == 1:
+            return 'product'
+
+        return 'unknown'
+
+    @type_name.expression
+    def type_name(cls):
+        pass
+
+    @hybrid_property
+    def status_description(self):
+        locale = get_locale()
+        return NeedStatuses.get(self.status, self.type_name, locale)
+
+    @status_description.expression
+    def status_description(cls):
+        pass
 
     @hybrid_property
     def participants(self):
@@ -222,111 +250,23 @@ class NeedModel(base):
                         )
         return data
 
-    def send_done_email(self):
-        to_users = [user.user for user in self.get_participants()]
-        to = [user.emailAddress for user in to_users]
-
-        ccs = {user.emailAddress for user in self.family} \
-            - {email for email in to}
-
-        send_embeded_subject_email.delay(
-            to=to,
-            cc=list(ccs),
-            html=render_template(
-                'status_done.html',
-                child=self.child,
-                need=self,
-                date=self.doneAt,
-                locale=DEFAULT_LOCALE,
-            ),
-        )
-
-    def send_purchase_email(self):
-        to_users = [user.user for user in self.get_participants()]
-        to = [user.emailAddress for user in to_users]
-
-        ccs = {user.emailAddress for user in self.family} \
-            - {email for email in to}
-
-        send_embeded_subject_email.delay(
-            to=to,
-            cc=list(ccs),
-            html=render_template(
-                'status_purchased.html',
-                child=self.child,
-                need=self,
-                date=self.purchase_date,
-                locale=DEFAULT_LOCALE,
-            ),
-        )
-
-    def send_child_delivery_product_email(self):
-        to_users = [user.user for user in self.get_participants()]
-        to = [user.emailAddress for user in to_users]
-
-        ccs = {user.emailAddress for user in self.family} \
-            - {email for email in to}
-
+    def child_delivery_product(self):
         from say.api import app
+        from say.tasks.update_needs import change_need_status_to_delivered
+
         deliver_to_child_delay = datetime.utcnow() \
             + timedelta(seconds=app.config['DELIVER_TO_CHILD_DELAY'])
 
-        send_embeded_subject_email.apply_async(
-            (
-                to,
-                render_template(
-                    'status_child_delivery_product.html',
-                    child=self.child,
-                    need=self,
-                    date=self.ngo_delivery_date,
-                    locale=DEFAULT_LOCALE,
-                ),
-                list(ccs),
-            ),
-            eta=deliver_to_child_delay,
-        )
-
-        from say.tasks.update_needs import change_need_status_to_delivered
         change_need_status_to_delivered.apply_async(
             (self.id,),
             eta=deliver_to_child_delay,
         )
 
-    def send_child_delivery_service_email(self):
-        to_users = [user.user for user in self.get_participants()]
-        to = [user.emailAddress for user in to_users]
 
-        ccs = {user.emailAddress for user in self.family} \
-            - {email for email in to}
+@event.listens_for(NeedModel.status, "set")
+def status_event(need, new_status, old_status, initiator):
+    if new_status == old_status:
+        return
 
-        send_embeded_subject_email.delay(
-            to=to,
-            cc=list(ccs),
-            html=render_template(
-                'status_child_delivery_service.html',
-                child=self.child,
-                need=self,
-                date=self.child_delivery_date,
-                locale=DEFAULT_LOCALE,
-            ),
-         )
-
-    def send_money_to_ngo_email(self):
-        to_users = [user.user for user in self.get_participants()]
-        to = [user.emailAddress for user in to_users]
-
-        ccs = {user.emailAddress for user in self.family} \
-            - {email for email in to}
-
-        send_embeded_subject_email.delay(
-            to=to,
-            cc=list(ccs),
-            html=render_template(
-                'status_money_to_ngo.html',
-                need=self,
-                child=self.child,
-                date=self.ngo_delivery_date,
-                locale=DEFAULT_LOCALE,
-            ),
-        )
+    need.status_updated_at = datetime.utcnow()
 
