@@ -312,8 +312,6 @@ class VerifyPayment(Resource):
             for participate in participants:
                 participate.user.doneNeedCount += 1
 
-            need.send_done_email()
-
         return make_response(render_template(
             'successful_payment.html',
             payment=pending_payment,

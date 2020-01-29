@@ -35,7 +35,7 @@ from say.authorization import *
 from say.roles import *
 from say.exceptions import *
 from say.langs import LANGS
-from say.locale import ChangeLocaleTo
+from say.locale import ChangeLocaleTo, get_locale
 
 
 DEFAULT_CHILD_ID = 104  # TODO: Remove this after implementing pre needs
@@ -74,6 +74,8 @@ ALLOWED_RECEIPT_EXTENSIONS = ALLOWED_IMAGE_EXTENSIONS | {"pdf"}
 app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
 app.config['BASE_URL'] = 'https://sayapp.company'
+app.config['SET_PASSWORD_URL'] = 'setpassword'
+app.config['RESET_PASSSWORD_EXPIRE_TIME'] = 2 * 3600 # 2 hours
 app.config['SQLALCHEMY_DATABASE_URI'] = conf['dbUrl']
 app.config['SANDBOX'] = True
 app.config['IDPAY_API_KEY'] = "83bdbfa4-04e6-4593-ba07-3e0652ae726d"
@@ -175,18 +177,27 @@ api = Api(app)
 # api_bp = Blueprint('api', __name__)
 # api = Api(api_bp)
 
+
 int_formatter = lambda integer: format(integer, ',d')
 
-def expose_datetime(dt, locale):
+
+def expose_datetime(dt, locale, with_year=True):
     if locale == LANGS.en:
-        return dt.strftime('%Y.%m.%d')
+        if with_year:
+            return dt.strftime('%Y.%m.%d')
+        else:
+            return dt.strftime('%m.%d')
+
     elif locale == LANGS.fa:
-        return JalaliDate(dt).localdateformat()
+        if with_year:
+            return JalaliDate(dt).localdateformat()
+        else:
+            return JalaliDate(dt).strftime('%A %D %B')
 
     return dt
 
 
-def render_template(path, *args, locale=None,
+def render_template(path, *args, locale=None, date_with_year=True,
                     **kwargs):
 
     from flask import render_template
@@ -195,13 +206,16 @@ def render_template(path, *args, locale=None,
         return render_template(path, *args, int_formatter=int_formatter, **kwargs)
 
     # locale is str or Locale object, so we need to make sure it is str
-    locale = str(locale)
+    locale = str(locale) or get_locale()
     with ChangeLocaleTo(locale):
         locale_path = os.path.join(locale, path)
-
         for k, v in kwargs.items():
             if isinstance(v, datetime):
-                kwargs[k] = expose_datetime(v, locale=locale)
+                kwargs[k] = expose_datetime(
+                    v,
+                    locale=locale,
+                    with_year=date_with_year,
+                )
 
         return render_template(
             locale_path,
