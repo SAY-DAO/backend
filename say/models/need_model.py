@@ -5,6 +5,7 @@ from sqlalchemy.dialects.postgresql import HSTORE
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import object_session
 
+from say.statuses import NeedStatuses
 from say.api import render_template, int_formatter
 from say.tasks import send_email, send_embeded_subject_email
 from . import *
@@ -58,6 +59,20 @@ class NeedModel(base):
     child_delivery_date = Column(DateTime)
     confirmDate = Column(DateTime, nullable=True)
 
+    child = relationship(
+        'ChildModel',
+        foreign_keys=child_id,
+        uselist=False,
+        back_populates='needs',
+        lazy='selectin',
+    )
+    payments = relationship('PaymentModel', back_populates='need')
+    need_family = relationship(
+        'NeedFamilyModel',
+        uselist=False,
+        back_populates='need',
+    )
+
     @hybrid_property
     def childSayName(self):
         return self.child.sayName
@@ -82,6 +97,7 @@ class NeedModel(base):
     def pretty_cost(self):
         return int_formatter(self.cost)
 
+    # TODO: proper expression
     @pretty_cost.expression
     def pretty_cost(cls):
         pass
@@ -90,6 +106,7 @@ class NeedModel(base):
     def pretty_paid(self):
         return int_formatter(self.paid)
 
+    # TODO: proper expression
     @pretty_paid.expression
     def pretty_paid(cls):
         pass
@@ -98,9 +115,10 @@ class NeedModel(base):
     def pretty_donated(self):
         return int_formatter(self.donated)
 
+    # TODO: proper expression
     @pretty_paid.expression
     def pretty_donated(self):
-        return self.donated
+        pass
 
     @hybrid_property
     def progress(self):
@@ -116,19 +134,27 @@ class NeedModel(base):
     def progress(cls):
         return
 
-    child = relationship(
-        'ChildModel',
-        foreign_keys=child_id,
-        uselist=False,
-        back_populates='needs',
-        lazy='selectin',
-    )
-    payments = relationship('PaymentModel', back_populates='need')
-    need_family = relationship(
-        'NeedFamilyModel',
-        uselist=False,
-        back_populates='need',
-    )
+    @hybrid_property
+    def type_name(self):
+        if self.type == 0:
+            return 'service'
+        elif self.type == 1:
+            return 'product'
+
+        return 'unknown'
+
+    @type_name.expression
+    def type_name(cls):
+        pass
+
+    @hybrid_property
+    def status_description(self):
+        locale = get_locale()
+        return NeedStatuses.get(self.status, self.type_name, locale)
+
+    @status_description.expression
+    def status_description(cls):
+        pass
 
     @hybrid_property
     def participants(self):
