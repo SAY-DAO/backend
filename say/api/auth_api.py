@@ -440,21 +440,24 @@ class ResetPasswordApi(Resource):
 
     @commit
     @swag_from("./docs/auth/reset_password.yml")
-    def post(self, email):
+    def post(self):
+
+        email = request.form.get('email')
+
+        if not email:
+            return make_response({'message': 'email is missing'}, 400)
 
         user = session.query(UserModel) \
             .filter_by(emailAddress=email) \
             .first()
 
-        if user is None:
-            return make_response({'message': 'Email is wrong'}, 400)
+        if user:
+            reset_password = ResetPassword(user=user)
+            session.add(reset_password)
+            session.flush()
+            reset_password.send_email()
 
-        reset_password = ResetPassword(user=user)
-        session.add(reset_password)
-        session.flush()
-        reset_password.send_email()
-
-        return make_response({'message': 'reset password email sent'})
+        return make_response({'message': 'reset password email sent, maybee'})
 
 
 class ConfirmResetPassword(Resource):
@@ -511,7 +514,7 @@ api.add_resource(LogoutRefresh, "/api/v2/auth/logout/refresh")
 api.add_resource(TokenRefresh, "/api/v2/auth/refresh")
 api.add_resource(Verify, "/api/v2/auth/verify/userid=<user_id>")
 api.add_resource(VerifyResend, "/api/v2/auth/verify/resend/userid=<user_id>")
-api.add_resource(ResetPasswordApi, "/api/v2/auth/password/reset/email=<email>")
+api.add_resource(ResetPasswordApi, "/api/v2/auth/password/reset")
 api.add_resource(
     ConfirmResetPassword,
     "/api/v2/auth/password/reset/confirm/token=<token>",
