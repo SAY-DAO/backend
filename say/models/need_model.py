@@ -220,7 +220,7 @@ WHERE need.id IN (502);
 
     def done(self):
         self.status = 2
-        self.send_done_email()
+        self.doneAt = datetime.utcnow()
 
     # TODO: Remove this and replace it with participants model
     def get_participants(self):
