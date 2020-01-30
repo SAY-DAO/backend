@@ -84,8 +84,8 @@ app.config["DEBUG"] = False
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["DELIVER_TO_CHILD_DELAY"] = 4 * 60 * 60 # 4 hours
 app.config.update({
-    "CACHE_TYPE": "simple", # Flask-Caching related configs
-    "CACHE_DEFAULT_TIMEOUT": 30
+    "CACHE_TYPE": "redis", # Flask-Caching related configs
+    "CACHE_DEFAULT_TIMEOUT": 300
 })
 app.config["SWAGGER"] = {
     # "swagger_version": "3.20.9",
@@ -123,7 +123,7 @@ def create_celery_app(app=None):
 
     celery = Celery(app.import_name, broker=app.config['broker_url'],
                     include=CELERY_TASK_LIST)
-    celery.conf.timezone = 'Asia/Tehran'
+    celery.conf.timezone = 'UTC'
     celery.conf.beat_schedule = beat
     celery.conf.update(app.config)
     TaskBase = celery.Task
