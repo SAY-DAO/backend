@@ -1,13 +1,12 @@
 from hashlib import md5
 
-from say.api.child_api import get_child_by_id, get_child_need
 from say.models import session, obj_to_dict
-from say.models.family_model import FamilyModel
-from say.models.need_family_model import NeedFamilyModel
-from say.models.payment_model import PaymentModel
-from say.models.user_family_model import UserFamilyModel
-from say.models.user_model import UserModel
-from say.models.child_model import ChildModel
+from say.models.family_model import Family
+from say.models.need_family_model import NeedFamily
+from say.models.payment_model import Payment
+from say.models.user_family_model import UserFamily
+from say.models.user_model import User
+from say.models.child_model import Child
 from . import *
 
 """
@@ -42,53 +41,6 @@ def me_or_user_id(func):
 
     return wrapper
 
-def get_user_by_id(session, user_id):
-    user = (
-        session.query(UserModel)
-        .filter_by(id=user_id)
-        .filter_by(isDeleted=False)
-        .first()
-    )
-
-    children = get_user_children(session, user)
-    user_data = obj_to_dict(user)
-    user_data["Children"] = children
-
-    return user_data
-
-
-def get_user_children(session, user):
-    families = session.query(UserFamilyModel).filter_by(id_user=user.id).filter_by(isDeleted=False).all()
-
-    children = {}
-    for f in families:
-        if f.family.child.isConfirmed:
-            children[str(f.family.id_child)] = get_child_by_id(session, f.family.id_child)
-
-    return children
-
-
-def get_user_needs(session, user, urgent=False):
-    families = (
-        session.query(UserFamilyModel)
-        .filter_by(id_user=user.id)
-        .filter_by(isDeleted=False)
-        .all()
-    )
-
-    needs = {}
-    for family in families:
-        child = (
-            session.query(FamilyModel)
-            .filter_by(id_child=family.family.id_child)
-            .filter_by(isDeleted=False)
-            .first()
-        )
-
-        needs[str(child.id_child)] = get_child_need(session, child.id_child, urgent=urgent)
-
-    return needs
-
 
 class GetUserById(Resource):
 
@@ -99,7 +51,13 @@ class GetUserById(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            resp = make_response(jsonify(get_user_by_id(session, user_id)), 200)
+            user = (
+                session.query(User)
+                .filter_by(id=user_id)
+                .filter_by(isDeleted=False)
+                .first()
+            )
+            resp = make_response(jsonify(obj_to_dict(user)), 200)
 
         except Exception as e:
             print(e)
@@ -119,41 +77,23 @@ class GetUserChildren(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            user = session.query(UserModel).get(user_id)
-
-            if not user.isDeleted:
-                resp = make_response(jsonify(get_user_children(session, user)), 200)
-            else:
+            user = session.query(User).get(user_id)
+            if user.isDeleted:
                 resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
+            children = []
+            for family_member in user.user_families:
+                child = family_member.family.child
+                if not child.isConfirmed and get_user_role() in [USER]:
+                    continue
 
-        finally:
-            session.close()
-            return resp
+                children.append(obj_to_dict(child))
 
-
-class GetUserChildrenCount(Resource):
-
-    @authorize(USER, ADMIN, SUPER_ADMIN)
-    @me_or_user_id
-    @swag_from("./docs/user/children-count.yml")
-    def get(self, user_id):
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
-        try:
-            user = session.query(UserModel).get(user_id)
-
-            if not user.isDeleted:
-                child_count = session.query(UserFamilyModel) \
-                    .filter_by(id_user=user.id) \
-                    .filter_by(isDeleted=False) \
-                    .count()
-                resp = make_response(jsonify({'childrenCount': child_count}), 200)
-            else:
-                resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
+            result = dict(
+                total_count=len(children),
+                children=children,
+            )
+            resp = make_response(jsonify(result), 200)
 
         except Exception as e:
             print(e)
@@ -173,7 +113,7 @@ class UpdateUserById(Resource):
 
         try:
             primary_user = (
-                session.query(UserModel)
+                session.query(User)
                 .filter_by(id=user_id)
                 .filter_by(isDeleted=False)
                 .first()
@@ -246,7 +186,6 @@ class UpdateUserById(Resource):
                     True if request.form["gender"] == "true" else False
                 )
 
-            primary_user.lastUpdate = datetime.utcnow()
 
             secondary_user = obj_to_dict(primary_user)
 
@@ -269,7 +208,7 @@ class DeleteUserById(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            user = session.query(UserModel).get(user_id)
+            user = session.query(User).get(user_id)
 
             if user.isDeleted:
                 resp = make_response(jsonify({"message": "user was already deleted!"}), 500)
@@ -277,13 +216,13 @@ class DeleteUserById(Resource):
                 return resp
 
             families = (
-                session.query(UserFamilyModel)
+                session.query(UserFamily)
                 .filter_by(id_user=user_id)
                 .filter_by(isDeleted=False)
                 .all()
             )
             needs = (
-                session.query(NeedFamilyModel)
+                session.query(NeedFamily)
                 .filter_by(id_user=user_id)
                 .filter_by(isDeleted=False)
                 .all()
@@ -319,14 +258,14 @@ class GetUserRole(Resource):
 
         try:
             family = (
-                session.query(FamilyModel)
+                session.query(Family)
                 .filter_by(id_child=child_id)
                 .filter_by(isDeleted=False)
                 .first()
             )
 
             user = (
-                session.query(UserFamilyModel)
+                session.query(UserFamily)
                 .filter_by(id_user=user_id)
                 .filter_by(id_family=family.id)
                 .filter_by(isDeleted=False)
@@ -385,7 +324,7 @@ class AddUser(Resource):
             username = request.form["userName"]
 
             duplicate_user = (
-                session.query(UserModel)
+                session.query(User)
                 .filter_by(isDeleted=False)
                 .filter_by(userName=username)
                 .first()
@@ -395,14 +334,13 @@ class AddUser(Resource):
                 session.close()
                 return resp
 
-            created_at = datetime.utcnow()
             last_update = datetime.utcnow()
             last_login = datetime.utcnow()
 
             avatar_url = "wrong url"
             flag_url = os.path.join(FLAGS, str(country) + ".png")
 
-            new_user = UserModel(
+            new_user = User(
                 firstName=first_name,
                 lastName=last_name,
                 userName=username,
@@ -412,8 +350,6 @@ class AddUser(Resource):
                 gender=gender,
                 city=city,
                 country=country,
-                createdAt=created_at,
-                lastUpdate=last_update,
                 birthDate=birth_date,
                 birthPlace=birth_place,
                 lastLogin=last_login,
@@ -470,7 +406,6 @@ API URLs
 
 api.add_resource(GetUserById, "/api/v2/user/userId=<user_id>")
 api.add_resource(GetUserChildren, "/api/v2/user/children/userId=<user_id>")
-api.add_resource(GetUserChildrenCount, "/api/v2/user/children/count/userId=<user_id>")
 api.add_resource(UpdateUserById, "/api/v2/user/update/userId=<user_id>")
 api.add_resource(DeleteUserById, "/api/v2/user/delete/userId=<user_id>")
 api.add_resource(AddUser, "/api/v2/user/add")

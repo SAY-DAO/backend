@@ -1,7 +1,5 @@
 from say.models import session, obj_to_dict
-from say.api.need_api import get_all_urgent_needs
-from say.api.user_api import get_user_by_id, get_user_needs
-from say.models.user_model import UserModel
+from say.models.user_model import User
 from . import *
 
 """
@@ -17,19 +15,20 @@ class DashboardDataFeed(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            user = (
-                session.query(UserModel)
-                .filter_by(id=user_id)
-                .filter_by(isDeleted=False)
-                .first()
+            user = session.query(User).get(user_id)
+            children = []
+            for family_member in user.user_families:
+                child = family_member.family.child
+                if not child.isConfirmed and get_user_role() in [USER]:
+                    continue
+
+                children.append(obj_to_dict(child))
+
+            result = dict(
+                user=obj_to_dict(user),
+                children=children,
             )
-
-            data = get_user_by_id(session, user_id)
-            needs = get_user_needs(session, user, urgent=True)
-
-            data["UserUrgentNeeds"] = needs
-
-            resp = make_response(jsonify(data), 200)
+            resp = make_response(jsonify(result), 200)
 
         except Exception as e:
             print(e)

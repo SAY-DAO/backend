@@ -8,7 +8,7 @@ SocialWorker Model
 """
 
 
-class SocialWorkerModel(base):
+class SocialWorker(base, Timestamp):
     __tablename__ = "social_worker"
 
     id = Column(Integer, primary_key=True, nullable=False, unique=True)
@@ -44,13 +44,12 @@ class SocialWorkerModel(base):
     bankAccountShebaNumber = Column(String, nullable=True)
     bankAccountCardNumber = Column(String, nullable=True)
     registerDate = Column(Date, nullable=False)
-    lastUpdateDate = Column(Date, nullable=False)
     lastLoginDate = Column(Date, nullable=False)
     lastLogoutDate = Column(Date, nullable=True)
     isActive = Column(Boolean, nullable=False, default=True)
     isDeleted = Column(Boolean, nullable=False, default=False)
     locale = Column(LocaleType, default=Locale('fa'), nullable=False)
 
-    privilege = relationship("PrivilegeModel", foreign_keys=id_type)
-    ngo = relationship("NgoModel", foreign_keys=id_ngo)
-    children = relationship("ChildModel", back_populates='social_worker')
+    privilege = relationship("Privilege", foreign_keys=id_type)
+    ngo = relationship("Ngo", foreign_keys=id_ngo)
+    children = relationship("Child", back_populates='social_worker')

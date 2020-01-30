@@ -25,7 +25,7 @@ class ResetPassword(base):
     expire_at = Column(DateTime, default=expire_at, nullable=False)
     is_used = Column(Boolean, default=False, nullable=False)
 
-    user = relationship('UserModel', foreign_keys=user_id, uselist=False)
+    user = relationship('User', foreign_keys=user_id, uselist=False)
 
     @hybrid_property
     def is_expired(self):

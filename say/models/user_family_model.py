@@ -7,7 +7,7 @@ User-Family Model
 
 
 # TODO: FamilyMemberModel?
-class UserFamilyModel(base):
+class UserFamily(base, Timestamp):
     __tablename__ = "user_family"
 
     id = Column(Integer, nullable=False, primary_key=True)
@@ -17,15 +17,16 @@ class UserFamilyModel(base):
     isDeleted = Column(Boolean, nullable=False, default=False)
 
     family = relationship(
-        'FamilyModel',
+        'Family',
         foreign_keys=id_family,
         back_populates='members',
         uselist=False,
     )
 
     user = relationship(
-        'UserModel',
+        'User',
         foreign_keys=id_user,
         uselist=False,
+        back_populates='user_families',
     )
 

@@ -73,9 +73,9 @@ ALLOWED_RECEIPT_EXTENSIONS = ALLOWED_IMAGE_EXTENSIONS | {"pdf"}
 
 app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
-app.config['BASE_URL'] = 'https://sayapp.company'
 app.config['SET_PASSWORD_URL'] = 'setpassword'
 app.config['RESET_PASSSWORD_EXPIRE_TIME'] = 2 * 3600 # 2 hours
+app.config['BASE_URL'] = 'http://0.0.0.0:5000/'
 app.config['SQLALCHEMY_DATABASE_URI'] = conf['dbUrl']
 app.config['SANDBOX'] = True
 app.config['IDPAY_API_KEY'] = "83bdbfa4-04e6-4593-ba07-3e0652ae726d"
@@ -255,77 +255,13 @@ def allowed_receipt(filename):
     raise TypeError('Wrong receipt format')
 
 
-def utf8_response(response: dict, is_deep=False):
-    date_keys = ["createdAt", "lastLogin", "lastUpdate"]
-    date_temp = []
-    data_out, deep_out, out = "", "", ""
-    response_temp = copy.deepcopy(response)
-
-    if is_deep:
-        for key2 in response_temp.keys():
-            for key1 in response_temp[key2].keys():
-                if key1 in date_keys or "Date" in key1:
-                    date_temp.append(f', "{key1}": "{str(response[key2].pop(key1))}"')
-
-            for temp in date_temp:
-                data_out += temp
-
-            data_out += "}"
-
-            deep_temp = (
-                str(eval(str(response[key2]).encode("utf-8")))
-                .replace("'", '"')
-                .replace("\\u200c", "‌")[:-1]
-                + data_out
-            )
-            deep_out += f'"{key2}": {deep_temp}, '
-            data_out = ""
-            date_temp.clear()
-
-        deep_out = "{" + deep_out[:-2] + "}"
-        deep_out = deep_out.replace(': "None"', ": null")
-        deep_out = deep_out.replace(": None", ": null")
-        deep_out = deep_out.replace(': "False"', ": false")
-        deep_out = deep_out.replace(": False", ": false")
-        deep_out = deep_out.replace(': "True"', ": true")
-        deep_out = deep_out.replace(": True", ": true")
-
-        return deep_out
-
-    else:
-        for key in response_temp.keys():
-            if key in date_keys or "Date" in key:
-                date_temp.append(f', "{key}": "{str(response.pop(key))}"')
-
-        for temp in date_temp:
-            data_out += temp
-
-        data_out += "}"
-        # normalizer = Normalizer()
-
-        out = (
-            str(eval(str(response).encode("utf-8")))
-            .replace("'", '"')
-            .replace("\\u200c", "‌")[:-1]
-            + data_out
-        )
-        out = out.replace(': "None"', ": null")
-        out = out.replace(": None", ": null")
-        out = out.replace(': "False"', ": false")
-        out = out.replace(": False", ": false")
-        out = out.replace(': "True"', ": true")
-        out = out.replace(": True", ": true")
-
-        return out
-
-
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):
     jti = decrypted_token['jti']
-    from ..models.revoked_token_model import RevokedTokenModel
+    from ..models.revoked_token_model import RevokedToken
     from sqlalchemy.orm import scoped_session, sessionmaker
     session = scoped_session(
         sessionmaker(autocommit=False, autoflush=False, bind=db)
     )
-    return RevokedTokenModel.is_jti_blacklisted(jti, session)
+    return RevokedToken.is_jti_blacklisted(jti, session)
 

@@ -27,9 +27,16 @@ parameters:
         donate:
           type: integer
 
+        useCredit:
+          type: boolean
+          default: true
+
 responses:
   200:
     description: Error occurred somewhere!
+
+  299:
+    description: Payment done
 
   302:
     description: Ok

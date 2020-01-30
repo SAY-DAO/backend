@@ -6,7 +6,7 @@ Child-Need Model
 """
 
 
-class ChildNeedModel(base):
+class ChildNeed(base, Timestamp):
     __tablename__ = "child_need"
 
     id_child = Column(Integer, ForeignKey('child.id'), nullable=False)
@@ -14,5 +14,5 @@ class ChildNeedModel(base):
     id = Column(Integer, nullable=False, primary_key=True)
     isDeleted = Column(Boolean, nullable=False, default=False)
 
-    child = relationship("ChildModel", foreign_keys="ChildNeedModel.id_child")
-    need = relationship("NeedModel", foreign_keys="ChildNeedModel.id_need")
+    child = relationship("Child", foreign_keys="ChildNeed.id_child")
+    need = relationship("Need", foreign_keys="ChildNeed.id_need")

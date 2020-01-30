@@ -169,7 +169,7 @@ responses:
           type: string
           description: the social worker's registeration date
 
-        lastUpdateDate:
+        updated:
           type: string
           description: the social worker's last update date
 

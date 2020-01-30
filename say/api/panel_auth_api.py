@@ -6,8 +6,8 @@ from flask_jwt_extended import create_refresh_token, \
 
 from . import *
 from say.models import session, obj_to_dict
-from say.models.revoked_token_model import RevokedTokenModel
-from say.models.social_worker_model import SocialWorkerModel
+from say.models.revoked_token_model import RevokedToken
+from say.models.social_worker_model import SocialWorker
 
 
 """
@@ -39,7 +39,7 @@ class PanelLogin(Resource):
                 )
 
             social_worker = (
-                session.query(SocialWorkerModel)
+                session.query(SocialWorker)
                 .filter_by(isDeleted=False)
                 .filter_by(userName=username)
                 .first()
@@ -87,7 +87,7 @@ class PanelTokenRefresh(Resource):
     @swag_from("./docs/panel_auth/refresh.yml")
     def post(self):
         id = get_jwt_identity()
-        social_worker = session.query(SocialWorkerModel).get(id)
+        social_worker = session.query(SocialWorker).get(id)
         session.close()
         access_token = create_sw_access_token(social_worker, fresh=True)
         return jsonify({'access_token': f'Bearer {access_token}'})
@@ -101,7 +101,7 @@ class PanelLogoutAccess(Resource):
         jti = get_raw_jwt()['jti']
         msg = None
         try:
-            revoked_token = RevokedTokenModel(jti = jti)
+            revoked_token = RevokedToken(jti = jti)
             session.add(revoked_token)
             session.commit()
             msg = {'message': 'Access token has been revoked'}
@@ -118,7 +118,7 @@ class PanelLogoutRefresh(Resource):
     def post(self):
         jti = get_raw_jwt()['jti']
         try:
-            revoked_token = RevokedTokenModel(jti = jti)
+            revoked_token = RevokedToken(jti = jti)
             session.add(revoked_token)
             session.commit()
             msg = {'message': 'Refresh token has been revoked'}
