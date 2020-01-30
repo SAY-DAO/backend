@@ -444,7 +444,7 @@ class ResetPasswordApi(Resource):
         if not email:
             return make_response({'message': 'email is missing'}, 400)
 
-        user = session.query(UserModel) \
+        user = session.query(User) \
             .filter_by(emailAddress=email) \
             .first()
 
@@ -479,7 +479,7 @@ class ConfirmResetPassword(Resource):
         if new_password != confirm_new_password:
             return make_response({'message': 'passwords dose not match'}, 499)
 
-        user = session.query(UserModel).get(reset_password.user_id)
+        user = session.query(User).get(reset_password.user_id)
 
         user.password = new_password
         reset_password.is_used = True

@@ -19,7 +19,7 @@ def report_to_families(self):
 
 @celery.task(base=celery.DBTask, bind=True)
 def report_to_family(self, family_id):
-    from say.models.user_model import UserModel
+    from say.models.user_model import User
     from say.models.need_model import NeedModel
     from say.models.child_model import ChildModel
     from say.models.family_model import FamilyModel
@@ -52,8 +52,8 @@ def report_to_family(self, family_id):
         # Joining by NeedFamily and geting distinct emails
         to_members_email = [
             u.emailAddress for u in session
-            .query(UserModel.emailAddress) \
-            .filter(UserModel.id==NeedFamilyModel.id_user) \
+            .query(User.emailAddress) \
+            .filter(User.id==NeedFamilyModel.id_user) \
             .filter(NeedFamilyModel.id_family==family_id) \
             .distinct()
         ]
@@ -61,8 +61,8 @@ def report_to_family(self, family_id):
         # Joining by UserFamily and geting distinct emails
         all_members_email = [
             u.emailAddress for u in session
-            .query(UserModel.emailAddress) \
-            .filter(UserModel.id==UserFamilyModel.id_user) \
+            .query(User.emailAddress) \
+            .filter(User.id==UserFamilyModel.id_user) \
             .filter(UserFamilyModel.id_family==family_id) \
             .distinct() \
         ]
