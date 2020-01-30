@@ -3,12 +3,13 @@ from random import randint
 
 from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
+
 from babel import Locale
+from say.models import session, obj_to_dict, or_, commit,  ResetPassword, \
+    Verification, User, RevokedToken
+from say.tasks import send_email
 
 from . import *
-from say.models import session, obj_to_dict, or_, commit,  ResetPassword, \
-    Verification, User, RevokedToken,
-from say.tasks import send_email
 
 
 """
