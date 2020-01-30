@@ -84,8 +84,8 @@ app.config["DEBUG"] = False
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["DELIVER_TO_CHILD_DELAY"] = 4 * 60 * 60 # 4 hours
 app.config.update({
-    "CACHE_TYPE": "simple", # Flask-Caching related configs
-    "CACHE_DEFAULT_TIMEOUT": 30
+    "CACHE_TYPE": "redis", # Flask-Caching related configs
+    "CACHE_DEFAULT_TIMEOUT": 300
 })
 app.config["SWAGGER"] = {
     # "swagger_version": "3.20.9",
