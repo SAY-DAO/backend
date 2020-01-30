@@ -341,12 +341,6 @@ WHERE need.id IN (502);
         )
 
 
-@event.listens_for(NeedModel.status, "set")
-def status_event(need, new_status, old_status, initiator):
-    if new_status == old_status:
-        return
-
-    need.status_updated_at = datetime.utcnow()
 
 
 @event.listens_for(Need.status, "set")
@@ -357,13 +351,14 @@ def status_event(need, new_status, old_status, initiator):
     elif new_status == 4 and need.isReported != True:
         raise Exception('Need has not been reported to ngo yet')
 
-    elif need.status == 2:
+    need.status_updated_at = datetime.utcnow()
+
+    if need.status == 2:
         need.done()
 
     elif need.type == 0:  # Service
         if new_status == 3:
             need.ngo_delivery_date = datetime.utcnow()
-            need.send_money_to_ngo_email()
 
         elif new_status == 4:
             need.child_delivery_date = datetime.utcnow()
@@ -373,21 +368,19 @@ def status_event(need, new_status, old_status, initiator):
     elif need.type == 1:  # Product
         if new_status == 3:
             need.purchase_date = datetime.utcnow()
-            need.send_purchase_email()
 
         elif new_status == 4:
             need.ngo_delivery_date = parse_datetime(
                 request.form.get('ngo_delivery_date')
             )
 
-            if not(
+            if not (
                 need.expected_delivery_date
                 <= need.ngo_delivery_date <=
                 datetime.utcnow()
             ):
                 raise Exception('Invalid ngo_delivery_date')
 
-            need.send_child_delivery_product_email()
             need.refund_extra_credit()
 
 
