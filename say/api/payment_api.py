@@ -183,7 +183,6 @@ class AddPayment(Resource):
         session.add(payment)
         session.flush()
 
-        import pudb; pudb.set_trace()  # XXX BREAKPOINT
         if payment.bank_amount == 0:
             payment.verify()
 
