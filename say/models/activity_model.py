@@ -11,7 +11,7 @@ Activity Model
 
 
 class Activity(base, Timestamp):
-    __tablename__ = 'activity'
+    __tablename__ = 'sw_activity'
 
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
     id_social_worker = Column(Integer, ForeignKey('social_worker.id'), nullable=False)
@@ -28,6 +28,6 @@ class Activity(base, Timestamp):
     # 18: update receipt
 
     social_worker = relationship(
-        'SocialWorker', 
+        'SocialWorker',
         foreign_keys='Activity.id_social_worker'
     )
