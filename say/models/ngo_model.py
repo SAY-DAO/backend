@@ -1,6 +1,7 @@
 from sqlalchemy.orm import object_session
 
-from say.api import render_template, expose_datetime
+from say.api import render_template
+from say.formatters import expose_datetime
 from say.tasks import send_email, send_embeded_subject_email
 from say.utils import surname
 from . import *

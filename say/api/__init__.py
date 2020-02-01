@@ -26,7 +26,6 @@ from flask_jwt_extended import JWTManager
 from logging import debug, basicConfig, DEBUG
 from flask_caching import Cache
 from flask_cors import CORS
-from khayyam import JalaliDate
 
 from ..payment import IDPay
 from say.celery import beat
@@ -173,34 +172,24 @@ jwt = JWTManager(app)
 
 idpay = IDPay(app.config['IDPAY_API_KEY'], app.config['SANDBOX'])
 
+from say.basedata import basedata
+
+try:
+    basedata(db)
+except:
+    pass
+
 api = Api(app)
 # api_bp = Blueprint('api', __name__)
 # api = Api(api_bp)
 
-
-int_formatter = lambda integer: format(integer, ',d')
-
-
-def expose_datetime(dt, locale, with_year=True):
-    if locale == LANGS.en:
-        if with_year:
-            return dt.strftime('%Y.%m.%d')
-        else:
-            return dt.strftime('%m.%d')
-
-    elif locale == LANGS.fa:
-        if with_year:
-            return JalaliDate(dt).localdateformat()
-        else:
-            return JalaliDate(dt).strftime('%A %D %B')
-
-    return dt
 
 
 def render_template(path, *args, locale=None, date_with_year=True,
                     **kwargs):
 
     from flask import render_template
+    from say.formatters import int_formatter, expose_datetime
 
     if not locale:
         return render_template(path, *args, int_formatter=int_formatter, **kwargs)

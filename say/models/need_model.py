@@ -8,10 +8,11 @@ from sqlalchemy.orm import object_session
 from sqlalchemy import event
 
 from say.statuses import NeedStatuses
-from say.api import render_template, int_formatter
+from say.api import render_template
 from say.tasks import send_email, send_embeded_subject_email
 
 from .payment_model import Payment
+from .user_model import User
 from . import *
 
 """
@@ -285,8 +286,35 @@ WHERE need.id IN (502);
                 credit_amount=-refund_amount,
                 desc='Refund payment',
             )
+
             self.payments.append(refund_payment)
             refund_payment.verify()
+
+            return
+
+    def say_extra_payment(self):
+        # There is nothing to pay by say
+        if self.cost <= self.paid:
+            return
+
+        extra_cost = self.cost - self.paid
+
+        session = object_session(self)
+        say_user = session.query(User) \
+            .filter_by(userName='SAY') \
+            .one()
+
+        say_payment = Payment(
+            need=self,
+            user=say_user,
+            need_amount=extra_cost,
+            desc='SAY payment',
+        )
+
+        self.payments.append(say_payment)
+        say_payment.verify()
+
+        return
 
     def update(self):
         from say.utils import digikala
@@ -359,7 +387,6 @@ def status_event(need, new_status, old_status, initiator):
     elif need.type == 0:  # Service
         if new_status == 3:
             need.ngo_delivery_date = datetime.utcnow()
-            need.refund_extra_credit()
 
         elif new_status == 4:
             need.child_delivery_date = datetime.utcnow()
@@ -382,5 +409,6 @@ def status_event(need, new_status, old_status, initiator):
                 raise Exception('Invalid ngo_delivery_date')
 
             need.refund_extra_credit()
+            need.say_extra_payment()
 
 
