@@ -29,5 +29,5 @@ class Activity(base, Timestamp):
 
     social_worker = relationship(
         'SocialWorker', 
-        foreign_keys='Activity.id_social_worker'
+        foreign_keys='Activity.id_social_worker',
     )
