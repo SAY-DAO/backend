@@ -738,7 +738,8 @@ class UpdateChildById(Resource):
 
             session.commit()
 
-            resp = make_response(jsonify(primary_child), 200)
+            child_dict = obj_to_dict(primary_child)
+            resp = make_response(jsonify(child_dict), 200)
 
         except Exception as e:
             print(e)
