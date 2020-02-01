@@ -32,7 +32,7 @@ class UserModel(base):
     createdAt = Column(Date, nullable=False)
     lastUpdate = Column(Date, nullable=False)
     birthDate = Column(Date, nullable=True)
-    birthPlace = Column(Integer, nullable=True  # 1:tehran | 2:karaj
+    birthPlace = Column(Integer, nullable=True)  # 1:tehran | 2:karaj
     lastLogin = Column(Date, nullable=False)
     _password = Column(String, nullable=False)
     spentCredit = Column(Integer, nullable=False, default=0)
