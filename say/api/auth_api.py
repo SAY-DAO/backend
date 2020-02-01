@@ -442,7 +442,7 @@ class ResetPasswordApi(Resource):
     @swag_from("./docs/auth/reset_password.yml")
     def post(self):
 
-        email = request.form.get('email')
+        email = request.form.get('email').lower()
 
         if not email:
             return make_response({'message': 'email is missing'}, 400)
