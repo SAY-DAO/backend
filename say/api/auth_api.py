@@ -10,7 +10,7 @@ from . import *
 from say.locale import DEFAULT_LOCALE
 from say.models import session, obj_to_dict, or_, commit,  ResetPassword, \
     Verification, User, RevokedToken
-from say.tasks import send_email
+from say.tasks import send_embeded_subject_email
 
 from . import *
 
@@ -25,13 +25,12 @@ def datetime_converter(o):
 
 
 def send_verify_email(to_user, verify_code):
-    send_email.delay(
-        subject='SAY Email Verification',
+    send_embeded_subject_email.delay(
         to=to_user.emailAddress,
         html=render_template(
             'email_verification.html',
             code=str(verify_code),
-            locale=to_user.locale,
+            locale=get_locale(),
         ),
     )
 
@@ -120,7 +119,7 @@ class RegisterUser(Resource):
                 )
                 return
 
-            lang = request.args.get('_lang')
+            lang = get_locale()
             locale = Locale(lang)
 
             alreadyExist = (
@@ -243,7 +242,7 @@ class Login(Resource):
                         )
                         return
 
-                    lang = request.args.get('_lang')
+                    lang = get_locale()
                     user.locale = Locale(lang)
                     user.lastLogin = datetime.utcnow()
                     session.commit()
@@ -443,7 +442,7 @@ class ResetPasswordApi(Resource):
     def post(self):
 
         email = request.form.get('email').lower()
-        language = request.args.get('_lang', DEFAULT_LOCALE)
+        language = get_locale()
         if not email:
             return make_response({'message': 'email is missing'}, 400)
 
