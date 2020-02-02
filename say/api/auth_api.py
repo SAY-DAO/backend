@@ -5,6 +5,9 @@ from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
 
 from babel import Locale
+
+from . import *
+from say.locale import DEFAULT_LOCALE
 from say.models import session, obj_to_dict, or_, commit,  ResetPassword, \
     Verification, User, RevokedToken
 from say.tasks import send_email
@@ -440,7 +443,7 @@ class ResetPasswordApi(Resource):
     def post(self):
 
         email = request.form.get('email').lower()
-
+        language = request.args.get('_lang', DEFAULT_LOCALE)
         if not email:
             return make_response({'message': 'email is missing'}, 400)
 
@@ -452,7 +455,7 @@ class ResetPasswordApi(Resource):
             reset_password = ResetPassword(user=user)
             session.add(reset_password)
             session.flush()
-            reset_password.send_email()
+            reset_password.send_email(language)
 
         return make_response({'message': 'reset password email sent, maybee'})
 

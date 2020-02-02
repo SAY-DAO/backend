@@ -38,14 +38,14 @@ class ResetPassword(base):
             app.config['SET_PASSWORD_URL'] + f'?token={self.token}'
         )
 
-    def send_email(self):
+    def send_email(self, language):
         return send_embeded_subject_email.delay(
             to=self.user.emailAddress,
             html=render_template(
                 'reset_password.html',
                 user=self.user,
                 link=self.link,
-                locale=self.user.locale,
+                locale=language,
             )
         )
 
