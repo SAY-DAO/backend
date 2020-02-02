@@ -12,7 +12,7 @@ Extract subject (a p tag with id = 'subject') from rendered html of email
 '''
 def get_subject_from_html(html):
     soup = bs.BeautifulSoup(html)
-    subject_element = soup.find('p', attrs={'id': 'subject'})
+    subject_element = soup.find('title')
     return subject_element.text
 
 
