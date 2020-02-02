@@ -185,7 +185,14 @@ class GetNeedById(Resource):
                 .filter(NeedFamily.id_user==User.id) \
                 .filter(NeedFamily.id_user==UserFamily.id_user) \
                 .filter(UserFamily.id_family==NeedFamily.id_family) \
-                .filter(UserFamily.id_user==User.id)
+                .filter(UserFamily.id_user==User.id) \
+                .group_by(
+                    User.firstName,
+                    User.lastName,
+                    User.avatarUrl,
+                    UserFamily.userRole,
+                    NeedFamily.paid,
+                )
 
             need_dict['participants'] = [
                 {

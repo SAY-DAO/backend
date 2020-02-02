@@ -223,40 +223,6 @@ WHERE need.id IN (502);
         self.status = 2
         self.doneAt = datetime.utcnow()
 
-    # TODO: Remove this and replace it with participants model
-    def get_participants(self):
-        from .user_model import User
-        from .payment_model import Payment
-
-        session = object_session(self)
-        participants_query = session.query(
-            func.sum(Payment.need_amount),
-            User.firstName,
-            User.lastName,
-            User.avatarUrl,
-        ) \
-            .filter(Payment.id_need==self.id) \
-            .filter(Payment.id_user==User.id) \
-            .filter(Payment.verified.isnot(None)) \
-            .group_by(
-                Payment.id_user,
-                Payment.id_need,
-                User.firstName,
-                User.lastName,
-                User.avatarUrl,
-            )
-
-        participants = []
-        for participant in participants_query:
-            participants.append(dict(
-                contribution=participant[0],
-                userFirstName=participant[1],
-                userLastName=participant[2],
-                avatarUrl=participant[3],
-            ))
-
-        return participants
-
     @property
     def family(self):
         return {
