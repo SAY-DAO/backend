@@ -356,7 +356,6 @@ def status_event(need, new_status, old_status, initiator):
 
         elif new_status == 4:
             need.child_delivery_date = datetime.utcnow()
-            need.child_delivery_product()
 
     elif need.type == 1:  # Product
         if new_status == 3:
@@ -376,5 +375,6 @@ def status_event(need, new_status, old_status, initiator):
 
             need.refund_extra_credit()
             need.say_extra_payment()
+            need.child_delivery_product()
 
 
