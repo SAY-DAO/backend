@@ -6,7 +6,7 @@ User-Family Model
 """
 
 
-# TODO: FamilyMemberModel?
+# TODO: FamilyMember?
 class UserFamily(base, Timestamp):
     __tablename__ = "user_family"
 

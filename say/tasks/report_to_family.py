@@ -4,15 +4,16 @@ from sqlalchemy import or_
 
 from say.langs import LANGS
 from say.locale import ChangeLocaleTo
-from say.api import celery, render_template, app
+from say.api import celery, app
 from .send_email import send_embeded_subject_email
+from say.render_template_i18n import render_template_i18n
 
 
 @celery.task(base=celery.DBTask, bind=True)
 def report_to_families(self):
-    from say.models.family_model import FamilyModel
+    from say.models.family_model import Family
 
-    families_id = self.session.query(FamilyModel.id).all()
+    families_id = self.session.query(Family.id).all()
     for family_id in families_id:
         report_to_family.delay(family_id[0])
 
@@ -20,30 +21,30 @@ def report_to_families(self):
 @celery.task(base=celery.DBTask, bind=True)
 def report_to_family(self, family_id):
     from say.models.user_model import User
-    from say.models.need_model import NeedModel
-    from say.models.child_model import ChildModel
-    from say.models.family_model import FamilyModel
-    from say.models.user_family_model import UserFamilyModel
-    from say.models.need_family_model import NeedFamilyModel
+    from say.models.need_model import Need
+    from say.models.child_model import Child
+    from say.models.family_model import Family
+    from say.models.user_family_model import UserFamily
+    from say.models.need_family_model import NeedFamily
 
     session = self.session
     yesterday = datetime.utcnow() - timedelta(days=1)
 
     with app.app_context(), ChangeLocaleTo(LANGS.fa):
-        family = session.query(FamilyModel).get(family_id)
+        family = session.query(Family).get(family_id)
 
-        child_id, child_sayName = session.query(ChildModel.id, ChildModel.sayName) \
+        child_id, child_sayName = session.query(Child.id, Child.sayName) \
             .filter_by(id=family.id_child) \
             .one()
 
         # TODO: Getting whole need object beacuse of hybrid status_descrption
         # Getting needs that status of them updated in from yesterday
-        needs = session.query(NeedModel) \
+        needs = session.query(Need) \
             .filter_by(child_id=child_id) \
-            .filter(NeedModel.status_updated_at > yesterday) \
-            .filter(NeedModel.status >= 2) \
-            .filter(or_(NeedModel.type == 0, NeedModel.status != 4)) \
-            .order_by(NeedModel.status) \
+            .filter(Need.status_updated_at > yesterday) \
+            .filter(Need.status >= 2) \
+            .filter(or_(Need.type == 0, Need.status != 4)) \
+            .order_by(Need.status) \
             .all()
 
         if len(needs) == 0:
@@ -53,8 +54,8 @@ def report_to_family(self, family_id):
         to_members_email = [
             u.emailAddress for u in session
             .query(User.emailAddress) \
-            .filter(User.id==NeedFamilyModel.id_user) \
-            .filter(NeedFamilyModel.id_family==family_id) \
+            .filter(User.id==NeedFamily.id_user) \
+            .filter(NeedFamily.id_family==family_id) \
             .distinct()
         ]
 
@@ -62,8 +63,8 @@ def report_to_family(self, family_id):
         all_members_email = [
             u.emailAddress for u in session
             .query(User.emailAddress) \
-            .filter(User.id==UserFamilyModel.id_user) \
-            .filter(UserFamilyModel.id_family==family_id) \
+            .filter(User.id==UserFamily.id_user) \
+            .filter(UserFamily.id_family==family_id) \
             .distinct() \
         ]
 
@@ -71,7 +72,7 @@ def report_to_family(self, family_id):
 
         send_embeded_subject_email(
             to=to_members_email,
-            html=render_template(
+            html=render_template_i18n(
                 'status_update_to_family.html',
                 child_sayName=child_sayName,
                 needs=needs,

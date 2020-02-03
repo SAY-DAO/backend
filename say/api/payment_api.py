@@ -11,6 +11,7 @@ from say.models.need_model import Need
 from say.models.payment_model import Payment
 from say.models.user_family_model import UserFamily
 from say.models.user_model import User
+from say.render_template_i18n import render_template_i18n
 
 
 def validate_amount(need, amount):
@@ -186,7 +187,7 @@ class AddPayment(Resource):
         if payment.bank_amount == 0:
             payment.verify()
 
-            success_payment = render_template(
+            success_payment = render_template_i18n(
                 'successful_payment.html',
                 payment=payment,
                 user=user,
@@ -247,7 +248,7 @@ class VerifyPayment(Resource):
             .with_for_update() \
             .get(pending_payment.id_need)
 
-        unsuccessful_response = render_template(
+        unsuccessful_response = render_template_i18n(
             'unsuccessful_payment.html',
             payment=pending_payment,
             user=user,
@@ -285,7 +286,7 @@ class VerifyPayment(Resource):
 
         need.payments.append(pending_payment)
 
-        return make_response(render_template(
+        return make_response(render_template_i18n(
             'successful_payment.html',
             payment=pending_payment,
             user=user,

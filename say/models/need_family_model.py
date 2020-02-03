@@ -7,7 +7,7 @@ Need-Family Model
 """
 
 
-# TODO: ParticipantModel?
+# TODO: Participant?
 class NeedFamily(base, Timestamp):
     __tablename__ = "need_family"
 

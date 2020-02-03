@@ -11,8 +11,8 @@ from say.locale import DEFAULT_LOCALE
 from say.models import session, obj_to_dict, or_, commit,  ResetPassword, \
     Verification, User, RevokedToken
 from say.tasks import send_embeded_subject_email
+from say.render_template_i18n import render_template_i18n
 
-from . import *
 
 
 """
@@ -27,7 +27,7 @@ def datetime_converter(o):
 def send_verify_email(to_user, verify_code):
     send_embeded_subject_email.delay(
         to=to_user.emailAddress,
-        html=render_template(
+        html=render_template_i18n(
             'email_verification.html',
             code=str(verify_code),
             locale=get_locale(),

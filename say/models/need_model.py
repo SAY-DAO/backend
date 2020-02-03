@@ -8,8 +8,8 @@ from sqlalchemy.orm import object_session
 from sqlalchemy import event
 
 from say.statuses import NeedStatuses
-from say.api import render_template
 from say.tasks import send_email, send_embeded_subject_email
+from say.render_template_i18n import render_template_i18n
 
 from .payment_model import Payment
 from .user_model import User
@@ -312,7 +312,7 @@ WHERE need.id IN (502);
                         send_email.delay(
                             subject=f'تغییر وضعیت کالا {dkp}',
                             to=SAY_ngo.coordinator.emailAddress,
-                            html=render_template(
+                            html=render_template_i18n(
                                 'product_status_changed.html',
                                 child=self.child,
                                 need=self,
