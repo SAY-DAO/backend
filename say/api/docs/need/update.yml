@@ -50,6 +50,11 @@ parameters:
     in: formData
     type: integer
 
+  - name: purchase_cost
+    in: formData
+    type: integer
+    description: Can be set only in p3 (product status 3)
+
   - name: type
     in: formData
     type: integer

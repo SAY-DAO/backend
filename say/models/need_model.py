@@ -38,6 +38,7 @@ class Need(base, Timestamp):
     isUrgent = Column(Boolean, nullable=False)
     details = Column(Text, nullable=True)
     _cost = Column(Integer, nullable=False)
+    purchase_cost = Column(Integer, nullable=True)
     paid = Column(Integer, nullable=False, default=0)
     donated = Column(Integer, nullable=False, default=0)
     link = Column(String, nullable=True)
@@ -339,18 +340,13 @@ WHERE need.id IN (502);
 
 @event.listens_for(Need.status, "set")
 def status_event(need, new_status, old_status, initiator):
-    if new_status == old_status:
-        return
 
-    elif new_status == 4 and need.isReported != True:
+    if new_status == 4 and need.isReported != True:
         raise Exception('Need has not been reported to ngo yet')
 
     need.status_updated_at = datetime.utcnow()
 
-    if need.status == 2:
-        need.done()
-
-    elif need.type == 0:  # Service
+    if need.type == 0:  # Service
         if new_status == 3:
             need.ngo_delivery_date = datetime.utcnow()
 
