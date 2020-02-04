@@ -12,7 +12,7 @@ from .send_email import send_embeded_subject_email
 def report_to_families(self):
     from say.models.family_model import FamilyModel
 
-    families_id = self.session.query(FamilyModel.id).all()
+    families_id = self.session.query(FamilyModel.id)
     for family_id in families_id:
         report_to_family.delay(family_id[0])
 
@@ -51,23 +51,24 @@ def report_to_family(self, family_id):
 
         # Joining by NeedFamily and geting distinct emails
         to_members_email = [
-            u.emailAddress for u in session
-            .query(UserModel.emailAddress) \
+            u.emailAddress for u in session.query(UserModel.emailAddress) \
             .filter(UserModel.id==NeedFamilyModel.id_user) \
             .filter(NeedFamilyModel.id_family==family_id) \
+            .filter(NeedFamilyModel.id_need.in_([need.id for need in needs])) \
             .distinct()
         ]
 
         # Joining by UserFamily and geting distinct emails
         all_members_email = [
-            u.emailAddress for u in session
-            .query(UserModel.emailAddress) \
-            .filter(UserModel.id==UserFamilyModel.id_user) \
-            .filter(UserFamilyModel.id_family==family_id) \
-            .distinct() \
+            u.emailAddress for u in session.query(UserModel.emailAddress) \
+                .filter(UserModel.id==UserFamilyModel.id_user) \
+                .filter(UserFamilyModel.id_family==family_id) \
+                .filter(UserFamilyModel.is_deleted==False) \
+                .distinct()
         ]
 
         cc_members_email = list(set(all_members_email) - set(to_members_email))
+        to_members_email = to_members_email.intersection(all_members_email)
 
         send_embeded_subject_email(
             to=to_members_email,
