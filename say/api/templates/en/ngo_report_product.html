@@ -12,38 +12,22 @@
 {% endblock %}
 {% block mcontent %}
     Dear {{ngo.coordinator.firstName}} {{ngo.coordinator.lastName}}
-    <!-- IF more than one product - start -->
-    {% if use_plural %}
+    
     <p style="
             font-family: roboto, 'Roboto'; 
             font-size: 16px;
-            font-weight: lighter; 
-            max-width: 500px; 
-            margin: 20px auto 30px;
-            padding: 0 10px; 
-            color: #515151;
             direction: ltr;
-            /* text-align: justify; */
             ">
+        {% if use_plural %}
+        <!-- IF more than one product - start -->
         This is to notify you that products are purchased on {{date}}. Please find the details in the attachment.
-    </p>
-    {% else %}
-    <!-- IF one product - start -->
-    <p style="
-            font-family: roboto, 'Roboto'; 
-            font-size: 16px;
-            font-weight: lighter; 
-            max-width: 500px; 
-            margin: 20px auto 30px;
-            padding: 0 10px; 
-            color: #515151;
-            direction: ltr;
-            /* text-align: justify; */
-            ">
+        <!-- IF more than one product - end -->
+        {% else %}
+        <!-- IF one product - start -->
         This is to notify you that the product is purchased on {{date}}. Please find the details in the attachment.
-    </p>
-    <!-- IF one product - end -->
-    {% endif %}
+        <!-- IF one product - end -->
+        {% endif %}
+    </p>    
 
     <table style="
             border: 2px solid #cccccc;

@@ -193,7 +193,30 @@ WHERE need.id IN (502);
     @hybrid_property
     def status_description(self):
         locale = get_locale()
-        return NeedStatuses.get(self.status, self.type_name, locale)
+        raw_status = NeedStatuses.get(self.status, self.type_name, locale)
+
+        if self.status == 2 or (self.type == 1 and self.status == 3):
+            '''
+            p2s2p3 need status condition
+            تمام هزینه سرویس/کالا پرداخت شده است
+            کالا خریداری شده است و به زودی توسط دیجی‌کالا به انجمن می‌رسد
+            '''
+            return raw_status % self.name
+
+        elif (self.type == 1 and self.status == 5) or (self.type == 0 and self.status == 4):
+            '''
+            p5s4 need status condition
+            کالا به دست اصغر رسید
+            هزینه سرویس برای اصغر تمام و کمال پرداخت شد
+            '''
+            return raw_status % (self.name, self.childSayName)
+            
+        elif self.type == 0 and self.status == 3:
+            '''
+            s3 need status condition
+            مبلغ 2000 تومان به حساب انجمن واریز شده است تا هزینه سرویس پرداخت شود
+            '''
+            return raw_status % (self.pretty_cost, self.name)
 
     @status_description.expression
     def status_description(cls):
