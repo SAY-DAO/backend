@@ -185,7 +185,14 @@ class GetNeedById(Resource):
                 .filter(NeedFamily.id_user==User.id) \
                 .filter(NeedFamily.id_user==UserFamily.id_user) \
                 .filter(UserFamily.id_family==NeedFamily.id_family) \
-                .filter(UserFamily.id_user==User.id)
+                .filter(UserFamily.id_user==User.id) \
+                .group_by(
+                    User.firstName,
+                    User.lastName,
+                    User.avatarUrl,
+                    UserFamily.userRole,
+                    NeedFamily.paid,
+                )
 
             need_dict['participants'] = [
                 {
@@ -250,8 +257,8 @@ class UpdateNeedById(Resource):
                 if (
                     (
                         (sw_role in [SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR]
-                            and need.isDone) or
-                        (need.status >= 4)
+                            and need.isConfirmed)
+                        or need.isDone
                     ) and new_cost != need._cost
                 ):
 
@@ -403,6 +410,14 @@ class UpdateNeedById(Resource):
                         f'Can not change status from '
                         f'{prev_status} to {new_status}'
                     )
+
+            purchase_cost = request.form.get('purchase_cost', None)
+
+            if purchase_cost and sw_role in [
+               SUPER_ADMIN, SAY_SUPERVISOR, ADMIN,
+            ] and need.status == 3 and need.type == 1:
+
+                need.purchase_cost = purchase_cost
 
 
             activity.diff = json.dumps(list(diff(temp, obj_to_dict(need))))

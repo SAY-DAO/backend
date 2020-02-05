@@ -5,11 +5,14 @@ from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
 
 from babel import Locale
-from say.models import session, obj_to_dict, or_, commit,  ResetPassword, \
-    Verification, User, RevokedToken
-from say.tasks import send_email
 
 from . import *
+from say.locale import DEFAULT_LOCALE
+from say.models import session, obj_to_dict, or_, commit,  ResetPassword, \
+    Verification, User, RevokedToken
+from say.tasks import send_embeded_subject_email
+from say.render_template_i18n import render_template_i18n
+
 
 
 """
@@ -22,13 +25,12 @@ def datetime_converter(o):
 
 
 def send_verify_email(to_user, verify_code):
-    send_email.delay(
-        subject='SAY Email Verification',
+    send_embeded_subject_email.delay(
         to=to_user.emailAddress,
-        html=render_template(
+        html=render_template_i18n(
             'email_verification.html',
             code=str(verify_code),
-            locale=to_user.locale,
+            locale=get_locale(),
         ),
     )
 
@@ -117,7 +119,7 @@ class RegisterUser(Resource):
                 )
                 return
 
-            lang = request.args.get('_lang')
+            lang = get_locale()
             locale = Locale(lang)
 
             alreadyExist = (
@@ -240,7 +242,7 @@ class Login(Resource):
                         )
                         return
 
-                    lang = request.args.get('_lang')
+                    lang = get_locale()
                     user.locale = Locale(lang)
                     user.lastLogin = datetime.utcnow()
                     session.commit()
@@ -440,7 +442,7 @@ class ResetPasswordApi(Resource):
     def post(self):
 
         email = request.form.get('email').lower()
-
+        language = get_locale()
         if not email:
             return make_response({'message': 'email is missing'}, 400)
 
@@ -452,7 +454,7 @@ class ResetPasswordApi(Resource):
             reset_password = ResetPassword(user=user)
             session.add(reset_password)
             session.flush()
-            reset_password.send_email()
+            reset_password.send_email(language)
 
         return make_response({'message': 'reset password email sent, maybee'})
 

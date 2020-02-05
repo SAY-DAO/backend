@@ -19,7 +19,7 @@ DEFAULT_LOCALE = LANGS.fa
 
 
 def set_locale(locale):
-    g.locale = locale
+    g.locale = locale.lower()
 
 
 def get_locale():
@@ -27,8 +27,6 @@ def get_locale():
         return g.locale
 
     try:
-        return request.args['_lang']
+        return request.args['_lang'].lower()
     except:
         return DEFAULT_LOCALE
-
-

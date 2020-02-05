@@ -1,7 +1,8 @@
 from sqlalchemy.orm import object_session
 
-from say.api import render_template, expose_datetime
+from say.formatters import expose_datetime
 from say.tasks import send_email, send_embeded_subject_email
+from say.render_template_i18n import render_template_i18n
 from say.utils import surname
 from . import *
 
@@ -77,7 +78,7 @@ class Ngo(base, Timestamp):
                 send_embeded_subject_email.delay(
                     to=coordinator_email,
                     bcc=bcc,
-                    html=render_template(
+                    html=render_template_i18n(
                         'ngo_report_service.html',
                         needs=services,
                         ngo=self,
@@ -95,7 +96,7 @@ class Ngo(base, Timestamp):
                 send_embeded_subject_email.delay(
                     to=coordinator_email,
                     bcc=bcc,
-                    html=render_template(
+                    html=render_template_i18n(
                         'ngo_report_product.html',
                         needs=products,
                         ngo=self,

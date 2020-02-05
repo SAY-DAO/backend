@@ -1,4 +1,5 @@
 from say.models import session, obj_to_dict
+from say.models.user_model import User
 from say.models.family_model import Family
 from say.models.user_family_model import UserFamily
 from say.models.need_family_model import NeedFamily
@@ -110,6 +111,7 @@ class AddUserToFamily(Resource):
             id_family = family_id
             user_role = int(request.json["userRole"])
 
+            user = session.query(User).with_for_update().get(id_user)
             duplicate_family = (
                 session.query(UserFamily)
                 .filter_by(id_user=user_id)

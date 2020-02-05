@@ -11,7 +11,6 @@ from flask import (
     send_from_directory,
     make_response,
     redirect,
-    render_template,
 )
 from flask_restful import Api, Resource
 from sqlalchemy import create_engine
@@ -26,7 +25,6 @@ from flask_jwt_extended import JWTManager
 from logging import debug, basicConfig, DEBUG
 from flask_caching import Cache
 from flask_cors import CORS
-from khayyam import JalaliDate
 
 from ..payment import IDPay
 from say.celery import beat
@@ -173,56 +171,16 @@ jwt = JWTManager(app)
 
 idpay = IDPay(app.config['IDPAY_API_KEY'], app.config['SANDBOX'])
 
+from say.basedata import basedata
+
+try:
+    basedata(db)
+except:
+    pass
+
 api = Api(app)
 # api_bp = Blueprint('api', __name__)
 # api = Api(api_bp)
-
-
-int_formatter = lambda integer: format(integer, ',d')
-
-
-def expose_datetime(dt, locale, with_year=True):
-    if locale == LANGS.en:
-        if with_year:
-            return dt.strftime('%Y.%m.%d')
-        else:
-            return dt.strftime('%m.%d')
-
-    elif locale == LANGS.fa:
-        if with_year:
-            return JalaliDate(dt).localdateformat()
-        else:
-            return JalaliDate(dt).strftime('%A %D %B')
-
-    return dt
-
-
-def render_template(path, *args, locale=None, date_with_year=True,
-                    **kwargs):
-
-    from flask import render_template
-
-    if not locale:
-        return render_template(path, *args, int_formatter=int_formatter, **kwargs)
-
-    # locale is str or Locale object, so we need to make sure it is str
-    locale = str(locale) or get_locale()
-    with ChangeLocaleTo(locale):
-        locale_path = os.path.join(locale, path)
-        for k, v in kwargs.items():
-            if isinstance(v, datetime):
-                kwargs[k] = expose_datetime(
-                    v,
-                    locale=locale,
-                    with_year=date_with_year,
-                )
-
-        return render_template(
-            locale_path,
-            *args,
-            int_formatter=int_formatter,
-            **kwargs
-        )
 
 
 def allowed_voice(filename):

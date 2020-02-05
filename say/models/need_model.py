@@ -8,10 +8,11 @@ from sqlalchemy.orm import object_session
 from sqlalchemy import event
 
 from say.statuses import NeedStatuses
-from say.api import render_template, int_formatter
 from say.tasks import send_email, send_embeded_subject_email
+from say.render_template_i18n import render_template_i18n
 
 from .payment_model import Payment
+from .user_model import User
 from . import *
 
 """
@@ -37,6 +38,7 @@ class Need(base, Timestamp):
     isUrgent = Column(Boolean, nullable=False)
     details = Column(Text, nullable=True)
     _cost = Column(Integer, nullable=False)
+    purchase_cost = Column(Integer, nullable=True)
     paid = Column(Integer, nullable=False, default=0)
     donated = Column(Integer, nullable=False, default=0)
     link = Column(String, nullable=True)
@@ -222,40 +224,6 @@ WHERE need.id IN (502);
         self.status = 2
         self.doneAt = datetime.utcnow()
 
-    # TODO: Remove this and replace it with participants model
-    def get_participants(self):
-        from .user_model import User
-        from .payment_model import Payment
-
-        session = object_session(self)
-        participants_query = session.query(
-            func.sum(Payment.need_amount),
-            User.firstName,
-            User.lastName,
-            User.avatarUrl,
-        ) \
-            .filter(Payment.id_need==self.id) \
-            .filter(Payment.id_user==User.id) \
-            .filter(Payment.verified.isnot(None)) \
-            .group_by(
-                Payment.id_user,
-                Payment.id_need,
-                User.firstName,
-                User.lastName,
-                User.avatarUrl,
-            )
-
-        participants = []
-        for participant in participants_query:
-            participants.append(dict(
-                contribution=participant[0],
-                userFirstName=participant[1],
-                userLastName=participant[2],
-                avatarUrl=participant[3],
-            ))
-
-        return participants
-
     @property
     def family(self):
         return {
@@ -285,8 +253,35 @@ WHERE need.id IN (502);
                 credit_amount=-refund_amount,
                 desc='Refund payment',
             )
+
             self.payments.append(refund_payment)
             refund_payment.verify()
+
+            return
+
+    def say_extra_payment(self):
+        # There is nothing to pay by say
+        if self.cost <= self.paid:
+            return
+
+        extra_cost = self.cost - self.paid
+
+        session = object_session(self)
+        say_user = session.query(User) \
+            .filter_by(userName='SAY') \
+            .one()
+
+        say_payment = Payment(
+            need=self,
+            user=say_user,
+            need_amount=extra_cost,
+            desc='SAY payment',
+        )
+
+        self.payments.append(say_payment)
+        say_payment.verify()
+
+        return
 
     def update(self):
         from say.utils import digikala
@@ -318,7 +313,7 @@ WHERE need.id IN (502);
                         send_email.delay(
                             subject=f'تغییر وضعیت کالا {dkp}',
                             to=SAY_ngo.coordinator.emailAddress,
-                            html=render_template(
+                            html=render_template_i18n(
                                 'product_status_changed.html',
                                 child=self.child,
                                 need=self,
@@ -345,25 +340,18 @@ WHERE need.id IN (502);
 
 @event.listens_for(Need.status, "set")
 def status_event(need, new_status, old_status, initiator):
-    if new_status == old_status:
-        return
 
-    elif new_status == 4 and need.isReported != True:
+    if new_status == 4 and need.isReported != True:
         raise Exception('Need has not been reported to ngo yet')
 
     need.status_updated_at = datetime.utcnow()
 
-    if need.status == 2:
-        need.done()
-
-    elif need.type == 0:  # Service
+    if need.type == 0:  # Service
         if new_status == 3:
             need.ngo_delivery_date = datetime.utcnow()
-            need.refund_extra_credit()
 
         elif new_status == 4:
             need.child_delivery_date = datetime.utcnow()
-            need.child_delivery_product()
 
     elif need.type == 1:  # Product
         if new_status == 3:
@@ -382,5 +370,7 @@ def status_event(need, new_status, old_status, initiator):
                 raise Exception('Invalid ngo_delivery_date')
 
             need.refund_extra_credit()
+            need.say_extra_payment()
+            need.child_delivery_product()
 
 

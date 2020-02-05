@@ -2,7 +2,8 @@ import secrets
 from datetime import datetime
 from urllib.parse import urljoin
 
-from say.api import render_template, app
+from say.api import app
+from say.render_template_i18n import render_template_i18n
 from say.tasks import send_embeded_subject_email
 
 from . import *
@@ -38,14 +39,14 @@ class ResetPassword(base):
             app.config['SET_PASSWORD_URL'] + f'?token={self.token}'
         )
 
-    def send_email(self):
+    def send_email(self, language):
         return send_embeded_subject_email.delay(
             to=self.user.emailAddress,
-            html=render_template(
+            html=render_template_i18n(
                 'reset_password.html',
                 user=self.user,
                 link=self.link,
-                locale=self.user.locale,
+                locale=language,
             )
         )
 

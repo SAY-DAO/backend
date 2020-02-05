@@ -66,7 +66,7 @@ class Payment(base, Timestamp):
         session = object_session(self)
 
         self.transaction_date = transaction_date
-        self.gateway_track_id = track_id
+        self.gateway_track_id = track_id or self.order_id
         self.verified = verify_date
         self.card_no = card_no
         self.hashed_card_no = hashed_card_no
