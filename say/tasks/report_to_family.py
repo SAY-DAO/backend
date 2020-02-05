@@ -63,12 +63,14 @@ def report_to_family(self, family_id):
             u.emailAddress for u in session.query(UserModel.emailAddress) \
                 .filter(UserModel.id==UserFamilyModel.id_user) \
                 .filter(UserFamilyModel.id_family==family_id) \
-                .filter(UserFamilyModel.is_deleted==False) \
+                .filter(UserFamilyModel.isDeleted==False) \
                 .distinct()
         ]
 
         cc_members_email = list(set(all_members_email) - set(to_members_email))
-        to_members_email = to_members_email.intersection(all_members_email)
+        to_members_email = list(
+            set(to_members_email).intersection(set(all_members_email))
+        )
 
         send_embeded_subject_email(
             to=to_members_email,
@@ -84,3 +86,4 @@ def report_to_family(self, family_id):
         )
 
     return [to_members_email, cc_members_email]
+
