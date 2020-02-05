@@ -1,271 +1,114 @@
-        <!--importing FA font - but it does not work in sending html email-->
-        <link rel="stylesheet" href="/public/resources/font/iranyekan/css/fontiran.css" />
-        <link rel="stylesheet" href="https://sayapp.company/public/resources/font/iranYekan/css/fontiran.css" />
-        
-    <body style="
-            font-family: iranyekan, Tahoma;
-            padding:0; 
-            margin:0; 
-            background-color: #f3f3f3;
+<!-- Report to NGO - PRODUCT -->
+
+{% extends "fa/base.html" %}
+{% block title %}
+    اطلاع‌رسانی خرید کالا
+{% endblock %}
+{% block img %}
+    <img src="https://sayapp.company/public/resources/img/ngo_report_product.jpg" style="height: 100px;" />
+{% endblock %}
+{% block tcontent %}
+    اطلاع‌رسانی خرید کالا
+{% endblock %}
+{% block mcontent %}
+    {{surname}} {{ngo.coordinator.firstName}} {{ngo.coordinator.lastName}}
+    <p style="
+            font-family: iranyekan, Tahoma; 
+            font-size: 16px;
+            font-weight: lighter; 
+            max-width: 500px; 
+            margin: 10px auto;
+            padding: 0 10px; 
+            color: #515151;
+            direction: rtl;
             ">
-        
-        <!--the whole container-->
-        <div id="container" style="
-            direction: ltr;
-            margin: 0;
-            position: relative;
-            width: 100%;
-            height: 100%;
-            background-color: #f3f3f3;
-            /* display: flex;
-            -webkit-display: flex;
-            -moz-display: flex;
-            -ms-display: flex;
-            -o-display: flex; */
-            flex-direction: column;
-            -webkit-flex-direction: column;
-            -moz-flex-direction: column;
-            -ms-flex-direction: column;
-            -o-flex-direction: column;
-            justify-content: center;
-            -webkit-justify-content: center;
-            -moz-justify-content: center;
-            -ms-justify-content: center;
-            -o-justify-content: center;
-            padding-top:80px;
+        با سلام
+    </p>
+    <p style="
+            font-family: iranyekan, Tahoma; 
+            font-size: 16px;
+            font-weight: lighter; 
+            max-width: 500px; 
+            margin: 20px auto 30px;
+            padding: 0 10px; 
+            color: #515151;
+            direction: rtl;
             ">
-
-            <!--the main content-->
-            <div id="content" style="
-            width: 70%;
-            min-height: 250px;
-            background-color: #ffffff;
-            margin: 0 auto;
-            /* padding-bottom: 20px; */
-            padding-top: 50px;
-            /* display: flex;
-            -webkit-display: flex;
-            -moz-display: flex;
-            -ms-display: flex;
-            -o-display: flex; */
-            flex-direction: column;
-            -webkit-flex-direction: column;
-            -moz-flex-direction: column;
-            -ms-flex-direction: column;
-            -o-flex-direction: column;
-            justify-content: center;
-            -webkit-justify-content: center;
-            -moz-justify-content: center;
-            -ms-justify-content: center;
-            -o-justify-content: center;
-            box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08); 
-            -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
-            -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
-            -ms-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
-            -o-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
-            text-align: center;">
-
-                <img src="https://sayapp.company/public/resources/img/ngo_report_product.png" style="height: 100px;" />
-                <div class="content-paragraph">
-
-                    <!-- the title -->
-                    <p id="subject" style="
-                            font-family: iranyekan, Tahoma; 
-                            font-size: 16px;
-                            font-weight: bold;
-                            margin: 20px 0;
-                            padding: 0 10px; 
-                            color: #515151;
-                            direction: rtl;">
-                    اطلاع‌رسانی خرید کالا
-                    </p>
-                    
-                    <!--the main paragraph-->
-                    <p style="
-                            font-family: iranyekan, Tahoma; 
-                            font-size: 16px;
-                            font-weight: lighter; 
-                            max-width: 500px; 
-                            margin: 10px auto;
-                            padding: 0 10px; 
-                            color: #515151;
-                            direction: rtl;
-                            /* text-align: justify; */
-                            ">
-                        {{surname}} {{ngo.coordinator.firstName}} {{ngo.coordinator.lastName}}
-                    </p>
-
-                    <p style="
-                            font-family: iranyekan, Tahoma; 
-                            font-size: 16px;
-                            font-weight: lighter; 
-                            max-width: 500px; 
-                            margin: 10px auto;
-                            padding: 0 10px; 
-                            color: #515151;
-                            direction: rtl;
-                            /* text-align: justify; */
-                            ">
-                        با سلام
-                    </p>
-                    <p style="
-                            font-family: iranyekan, Tahoma; 
-                            font-size: 16px;
-                            font-weight: lighter; 
-                            max-width: 500px; 
-                            margin: 20px auto 30px;
-                            padding: 0 10px; 
-                            color: #515151;
-                            direction: rtl;
-                            /* text-align: justify; */
-                            ">
-                        این ایمیل اطلاع‌رسانی از خرید کالا برای کودکان انجمن {{ngo.name}} در تاریخ {{date}} است. در ادامه جزئیات این سفارش آمده، لطفا ملاحظه فرمایید.
-                    </p>
-
-                    <table dir="rtl" style="
-                            border: 2px solid #cccccc;
-                            border-collapse: collapse;
-                            font-family: iranyekan, Tahoma; 
-                            color: #515151;
-                            direction: rtl;
-                            text-align: center;
-                            font-weight: normal;
-                            width: 90%;
-                            max-width: 500px; 
-                            margin: 0 auto 30px;">
-                        <thead>
-                            <tr>
-                                <td style="
-                                    font-family: iranyekan, Tahoma; 
-                                    border: 2px solid #cccccc;
-                                    padding: 20px 2px;
-                                    ">ردیف</td>
-                                <td style="
-                                    font-family: iranyekan, Tahoma; 
-                                    border: 2px solid #cccccc;
-                                    padding: 20px 2px;
-                                    ">کودک</td>
-                                <td style="
-                                    font-family: iranyekan, Tahoma; 
-                                    border: 2px solid #cccccc;
-                                    padding: 20px 2px;
-                                    ">سفارش</td>
-                                <td style="
-                                    font-family: iranyekan, Tahoma; 
-                                    border: 2px solid #cccccc;
-                                    padding: 20px 2px;
-                                    ">زمان تحویل</td>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for need in needs %}
-                            <tr>
-                                <td style="
-                                    font-family: iranyekan, Tahoma; 
-                                    padding: 20px 2px;
-                                    border: 2px solid #cccccc;
-                                    ">{{loop.index}}</td>
-                                <td style="
-                                    font-family: iranyekan, Tahoma; 
-                                    padding: 20px 2px;
-                                    border: 2px solid #cccccc;
-                                    ">{{need.child.firstName}} {{need.child.lastName}}</td>
-                                <td style="
-                                    font-family: iranyekan, Tahoma; 
-                                    padding: 20px 2px;
-                                    border: 2px solid #cccccc;
-                                    ">{{need.title}}</td>
-                                <td style="
-                                    font-family: iranyekan, Tahoma; 
-                                    padding: 20px 2px;
-                                    border: 2px solid #cccccc;
-                                ">{{ date_formater(need.expected_delivery_date) }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    <p style="
-                            font-family: iranyekan, Tahoma; 
-                            font-size: 16px;
-                            font-weight: lighter; 
-                            max-width: 500px; 
-                            margin: 20px auto 30px;
-                            padding: 0 10px; 
-                            color: #515151;
-                            direction: rtl;
-                            ">
-                          این سفارش‌ها طبق زمان‌بندی اعلام شده و در بازه‌ی 9 الی 12 صبح به دست شما خواهد رسید.
-                    </p>
-                    <p style="
-                            font-family: iranyekan, Tahoma; 
-                            font-size: 12px; 
-                            font-weight: lighter;
-                            margin-top: 20px; 
-                            margin: 10px 0;
-                            padding: 0 10px; 
-                            color: #515151;
-                            direction: rtl;
-                            ">
-                        ما به شما گوش می‌دهیم، با ما تماس بگیرید.
-                    </p>
-
-                </div>
-
-                <!-- the SAY logo -->
-                <div id="logo_wrapper" style="
-                                    width: 100%;
-                                    height: 50px;
-                                    text-align: center;
-                                    margin-top: 20px;
-                                    ">
-                    
-                    <a href="http://say.company" target="_blank"><img src="https://sayapp.company/public/resources/img/logo-white.png" style="
-                        height: 100%;
-                        vertical-align: middle;
-                        -webkit-vertical-align: middle;
-                        -moz-vertical-align: middle;
-                        -ms-vertical-align: middle;
-                        -o-vertical-align: middle;
-                        /* box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
-                        -webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
-                        -moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
-                        -ms-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
-                        -o-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08); */
-                        " /></a>
-                </div>
-            </div>
-
-            <!--the socials link-->
-            <div id="socials" style="width: 70%; margin: 0 auto; text-align: center; padding: 60px 0 30px 0;">
-
-                    <a href="https://linkedin.com/company/say-company/" style="width: 10%; max-width: 33px; display: inline-block; margin: 0 10px;" target="_blank">
-                        <img src="https://sayapp.company/public/resources/img/linkdin1.png" style="width: 100%; display: inline-block;" />
-                    </a>
-
-                    <a href="https://instagram.com/say.company/" style="width: 10%; max-width: 33px; display: inline-block; margin: 0 10px;" target="_blank">
-                        <img src="https://sayapp.company/public/resources/img/instagram1.png" style="width: 100%; display: inline-block;" />
-                    </a>
-
-                    <a href="https://twitter.com/say_company" style="width: 10%; max-width: 33px; display: inline-block; margin: 0 10px;"  target="_blank">
-                        <img src="https://sayapp.company/public/resources/img/twitter1.png" style="width: 100%;  display: inline-block;" />
-                    </a>
-
-                    <a href="https://facebook.com/say.company/" style="width: 10%; max-width: 33px; display: inline-block; margin: 0 10px;" target="_blank">
-                        <img src="https://sayapp.company/public/resources/img/facebook1.png" style="width: 100%;  display: inline-block;" />
-                    </a>
-
-            </div>
-
-            <!--the SAY address-->
-            <div id="address" style="width: 100%; text-align:center; padding-bottom: 60px;">
-
-                <p class="en-paragraph" style="
-                                            font-size: 12px; 
-                                            margin: 10px 5px; 
-                                            color: #515151; 
-                                            font-weight: 100;">
-                    ایران - تهران - ایرانشهر - خیابان آذرشهر - پلاک 22 - واحد 4
-                </p>
-            </div>
-        </div>
-    </body>
+            این ایمیل اطلاع‌رسانی از خرید کالا برای کودکان انجمن {{ngo.name}} در تاریخ {{date}} است. در ادامه جزئیات این سفارش آمده، لطفا ملاحظه فرمایید.
+    </p>
+    <table dir="rtl" style="
+            border: 2px solid #cccccc;
+            border-collapse: collapse;
+            font-family: iranyekan, Tahoma; 
+            color: #515151;
+            direction: rtl;
+            text-align: center;
+            font-weight: normal;
+            width: 90%;
+            max-width: 500px; 
+            margin: 0 auto 30px;">
+        <thead>
+            <tr>
+                <td style="
+                    font-family: iranyekan, Tahoma; 
+                    border: 2px solid #cccccc;
+                    padding: 20px 2px;
+                    ">ردیف</td>
+                <td style="
+                    font-family: iranyekan, Tahoma; 
+                    border: 2px solid #cccccc;
+                    padding: 20px 2px;
+                    ">کودک</td>
+                <td style="
+                    font-family: iranyekan, Tahoma; 
+                    border: 2px solid #cccccc;
+                    padding: 20px 2px;
+                    ">سفارش</td>
+                <td style="
+                    font-family: iranyekan, Tahoma; 
+                    border: 2px solid #cccccc;
+                    padding: 20px 2px;
+                    ">زمان تحویل</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for need in needs %}
+            <tr>
+                <td style="
+                    font-family: iranyekan, Tahoma; 
+                    padding: 20px 2px;
+                    border: 2px solid #cccccc;
+                    ">{{loop.index}}</td>
+                <td style="
+                    font-family: iranyekan, Tahoma; 
+                    padding: 20px 2px;
+                    border: 2px solid #cccccc;
+                    ">{{need.child.firstName}} {{need.child.lastName}}</td>
+                <td style="
+                    font-family: iranyekan, Tahoma; 
+                    padding: 20px 2px;
+                    border: 2px solid #cccccc;
+                    ">{{need.title}}</td>
+                <td style="
+                    font-family: iranyekan, Tahoma; 
+                    padding: 20px 2px;
+                    border: 2px solid #cccccc;
+                ">{{ date_formater(need.expected_delivery_date) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p style="
+            font-family: iranyekan, Tahoma; 
+            font-size: 16px;
+            font-weight: lighter; 
+            max-width: 500px; 
+            margin: 20px auto 30px;
+            padding: 0 10px; 
+            color: #515151;
+            direction: rtl;
+            ">
+            این سفارش‌ها طبق زمان‌بندی اعلام شده و در بازه‌ی ۹ الی ۱۲ صبح به دست شما خواهد رسید.
+    </p>
+    
+{% endblock %}
