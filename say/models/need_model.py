@@ -131,15 +131,15 @@ class Need(base, Timestamp):
         return self.status >= 2
 
     '''
-    aggregated generated query:
-UPDATE need SET paid=(
-    SELECT coalesce(
-        sum(payment.need_amount),
-        , 0
-    ) AS coalesce_1
-    FROM payment
-    WHERE need.id = payment.id_need AND payment.verified IS NOT NULL)
-WHERE need.id IN (502);
+    aggregated generates query like this:
+    UPDATE need SET paid=(
+        SELECT coalesce(
+            sum(payment.need_amount),
+            , 0
+        ) AS coalesce_1
+        FROM payment
+        WHERE need.id = payment.id_need AND payment.verified IS NOT NULL)
+    WHERE need.id IN (502);
     '''
     @aggregated('payments', Column(Integer, nullable=False, default=0))
     def paid(cls):
@@ -359,8 +359,6 @@ WHERE need.id IN (502);
         )
 
 
-
-
 @event.listens_for(Need.status, "set")
 def status_event(need, new_status, old_status, initiator):
 
@@ -395,5 +393,6 @@ def status_event(need, new_status, old_status, initiator):
             need.refund_extra_credit()
             need.say_extra_payment()
             need.child_delivery_product()
+            need.cost = need.purchase_cost
 
 

@@ -4,9 +4,9 @@ from say.models.ngo_model import Ngo
 
 @celery.task(base=celery.DBTask, bind=True)
 def report_to_ngos(self):
-    ngos = self.session.query(Ngo)
-    for ngo in ngos:
-        report_to_ngo.delay(ngo.id)
+    ngos_id = self.session.query(Ngo.id)
+    for ngo_id, in ngos_id:
+        report_to_ngo.delay(ngo_id)
     return
 
 
