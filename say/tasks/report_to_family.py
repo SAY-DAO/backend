@@ -13,7 +13,7 @@ from say.render_template_i18n import render_template_i18n
 def report_to_families(self):
     from say.models.family_model import Family
 
-    families_id = self.session.query(Family.id).all()
+    families_id = self.session.query(Family.id)
     for family_id in families_id:
         report_to_family.delay(family_id[0])
 
@@ -52,23 +52,26 @@ def report_to_family(self, family_id):
 
         # Joining by NeedFamily and geting distinct emails
         to_members_email = [
-            u.emailAddress for u in session
-            .query(User.emailAddress) \
+            u.emailAddress for u in session.query(User.emailAddress) \
             .filter(User.id==NeedFamily.id_user) \
             .filter(NeedFamily.id_family==family_id) \
+            .filter(NeedFamily.id_need.in_([need.id for need in needs])) \
             .distinct()
         ]
 
         # Joining by UserFamily and geting distinct emails
         all_members_email = [
-            u.emailAddress for u in session
-            .query(User.emailAddress) \
-            .filter(User.id==UserFamily.id_user) \
-            .filter(UserFamily.id_family==family_id) \
-            .distinct() \
+            u.emailAddress for u in session.query(User.emailAddress) \
+                .filter(User.id==UserFamily.id_user) \
+                .filter(UserFamily.id_family==family_id) \
+                .filter(UserFamily.isDeleted==False) \
+                .distinct()
         ]
 
         cc_members_email = list(set(all_members_email) - set(to_members_email))
+        to_members_email = list(
+            set(to_members_email).intersection(set(all_members_email))
+        )
 
         send_embeded_subject_email(
             to=to_members_email,
@@ -84,3 +87,4 @@ def report_to_family(self, family_id):
         )
 
     return [to_members_email, cc_members_email]
+
