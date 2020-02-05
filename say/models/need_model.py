@@ -38,7 +38,9 @@ class Need(base, Timestamp):
     isUrgent = Column(Boolean, nullable=False)
     details = Column(Text, nullable=True)
     _cost = Column(Integer, nullable=False)
-    purchase_cost = Column(Integer, nullable=True)
+
+    # Final cost - paid
+    cost_variance = Column(Integer, nullable=False, default=0)
     paid = Column(Integer, nullable=False, default=0)
     donated = Column(Integer, nullable=False, default=0)
     link = Column(String, nullable=True)
@@ -232,17 +234,14 @@ class Need(base, Timestamp):
         }
 
     def refund_extra_credit(self):
-        # There is nothing to refund
-        if self.cost >= self.paid:
-            return
-
-        total_refund = Decimal(self.paid) - Decimal(self.cost)
+        total_refund = -self.cost_variance
 
         for participant in self.participants:
 
             participation_ratio = Decimal(participant.paid) / Decimal(self.paid)
 
             refund_amount = Decimal(participation_ratio) * Decimal(total_refund)
+
             if refund_amount <= 0:
                 continue
 
@@ -261,10 +260,7 @@ class Need(base, Timestamp):
 
     def say_extra_payment(self):
         # There is nothing to pay by say
-        if self.cost <= self.paid:
-            return
-
-        extra_cost = self.cost - self.paid
+        extra_cost = self.cost_variance
 
         session = object_session(self)
         say_user = session.query(User) \
@@ -276,6 +272,12 @@ class Need(base, Timestamp):
             user=say_user,
             need_amount=extra_cost,
             desc='SAY payment',
+        )
+
+        say_participation = NeedFamily(
+            need=self,
+            user=say_user,
+            family=self.child.family,
         )
 
         self.payments.append(say_payment)
@@ -356,6 +358,9 @@ def status_event(need, new_status, old_status, initiator):
             need.purchase_date = datetime.utcnow()
 
         elif new_status == 4:
+            if old_status == new_status:
+                return
+
             need.ngo_delivery_date = parse_datetime(
                 request.form.get('ngo_delivery_date')
             )
@@ -367,9 +372,16 @@ def status_event(need, new_status, old_status, initiator):
             ):
                 raise Exception('Invalid ngo_delivery_date')
 
-            need.refund_extra_credit()
-            need.say_extra_payment()
             need.child_delivery_product()
-            need.cost = need.purchase_cost
+
+            # paid > final_cost
+            if need.cost_variance < 0:
+                need.refund_extra_credit()
+
+            # paid < final_cost
+            elif need.cost_variance > 0:
+                need.say_extra_payment()
+
+            need.cost += need.cost_variance
 
 
