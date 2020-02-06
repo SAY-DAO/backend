@@ -58,6 +58,18 @@ class GetRandomSearchResult(Resource):
                 return resp
 
             child_dict = obj_to_dict(random_child)
+            del child_dict['firstName']
+            del child_dict['firstName_translations']
+            del child_dict['lastName']
+            del child_dict['lastName_translations']
+            del child_dict['nationality']
+            del child_dict['country']
+            del child_dict['city']
+            del child_dict['birthPlace']
+            del child_dict['address']
+            del child_dict['id_social_worker']
+            del child_dict['id_ngo']
+
             child_family_member = []
             for member in random_child.family.current_members():
                 child_family_member.append(dict(

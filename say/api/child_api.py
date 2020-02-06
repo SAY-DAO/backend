@@ -195,6 +195,17 @@ class GetChildById(Resource):
 
                 child_dict['familyId'] = family_id
                 child_dict['userRole'] = user_family.userRole
+                del child_dict['firstName']
+                del child_dict['firstName_translations']
+                del child_dict['lastName']
+                del child_dict['lastName_translations']
+                del child_dict['nationality']
+                del child_dict['country']
+                del child_dict['city']
+                del child_dict['birthPlace']
+                del child_dict['address']
+                del child_dict['id_social_worker']
+                del child_dict['id_ngo']
 
                 for member in child.family.current_members():
                     child_family_member.append(dict(

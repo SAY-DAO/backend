@@ -22,7 +22,20 @@ class DashboardDataFeed(Resource):
                 if not child.isConfirmed and get_user_role() in [USER]:
                     continue
 
-                children.append(obj_to_dict(child))
+                child_dict = obj_to_dict(child)
+                del child_dict['firstName']
+                del child_dict['firstName_translations']
+                del child_dict['lastName']
+                del child_dict['lastName_translations']
+                del child_dict['nationality']
+                del child_dict['country']
+                del child_dict['city']
+                del child_dict['birthPlace']
+                del child_dict['address']
+                del child_dict['id_social_worker']
+                del child_dict['id_ngo']
+
+                children.append(child_dict)
 
             result = dict(
                 user=obj_to_dict(user),
