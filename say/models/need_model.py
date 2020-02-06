@@ -403,4 +403,3 @@ def status_event(need, new_status, old_status, initiator):
 
             need.cost = need.purchase_cost
 
-
