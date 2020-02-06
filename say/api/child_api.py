@@ -259,7 +259,7 @@ class GetChildNeeds(Resource):
 
                 need_dict = obj_to_dict(need)
                 need_dict['participants'] = [
-                    {'avatarUrl': p.user.avatarUrl}
+                    {'user_avatar': p.user_avatar}
                     for p in need.participants
                 ]
                 needs.append(need_dict)

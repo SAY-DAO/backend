@@ -17,6 +17,7 @@ class NeedFamily(base, Timestamp):
     id_need = Column(Integer, ForeignKey('need.id'), nullable=False)
     isDeleted = Column(Boolean, nullable=False, default=False)
     user_fullname = Column(Text, nullable=False)
+    user_avatar = Column(Text, nullable=False)
 
     @aggregated('need.payments', Column(Integer, default=0, nullable=False))
     def paid(cls):
@@ -24,10 +25,13 @@ class NeedFamily(base, Timestamp):
         return func.sum(Payment.need_amount) \
             .filter(Payment.id_user==cls.id_user) \
 
+    @observes('user.avatarUrl')
+    def user_avatar_observer(self, avatar):
+        self.user_avatar = avatar
+
     @observes('user.firstName', 'user.lastName')
     def user_fullname_observer(self, firstname, lastname):
         self.user_fullname = f'{firstname} {lastname}'
-
 
     family = relationship(
         "Family",
