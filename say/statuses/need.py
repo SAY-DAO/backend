@@ -1,20 +1,21 @@
 class NeedStatuses:
 
+    # FIXME: en phrases need content
     product_en = {
         '0': 'Not paid',
         '1': 'Partialy paid',
-        '2': 'Completely paid',
-        '3': 'Purchased',
+        '2': '%s completely paid',
+        '3': '%s purchased',
         '4': 'Delivered to NGO',
-        '5': 'Delivered to child',
+        '5': '%s delivered to %s',
     }
 
     service_en = {
         '0': 'Not paid',
         '1': 'Partially paid',
-        '2': 'Completely paid',
-        '3': 'Money sent to NGO',
-        '4': 'Servcice delivered to child',
+        '2': '%s completely paid',
+        '3': '%s money sent to NGO for %s',
+        '4': '%s delivered to %s',
     }
 
     product_fa = {
