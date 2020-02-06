@@ -83,6 +83,8 @@ cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config["DEBUG"] = False
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["DELIVER_TO_CHILD_DELAY"] = 4 * 60 * 60 # 4 hours
+app.config["RATELIMIT_DEFAULT"] = "100 per minutes"
+
 app.config.update({
     "CACHE_TYPE": "redis", # Flask-Caching related configs
     "CACHE_DEFAULT_TIMEOUT": 300
@@ -164,7 +166,6 @@ Swagger(app)
 limiter = Limiter(
     app,
     key_func=get_remote_address,
-    default_limits=["100 per minute"],
 )
 
 mail = Mail(app)
