@@ -176,6 +176,9 @@ class UpdateUserById(Resource):
             if "birthPlace" in request.form.keys():
                 primary_user.birthPlace = int(request.form["birthPlace"])
 
+            if "phoneNumber" in request.form.keys():
+                primary_user.phoneNumber = request.form["phoneNumber"]
+
             if "birthDate" in request.form.keys():
                 primary_user.birthDate = datetime.strptime(
                     request.form["birthDate"], "%Y-%m-%d"
