@@ -38,9 +38,7 @@ class Need(base, Timestamp):
     isUrgent = Column(Boolean, nullable=False)
     details = Column(Text, nullable=True)
     _cost = Column(Integer, nullable=False)
-
-    # Final cost - paid
-    cost_variance = Column(Integer, nullable=False, default=0)
+    purchase_cost = Column(Integer, nullable=False, default=0)
     paid = Column(Integer, nullable=False, default=0)
     donated = Column(Integer, nullable=False, default=0)
     link = Column(String, nullable=True)
@@ -212,7 +210,7 @@ class Need(base, Timestamp):
             هزینه سرویس برای اصغر تمام و کمال پرداخت شد
             '''
             return raw_status % (self.name, self.childSayName)
-            
+
         elif self.type == 0 and self.status == 3:
             '''
             s3 need status condition
@@ -257,7 +255,7 @@ class Need(base, Timestamp):
         }
 
     def refund_extra_credit(self):
-        total_refund = -self.cost_variance
+        total_refund = Decimal(self.paid) - Decimal(self.purchase_cost)
 
         for participant in self.participants:
 
@@ -282,8 +280,7 @@ class Need(base, Timestamp):
             return
 
     def say_extra_payment(self):
-        # There is nothing to pay by say
-        extra_cost = self.cost_variance
+        extra_cost = self.purchase_cost - self.paid
 
         session = object_session(self)
         say_user = session.query(User) \
@@ -397,14 +394,13 @@ def status_event(need, new_status, old_status, initiator):
 
             need.child_delivery_product()
 
-            # paid > final_cost
-            if need.cost_variance < 0:
+            import pudb; pudb.set_trace()  # XXX BREAKPOINT
+            if need.purchase_cost < need.paid:
                 need.refund_extra_credit()
 
-            # paid < final_cost
-            elif need.cost_variance > 0:
+            elif need.purchase_cost > need.paid:
                 need.say_extra_payment()
 
-            need.cost += need.cost_variance
+            need.cost = need.purchase_cost
 
 

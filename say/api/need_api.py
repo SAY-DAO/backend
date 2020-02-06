@@ -396,26 +396,24 @@ class UpdateNeedById(Resource):
                 new_status = int(request.form["status"])
                 prev_status = need.status
 
-
-                cost_variance = request.form.get('cost_variance', None)
-                if cost_variance and sw_role in [
+                purchase_cost = request.form.get('purchase_cost', None)
+                if purchase_cost and sw_role in [
                    SUPER_ADMIN, SAY_SUPERVISOR, ADMIN,
                 ] and new_status == 3 and need.type == 1:
 
-                    need.cost_variance = cost_variance
+                    need.purchase_cost = purchase_cost
 
                 if new_status != 5 and new_status - prev_status == 1:
                     if new_status == 4 and need.isReported != True:
                         raise Exception('Need has not been reported to ngo yet')
 
                     need.status = new_status
+
                 elif new_status != prev_status:
                     raise ValueError(
                         f'Can not change status from '
                         f'{prev_status} to {new_status}'
                     )
-
-
 
             activity.diff = json.dumps(list(diff(temp, obj_to_dict(need))))
 
@@ -610,6 +608,7 @@ class AddNeed(Resource):
                 imageUrl=image_url,
                 category=category,
                 cost=cost,
+                purchase_cost=cost,
                 isUrgent=is_urgent,
                 affiliateLinkUrl=affiliate_link_url,
                 link=link,
