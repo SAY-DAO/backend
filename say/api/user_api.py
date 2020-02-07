@@ -176,6 +176,9 @@ class UpdateUserById(Resource):
             if "birthPlace" in request.form.keys():
                 primary_user.birthPlace = int(request.form["birthPlace"])
 
+            if "locale" in request.form.keys():
+                primary_user.locale = request.form["locale"].lower()
+
             if "phoneNumber" in request.form.keys():
                 primary_user.phoneNumber = request.form["phoneNumber"]
 

@@ -74,6 +74,11 @@ parameters:
     in: formData
     type: string
 
+  - name: locale
+    in: formData
+    type: string
+    description: en or fa
+
   # - in: body
   #   name: update info
   #   schema:
