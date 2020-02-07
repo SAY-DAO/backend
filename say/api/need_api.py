@@ -174,31 +174,8 @@ class GetNeedById(Resource):
 
             need_dict = obj_to_dict(need)
 
-            participants = session.query(
-                NeedFamily.user_fullname,
-                NeedFamily.user_avatar,
-                UserFamily.userRole,
-                NeedFamily.paid,
-            ) \
-                .filter(NeedFamily.id_need==need.id) \
-                .filter(NeedFamily.id_user==UserFamily.id_user) \
-                .filter(UserFamily.id_family==NeedFamily.id_family) \
-                .group_by(
-                    NeedFamily.user_fullname,
-                    NeedFamily.user_avatar,
-                    UserFamily.userRole,
-                    NeedFamily.paid,
-                )
-
             need_dict['participants'] = [
-                {
-                    'user_fullname': p[0],
-                    'avatar': p[1],
-                    'role': p[2],
-                    'paid': p[3],
-
-                }
-                for p in participants
+                obj_to_dict(p) for p in need.participants
             ]
             resp = make_response(
                 jsonify(need_dict),

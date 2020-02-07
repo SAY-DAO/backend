@@ -17,7 +17,8 @@ class NeedFamily(base, Timestamp):
     id_need = Column(Integer, ForeignKey('need.id'), nullable=False)
     isDeleted = Column(Boolean, nullable=False, default=False)
     user_fullname = Column(Text, nullable=False)
-    user_avatar = Column(Text, nullable=False)
+    user_avatar = Column(Text, nullable=True)
+    user_role = Column(Integer, nullable=True)
 
     @aggregated('need.payments', Column(Integer, default=0, nullable=False))
     def paid(cls):

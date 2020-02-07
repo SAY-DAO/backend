@@ -294,12 +294,6 @@ class Need(base, Timestamp):
             desc='SAY payment',
         )
 
-        say_participation = NeedFamily(
-            need=self,
-            user=say_user,
-            family=self.child.family,
-        )
-
         self.payments.append(say_payment)
         say_payment.verify()
 

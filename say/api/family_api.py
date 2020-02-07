@@ -174,16 +174,17 @@ class LeaveFamily(Resource):
                 .filter_by(isDeleted=False)
                 .first()
             )
-#            participation = (
-#                session.query(NeedFamily)
-#                .filter_by(id_user=user_id)
-#                .filter_by(id_family=user_id)
-#                .filter_by(isDeleted=False)
-#            )
-#
-#            # TODO: WHY?
-#            for participate in participation:
-#                participate.isDeleted = True
+
+            participation = (
+                session.query(NeedFamily)
+                .filter_by(id_user=user_id)
+                .filter_by(id_family=family_id)
+                .filter_by(isDeleted=False)
+            )
+
+            import pudb; pudb.set_trace()  # XXX BREAKPOINT
+            for participate in participation:
+                participate.user_role = -1
 
             family.child.sayFamilyCount -= 1
             user_family.isDeleted = True

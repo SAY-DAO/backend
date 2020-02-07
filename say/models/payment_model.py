@@ -3,6 +3,8 @@ from uuid import uuid4
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from . import *
+from .user_family_model import UserFamily
+
 
 """
 Payment Model
@@ -71,6 +73,8 @@ class Payment(base, Timestamp):
         self.card_no = card_no
         self.hashed_card_no = hashed_card_no
 
+        session.flush()
+
         if self.id_need is None:
             return
 
@@ -80,16 +84,23 @@ class Payment(base, Timestamp):
             session.query(NeedFamily)
             .filter_by(id_need=self.id_need)
             .filter_by(id_user=self.id_user)
+            .filter(NeedFamily.user_role != -1)
             .filter_by(isDeleted=False)
             .with_for_update()
             .first()
         )
 
         if participant is None:
+            user_role, = session.query(UserFamily.userRole) \
+                .filter(UserFamily.id_user==self.user.id) \
+                .filter(UserFamily.id_family==family.id) \
+                .one()
+
             new_participant = NeedFamily(
                 id_family=family.id,
-                id_user=self.id_user,
-                id_need=self.id_need,
+                user=self.user,
+                need=self.need,
+                user_role=user_role
             )
             session.add(new_participant)
 
