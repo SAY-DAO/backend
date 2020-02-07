@@ -91,10 +91,13 @@ class Payment(base, Timestamp):
         )
 
         if participant is None:
-            user_role, = session.query(UserFamily.userRole) \
+            user_role = session.query(UserFamily.userRole) \
                 .filter(UserFamily.id_user==self.user.id) \
                 .filter(UserFamily.id_family==family.id) \
-                .one()
+                .one_or_none()
+
+            if user_role:
+                user_role, = user_role
 
             new_participant = NeedFamily(
                 id_family=family.id,
