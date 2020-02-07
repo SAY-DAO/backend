@@ -182,7 +182,6 @@ class LeaveFamily(Resource):
                 .filter_by(isDeleted=False)
             )
 
-            import pudb; pudb.set_trace()  # XXX BREAKPOINT
             for participate in participation:
                 participate.user_role = -1
 

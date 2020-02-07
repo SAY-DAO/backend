@@ -388,7 +388,6 @@ def status_event(need, new_status, old_status, initiator):
 
             need.child_delivery_product()
 
-            import pudb; pudb.set_trace()  # XXX BREAKPOINT
             if need.purchase_cost < need.paid:
                 need.refund_extra_credit()
 
