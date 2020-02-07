@@ -64,6 +64,7 @@ def get_user_children(session, user):
     for f in families:
         if f.family.child.isConfirmed:
             child = get_child_by_id(session, f.family.id_child)
+            del child['phoneNumber']
             del child['firstName']
             del child['firstName_translations']
             del child['lastName']

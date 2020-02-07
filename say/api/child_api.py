@@ -305,7 +305,7 @@ class GetChildById(Resource):
 
                 child_dict['familyId'] = family_id
                 child_dict['userRole'] = user_family.userRole
-
+                del child_dict['phoneNumber']
                 del child_dict['firstName']
                 del child_dict['firstName_translations']
                 del child_dict['lastName']

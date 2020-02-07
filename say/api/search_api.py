@@ -70,6 +70,7 @@ class GetRandomSearchResult(Resource):
             child_dict["childFamilyMembers"] = child_family_member
             child_dict["familyId"] = random_child.families[0].id
 
+            del child_dict['phoneNumber']
             del child_dict['firstName']
             del child_dict['firstName_translations']
             del child_dict['lastName']
