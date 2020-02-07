@@ -58,6 +58,7 @@ class GetRandomSearchResult(Resource):
                 return resp
 
             child_dict = obj_to_dict(random_child)
+            del child_dict['phoneNumber']
             del child_dict['firstName']
             del child_dict['firstName_translations']
             del child_dict['lastName']
