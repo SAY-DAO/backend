@@ -94,6 +94,7 @@ class Payment(base, Timestamp):
             user_role = session.query(UserFamily.userRole) \
                 .filter(UserFamily.id_user==self.user.id) \
                 .filter(UserFamily.id_family==family.id) \
+                .filter(UserFamily.isDeleted==False) \
                 .one_or_none()
 
             if user_role:
