@@ -292,6 +292,7 @@ class GetChildById(Resource):
                     continue
                 needs.append(need)
 
+            sorted_needs = sorted(needs, key=lambda n: n['name'])
             child_dict['needs'] = needs
 
             if get_user_role() in [USER]:  # TODO: priv
