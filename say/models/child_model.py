@@ -81,7 +81,6 @@ class Child(base, Timestamp):
         'Need',
         back_populates='child',
         primaryjoin='and_(Need.child_id==Child.id, ~Need.isDeleted)',
-        order_by='Need.name',
     )
     family = relationship('Family', back_populates='child', uselist=False)
     ngo = relationship("Ngo", foreign_keys="Child.id_ngo")

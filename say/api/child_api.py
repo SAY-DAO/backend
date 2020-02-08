@@ -267,6 +267,7 @@ class GetChildNeeds(Resource):
                 ]
                 needs.append(need_dict)
 
+            sorted_need = sorted(needs, key=lambda n: n['name'])
             result = dict(
                 total_count=len(needs),
                 needs=needs,
