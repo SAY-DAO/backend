@@ -258,12 +258,15 @@ class VerifyPayment(Resource):
         if need.isDone:
             return make_response(unsuccessful_response)
 
-        response = idpay.verify(
-            pending_payment.gateway_payment_id,
-            pending_payment.order_id,
-        )
+        try:
+            response = idpay.verify(
+                pending_payment.gateway_payment_id,
+                pending_payment.order_id,
+            )
+        except:
+            return make_response(unsuccessful_response)
 
-        if 'error_code' in response or response['status'] != 100:
+        if not response or 'error_code' in response or response['status'] != 100:
             return make_response(unsuccessful_response)
 
         transaction_date = datetime.fromtimestamp(
