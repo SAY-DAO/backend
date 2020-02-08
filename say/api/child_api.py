@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 import ujson
+from sqlalchemy.orm import joinedload
 
 from . import *
 from say.models import session, obj_to_dict
@@ -242,7 +243,8 @@ class GetChildNeeds(Resource):
             child_query = session.query(Child) \
                 .filter(Child.isDeleted==False) \
                 .filter(Child.isMigrated==False) \
-                .filter(Child.id==child_id)
+                .filter(Child.id==child_id) \
+                .options(joinedload(Child.needs))
 
             if child_id != DEFAULT_CHILD_ID:  # TODO: need needs
                 child_query = filter_by_privilege(child_query)
