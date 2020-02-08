@@ -84,9 +84,13 @@ class Child(base, Timestamp):
     )
     family = relationship('Family', back_populates='child', uselist=False)
     ngo = relationship("Ngo", foreign_keys="Child.id_ngo")
+
     social_worker = relationship(
         "SocialWorker",
         foreign_keys=id_social_worker,
         back_populates='children',
     )
-
+    migrations = relationship(
+        'ChildMigration',
+        back_populates='child',
+    )
