@@ -2,6 +2,7 @@ from collections import OrderedDict
 
 import ujson
 from sqlalchemy.orm import joinedload
+import icu
 
 from . import *
 from say.models import session, obj_to_dict
@@ -23,6 +24,9 @@ from say.models.user_model import UserModel
 """
 Child APIs
 """
+
+# Used for persian sorting
+collator = icu.Collator.createInstance(icu.Locale('fa_IR.UTF-8'))
 
 
 def filter_by_confirm(child_query, confirm):
@@ -292,8 +296,11 @@ class GetChildById(Resource):
                     continue
                 needs.append(need)
 
-            sorted_needs = sorted(needs, key=lambda n: n['name'])
-            child_dict['needs'] = needs
+            sorted_needs = sorted(
+                needs,
+                key=lambda n: collator.getSortKey(n['name']),
+            )
+            child_dict['needs'] = sorted_needs
 
             if get_user_role() in [USER]:  # TODO: priv
                 user_id = get_user_id()

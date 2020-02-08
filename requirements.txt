@@ -25,3 +25,5 @@ khayyam
 celery-redbeat
 ujson
 babel
+PyICU
+
