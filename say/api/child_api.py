@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 import ujson
+from sqlalchemy.orm import joinedload
 
 from . import *
 from say.models import session, obj_to_dict
@@ -268,6 +269,7 @@ class GetChildById(Resource):
         try:
             child_id = int(child_id)
             child_query = session.query(ChildModel) \
+                .options(joinedload(ChildModel.needs)) \
                 .filter(ChildModel.isDeleted==False) \
                 .filter(ChildModel.isMigrated==False) \
                 .filter(ChildModel.id==child_id)

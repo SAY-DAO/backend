@@ -67,7 +67,11 @@ class ChildModel(base):
     migratedId = Column(Integer, nullable=True)
     migrateDate = Column(Date, nullable=True)
 
-    needs = relationship('NeedModel', back_populates='child', lazy='selectin')
+    needs = relationship(
+        'NeedModel',
+        back_populates='child',
+        order_by="NeedModel.name"
+    )
     families = relationship('FamilyModel', back_populates='child')
     ngo = relationship("NgoModel", foreign_keys="ChildModel.id_ngo")
     social_worker = relationship(
