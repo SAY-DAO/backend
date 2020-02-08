@@ -73,6 +73,7 @@ from .user_family_model import UserFamilyModel
 from .user_model import UserModel
 from .verify_model import VerifyModel
 from .reset_password_model import ResetPassword
+from .child_migration_model import ChildMigration
 
 
 # this function converts an object to a python dictionary
