@@ -7,7 +7,7 @@ Revoke Token Model
 class RevokedToken(base):
     __tablename__ = 'revoked_tokens'
     id = Column(Integer, primary_key = True)
-    jti = Column(String(120))
+    jti = Column(String(120), index=True)
 
     @classmethod
     def is_jti_blacklisted(cls, jti, session):
