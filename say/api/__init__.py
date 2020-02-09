@@ -27,6 +27,7 @@ from logging import debug, basicConfig, DEBUG
 from flask_caching import Cache
 from flask_cors import CORS
 from khayyam import JalaliDate
+import flask_monitoringdashboard as dashboard
 
 from ..payment import IDPay
 from say.celery import beat
@@ -36,6 +37,9 @@ from say.roles import *
 from say.exceptions import *
 from say.langs import LANGS
 from say.locale import ChangeLocaleTo, get_locale
+
+
+PRODUCTION = os.environ.get('PRODUCTION')
 
 
 DEFAULT_CHILD_ID = 104  # TODO: Remove this after implementing pre needs
@@ -174,9 +178,39 @@ jwt = JWTManager(app)
 
 idpay = IDPay(app.config['IDPAY_API_KEY'], app.config['SANDBOX'])
 
-api = Api(app)
 # api_bp = Blueprint('api', __name__)
 # api = Api(api_bp)
+
+
+# 'API monitoring'
+APIMD_CONFIG_FILE_PROD = 'apimd-config-prod.cfg'
+if PRODUCTION:
+    if not os.path.isfile(APIMD_CONFIG_FILE_PROD):
+        raise Exception('''
+            Make sure apimd-config-prod.cfg exist
+            and admin PASSWORD, CUSTOM_LINK, SECURITY_TOKEN and DATABASE
+            are correctly set in apimd-config-prod.cfg
+        ''')
+
+    dashboard.config.init_from(file=APIMD_CONFIG_FILE_PROD)
+else:
+    print(
+        'Open http://localhost/dashboard and use admin admin to see '
+        'API monitoring dashboard'
+    )
+
+try:
+    dashboard.bind(app)
+except Exception as e:
+    print('''
+        Make sure apimd-config-prod.cfg exist
+        and admin PASSWORD, CUSTOM_LINK, SECURITY_TOKEN and DATABASE
+        are correctly set in apimd-config-prod.cfg
+        '''
+    )
+    raise
+
+api = Api(app)
 
 
 int_formatter = lambda integer: format(integer, ',d')
