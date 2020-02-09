@@ -27,7 +27,6 @@ from logging import debug, basicConfig, DEBUG
 from flask_caching import Cache
 from flask_cors import CORS
 from khayyam import JalaliDate
-import flask_monitoringdashboard as dashboard
 
 from ..payment import IDPay
 from say.celery import beat
@@ -176,9 +175,6 @@ jwt = JWTManager(app)
 idpay = IDPay(app.config['IDPAY_API_KEY'], app.config['SANDBOX'])
 
 api = Api(app)
-
-dashboard.bind(app)
-
 # api_bp = Blueprint('api', __name__)
 # api = Api(api_bp)
 
