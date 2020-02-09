@@ -25,7 +25,6 @@ from flask_jwt_extended import JWTManager
 from logging import debug, basicConfig, DEBUG
 from flask_caching import Cache
 from flask_cors import CORS
-import flask_monitoringdashboard as dashboard
 
 from ..payment import IDPay
 from say.celery import beat
@@ -181,9 +180,6 @@ except:
     pass
 
 api = Api(app)
-
-dashboard.bind(app)
-
 # api_bp = Blueprint('api', __name__)
 # api = Api(api_bp)
 

@@ -124,5 +124,3 @@ config.json
 
 # PID files
 *.pid
-
-*.db
