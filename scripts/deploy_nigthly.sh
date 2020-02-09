@@ -24,9 +24,9 @@ cd $CI_PROJECT_DIR_NIGTHLY &&
 tar -xvf $CI_PROJECT_NAME_NIGTHLY.tar.gz &&
 cd $CI_PROJECT_NAME &&
 docker build -t $IMAGE_NAME . -f Dockerfile_nigthly &&
-cd /home/server/say-installer &&
-docker-compose up -d &&
-cd ../ &&
+cd .. &&
 rm -rf $CI_PROJECT_NAME $CI_PROJECT_NAME_NIGTHLY.tar.gz
+cd /home/server/say-installer &&
+docker-compose up -d
 "
 echo 'DONE'
