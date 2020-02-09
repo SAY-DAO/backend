@@ -16,7 +16,6 @@ from say.models.ngo_model import NgoModel
 from say.models.social_worker_model import SocialWorkerModel
 from say.models.user_family_model import UserFamilyModel
 from say.models.user_model import UserModel
-from say.models.child_migration_model import ChildMigration
 
 
 # api_bp = Blueprint('api', __name__)
@@ -1147,94 +1146,94 @@ class ConfirmChild(Resource):
 
 # TODO: Logical error, what happens to the family and needs
 class MigrateChild(Resource):
-    @authorize(SUPER_ADMIN, ADMIN)  # TODO: priv
-    @swag_from('./docs/child/migrate.yml')
-    def patch(self, child_id):
-        resp = make_response(jsonify({'message': 'major error occurred!'}), 503)
-
-        new_sw_id = request.form.get('new_sw_id', None)
-        new_sw = None
-
-        if not new_sw_id:
-            return make_response(
-                jsonify({'message': 'new_sw_id can not be null'}),
-                422,
-            )
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @swag_from("./docs/child/migrate.yml")
+    def patch(self, child_id, social_worker_id):
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            new_sw_id = int(new_sw_id)
-        except:
-            return make_response(
-                jsonify({'message': 'Invalid new_sw_id'}),
-                422,
+            child = (
+                session.query(ChildModel)
+                .filter_by(id=child_id)
+                .filter_by(isDeleted=False)
+                .filter_by(isMigrated=False)
+                .first()
             )
 
-        new_sw = session.query(SocialWorkerModel) \
-            .filter_by(isDeleted=False) \
-            .filter_by(id=new_sw_id) \
-            .with_for_update() \
-            .first()
+            if not child:
+                resp = make_response(jsonify({"message": "child is already migrated or doesn't exist!"}), 500)
+                session.close()
+                return resp
 
-        if not new_sw:
-            return make_response(
-                jsonify({'message': 'social_worker not found'}),
-                422,
+            elif int(social_worker_id) == child.id_social_worker:
+                resp = make_response(jsonify({"message": "child cannot be migrated to its current social worker!"}), 500)
+                session.close()
+                return resp
+
+            social_worker = (
+                session.query(SocialWorkerModel)
+                .filter_by(id=social_worker_id)
+                .filter_by(isDeleted=False)
+                .first()
             )
 
-        child = session.query(ChildModel) \
-            .filter_by(id=child_id) \
-            .filter_by(isDeleted=False) \
-            .with_for_update() \
-            .first()
-
-        if not child:
-            return make_response(
-                jsonify({'message': 'Child not found'}),
-                404,
+            new_child = ChildModel(
+                firstName_translations=child.firstName_translations,
+                lastName_translations=child.lastName_translations,
+                phoneNumber=child.phoneNumber,
+                nationality=child.nationality,
+                country=child.country,
+                city=child.city,
+                avatarUrl=child.avatarUrl,
+                sleptAvatarUrl=child.sleptAvatarUrl,
+                gender=child.gender,
+                sayname_translations=child.sayname_translations,
+                bio_translations=child.bio_translations,
+                bio_summary_translations=child.bio_summary_translations,
+                voiceUrl=child.voiceUrl,
+                birthPlace=child.birthPlace,
+                birthDate=child.birthDate,
+                address=child.address,
+                housingStatus=child.housingStatus,
+                familyCount=child.familyCount,
+                sayFamilyCount=child.sayFamilyCount,
+                education=child.education,
+                status=child.status,
+                doneNeedCount=child.doneNeedCount,
+                id_ngo=social_worker.id_ngo,
+                id_social_worker=social_worker_id,
+                spentCredit=child.spentCredit,
+                createdAt=child.createdAt,
+                lastUpdate=datetime.utcnow(),
+                isConfirmed=child.isConfirmed,
+                confirmUser=child.confirmUser,
+                confirmDate=child.confirmDate,
+                generatedCode=social_worker.generatedCode
+                    + format(social_worker.childCount + 1, "04d"),
+                isMigrated=False,
+                migratedId=child.id,
+                migrateDate=datetime.utcnow(),
             )
 
-        old_generated_code = child.generatedCode
-        old_sw = child.social_worker
+            social_worker.childCount += 1
 
-        if old_sw.id == new_sw_id:
-            return make_response(
-                jsonify({'message': 'Can not migrate to same sw'}),
-                422,
-            )
-
-        new_generated_code = new_sw.generatedCode \
-            + format(new_sw.childCount + 1, '04d'),
-
-        child.generatedCode = new_generated_code
-        child.social_worker = new_sw
-        new_sw.childCount += 1
-
-        if new_sw.id_ngo != old_sw.id_ngo:
-            new_sw.ngo.childrenCount += 1
             if child.isConfirmed:
-               new_sw.ngo.currentChildrenCount += 1
-               old_sw.ngo.currentChildrenCount -= 1
+                social_worker.currentChildCount += 1
+                child.social_worker.currentChildCount -= 1
 
-        if child.isConfirmed:
-            new_sw.currentChildCount += 1
-            old_sw.currentChildCount -= 1
+            child.isMigrated = True
+            session.add(new_child)
+            session.commit()
 
-        migration = ChildMigration(
-            child=child,
-            new_sw=new_sw,
-            old_sw=old_sw,
-            old_generated_code=old_generated_code,
-            new_generated_code=new_generated_code,
-        )
+            resp = make_response(jsonify({"message": "child migrated successfully!"}), 200)
 
-        child.migrations.append(migration)
+        except Exception as e:
+            print(e)
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
 
-        session.commit()
-
-        return make_response(
-            jsonify({'message': 'child migrated successfully!'}),
-            200,
-        )
+        finally:
+            session.close()
+            return resp
 
 
 """
@@ -1256,5 +1255,5 @@ api.add_resource(
 )
 api.add_resource(
     MigrateChild,
-    "/api/v2/child/migrate/childId=<child_id>",
+    "/api/v2/child/migrate/childId=<child_id>&socialWorkerId=<social_worker_id>",
 )

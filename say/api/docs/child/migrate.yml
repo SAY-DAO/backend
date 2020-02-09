@@ -21,16 +21,14 @@ parameters:
     required: true
     type: integer
 
-  - in: formData
-    name: new_sw_id
+  - in: path
+    name: social_worker_id
     required: true
     type: integer
 
 responses:
-  404:
-    description: child not found
-  422:
-    description: invalid inputs
+  500:
+    description: Error occurred somewhere!
 
   200:
     description: Ok

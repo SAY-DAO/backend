@@ -78,7 +78,4 @@ class ChildModel(base):
         foreign_keys=id_social_worker,
         back_populates='children',
     )
-    migrations = relationship(
-        'ChildMigration',
-        back_populates='child',
-    )
+
