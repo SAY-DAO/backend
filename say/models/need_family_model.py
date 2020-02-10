@@ -26,8 +26,7 @@ class NeedFamily(base, Timestamp):
         return coalesce(
             func.sum(Payment.need_amount) \
                 .filter(Payment.id_user==cls.id_user),
-            func.sum(Payment.need_amount) \
-                .filter(cls.isDeleted==True),
+            cls.paid,
         )
 
     @observes('user.avatarUrl')

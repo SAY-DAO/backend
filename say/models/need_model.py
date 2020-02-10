@@ -282,7 +282,21 @@ class Need(base, Timestamp):
             self.payments.append(refund_payment)
             refund_payment.verify()
 
-            return
+        session.flush()
+
+        others_payment = session.query(NeedFamily) \
+            .filter_by(id_need = self.id) \
+            .filter_by(user_role = -1) \
+            .one()
+
+        others_payment.paid = 0
+        for p in participants:
+            if not p.isDeleted:
+                continue
+
+            others_participants.paid += p.paid
+
+        return
 
     def say_extra_payment(self):
         extra_cost = self.purchase_cost - self.paid
