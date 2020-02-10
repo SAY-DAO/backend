@@ -239,13 +239,3 @@ def allowed_receipt(filename):
     raise TypeError('Wrong receipt format')
 
 
-@jwt.token_in_blacklist_loader
-def check_if_token_in_blacklist(decrypted_token):
-    jti = decrypted_token['jti']
-    from ..models.revoked_token_model import RevokedToken
-    from sqlalchemy.orm import scoped_session, sessionmaker
-    session = scoped_session(
-        sessionmaker(autocommit=False, autoflush=False, bind=db)
-    )
-    return RevokedToken.is_jti_blacklisted(jti, session)
-

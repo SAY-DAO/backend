@@ -11,5 +11,5 @@ class RevokedToken(base):
 
     @classmethod
     def is_jti_blacklisted(cls, jti, session):
-        query = session.query(cls).filter_by(jti = jti).first()
+        query = session.query(cls).filter_by(jti = jti).one_or_none()
         return bool(query)

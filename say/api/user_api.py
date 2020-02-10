@@ -1,4 +1,5 @@
 from hashlib import md5
+from say.api import jwt
 
 from say.models import session, obj_to_dict
 from say.models.family_model import Family
@@ -7,11 +8,19 @@ from say.models.payment_model import Payment
 from say.models.user_family_model import UserFamily
 from say.models.user_model import User
 from say.models.child_model import Child
+from say.models.revoked_token_model import RevokedToken
 from . import *
 
 """
 User APIs
 """
+
+
+@jwt.token_in_blacklist_loader
+def check_if_token_in_blacklist(decrypted_token):
+    jti = decrypted_token['jti']
+
+    return RevokedToken.is_jti_blacklisted(jti, session)
 
 
 def is_int(maybe_int):
@@ -403,6 +412,7 @@ class AddUser(Resource):
         finally:
             session.close()
             return resp
+
 
 
 

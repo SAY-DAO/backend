@@ -13,13 +13,13 @@ let GetChildTrend = new Trend("getChild");
 
 
 export default function() {
-  let urlDashboard = "https://sayapp.company/api/v2/dashboard";
-  let urlRandomSearch = "https://sayapp.company/api/v2/search/random";
-  let urlGetChild = "https://sayapp.company/api/v2/child/childId=37&confirm=2";
+  let urlDashboard = "https://nigthly.sayapp.company/api/v2/dashboard";
+  let urlRandomSearch = "https://nigthly.sayapp.company/api/v2/search/random";
+  let urlGetChild = "https://nigthly.sayapp.company/api/v2/child/childId=1&confirm=2";
 
   let params = {
     headers: {
-      "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1ODEwMDM5OTMsIm5iZiI6MTU4MTAwMzk5MywianRpIjoiNGUzZjhlOWQtZGQyNi00MjQyLTkwMmQtNTI5Y2ViODM2ZmQxIiwiZXhwIjoxNTgxMDkwMzkzLCJpZGVudGl0eSI6MTI2LCJmcmVzaCI6ZmFsc2UsInR5cGUiOiJhY2Nlc3MiLCJ1c2VyX2NsYWltcyI6eyJ1c2VybmFtZSI6InJob25pbiIsImZpcnN0TmFtZSI6IkFyYXNoIiwibGFzdE5hbWUiOiJGYXRhaHphZGUiLCJhdmF0YXJVcmwiOm51bGx9fQ.xS1b2dRhgkE8emZAF8uE243Z6NObu-D8w_8U9ickPS4",
+      "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1ODEyOTE2ODgsIm5iZiI6MTU4MTI5MTY4OCwianRpIjoiNTAwNTk4ZDYtYTc5MC00YmVlLTljNTktZjY5ZmZjMGRhYzUyIiwiZXhwIjoxNTgxMzc4MDg4LCJpZGVudGl0eSI6MTI2LCJmcmVzaCI6ZmFsc2UsInR5cGUiOiJhY2Nlc3MiLCJ1c2VyX2NsYWltcyI6eyJ1c2VybmFtZSI6InJob25pbiIsImZpcnN0TmFtZSI6Ilx1MDYyMlx1MDYzMVx1MDYzNCIsImxhc3ROYW1lIjoiXHUwNjQxXHUwNjJhXHUwNjI3XHUwNjJkXHUyMDBjXHUwNjMyXHUwNjI3XHUwNjJmXHUwNjQ3IiwiYXZhdGFyVXJsIjoiL2ZpbGVzLzEyNi11c2VyLzEyNi1hdmF0YXJfMTI2LnBuZyJ9fQ.hruRvTUP_Xr6IJcnd5Wm7bHlzVcdBUg0Qd7nlVLv6jM",
     }
   };
 
