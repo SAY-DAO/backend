@@ -142,7 +142,7 @@ class AddSocialWorker(Resource):
                 generated_code = format(id_ngo, "03d") + format(
                     self.panel_users, "03d")
 
-            username = f'{ngo.name}-sw{generated_code}'
+            username = f'sw{generated_code}'
 
             new_social_worker = SocialWorkerModel(
                 id_ngo=id_ngo,
