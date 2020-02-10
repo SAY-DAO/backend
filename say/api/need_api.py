@@ -4,6 +4,7 @@ from dictdiffer import diff
 import ujson
 from sqlalchemy import func, or_
 
+from say.tasks import update_need
 from say.models import session, obj_to_dict, commit
 from say.models.activity_model import Activity
 from say.models.child_model import Child
@@ -330,10 +331,10 @@ class UpdateNeedById(Resource):
                 )
 
             if "link" in request.form.keys():
-                need.link = request.form["link"]
-
-                from say.tasks import update_need
-                update_need.delay(need.id)
+                new_link = request.form["link"]
+                if new_link != need.link:
+                    need.link = new_link
+                    update_need.delay(need.id)
 
             if "affiliateLinkUrl" in request.form.keys():
                 need.affiliateLinkUrl = request.form["affiliateLinkUrl"]
@@ -590,7 +591,6 @@ class AddNeed(Resource):
                 doing_duration=doing_duration,
                 details=details,
             )
-
             session.add(new_need)
             session.flush()
 
@@ -653,6 +653,9 @@ class AddNeed(Resource):
                     new_need.receipts = '/' + receipt_path
 
             session.commit()
+
+            if new_need.link:
+                update_need.delay(new_need.id)
 
             resp = make_response(jsonify(obj_to_dict(new_need)), 200)
 
