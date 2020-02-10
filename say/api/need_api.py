@@ -16,6 +16,7 @@ from say.models.payment_model import PaymentModel
 from say.models.social_worker_model import SocialWorkerModel
 from say.models.user_family_model import UserFamilyModel
 from say.models.user_model import UserModel
+from say.tasks import update_need
 from . import *
 
 """
@@ -410,10 +411,10 @@ class UpdateNeedById(Resource):
                 )
 
             if "link" in request.form.keys():
-                need.link = request.form["link"]
-
-                from say.tasks import update_need
-                update_need.delay(need.id)
+                new_link = request.form["link"]
+                if new_link != need.link:
+                    need.link = new_link
+                    update_need.delay(need.id)
 
             if "affiliateLinkUrl" in request.form.keys():
                 need.affiliateLinkUrl = request.form["affiliateLinkUrl"]
@@ -695,7 +696,6 @@ class AddNeed(Resource):
                 doing_duration=doing_duration,
                 details=details,
             )
-
             session.add(new_need)
             session.flush()
 
@@ -758,6 +758,9 @@ class AddNeed(Resource):
                     new_need.receipts = '/' + receipt_path
 
             session.commit()
+
+            if new_need.link:
+                update_need.delay(new_need.id)
 
             resp = make_response(jsonify(obj_to_dict(new_need)), 200)
 
