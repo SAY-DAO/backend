@@ -255,9 +255,14 @@ class Need(base, Timestamp):
         }
 
     def refund_extra_credit(self):
+        session = object_session(self)
         total_refund = Decimal(self.paid) - Decimal(self.purchase_cost)
 
-        for participant in self.participants:
+        participants =  session.query(self.participants.__class__) \
+            .filter_by(user_role >= 0) \
+            .filter_by(id_need = self.id)
+
+        for participant in participants:
 
             participation_ratio = Decimal(participant.paid) / Decimal(self.paid)
 
