@@ -13,18 +13,21 @@ class NeedFamily(base, Timestamp):
 
     id = Column(Integer, nullable=False, primary_key=True)
     id_family = Column(Integer, ForeignKey('family.id'), nullable=True)
-    id_user = Column(Integer, ForeignKey('user.id'), nullable=False)
+    id_user = Column(Integer, ForeignKey('user.id'), nullable=True)
     id_need = Column(Integer, ForeignKey('need.id'), nullable=False)
     isDeleted = Column(Boolean, nullable=False, default=False)
-    user_fullname = Column(Text, nullable=False)
+    user_fullname = Column(Text, nullable=False, default='')
     user_avatar = Column(Text, nullable=True)
     user_role = Column(Integer, nullable=True)
 
     @aggregated('need.payments', Column(Integer, default=0, nullable=False))
     def paid(cls):
         from . import Payment
-        return func.sum(Payment.need_amount) \
-            .filter(Payment.id_user==cls.id_user) \
+        return coalesce(
+            func.sum(Payment.need_amount) \
+                .filter(Payment.id_user==cls.id_user),
+            cls.paid,
+        )
 
     @observes('user.avatarUrl')
     def user_avatar_observer(self, avatar):

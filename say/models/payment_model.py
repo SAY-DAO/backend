@@ -2,6 +2,8 @@ from uuid import uuid4
 
 from sqlalchemy.ext.hybrid import hybrid_property
 
+from say.constants import SAY_ROLE
+
 from . import *
 from .user_family_model import UserFamily
 
@@ -99,6 +101,8 @@ class Payment(base, Timestamp):
 
             if user_role:
                 user_role, = user_role
+            else:
+                user_role = SAY_ROLE
 
             new_participant = NeedFamily(
                 id_family=family.id,

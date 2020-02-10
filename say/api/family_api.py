@@ -1,3 +1,4 @@
+from say.constants import PAST_PARTICIPANT_ROLE
 from say.models import session, obj_to_dict
 from say.models.user_model import User
 from say.models.family_model import Family
@@ -175,15 +176,32 @@ class LeaveFamily(Resource):
                 .first()
             )
 
-            participation = (
+            participations = (
                 session.query(NeedFamily)
                 .filter_by(id_user=user_id)
                 .filter_by(id_family=family_id)
                 .filter_by(isDeleted=False)
             )
 
-            for participate in participation:
-                participate.user_role = -1
+            for p in participations:
+                p.isDeleted = True
+
+                past_participants = session.query(NeedFamily) \
+                    .filter_by(id_need=p.id_need) \
+                    .filter_by(user_role=PAST_PARTICIPANT_ROLE) \
+                    .first()
+
+                if not past_participants:
+                    past_participants = NeedFamily(
+                        id_family=family_id,
+                        id_need=p.id_need,
+                        paid=0,
+                        user_role=PAST_PARTICIPANT_ROLE,
+                        user_fullname='',
+                    )
+                    session.add(past_participants)
+
+                past_participants.paid += p.paid
 
             family.child.sayFamilyCount -= 1
             user_family.isDeleted = True

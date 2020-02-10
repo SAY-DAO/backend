@@ -177,6 +177,7 @@ jwt = JWTManager(app)
 idpay = IDPay(app.config['IDPAY_API_KEY'], app.config['SANDBOX'])
 
 try:
+    from say.basedata import basedata
     basedata(db)
 except:
     pass
