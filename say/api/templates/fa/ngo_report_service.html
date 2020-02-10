@@ -11,17 +11,15 @@
     اطلاع از واریز وجه
 {% endblock %}
 {% block mcontent %}
-    {{surname}} {{ngo.coordinator.firstName}} {{ngo.coordinator.lastName}}
+    <strong>
+        {{surname}} {{ngo.coordinator.firstName}} {{ngo.coordinator.lastName}}
+    </strong>    
     <p style="
             font-family: iranyekan, Tahoma; 
             font-size: 16px;
             ">
-        با سلام
-    </p>
-    <p style="
-            font-family: iranyekan, Tahoma; 
-            font-size: 16px;
-            ">
+            با سلام
+            <br />
             این ایمیل اطلاع‌رسانی به شما از واریز وجه برای کودکان انجمن {{ngo.name}} در تاریخ {{date}} است. در ادامه جزئیات این تراکنش آمده، لطفا ملاحظه فرمایید.
     </p>
 
