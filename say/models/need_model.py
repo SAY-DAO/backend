@@ -237,10 +237,11 @@ class Need(base, Timestamp):
             'and_(Need.id==Payment.id_need, Payment.verified.isnot(None))',
     )
 
-    participants = relationship(
+    _participants = relationship(
         'NeedFamily',
         back_populates='need',
         primaryjoin='and_(Need.id==NeedFamily.id_need, ~NeedFamily.isDeleted)',
+        lazy='selectin',
     )
 
     def done(self):
@@ -258,9 +259,8 @@ class Need(base, Timestamp):
         session = object_session(self)
         total_refund = Decimal(self.paid) - Decimal(self.purchase_cost)
 
-        participants =  session.query(self.participants.__class__) \
-            .filter_by(user_role >= 0) \
-            .filter_by(id_need = self.id)
+        participants =  session.query(NeedFamily) \
+            .filter(NeedFamily.id_need == self.id)
 
         for participant in participants:
 
@@ -284,18 +284,6 @@ class Need(base, Timestamp):
 
         session.flush()
 
-        others_payment = session.query(NeedFamily) \
-            .filter_by(id_need = self.id) \
-            .filter_by(user_role = -1) \
-            .one()
-
-        others_payment.paid = 0
-        for p in participants:
-            if not p.isDeleted:
-                continue
-
-            others_participants.paid += p.paid
-
         return
 
     def say_extra_payment(self):
@@ -317,6 +305,34 @@ class Need(base, Timestamp):
         say_payment.verify()
 
         return
+
+    @property
+    def participants(self):
+        session = object_session(self)
+
+        grouped_participants = session.query(
+            NeedFamily.user_fullname,
+            NeedFamily.user_avatar,
+            NeedFamily.user_role,
+            func.sum(NeedFamily.paid),
+        ) \
+            .filter(NeedFamily.id_need == self.id) \
+            .filter(NeedFamily.isDeleted == False) \
+            .group_by(
+                NeedFamily.user_fullname,
+                NeedFamily.user_avatar,
+                NeedFamily.user_role,
+            )
+
+        past_participants = session.query(
+            func.sum(NeedFamily.paid),
+        ) \
+            .filter(NeedFamily.id_need == self.id) \
+            .filter(NeedFamily.isDeleted == True) \
+
+
+
+
 
     def update(self):
         from say.utils import digikala

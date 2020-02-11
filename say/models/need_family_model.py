@@ -19,15 +19,7 @@ class NeedFamily(base, Timestamp):
     user_fullname = Column(Text, nullable=False, default='')
     user_avatar = Column(Text, nullable=True)
     user_role = Column(Integer, nullable=True)
-
-    @aggregated('need.payments', Column(Integer, default=0, nullable=False))
-    def paid(cls):
-        from . import Payment
-        return coalesce(
-            func.sum(Payment.need_amount) \
-                .filter(Payment.id_user==cls.id_user),
-            cls.paid,
-        )
+    paid = Column(Integer, default=0, nullable=False)
 
     @observes('user.avatarUrl')
     def user_avatar_observer(self, avatar):
