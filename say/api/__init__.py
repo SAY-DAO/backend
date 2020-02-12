@@ -182,6 +182,33 @@ try:
 except:
     pass
 
+APIMD_CONFIG_FILE_PROD = 'apimd-config-prod.cfg'
+if PRODUCTION:
+    if not os.path.isfile(APIMD_CONFIG_FILE_PROD):
+        raise Exception('''
+            Make sure apimd-config-prod.cfg exist
+            and admin PASSWORD, CUSTOM_LINK, SECURITY_TOKEN and DATABASE
+            are correctly set in apimd-config-prod.cfg
+        ''')
+
+    dashboard.config.init_from(file=APIMD_CONFIG_FILE_PROD)
+else:
+    print(
+        'Open http://localhost/dashboard and use admin admin to see '
+        'API monitoring dashboard'
+    )
+
+try:
+    dashboard.bind(app)
+except Exception as e:
+    print('''
+        Make sure apimd-config-prod.cfg exist
+        and admin PASSWORD, CUSTOM_LINK, SECURITY_TOKEN and DATABASE
+        are correctly set in apimd-config-prod.cfg
+        '''
+    )
+    raise
+
 api = Api(app)
 
 # 'API monitoring'
