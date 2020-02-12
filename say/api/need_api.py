@@ -175,13 +175,8 @@ class GetNeedById(Resource):
 
             need_dict = obj_to_dict(need)
 
-            participants = session.query(NeedFamily) \
-                .filter_by(id_need=need.id) \
-                .filter_by(isDeleted=False) \
-                .all()
-
             need_dict['participants'] = [
-                obj_to_dict(p) for p in participants
+                obj_to_dict(p) for p in need.current_participants
             ]
             resp = make_response(
                 jsonify(need_dict),

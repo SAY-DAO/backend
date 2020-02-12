@@ -113,32 +113,62 @@ class AddUserToFamily(Resource):
             user_role = int(request.json["userRole"])
 
             user = session.query(User).with_for_update().get(id_user)
-            duplicate_family = (
-                session.query(UserFamily)
-                .filter_by(id_user=user_id)
-                .filter_by(id_family=family_id)
-                .filter_by(isDeleted=False)
-                .first()
-            )
+            if not user:
+                resp = jsonify({'message': f'user {id_user} not found'}), 400
+                return
 
-            if duplicate_family is not None:
-                resp = make_response(jsonify({"message": "You already had this child in your family!"}), 499)
+            family = session.query(Family).with_for_update().get(id_family)
+            if not family:
+                resp = jsonify({'message': f'family {id_family} not found'}), 400
+                return
+
+            if not family.can_join(user, user_role):
+                resp = make_response(
+                    jsonify({
+                        'message':
+                            'Can not join this family'
+                    }),
+                    422,
+                )
                 session.close()
                 return resp
 
-            new_member = UserFamily(
-                id_user=id_user, id_family=id_family, userRole=user_role
-            )
-
-            family = (
-                session.query(Family)
-                .filter_by(id=id_family)
-                .filter_by(isDeleted=False)
+            user_family = (
+                session.query(UserFamily)
+                .filter_by(id_user=user_id)
+                .filter_by(id_family=family_id)
                 .first()
             )
+
+            if not user_family:
+                new_member = UserFamily(
+                    user=user,
+                    family=family,
+                    userRole=user_role,
+                )
+
+            else:
+                if user_family.userRole != user_role:
+                    resp = make_response(
+                        jsonify({
+                            'message':
+                                f'You must back to your previous role: '
+                                f'{user_family.userRole}'
+                        }),
+                        422
+                    )
+                    return
+
+                user_family.isDeleted = False
+                participations = session.query(NeedFamily) \
+                    .filter(NeedFamily.id_user==user.id) \
+                    .filter(NeedFamily.id_family==family.id)
+
+                for p in participations:
+                    p.isDeleted = False
+
             family.child.sayFamilyCount += 1
 
-            session.add(new_member)
             session.commit()
 
             resp = make_response(jsonify({"msg": "user added to family successfully!"}), 200)
@@ -173,8 +203,9 @@ class LeaveFamily(Resource):
                 .filter_by(id_user=user_id)
                 .filter_by(id_family=family_id)
                 .filter_by(isDeleted=False)
-                .first()
+                .one()
             )
+            user_family.isDeleted = True
 
             participations = (
                 session.query(NeedFamily)
@@ -184,10 +215,9 @@ class LeaveFamily(Resource):
             )
 
             for p in participations:
-                p.idDeleted = True
+                p.isDeleted = True
 
             family.child.sayFamilyCount -= 1
-            user_family.isDeleted = True
 
             session.commit()
 

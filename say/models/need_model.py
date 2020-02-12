@@ -12,6 +12,7 @@ from say.tasks import send_email, send_embeded_subject_email
 from say.render_template_i18n import render_template_i18n
 
 from .payment_model import Payment
+from .need_family_model import NeedFamily
 from .user_model import User
 from . import *
 
@@ -160,7 +161,7 @@ class Need(base, Timestamp):
     @observes('payments.verified')
     def payments_observer(self, _):
         session = object_session(self)
-        if not self.status or self.status > 2:
+        if self.status is None or self.status > 2:
             return
 
         paid = sum(
@@ -237,10 +238,9 @@ class Need(base, Timestamp):
             'and_(Need.id==Payment.id_need, Payment.verified.isnot(None))',
     )
 
-    _participants = relationship(
+    participants = relationship(
         'NeedFamily',
         back_populates='need',
-        primaryjoin='and_(Need.id==NeedFamily.id_need, ~NeedFamily.isDeleted)',
         lazy='selectin',
     )
 
@@ -307,32 +307,25 @@ class Need(base, Timestamp):
         return
 
     @property
-    def participants(self):
-        session = object_session(self)
+    def current_participants(self):
+        for p in self.participants:
+            if p.isDeleted:
+                continue
 
-        grouped_participants = session.query(
-            NeedFamily.user_fullname,
-            NeedFamily.user_avatar,
-            NeedFamily.user_role,
-            func.sum(NeedFamily.paid),
+            yield p
+
+        past_participation, = session.query(
+            func.sum(NeedFamily.paid)
         ) \
-            .filter(NeedFamily.id_need == self.id) \
-            .filter(NeedFamily.isDeleted == False) \
-            .group_by(
-                NeedFamily.user_fullname,
-                NeedFamily.user_avatar,
-                NeedFamily.user_role,
+            .filter(NeedFamily.id_need==self.id) \
+            .filter(NeedFamily.isDeleted==True) \
+            .first()
+
+        if past_participation:
+            yield NeedFamily(
+                user_role=-1,
+                paid=past_participation,
             )
-
-        past_participants = session.query(
-            func.sum(NeedFamily.paid),
-        ) \
-            .filter(NeedFamily.id_need == self.id) \
-            .filter(NeedFamily.isDeleted == True) \
-
-
-
-
 
     def update(self):
         from say.utils import digikala

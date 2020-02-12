@@ -270,7 +270,7 @@ class GetChildNeeds(Resource):
                 need_dict = obj_to_dict(need)
                 need_dict['participants'] = [
                     {'user_avatar': p.user_avatar}
-                    for p in need.participants
+                    for p in need.current_participants
                 ]
                 needs.append(need_dict)
 
@@ -1025,7 +1025,6 @@ class ConfirmChild(Resource):
             return resp
 
 
-# TODO: Logical error, what happens to the family and needs
 class MigrateChild(Resource):
     @authorize(SUPER_ADMIN, ADMIN)  # TODO: priv
     @swag_from('./docs/child/migrate.yml')

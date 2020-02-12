@@ -72,11 +72,13 @@ class GetRandomSearchResult(Resource):
             del child_dict['id_ngo']
 
             child_family_member = []
-            for member in random_child.family.current_members():
+            for member in random_child.family.members:
                 child_family_member.append(dict(
+                    user_id=member.id_user,
                     role=member.userRole,
                     firstName=member.user.firstName,
                     lastName=member.user.lastName,
+                    isDeleted=member.isDeleted,
                 ))
 
             child_dict["childFamilyMembers"] = child_family_member

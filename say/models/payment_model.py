@@ -82,24 +82,32 @@ class Payment(base, Timestamp):
 
         family = self.need.child.family
 
-        user_role = session.query(UserFamily.userRole) \
-            .filter(UserFamily.id_user==self.user.id) \
-            .filter(UserFamily.id_family==family.id) \
-            .filter(UserFamily.isDeleted==False) \
-            .one_or_none()
-
-        if user_role:
-            user_role, = user_role
-        else:
-            # FIXME: it is dangerous!
-            user_role = SAY_ROLE
-
-        new_participant = NeedFamily(
-            id_family=family.id,
-            user=self.user,
-            need=self.need,
-            user_role=user_role,
-            paid=self.need_amount,
+        participant = (
+            session.query(NeedFamily)
+            .filter_by(id_need=self.id_need)
+            .filter_by(id_user=self.id_user)
+            .filter_by(isDeleted=False)
+            .with_for_update()
+            .first()
         )
-        session.add(new_participant)
+
+        if participant is None:
+            user_role = session.query(UserFamily.userRole) \
+                .filter(UserFamily.id_user==self.user.id) \
+                .filter(UserFamily.id_family==family.id) \
+                .filter(UserFamily.isDeleted==False) \
+                .one_or_none()
+
+            if user_role:
+                user_role, = user_role
+            else:
+                user_role = SAY_ROLE
+
+            new_participant = NeedFamily(
+                id_family=family.id,
+                user=self.user,
+                need=self.need,
+                user_role=user_role
+            )
+            session.add(new_participant)
 

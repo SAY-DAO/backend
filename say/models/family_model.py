@@ -21,6 +21,7 @@ class Family(base, Timestamp):
     members = relationship(
         'UserFamily',
         back_populates='family',
+        lazy='selectin',
     )
 
     def current_members(self):
@@ -28,3 +29,18 @@ class Family(base, Timestamp):
             if member.isDeleted:
                 continue
             yield member
+
+    def can_join(self, user, role):
+        session = object_session(self)
+
+        for member in self.members:
+            if member.id_user == user.id and not member.isDeleted:
+                return False
+
+            # Child has father (xor mother)
+            if role in (0, 1) and member.userRole == role \
+                    and not member.isDeleted:
+                return False
+
+        return True
+
