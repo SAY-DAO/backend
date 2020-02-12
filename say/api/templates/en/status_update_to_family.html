@@ -6,16 +6,14 @@
     آخرین وضعیت نیازهای پرداخت شده برای {{child_sayName}}
 {% endblock %}
 {% block img %}
-    <!-- TODO: change to jpg. DO NOT MISS THE URL IN APP -->
     <img src="https://sayapp.company/public/resources/img/purchased.jpg" style="height: 100px;" />
 {% endblock %}
 {% block tcontent %}
     آخرین وضعیت نیازهای پرداخت شده برای {{child_sayName}}
 {% endblock %}
 {% block mcontent %}
-با سلام
-شما که دریافت کننده‌ی این ایمیل‌اید خانواده {{child_sayName}} هستید و ما می‌خواهیم به شما از تغییر وضعیت نیازهای 
-پرداخت شده بگوییم. جدولی که در ادامه آمده خلاصه‌ی تغییرات نیازهای کودک شما در تاریخ {{yesterday_date}} است. 
+    You are part of {{child_sayName}}’s family, and this email is to notify you about the state of purchased needs by your family. 
+    Below is the summary of changes in your child’s needs until {{yesterday_date}}.
 
 <!-- TODO: NEED Content -->
 <table style="
@@ -29,27 +27,7 @@
     width: 90%;
     max-width: 500px; 
     margin: 0 auto 30px;">
-    <thead>
-        <tr>
-            <!-- ** -->
-            <td style="
-                font-family: roboto, 'Roboto'; 
-                border: 2px solid #cccccc;
-                padding: 20px 2px;
-                ">ردیف</td>
-            <td style="
-                font-family: roboto, 'Roboto'; 
-                border: 2px solid #cccccc;
-                padding: 20px 2px;
-                ">نام نیاز</td>
-            <!-- ** -->
-            <td style="
-                font-family: roboto, 'Roboto'; 
-                border: 2px solid #cccccc;
-                padding: 20px 2px;
-                ">وضعیت</td>
-        </tr>
-    </thead>
+    
     <tbody>
         {% for need in needs %}
         <tr>
@@ -62,17 +40,28 @@
                 font-family: roboto, 'Roboto'; 
                 padding: 20px 2px;
                 border: 2px solid #cccccc;
-                ">{{need.name}}</td>
-            <td style="
-                font-family: roboto, 'Roboto'; 
-                padding: 20px 2px;
-                border: 2px solid #cccccc;
                 ">{{need.status_description}}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
-
+<!-- TODO: please set the link to the child page on application -->
+<a href="#" style="
+                font-family: roboto, 'Roboto';
+                font-size: 14px;
+                font-weight: 400;
+                line-height: 20px;
+                padding: 15px 0;
+                width: 200px;
+                border-radius: 3px;
+                text-decoration: none;
+                background-color: #3d4f41;
+                color: #ffffff;
+                display: inline-block;
+                text-align: center;
+                ">
+    SAY App
+</a>
 
 {% endblock %}
