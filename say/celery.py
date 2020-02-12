@@ -2,8 +2,8 @@ from celery.schedules import crontab
 
 
 beat = {
-    'report-to-ngos': {
-        'task': 'say.tasks.report_to_ngo.report_to_ngos',
+    'report-to-social-workers': {
+        'task': 'say.tasks.report_to_social_worker.report_to_social_workers',
         'schedule': crontab(minute=30, hour=5),
     },
     'update-needs': {

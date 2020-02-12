@@ -19,6 +19,7 @@ DEFAULT_LOCALE = LANGS.fa
 
 
 def set_locale(locale):
+    locale = str(locale)
     g.locale = locale.lower()
 
 
