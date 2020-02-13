@@ -342,7 +342,7 @@ class Need(base, Timestamp):
         if title:
             self.title = title
 
-        if cost:
+        if cost and not self.isDone:
             if type(cost) is int:
                 self.cost = cost
             elif type(cost) is str:

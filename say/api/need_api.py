@@ -334,7 +334,8 @@ class UpdateNeedById(Resource):
                 new_link = request.form["link"]
                 if new_link != need.link:
                     need.link = new_link
-                    update_need.delay(need.id)
+                    session.flush()
+                    update_need.delay(need.id, force=True)
 
             if "affiliateLinkUrl" in request.form.keys():
                 need.affiliateLinkUrl = request.form["affiliateLinkUrl"]
