@@ -302,7 +302,7 @@ class Need(base, Timestamp):
         )
 
         self.payments.append(say_payment)
-        say_payment.verify()
+        say_payment.verify(is_say=True)
 
         return
 

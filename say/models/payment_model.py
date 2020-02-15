@@ -65,7 +65,7 @@ class Payment(base, Timestamp):
 
     def verify(self, transaction_date=datetime.utcnow(), track_id=None,
                verify_date=datetime.utcnow(), card_no=None,
-               hashed_card_no=None):
+               hashed_card_no=None, is_say=False):
 
         session = object_session(self)
 
@@ -86,7 +86,6 @@ class Payment(base, Timestamp):
             session.query(NeedFamily)
             .filter_by(id_need=self.id_need)
             .filter_by(id_user=self.id_user)
-            .filter_by(isDeleted=False)
             .with_for_update()
             .first()
         )
@@ -100,8 +99,10 @@ class Payment(base, Timestamp):
 
             if user_role:
                 user_role, = user_role
-            else:
+            elif is_say:
                 user_role = SAY_ROLE
+            else:
+                raise Exception('User not in family')
 
             new_participant = NeedFamily(
                 id_family=family.id,
