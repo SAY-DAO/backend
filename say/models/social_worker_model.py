@@ -67,6 +67,7 @@ class SocialWorker(base, Timestamp):
         from .need_model import Need
         from .child_model import Child
         from .child_need_model import ChildNeed
+        from .ngo_model import Ngo
 
         needs = None
         with app.app_context(), ChangeLocaleTo(self.locale):
