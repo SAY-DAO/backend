@@ -72,7 +72,8 @@ def report_to_family(self, family_id):
         to_members_email = list(
             set(to_members_email).intersection(set(all_members_email))
         )
-
+        child_page = f'childPage/{child_id}/0'
+        
         send_embeded_subject_email(
             to=to_members_email,
             html=render_template_i18n(
@@ -80,6 +81,7 @@ def report_to_family(self, family_id):
                 child_sayName=child_sayName,
                 needs=needs,
                 yesterday_date=yesterday,
+                child_page=child_page,
                 locale=LANGS.fa,
                 date_with_year=False,
             ),
