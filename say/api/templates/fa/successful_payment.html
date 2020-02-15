@@ -136,16 +136,16 @@
                 </div>
         {% endif %}
 
-        {% if payment.bank_amount %}
+        <!-- {% if payment.bank_amount %} -->
                 <div class="rowContent">
                         <span>
-                                {{int_formatter(payment.bank_amount)}} تومان
+                                {{int_formatter(payment.need_amount)}} تومان
                         </span>
                         <span>
-                                پرداخت از کارت بانکی
+                                مبلغ
                         </span>
                 </div>
-        {% endif %}
+        <!-- {% endif %} -->
 
         <div class="rowContent">
                 <span>

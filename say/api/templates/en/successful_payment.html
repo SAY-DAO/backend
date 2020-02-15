@@ -90,7 +90,7 @@
         </div>
         {% endif %}
 
-        {% if payment.bank_amount %}
+        <!-- {% if payment.bank_amount %} -->
         <div style="
               width:100%; 
               margin-top : 15px; 
@@ -101,7 +101,7 @@
                     text-align: left; 
                     color:#666;
                     font-size: 14px; 
-                    font-weight : 500;">{{int_formatter(payment.bank_amount)}} Tomans</span>
+                    font-weight : 500;">{{int_formatter(payment.need_amount)}} Tomans</span>
             <span style="
                     width: 44%; 
                     display :inline-block; 
@@ -109,7 +109,7 @@
                     color:#666; 
                     font-size: 12px;">Paid from debit card</span>
         </div>
-        {% endif %}
+        <!-- {% endif %} -->
 
         <div style="
         width:100%; 
