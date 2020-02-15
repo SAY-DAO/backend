@@ -69,6 +69,7 @@
                     font-size: 12px;">Total need_amount</span>
         </div>
 
+        {% if payment.credit_amount %}
         <div style="
               width: 100%; 
               margin-top: 15px; 
@@ -79,15 +80,17 @@
                     text-align: left; 
                     color:#666;
                     font-size: 14px;
-                    font-weight : 500;">{{int_formatter(payment.need_amount)}} Tomans</span>
+                    font-weight : 500;">{{int_formatter(payment.credit_amount)}} Tomans</span>
             <span style="
                     width: 44%; 
                     display: inline-block; 
                     text-align: right;
                     color:#666; 
-                    font-size : 12px;">Amount</span>
+                    font-size : 12px;">Paid from wallet</span>
         </div>
+        {% endif %}
 
+        {% if payment.bank_amount %}
         <div style="
               width:100%; 
               margin-top : 15px; 
@@ -98,17 +101,59 @@
                     text-align: left; 
                     color:#666;
                     font-size: 14px; 
-                    font-weight : 500;">{{int_formatter(payment.donation_amount)}} Tomans</span>
+                    font-weight : 500;">{{int_formatter(payment.bank_amount)}} Tomans</span>
             <span style="
                     width: 44%; 
                     display :inline-block; 
                     text-align: right;
                     color:#666; 
-                    font-size: 12px;">Donation</span>
+                    font-size: 12px;">Paid from debit card</span>
         </div>
+        {% endif %}
+
+        <div style="
+        width:100%; 
+        margin-top : 15px; 
+        margin-bottom : 15px;">
+                <span style="
+                        width: 44%; 
+                        display:inline-block; 
+                        text-align: left; 
+                        color:#666;
+                        font-size: 14px; 
+                        font-weight : 500;">{{int_formatter(payment.donation_amount)}} Tomans</span>
+                <span style="
+                        width: 44%; 
+                        display :inline-block; 
+                        text-align: right;
+                        color:#666; 
+                        font-size: 12px;">Donation</span>
+         </div>
 
         <hr style="background-color : #CDCDCD; width: 90%;"/>
 
+        {% if payment.credit_amount %}
+        <div style="
+              width:100%; 
+              margin-top : 15px; 
+              margin-bottom : 15px;">
+            <span style="
+                    width: 44%; 
+                    display:inline-block; 
+                    text-align: left; 
+                    color:#666;
+                    font-size: 14px; 
+                    font-weight : 500;">{{payment.order_id}}</span>
+            <span style="
+                    width: 44%; 
+                    display: inline-block; 
+                    text-align : right;
+                    color:#666; 
+                    font-size: 12px;">SAY tracking number</span>
+        </div>
+        {% endif %}
+
+        {% if payment.bank_amount %}
         <div style="
               width:100%; 
               margin-top : 15px; 
@@ -125,10 +170,13 @@
                     display: inline-block; 
                     text-align : right;
                     color:#666; 
-                    font-size: 12px;">Tracking number</span>
+                    font-size: 12px;">Bank tracking number</span>
         </div>
+        {% endif %}
+
         <hr style="background-color: #CDCDCD; width: 90%;"/>
 
+        {% if payment.bank_amount %}
         <div style="
               width: 100%; 
               margin-top: 15px; 
@@ -147,6 +195,8 @@
                     color:#666; 
                     font-size: 12px;">Card number</span>
         </div>
+        {% endif %}
+
 
         <a style="
             text-decoration: none; 
