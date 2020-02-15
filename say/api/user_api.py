@@ -1,15 +1,14 @@
-from hashlib import md5
-from say.api import jwt
+from random import randint
 
+from . import *
+from say.api import jwt
 from say.models import session, obj_to_dict
 from say.models.family_model import Family
 from say.models.need_family_model import NeedFamily
-from say.models.payment_model import Payment
+from say.models.revoked_token_model import RevokedToken
 from say.models.user_family_model import UserFamily
 from say.models.user_model import User
-from say.models.child_model import Child
-from say.models.revoked_token_model import RevokedToken
-from . import *
+
 
 """
 User APIs
@@ -155,7 +154,7 @@ class UpdateUserById(Resource):
 
                     primary_user.avatarUrl = os.path.join(
                         temp_user_path,
-                        str(primary_user.id) + '-avatar_' + filename,
+                        str(primary_user.id) + str(randint(1000, 100000)) + '-avatar_' + filename,
                     )
                     file.save(primary_user.avatarUrl)
                     primary_user.avatarUrl = '/' + primary_user.avatarUrl
@@ -391,7 +390,10 @@ class AddUser(Resource):
                     if not os.path.isdir(temp_user_path):
                         os.makedirs(temp_user_path, exist_ok=True)
 
-                    path = os.path.join(temp_user_path, str(current_id) + '-avatar_' + filename)
+                    path = os.path.join(
+                        temp_user_path,
+                        str(current_id) + str(randint(1000, 100000)) + '-avatar_' + filename,
+                    )
 
                     file.save(path)
 
