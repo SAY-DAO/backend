@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta
 
 from sqlalchemy import or_
@@ -72,8 +73,9 @@ def report_to_family(self, family_id):
         to_members_email = list(
             set(to_members_email).intersection(set(all_members_email))
         )
-        child_page = f'childPage/{child_id}/0'
-        
+        base_url = app.config['BASE_URL']
+        child_page = os.path.join(base_url, 'childPage', str(child_id), '0')
+
         send_embeded_subject_email(
             to=to_members_email,
             html=render_template_i18n(
