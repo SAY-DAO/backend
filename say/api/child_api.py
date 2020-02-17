@@ -276,7 +276,7 @@ class GetChildNeeds(Resource):
 
             sorted_needs = sorted(
                 needs,
-                key=lambda n: collator.getSortKey(n['name']),
+                key=lambda n: collator.getSortKey(n['name'] or ''),
             )
             result = dict(
                 total_count=len(needs),

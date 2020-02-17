@@ -162,7 +162,19 @@ class UpdateUserById(Resource):
 
 
             if "userName" in request.form.keys():
-                primary_user.userName = request.form["userName"]
+                username = request.form["userName"].lower()
+                if session.query(User) \
+                    .filter(User.userName==username) \
+                    .filter(User.isDeleted==False) \
+                    .one_or_none() \
+                :
+                    resp = make_response(
+                        jsonify({"message": "Username exists"}),
+                        499,
+                    )
+                    return resp
+
+                primary_user.userName = username
 
             if "emailAddress" in request.form.keys():
                 primary_user.emailAddress = request.form["emailAddress"]
