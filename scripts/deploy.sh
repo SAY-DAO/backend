@@ -1,7 +1,6 @@
 #!/bin/sh
 
 set -e
-export IMAGE_NAME=$REPO_UPLOAD_ADD
 
 apk update && apk add openssh
 eval $(ssh-agent -s)

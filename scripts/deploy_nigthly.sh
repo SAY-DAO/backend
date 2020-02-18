@@ -3,7 +3,6 @@
 set -e
 export CI_PROJECT_NAME_NIGTHLY=$CI_PROJECT_NAME-nigthly
 export CI_PROJECT_DIR_NIGTHLY=/tmp/nigthly/
-export IMAGE_NAME=$REPO_UPLOAD_ADD:nigthly
 
 apk update && apk upgrade && apk add openssh
 eval $(ssh-agent -s)
@@ -23,7 +22,7 @@ ssh -t $SERVER_USER@$SERVER "
 cd $CI_PROJECT_DIR_NIGTHLY &&
 tar -xvf $CI_PROJECT_NAME_NIGTHLY.tar.gz &&
 cd $CI_PROJECT_NAME &&
-docker build -t $IMAGE_NAME . -f Dockerfile_nigthly &&
+docker build -t $NIGTHLY_IMAGE_NAME . -f Dockerfile_nigthly &&
 cd .. &&
 rm -rf $CI_PROJECT_NAME $CI_PROJECT_NAME_NIGTHLY.tar.gz &&
 cd /home/server/say-installer &&
