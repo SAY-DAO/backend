@@ -761,6 +761,10 @@ class UpdateChildById(Resource):
                     request.form["bio_summary_translations"],
                 )
 
+            if "existence_status" in request.form.keys():
+                primary_child.existence_status = int(request.form["existence_status"])
+                # TODO: reduce social worker's current children count
+
             session.commit()
 
             child_dict = obj_to_dict(primary_child)

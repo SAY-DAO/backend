@@ -46,6 +46,7 @@ class GetRandomSearchResult(Resource):
                 .filter(Need.isDone==False) \
                 .filter(Need.isConfirmed==True) \
                 .filter(Need.isDeleted==False) \
+                .filter_by(existence_status=1) \
                 .order_by(func.random()) \
                 .limit(1) \
                 .first()
