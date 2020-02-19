@@ -119,7 +119,7 @@ class Need(base, Timestamp):
             return 100
 
         try:
-           return int(self.paid / self.cost * 100)
+           return format(self.paid / self.cost * 100, '.1f')
         except:
             return 0
 
