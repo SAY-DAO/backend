@@ -119,7 +119,10 @@ class Need(base, Timestamp):
             return 100
 
         try:
-           return format(self.paid / self.cost * 100, '.1f')
+           return str(format(self.paid / self.cost * 100, '.1f')) \
+               .rstrip('0') \
+               .rstrip('.')
+
         except:
             return 0
 
