@@ -1,5 +1,8 @@
-from say import app
+from say.api import sms_provider
+from . import celery
 
+
+@celery.task()
 def send_sms(to, text):
-    response = requests.post(
+    return sms_provider.send(to, text)
 

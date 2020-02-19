@@ -1,1 +1,2 @@
-from melli_payamak import MelliPayamak
+from .meli_payamak import MeliPayamak
+

@@ -50,9 +50,9 @@ parameters:
     in: formData
     type: boolean
 
-  - name: country
+  - name: country_code
     in: formData
-    type: integer
+    type: string
 
   - name: city
     in: formData

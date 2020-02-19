@@ -3,7 +3,7 @@ import functools
 from babel import Locale
 from flask import request, g
 from sqlalchemy import Column, ForeignKey, String, Integer, Date, Boolean, \
-    Text, Numeric, DateTime, FLOAT
+    Text, Numeric, DateTime, FLOAT, Unicode
 from sqlalchemy.orm import relationship, synonym, scoped_session, \
     sessionmaker, object_session
 from sqlalchemy import inspect, or_, not_, and_, func, select
@@ -13,7 +13,7 @@ from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
 from sqlalchemy.sql.schema import MetaData
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql.functions import coalesce
-from sqlalchemy_utils import TranslationHybrid, aggregated, observes
+from sqlalchemy_utils import TranslationHybrid, aggregated, observes, PhoneNumber
 from sqlalchemy_utils.models import Timestamp
 
 from say.api import db
@@ -104,6 +104,9 @@ def obj_to_dict(obj, relationships=False):
         elif isinstance(value, Locale):
             result[key] = str(value)
 
+        elif isinstance(value, PhoneNumber):
+            result[key] = value.e164
+
         else:
             result[key] = value
     return result
@@ -124,8 +127,8 @@ def columns(obj, relationships=False, synonyms=True, composites=False,
 
         if (not hybrids and c.extension_type == HYBRID_PROPERTY) \
                 or (not relationships and k in mapper.relationships) \
-                or (not synonyms and k in mapper.synonyms) \
-                or (not composites and k in mapper.composites):
+                or (not synonyms and k in mapper.synonyms):
+                #or (not composites and k in mapper.composites):
             continue
 
         yield k, getattr(cls, k)

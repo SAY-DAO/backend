@@ -2,7 +2,7 @@ import requests
 import json
 
 
-class MelliPayamak:
+class MeliPayamak:
 
     API_URL = 'https://rest.payamak-panel.com/api'
 
@@ -27,7 +27,6 @@ class MelliPayamak:
                 },
                 headers=self.headers,
             )
-            import pudb; pudb.set_trace()  # XXX BREAKPOINT
             return resp.json()
 
         except Exception as ex:
@@ -37,5 +36,3 @@ class MelliPayamak:
     def send(self, to, text):
         return self.request('/SendSMS/SendSMS', to=to, text=text)
 
-m = MelliPayamak('9123186846', r'%4o8t&F9in+', '10007778777827')
-a = m.send('989372735711', 'hey you')
