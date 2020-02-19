@@ -53,6 +53,7 @@ class Child(base, Timestamp):
         Integer, nullable=True
     )  # -3:Deprived of education | -2:Kinder garden | -1:Not attending | 0:Pre-school | 1:1st grade | 2:2nd grade | ... | 13:University
     status = Column(Integer, nullable=True)  # happy, sad, etc
+    existence_status = Column(Integer, nullable=True, default=1)  # 0: dead :( | 1: alive and present | 2: alive but gone
     isDeleted = Column(Boolean, nullable=False, default=False)
     isConfirmed = Column(Boolean, nullable=False, default=False)
     confirmUser = Column(Integer, nullable=True)

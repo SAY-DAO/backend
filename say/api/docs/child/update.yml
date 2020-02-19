@@ -108,6 +108,10 @@ parameters:
     in: formData
     type: integer
 
+  - name: existence_status
+    in: formData
+    type: integer
+
   - name: child_id
     in: path
     type: integer
