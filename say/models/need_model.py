@@ -345,6 +345,8 @@ class Need(base, Timestamp):
         if cost and not self.isDone:
             if type(cost) is int:
                 self.cost = cost
+                self.purchase_cost = cost
+
             elif type(cost) is str:
                 session = object_session(self)
 
