@@ -80,10 +80,8 @@ class SocialWorker(base, Timestamp):
                 .order_by(
                     Child.firstName,
                     Child.lastName,
-                    Need.title,
                     Need.expected_delivery_date,
                 ) \
-                .all()
 
         services = []
         products = []
