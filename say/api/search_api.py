@@ -11,6 +11,8 @@ from say.models.need_model import Need
 from say.models.family_model import Family
 from say.models.user_family_model import UserFamily
 from say.models.user_model import User
+
+
 """
 Search APIs
 """
@@ -42,6 +44,7 @@ class GetRandomSearchResult(Resource):
                 .filter_by(isConfirmed=True) \
                 .filter_by(isDeleted=False) \
                 .filter_by(isMigrated=False) \
+                .filter_by(existence_status=1) \
                 .join(Need) \
                 .filter(Need.isDone==False) \
                 .filter(Need.isConfirmed==True) \
