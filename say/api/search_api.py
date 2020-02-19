@@ -44,11 +44,11 @@ class GetRandomSearchResult(Resource):
                 .filter_by(isConfirmed=True) \
                 .filter_by(isDeleted=False) \
                 .filter_by(isMigrated=False) \
+                .filter_by(existence_status=1) \
                 .join(Need) \
                 .filter(Need.isDone==False) \
                 .filter(Need.isConfirmed==True) \
                 .filter(Need.isDeleted==False) \
-                .filter_by(existence_status=1) \
                 .order_by(func.random()) \
                 .limit(1) \
                 .first()
