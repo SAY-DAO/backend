@@ -2,7 +2,7 @@ import os
 from hashlib import sha256
 
 from sqlalchemy.orm import composite
-from sqlalchemy_utils import LocaleType
+from sqlalchemy_utils import LocaleType, CountryType, PhoneNumberType
 from babel import Locale
 
 from . import *
@@ -22,8 +22,8 @@ class User(base, Timestamp):
     userName = Column(String, nullable=False, unique=True)
     avatarUrl = Column(String, nullable=True)
     flagUrl = Column(String, nullable=True)
-    phoneNumber = Column(Unicode(20))
-    country_code = Column(Unicode(8))
+    phone_number = Column(PhoneNumberType())
+    country = Column(CountryType)
     emailAddress = Column(String, nullable=True, unique=True)
     gender = Column(Boolean, nullable=True)  # real country codes
     city = Column(Integer, nullable=False)  # 1:tehran | 2:karaj
@@ -35,11 +35,6 @@ class User(base, Timestamp):
     _password = Column(String, nullable=False)
     locale = Column(LocaleType, default=Locale('fa'), nullable=False)
 
-    phone_number = composite(
-        PhoneNumber,
-        phoneNumber,
-        country_code
-    )
 
     @aggregated('participations.need', Column(Integer, default=0, nullable=False))
     def done_needs_count(cls):

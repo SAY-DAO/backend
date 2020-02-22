@@ -13,7 +13,8 @@ from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
 from sqlalchemy.sql.schema import MetaData
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql.functions import coalesce
-from sqlalchemy_utils import TranslationHybrid, aggregated, observes, PhoneNumber
+from sqlalchemy_utils import TranslationHybrid, aggregated, observes, \
+    PhoneNumber, Country
 from sqlalchemy_utils.models import Timestamp
 
 from say.api import db
@@ -106,6 +107,9 @@ def obj_to_dict(obj, relationships=False):
 
         elif isinstance(value, PhoneNumber):
             result[key] = value.e164
+
+        elif isinstance(value, Country):
+            result[key] = {'code': value.code, 'name': value.name}
 
         else:
             result[key] = value

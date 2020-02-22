@@ -4,7 +4,7 @@ from random import randint
 from babel import Locale
 from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
-from sqlalchemy_utils import PhoneNumber
+from sqlalchemy_utils import PhoneNumber, Country
 
 
 from . import *
@@ -53,7 +53,7 @@ class CheckUser(Resource):
                 username = request.json["username"]
             else:
                 return Response(
-                    json.dumps({"message": "userName is needed !!!"}), status=500
+                    json.dumps({"message": "userName is needed"}), status=500
                 )
 
             alreadyTaken = (
@@ -94,23 +94,23 @@ class RegisterUser(Resource):
                 username = request.json["username"].lower()
             else:
                 resp = Response(
-                    json.dumps({"message": "userName is needed !!!"}), status=500
+                    json.dumps({"message": "userName is needed"}), status=500
                 )
                 return
 
             if "phoneNumber" in request.json.keys():
-                phoneNumber = request.json["phoneNumber"].lstrip('0')
+                phoneNumber = request.json["phoneNumber"]
             else:
                 resp = Response(
-                    json.dumps({"message": "phoneNumber is needed !!!"}), status=500
+                    json.dumps({"message": "phoneNumber is needed"}), status=500
                 )
                 return
 
-            if "country_code" in request.json.keys():
-                country_code = request.json["country_code"]
+            if "countryCode" in request.json.keys():
+                country = request.json["countryCode"]
             else:
                 resp = Response(
-                    json.dumps({"message": "country_code is needed !!!"}), status=500
+                    json.dumps({"message": "countryCode is needed"}), status=500
                 )
                 return
 
@@ -118,19 +118,21 @@ class RegisterUser(Resource):
                 password = request.json["password"]
             else:
                 resp = Response(
-                    json.dumps({"message": "password is needed !!!"}), status=500
+                    json.dumps({"message": "password is needed"}), status=500
                 )
                 return
 
             email = None
             if "email" in request.json.keys():
                 email = request.json["email"].lower()
+                if bool(email) == False:
+                    email = None
 
             if "firstName" in request.json.keys():
                 first_name = request.json["firstName"]
             else:
                 resp = Response(
-                    json.dumps({"message": "firstName is needed !!!"}), status=500
+                    json.dumps({"message": "firstName is needed"}), status=500
                 )
                 return
 
@@ -138,23 +140,21 @@ class RegisterUser(Resource):
                 last_name = request.json["lastName"]
             else:
                 resp = Response(
-                    json.dumps({"message": "lastName is needed !!!"}), status=500
+                    json.dumps({"message": "lastName is needed"}), status=500
                 )
                 return
 
             lang = get_locale()
             locale = Locale(lang)
-            phone_number = PhoneNumber(phoneNumber, country_code)
+            country = Country(country.upper())
+            phone_number = PhoneNumber(phoneNumber.replace(' ', ''))
 
             alreadyExist = (
                 session.query(User)
                 .filter_by(isDeleted=False)
                 .filter(or_(
                     User.userName==username,
-                    and_(
-                        User.phoneNumber==phoneNumber,
-                        User.country_code==country_code,
-                    ),
+                    User.phone_number==phone_number,
                     and_(
                         User.emailAddress==email,
                         User.emailAddress.isnot(None),
@@ -178,7 +178,6 @@ class RegisterUser(Resource):
                     lastName=last_name,
                     userName=username,
                     avatarUrl=None,
-                    phoneNumber=None,
                     emailAddress=email,
                     gender=None,
                     city=0,
@@ -189,6 +188,7 @@ class RegisterUser(Resource):
                     flagUrl="",
                     locale=locale,
                     phone_number=phone_number,
+                    country=country,
                 )
                 session.add(new_user)
                 session.flush()
@@ -229,7 +229,7 @@ class Login(Resource):
                 username = request.form["username"].lower()
             else:
                 resp = Response(
-                    json.dumps({"message": "userName is needed !!!"}), status=500
+                    json.dumps({"message": "userName is needed"}), status=500
                 )
                 return
 
@@ -237,7 +237,7 @@ class Login(Resource):
                 password = request.form["password"]
             else:
                 resp = Response(
-                    json.dumps({"message": "password is needed !!!"}), status=500
+                    json.dumps({"message": "password is needed"}), status=500
                 )
                 return
 

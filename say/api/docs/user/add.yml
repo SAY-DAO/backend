@@ -45,7 +45,7 @@ parameters:
     in: formData
     type: boolean
 
-  - name: country_code
+  - name: countryCode
     in: formData
     required: true
     type: string

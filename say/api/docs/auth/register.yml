@@ -18,8 +18,8 @@ parameters:
 
         phoneNumber:
           type: string
-        
-        country_code:
+       
+        countryCode:
           type: string
 
         email:
