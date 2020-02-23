@@ -1,18 +1,19 @@
 from datetime import datetime, timedelta
 from random import randint
 
+from babel import Locale
 from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
+from sqlalchemy_utils import PhoneNumber, Country
 
-from babel import Locale
 
 from . import *
-from say.locale import DEFAULT_LOCALE
 from say.models import session, obj_to_dict, or_, commit,  ResetPassword, \
-    Verification, User, RevokedToken
-from say.tasks import send_embeded_subject_email
+    Verification, User, RevokedToken, and_
 from say.render_template_i18n import render_template_i18n
-
+from say.tasks import send_embeded_subject_email, send_sms
+from say.locale import ChangeLocaleTo
+from say.content import content
 
 
 """
@@ -22,6 +23,14 @@ Authentication APIs
 def datetime_converter(o):
     if isinstance(o, datetime):
         return o.__str__()
+
+
+def send_verify_sms(to_user, verify_code):
+    with ChangeLocaleTo(to_user.locale):
+        send_sms.delay(
+            to_user.phone_number.e164,
+            content['CONFIRM_PHONE'] % verify_code,
+        )
 
 
 def send_verify_email(to_user, verify_code):
@@ -44,7 +53,7 @@ class CheckUser(Resource):
                 username = request.json["username"]
             else:
                 return Response(
-                    json.dumps({"message": "userName is needed !!!"}), status=500
+                    json.dumps({"message": "userName is needed"}), status=500
                 )
 
             alreadyTaken = (
@@ -85,7 +94,23 @@ class RegisterUser(Resource):
                 username = request.json["username"].lower()
             else:
                 resp = Response(
-                    json.dumps({"message": "userName is needed !!!"}), status=500
+                    json.dumps({"message": "userName is needed"}), status=500
+                )
+                return
+
+            if "phoneNumber" in request.json.keys():
+                phoneNumber = request.json["phoneNumber"]
+            else:
+                resp = Response(
+                    json.dumps({"message": "phoneNumber is needed"}), status=500
+                )
+                return
+
+            if "countryCode" in request.json.keys():
+                country = request.json["countryCode"]
+            else:
+                resp = Response(
+                    json.dumps({"message": "countryCode is needed"}), status=500
                 )
                 return
 
@@ -93,21 +118,21 @@ class RegisterUser(Resource):
                 password = request.json["password"]
             else:
                 resp = Response(
-                    json.dumps({"message": "password is needed !!!"}), status=500
+                    json.dumps({"message": "password is needed"}), status=500
                 )
                 return
 
+            email = None
             if "email" in request.json.keys():
                 email = request.json["email"].lower()
-            else:
-                resp =  Response(json.dumps({"message": "email is needed"}), status=500)
-                return
+                if bool(email) == False:
+                    email = None
 
             if "firstName" in request.json.keys():
                 first_name = request.json["firstName"]
             else:
                 resp = Response(
-                    json.dumps({"message": "firstName is needed !!!"}), status=500
+                    json.dumps({"message": "firstName is needed"}), status=500
                 )
                 return
 
@@ -115,27 +140,34 @@ class RegisterUser(Resource):
                 last_name = request.json["lastName"]
             else:
                 resp = Response(
-                    json.dumps({"message": "lastName is needed !!!"}), status=500
+                    json.dumps({"message": "lastName is needed"}), status=500
                 )
                 return
 
             lang = get_locale()
             locale = Locale(lang)
+            country = Country(country.upper())
+            phone_number = PhoneNumber(phoneNumber.replace(' ', ''))
 
             alreadyExist = (
                 session.query(User)
                 .filter_by(isDeleted=False)
                 .filter(or_(
                     User.userName==username,
-                    User.emailAddress==email,
+                    User.phone_number==phone_number,
+                    and_(
+                        User.emailAddress==email,
+                        User.emailAddress.isnot(None),
+                    ),
                 ))
                 .first()
             )
+
             if alreadyExist is not None:
                 resp = Response(
                     json.dumps({
                         "status": False,
-                        "Message": "Username or email already exists"}
+                        "Message": "Username, email or phone number already exists"}
                     ),
                     status=500,
                 )
@@ -146,17 +178,17 @@ class RegisterUser(Resource):
                     lastName=last_name,
                     userName=username,
                     avatarUrl=None,
-                    phoneNumber=None,
                     emailAddress=email,
                     gender=None,
                     city=0,
-                    country=0,
                     birthDate=None,
                     birthPlace=None,
                     lastLogin=last_login,
                     password=password,
                     flagUrl="",
                     locale=locale,
+                    phone_number=phone_number,
+                    country=country,
                 )
                 session.add(new_user)
                 session.flush()
@@ -165,7 +197,7 @@ class RegisterUser(Resource):
                 verify = Verification(user=new_user, code=code)
                 session.add(verify)
 
-                send_verify_email(new_user, verify.code)
+                send_verify_sms(new_user, verify.code)
 
                 resp = make_response(
                     jsonify(obj_to_dict(new_user)),
@@ -197,7 +229,7 @@ class Login(Resource):
                 username = request.form["username"].lower()
             else:
                 resp = Response(
-                    json.dumps({"message": "userName is needed !!!"}), status=500
+                    json.dumps({"message": "userName is needed"}), status=500
                 )
                 return
 
@@ -205,7 +237,7 @@ class Login(Resource):
                 password = request.form["password"]
             else:
                 resp = Response(
-                    json.dumps({"message": "password is needed !!!"}), status=500
+                    json.dumps({"message": "password is needed"}), status=500
                 )
                 return
 
@@ -400,12 +432,15 @@ class VerifyResend(Resource):
 
             verify.code = randint(100000, 999999)
             verify.expire_at = datetime.utcnow() + timedelta(
-                minutes=app.config['VERIFICATION_EMAIL_MAXAGE']
+                minutes=app.config['VERIFICATION_MAXAGE']
             )
 
             session.commit()
-            send_verify_email(user, verify.code)
-            resp = Response(json.dumps({"message": "Verify Email Sent."}), status=200)
+            send_verify_sms(user, verify.code)
+            resp = Response(
+                json.dumps({"message": "Verification Code Sent."}),
+                status=200,
+            )
 
         except Exception as e:
             print(e)

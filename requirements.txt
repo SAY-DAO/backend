@@ -27,3 +27,4 @@ ujson
 babel
 PyICU
 flask_monitoringdashboard
+phonenumbers

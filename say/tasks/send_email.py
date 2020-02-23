@@ -6,9 +6,9 @@ from say.api import mail
 
 
 '''
-Extract subject (a p tag with id = 'subject') from rendered html of email
+Extract subject (title) from rendered html of email
 
-<p id='subject' ...> some sobject {somechild.name} </p>
+<title ...> some title </title>
 '''
 def get_subject_from_html(html):
     soup = bs.BeautifulSoup(html)
@@ -52,3 +52,4 @@ def send_embeded_subject_email(to, html, cc=[], bcc=[]):
         bcc=bcc,
     )
     mail.send(email)
+

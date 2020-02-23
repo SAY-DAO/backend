@@ -16,6 +16,12 @@ parameters:
         username:
           type: string
 
+        phoneNumber:
+          type: string
+       
+        countryCode:
+          type: string
+
         email:
           type: string
 

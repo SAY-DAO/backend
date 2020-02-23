@@ -35,6 +35,7 @@ from say.roles import *
 from say.exceptions import *
 from say.langs import LANGS
 from say.locale import ChangeLocaleTo, get_locale
+from say.sms import MeliPayamak
 
 
 PRODUCTION = os.environ.get('PRODUCTION')
@@ -105,7 +106,7 @@ app.config.update({
     'JWT_BLACKLIST_TOKEN_CHECKS': ['access', 'refresh'],
 })
 
-app.config['VERIFICATION_EMAIL_MAXAGE'] = 2 # minutes
+app.config['VERIFICATION_MAXAGE'] = 5 # minutes
 
 app.config.update(
     broker_url='redis://localhost:6379/0',
@@ -175,6 +176,12 @@ mail = Mail(app)
 jwt = JWTManager(app)
 
 idpay = IDPay(app.config['IDPAY_API_KEY'], app.config['SANDBOX'])
+
+sms_provider = MeliPayamak(
+    app.config['MELI_PAYAMAK_USERNAME'],
+    app.config['MELI_PAYAMAK_PASSWORD'],
+    app.config['MELI_PAYAMAK_FROM'],
+)
 
 try:
     from say.basedata import basedata

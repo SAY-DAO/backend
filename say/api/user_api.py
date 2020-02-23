@@ -188,8 +188,8 @@ class UpdateUserById(Resource):
             if "lastName" in request.form.keys():
                 primary_user.lastName = request.form["lastName"]
 
-            if "country" in request.form.keys():
-                primary_user.country = int(request.form["country"])
+            if "country_code" in request.form.keys():
+                primary_user.country_code = request.form["country_code"]
 
             if "city" in request.form.keys():
                 primary_user.city = int(request.form["city"])
@@ -346,7 +346,7 @@ class AddUser(Resource):
             first_name = request.form["firstName"]
             last_name = request.form["lastName"]
             city = int(request.form["city"])
-            country = int(request.form["country"])
+            country_code = request.form["country_code"]
 
             username = request.form["userName"]
 
@@ -365,7 +365,7 @@ class AddUser(Resource):
             last_login = datetime.utcnow()
 
             avatar_url = "wrong url"
-            flag_url = os.path.join(FLAGS, str(country) + ".png")
+            flag_url = os.path.join(FLAGS, country_code + ".png")
 
             new_user = User(
                 firstName=first_name,
@@ -376,7 +376,7 @@ class AddUser(Resource):
                 emailAddress=email_address,
                 gender=gender,
                 city=city,
-                country=country,
+                country_code=country_code,
                 birthDate=birth_date,
                 birthPlace=birth_place,
                 lastLogin=last_login,
