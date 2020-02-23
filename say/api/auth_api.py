@@ -26,7 +26,7 @@ def datetime_converter(o):
 
 
 def send_verify_sms(to_user, verify_code):
-    with ChangeLocaleTo(to_user.locale):
+    with ChangeLocaleTo('fa'):
         send_sms.delay(
             to_user.phone_number.e164,
             content['CONFIRM_PHONE'] % verify_code,
