@@ -1,3 +1,3 @@
 class ContentFA:
-    CONFIRM_PHONE = 'کد تایید شش رقمی شما در  SAY:\n%s'
+    CONFIRM_PHONE = '%s کد تایید شش رقمی شما در SAY است.'
 

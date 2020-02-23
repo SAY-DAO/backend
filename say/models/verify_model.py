@@ -19,5 +19,7 @@ class Verification(base, Timestamp):
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
     code = Column(Integer, nullable=False)
     expire_at = Column(DateTime, nullable=False, default=expire_at)
+    #type_ = 
+
 
     user = relationship("User", foreign_keys=user_id)
