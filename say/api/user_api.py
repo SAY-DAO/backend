@@ -200,9 +200,9 @@ class UpdateUserById(Resource):
             if "locale" in request.form.keys():
                 primary_user.locale = request.form["locale"].lower()
 
-            if "phoneNumber" in request.form.keys():
-                primary_user.phoneNumber = request.form["phoneNumber"]
-
+#            if "phoneNumber" in request.form.keys():
+#                primary_user.phoneNumber = request.form["phoneNumber"]
+#
             if "birthDate" in request.form.keys():
                 primary_user.birthDate = datetime.strptime(
                     request.form["birthDate"], "%Y-%m-%d"
