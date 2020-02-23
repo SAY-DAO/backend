@@ -32,7 +32,7 @@ class User(base, Timestamp):
     is_phonenumber_verified = Column(Boolean, nullable=False, default=False)
     birthDate = Column(Date, nullable=True)
     birthPlace = Column(Integer, nullable=True)  # 1:tehran | 2:karaj
-    lastLogin = Column(Date, nullable=False)
+    lastLogin = Column(DateTime, nullable=False)
     _password = Column(String, nullable=False)
     locale = Column(LocaleType, default=Locale('fa'), nullable=False)
 
