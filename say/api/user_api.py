@@ -202,7 +202,7 @@ class UpdateUserById(Resource):
 
             if "phoneNumber" in request.form.keys() and \
                     not primary_user.is_phonenumber_verified:
-                primary_user.phoneNumber = request.form["phoneNumber"]
+                primary_user.phone_number = request.form["phoneNumber"]
 
             if "birthDate" in request.form.keys():
                 primary_user.birthDate = datetime.strptime(
