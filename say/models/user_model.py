@@ -28,13 +28,21 @@ class User(base, Timestamp):
     gender = Column(Boolean, nullable=True)  # real country codes
     city = Column(Integer, nullable=False)  # 1:tehran | 2:karaj
     isDeleted = Column(Boolean, nullable=False, default=False)
-    isVerified = Column(Boolean, nullable=False, default=False)
+    is_email_verified = Column(Boolean, nullable=False, default=False)
+    is_phonenumber_verified = Column(Boolean, nullable=False, default=False)
     birthDate = Column(Date, nullable=True)
     birthPlace = Column(Integer, nullable=True)  # 1:tehran | 2:karaj
     lastLogin = Column(Date, nullable=False)
     _password = Column(String, nullable=False)
     locale = Column(LocaleType, default=Locale('fa'), nullable=False)
 
+    @hybrid_property
+    def isVerified(self):
+        return self.is_phonenumber_verified or self.is_email_verified
+
+    @isVerified.expression
+    def isVerified(cls):
+        return or_(cls.is_phonenumber_verified, cls.is_email_verified)
 
     @aggregated('participations.need', Column(Integer, default=0, nullable=False))
     def done_needs_count(cls):

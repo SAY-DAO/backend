@@ -382,7 +382,7 @@ class Verify(Resource):
             if error:
                 raise Exception(error)
 
-            user.isVerified = True
+            user.is_phonenumber_verified = True
 
             access_token = create_user_access_token(user)
             refresh_token = create_refresh_token(identity=user.id)
