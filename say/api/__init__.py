@@ -183,12 +183,6 @@ sms_provider = MeliPayamak(
     app.config['MELI_PAYAMAK_FROM'],
 )
 
-try:
-    from say.basedata import basedata
-    basedata(db)
-except:
-    pass
-
 APIMD_CONFIG_FILE_PROD = 'apimd-config-prod.cfg'
 if PRODUCTION:
     if not os.path.isfile(APIMD_CONFIG_FILE_PROD):
