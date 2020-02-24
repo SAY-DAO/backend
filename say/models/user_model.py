@@ -1,10 +1,12 @@
 import os
+import enum
 from hashlib import sha256
 
 from sqlalchemy.orm import composite
 from sqlalchemy_utils import LocaleType, CountryType, PhoneNumberType
 from babel import Locale
 
+from say.gender import Gender
 from . import *
 
 
@@ -23,9 +25,9 @@ class User(base, Timestamp):
     avatarUrl = Column(String, nullable=True)
     flagUrl = Column(String, nullable=True)
     phone_number = Column(PhoneNumberType())
-    country = Column(CountryType)
+    country = Column(CountryType, nullable=False)
     emailAddress = Column(String, nullable=True, unique=True)
-    gender = Column(Boolean, nullable=True)  # real country codes
+    gender = Column(Enum(Gender), nullable=True)
     city = Column(Integer, nullable=False)  # 1:tehran | 2:karaj
     isDeleted = Column(Boolean, nullable=False, default=False)
     is_email_verified = Column(Boolean, nullable=False, default=False)

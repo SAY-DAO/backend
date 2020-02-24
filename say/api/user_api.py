@@ -210,10 +210,7 @@ class UpdateUserById(Resource):
                 )
 
             if "gender" in request.form.keys():
-                primary_user.gender = (
-                    True if request.form["gender"] == "true" else False
-                )
-
+                primary_user.gender = request.form["gender"]
 
             secondary_user = obj_to_dict(primary_user)
 
@@ -324,7 +321,7 @@ class AddUser(Resource):
                 email_address = None
 
             if "gender" in request.form.keys():
-                gender = True if request.form["gender"] == "true" else False
+                gender = request.form["gender"]
             else:
                 gender = None
 

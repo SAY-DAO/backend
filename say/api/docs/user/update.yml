@@ -48,7 +48,8 @@ parameters:
 
   - name: gender
     in: formData
-    type: boolean
+    type: string
+    enum: ['female', 'male', 'other']
 
   - name: countryCode
     in: formData
