@@ -203,7 +203,7 @@ class AddPayment(Resource):
             "order_id": payment.order_id,
             "amount": payment.bank_amount,
             "name": name,
-            "phone": user.phoneNumber,
+            "phone": user.phone_number,
             "mail": user.emailAddress,
             "desc": desc,
             "callback": callback,
