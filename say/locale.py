@@ -24,8 +24,11 @@ def set_locale(locale):
 
 
 def get_locale():
-    if hasattr(g, 'locale'):
-        return g.locale
+    try:
+        if hasattr(g, 'locale'):
+            return g.locale
+    except:
+        pass
 
     try:
         return request.args['_lang'].lower()

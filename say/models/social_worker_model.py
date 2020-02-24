@@ -83,25 +83,24 @@ class SocialWorker(base, Timestamp):
                     Need.expected_delivery_date,
                 ) \
 
-        services = []
-        products = []
-        for need in needs:
-            if need.type == 0:
-                services.append(need)
-            elif need.type == 1 and need.expected_delivery_date:
-                products.append(need)
-            else:
-                continue
+            services = []
+            products = []
+            for need in needs:
+                if need.type == 0:
+                    services.append(need)
+                elif need.type == 1 and need.expected_delivery_date:
+                    products.append(need)
+                else:
+                    continue
 
 
-        # This date show when the needs status updated to 3
-        date = datetime.utcnow() - timedelta(days=1)
-        say = session.query(Ngo).filter_by(name='SAY').first()
-        bcc = [say.coordinator.emailAddress]
-        coordinator_email = self.ngo.coordinator.emailAddress
-        locale = self.locale
+            # This date show when the needs status updated to 3
+            date = datetime.utcnow() - timedelta(days=1)
+            say = session.query(Ngo).filter_by(name='SAY').first()
+            bcc = [say.coordinator.emailAddress]
+            coordinator_email = self.ngo.coordinator.emailAddress
+            locale = self.locale
 
-        with app.app_context():
             if len(services) != 0:
                 send_embeded_subject_email.delay(
                     to=self.emailAddress,
@@ -142,6 +141,6 @@ class SocialWorker(base, Timestamp):
                 for need in products:
                     need.isReported = True
 
-        session.commit()
-        return [need.id for need in needs]
+            session.commit()
+            return [need.id for need in needs]
 

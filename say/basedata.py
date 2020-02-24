@@ -32,5 +32,8 @@ def basedata(db):
     )
     session.add(say_user)
 
-    session.commit()
+    try:
+        session.commit()
+    except:
+        session.rollback()
 
