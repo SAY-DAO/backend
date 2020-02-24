@@ -121,7 +121,7 @@ class SocialWorker(base, Timestamp):
 
             if len(products) != 0:
                 use_plural = False if len(products) == 1 else True
-                send_embeded_subject_email.delay(
+                send_embeded_subject_email(
                     to=self.emailAddress,
                     cc=coordinator_email,
                     bcc=bcc,
