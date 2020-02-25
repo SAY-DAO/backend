@@ -1,22 +1,20 @@
 from collections import OrderedDict
-from dictdiffer import diff
 
 import ujson
-from sqlalchemy import func, or_
+from dictdiffer import diff
+from sqlalchemy import or_
 
-from say.tasks import update_need
+from . import *
 from say.models import session, obj_to_dict, commit
 from say.models.activity_model import Activity
 from say.models.child_model import Child
 from say.models.child_need_model import ChildNeed
 from say.models.family_model import Family
-from say.models.need_family_model import NeedFamily
 from say.models.need_model import Need
-from say.models.payment_model import Payment
 from say.models.social_worker_model import SocialWorker
 from say.models.user_family_model import UserFamily
-from say.models.user_model import User
-from . import *
+from say.tasks import update_need
+
 
 """
 Need APIs
@@ -382,6 +380,13 @@ class UpdateNeedById(Resource):
                         raise Exception('Need has not been reported to ngo yet')
 
                     need.status = new_status
+
+                    # FIXME: Is bank_track_id is nullable?
+                    if need.type == 0 and new_status == 3 and prev_status == 2:
+                        need.bank_track_id = request.form.get(
+                            'bankTrackId',
+                            None,
+                        )
 
                 elif new_status != prev_status:
                     raise ValueError(

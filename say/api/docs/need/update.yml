@@ -91,6 +91,11 @@ parameters:
     in: formData
     type: string
 
+  - name: bankTrackId
+    in: formData
+    type: string
+    description: Only for services, S2 -> S3
+
 responses:
   500:
     description: Error occurred somewhere!
