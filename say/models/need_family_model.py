@@ -16,7 +16,7 @@ class NeedFamily(base, Timestamp):
     id_user = Column(Integer, ForeignKey('user.id'), nullable=True)
     id_need = Column(Integer, ForeignKey('need.id'), nullable=False)
     isDeleted = Column(Boolean, nullable=False, default=False)
-    user_fullname = Column(Text, nullable=False, default='')
+    username = Column(Text, nullable=False, default='')
     user_avatar = Column(Text, nullable=True)
     user_role = Column(Integer, nullable=True)
 
@@ -33,9 +33,9 @@ class NeedFamily(base, Timestamp):
     def user_avatar_observer(self, avatar):
         self.user_avatar = avatar
 
-    @observes('user.firstName', 'user.lastName')
-    def user_fullname_observer(self, firstname, lastname):
-        self.user_fullname = f'{firstname} {lastname}'
+    @observes('user.userName')
+    def username_observer(self, username):
+        self.username = username
 
     family = relationship(
         "Family",

@@ -219,8 +219,7 @@ class GetChildById(Resource):
                 for member in child.family.current_members():
                     child_family_member.append(dict(
                         role=member.userRole,
-                        firstName=member.user.firstName,
-                        lastName=member.user.lastName,
+                        username=member.user.userName,
                     ))
 
                 child_dict["childFamilyMembers"] = child_family_member
@@ -763,11 +762,11 @@ class UpdateChildById(Resource):
 
             if "existence_status" in request.form.keys():
                 primary_child.existence_status = int(request.form["existence_status"])
-                
+
                 if primary_child.existence_status != 1:
                     primary_child.social_worker.currentChildCount -= 1
                     primary_child.ngo.currentChildrenCount -= 1
-                
+
             session.commit()
 
             child_dict = obj_to_dict(primary_child)

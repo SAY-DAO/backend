@@ -79,8 +79,7 @@ class GetRandomSearchResult(Resource):
                 child_family_member.append(dict(
                     user_id=member.id_user,
                     role=member.userRole,
-                    firstName=member.user.firstName,
-                    lastName=member.user.lastName,
+                    username=member.user.userName,
                     isDeleted=member.isDeleted,
                 ))
 

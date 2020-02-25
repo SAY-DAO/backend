@@ -161,10 +161,11 @@ class UpdateUserById(Resource):
                     primary_user.avatarUrl = '/' + primary_user.avatarUrl
 
 
-            if "userName" in request.form.keys():
-                username = request.form["userName"].lower()
+            username = request.form.get("userName", primary_user.userName)
+            if username != primary_user.userName:
                 if session.query(User) \
-                    .filter(User.userName==username) \
+                    .filter(User.formated_username==username.lower()) \
+                    .filter(User.id!=primary_user.id) \
                     .filter(User.isDeleted==False) \
                     .one_or_none() \
                 :

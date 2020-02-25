@@ -91,7 +91,7 @@ class RegisterUser(Resource):
         resp = {"message": "something is wrong"}, 500
         try:
             if "username" in request.json.keys():
-                username = request.json["username"].lower()
+                username = request.json["username"]
             else:
                 resp = Response(
                     json.dumps({"message": "userName is needed"}), status=500
@@ -153,7 +153,7 @@ class RegisterUser(Resource):
                 session.query(User)
                 .filter_by(isDeleted=False)
                 .filter(or_(
-                    User.userName==username,
+                    User.formated_username==username.lower(),
                     User.phone_number==phone_number,
                     and_(
                         User.emailAddress==email,
@@ -244,7 +244,7 @@ class Login(Resource):
             user = (
                 session.query(User)
                 .filter_by(isDeleted=False)
-                .filter_by(userName=username)
+                .filter_by(formated_username=username)
                 .first()
             )
             if user is not None:

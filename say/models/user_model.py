@@ -39,6 +39,14 @@ class User(base, Timestamp):
     locale = Column(LocaleType, default=Locale('fa'), nullable=False)
 
     @hybrid_property
+    def formated_username(self):
+        return self.userName.lower()
+
+    @formated_username.expression
+    def formated_username(cls):
+        return func.lower(cls.userName)
+
+    @hybrid_property
     def isVerified(self):
         return self.is_phonenumber_verified or self.is_email_verified
 
