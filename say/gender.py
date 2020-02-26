@@ -2,7 +2,7 @@ import enum
 
 
 class Gender(enum.Enum):
-    female = 0
-    male = 1
-    other = 2
+    female = 'female'
+    male = 'male'
+    other = 'other'
 

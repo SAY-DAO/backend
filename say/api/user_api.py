@@ -3,6 +3,7 @@ from random import randint
 
 from . import *
 from say.api import jwt
+from say.gender import Gender
 from say.models import session, obj_to_dict
 from say.models.family_model import Family
 from say.models.need_family_model import NeedFamily
@@ -211,6 +212,17 @@ class UpdateUserById(Resource):
                 )
 
             if "gender" in request.form.keys():
+                gender = request.form['gender']
+                if not hasattr(Gender, gender):
+                    resp = make_response(
+                        jsonify({"message":
+                            f"Invalid gender, only can selected in "
+                            f"{Gender.__members__.keys()}"
+                        }),
+                        498,
+                    )
+                    return resp
+
                 primary_user.gender = request.form["gender"]
 
             secondary_user = obj_to_dict(primary_user)
@@ -440,4 +452,5 @@ api.add_resource(UpdateUserById, "/api/v2/user/update/userId=<user_id>")
 api.add_resource(DeleteUserById, "/api/v2/user/delete/userId=<user_id>")
 api.add_resource(AddUser, "/api/v2/user/add")
 api.add_resource(GetUserRole, "/api/v2/user/role/userId=<user_id>&childId=<child_id>")
+
 
