@@ -245,7 +245,6 @@ class GetChildNeeds(Resource):
                 .filter(Child.isDeleted==False) \
                 .filter(Child.isMigrated==False) \
                 .filter(Child.id==child_id) \
-                .options(joinedload(Child.needs))
 
             if child_id != DEFAULT_CHILD_ID:  # TODO: need needs
                 child_query = filter_by_privilege(child_query)
@@ -255,8 +254,13 @@ class GetChildNeeds(Resource):
                 resp = HTTP_NOT_FOUND()
                 return
 
+            needs_query = session.query(Need) \
+                .filter(Need.child_id==child_id) \
+                .filter(Need.isDeleted==False) \
+                .order_by(Need.name)
+
             needs = []
-            for need in child.needs:
+            for need in needs_query:
                 if not need.isConfirmed \
                         and get_user_role() in [USER]:
                     continue
@@ -268,13 +272,9 @@ class GetChildNeeds(Resource):
                 ]
                 needs.append(need_dict)
 
-            sorted_needs = sorted(
-                needs,
-                key=lambda n: n['name'] or '',
-            )
             result = dict(
                 total_count=len(needs),
-                needs=sorted_needs,
+                needs=needs,
             )
             resp = make_response(jsonify(result), 200)
 
