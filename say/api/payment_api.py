@@ -1,3 +1,5 @@
+import random
+import string
 from datetime import datetime
 from urllib.parse import urljoin
 
@@ -22,6 +24,30 @@ def validate_amount(need, amount):
     if int(amount) < idpay.MIN_AMOUNT:
         raise ValueError("Amount can not be smaller than 100")
     return amount
+
+
+def generate_order_id(N=app.config['PAYMENT_ORDER_ID_LENGTH']):
+    '''
+        Generate a random string containing lowercase, uppercase and digits
+    '''
+
+    while True:
+        order_id = ''.join(
+            random.SystemRandom().choice(
+                string.ascii_uppercase
+                + string.ascii_lowercase
+                + string.digits
+            ) for _ in range(N)
+        )
+
+        if not check_order_id_exist(order_id):
+            return order_id
+
+
+def check_order_id_exist(order_id):
+    return session.query(Payment) \
+        .filter(Payment.order_id==order_id) \
+        .one_or_none()
 
 
 class GetAllPayment(Resource):
@@ -180,6 +206,7 @@ class AddPayment(Resource):
             credit_amount=credit,
             desc=desc,
             use_credit=use_credit,
+            order_id=generate_order_id(),
         )
         session.add(payment)
         session.flush()

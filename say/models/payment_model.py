@@ -27,7 +27,7 @@ class Payment(base, Timestamp):
     gateway_track_id = Column(String, nullable=True)
     link = Column(String, nullable=True)
 
-    order_id = Column(String, nullable=True, default=create_order_id)
+    order_id = Column(String, nullable=True, unique=True)
     desc = Column(String, nullable=True)
     card_no = Column(String, nullable=True)
     hashed_card_no = Column(String, nullable=True)
