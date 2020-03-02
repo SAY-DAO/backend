@@ -1,9 +1,7 @@
 from collections import OrderedDict
 
-import icu
 import ujson
 from sqlalchemy.orm import joinedload
-import icu
 
 from . import *
 from say.models import session, obj_to_dict
@@ -26,9 +24,6 @@ from say.models.child_migration_model import ChildMigration
 """
 Child APIs
 """
-
-# Used for persian sorting
-collator = icu.Collator.createInstance(icu.Locale('fa_IR.UTF-8'))
 
 
 def filter_by_confirm(child_query, confirm):
@@ -219,8 +214,7 @@ class GetChildById(Resource):
                 for member in child.family.current_members():
                     child_family_member.append(dict(
                         role=member.userRole,
-                        firstName=member.user.firstName,
-                        lastName=member.user.lastName,
+                        username=member.user.userName,
                     ))
 
                 child_dict["childFamilyMembers"] = child_family_member
@@ -251,7 +245,6 @@ class GetChildNeeds(Resource):
                 .filter(Child.isDeleted==False) \
                 .filter(Child.isMigrated==False) \
                 .filter(Child.id==child_id) \
-                .options(joinedload(Child.needs))
 
             if child_id != DEFAULT_CHILD_ID:  # TODO: need needs
                 child_query = filter_by_privilege(child_query)
@@ -261,8 +254,13 @@ class GetChildNeeds(Resource):
                 resp = HTTP_NOT_FOUND()
                 return
 
+            needs_query = session.query(Need) \
+                .filter(Need.child_id==child_id) \
+                .filter(Need.isDeleted==False) \
+                .order_by(Need.name)
+
             needs = []
-            for need in child.needs:
+            for need in needs_query:
                 if not need.isConfirmed \
                         and get_user_role() in [USER]:
                     continue
@@ -274,13 +272,9 @@ class GetChildNeeds(Resource):
                 ]
                 needs.append(need_dict)
 
-            sorted_needs = sorted(
-                needs,
-                key=lambda n: collator.getSortKey(n['name'] or ''),
-            )
             result = dict(
                 total_count=len(needs),
-                needs=sorted_needs,
+                needs=needs,
             )
             resp = make_response(jsonify(result), 200)
 
@@ -763,11 +757,11 @@ class UpdateChildById(Resource):
 
             if "existence_status" in request.form.keys():
                 primary_child.existence_status = int(request.form["existence_status"])
-                
+
                 if primary_child.existence_status != 1:
                     primary_child.social_worker.currentChildCount -= 1
                     primary_child.ngo.currentChildrenCount -= 1
-                
+
             session.commit()
 
             child_dict = obj_to_dict(primary_child)

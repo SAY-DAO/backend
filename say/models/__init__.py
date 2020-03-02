@@ -1,9 +1,10 @@
+import enum
 import functools
 
 from babel import Locale
 from flask import request, g
 from sqlalchemy import Column, ForeignKey, String, Integer, Date, Boolean, \
-    Text, Numeric, DateTime, FLOAT, Unicode
+    Text, Numeric, DateTime, FLOAT, Unicode, Enum
 from sqlalchemy.orm import relationship, synonym, scoped_session, \
     sessionmaker, object_session
 from sqlalchemy import inspect, or_, not_, and_, func, select
@@ -110,6 +111,9 @@ def obj_to_dict(obj, relationships=False):
 
         elif isinstance(value, Country):
             result[key] = {'code': value.code, 'name': value.name}
+
+        elif isinstance(value, enum.Enum):
+            result[key] = value.name
 
         else:
             result[key] = value

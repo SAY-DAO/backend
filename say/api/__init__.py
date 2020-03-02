@@ -87,6 +87,7 @@ app.config["DEBUG"] = False
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["DELIVER_TO_CHILD_DELAY"] = 4 * 60 * 60 # 4 hours
 app.config["RATELIMIT_DEFAULT"] = "100 per minutes"
+app.config['PAYMENT_ORDER_ID_LENGTH'] = 8
 
 app.config.update({
     "CACHE_TYPE": "redis", # Flask-Caching related configs

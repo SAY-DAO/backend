@@ -57,6 +57,7 @@ class Need(base, Timestamp):
     img = Column(Text, nullable=True)
     title = Column(Text, nullable=True)
     oncePurchased = Column(Boolean, nullable=False, default=False)
+    bank_track_id = Column(Unicode(30), nullable=True) # Only for services
     # Dates:
     doneAt = Column(DateTime, nullable=True)
     purchase_date = Column(DateTime)

@@ -48,7 +48,8 @@ parameters:
 
   - name: gender
     in: formData
-    type: boolean
+    type: string
+    enum: ['female', 'male', 'other']
 
   - name: countryCode
     in: formData
@@ -121,6 +122,12 @@ parameters:
 
 
 responses:
+  498:
+    description: invalid gender
+
+  499:
+    description: username already exists
+
   500:
     description: Error occurred somewhere!
 

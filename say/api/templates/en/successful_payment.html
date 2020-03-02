@@ -9,211 +9,168 @@
         <link rel="stylesheet" href="/public/resources/font/roboto/css/roboto.css" />
         <link href="https://fonts.googleapis.com/css?family=Roboto:100,400&display=swap" rel="stylesheet" type="text/css">
 
-    </head>
-    <body style="
-            margin: 0; 
-            padding : 0; 
-            font-family: roboto, 'Roboto';
-            padding-bottom: 50px;">
-      
-      <div style="
-            background-color : #F1F1F1; 
-            height : 250px; 
-            width: 100%; 
-            text-align : center; 
-            padding : 50px 0;
-            margin-bottom: 30px;">
-        
-        <div style="margin-bottom : 30px;">
-          <img src="https://sayapp.company/public/resources/img/logo.png" style="
-                                                              max-width:182px; 
-                                                              width: 40%; 
-                                                              height: auto;" />
-        </div>
-        <span style="
-                color:#666; 
+        <style type="text/css">
+                body {
+                margin: 0; 
+                padding : 0; 
+                font-family: roboto, 'Roboto';
+                padding-bottom: 50px;
+                text-align : center; 
+                color:#666;
+                }
+
+                #header {
+                background-color : #F1F1F1; 
+                height : 250px; 
+                width: 100%; 
+                padding : 50px 0;
+                margin-bottom: 30px;
+                }
+
+                #logoWrapper {
+                margin-bottom : 30px;
+                }
+
+                #logoWrapper img {
+                max-width:182px; 
+                width: 40%; 
+                height: auto;
+                }
+
+                #header p {
+                font-weight: 500;
                 font-size: 16px;
-                font-weight: 500;">What you hear is real</span>
-        <br/>
-        <span style="
+                }
+
+                #header p:last-child {
                 color: #F05A31; 
                 font-size: 12px; 
-                font-weight: 500; 
-                line-height : 25px;">Building a platform to share wealth and love, literally</span>
-      </div>
+                line-height : 25px;
+                }
 
-      <div style="text-align:center">
-
-        <h6 style="
+                #content h6 {
                 color : #1AAE0E;
                 font-size: 16px;
-                font-weight: 500;">Payment successful</h6>
-        <hr style="background-color : #CDCDCD; width: 90%;"/>
+                font-weight: 500;
+                }
 
-        <div style="
-              width: 100%; 
-              margin-top: 15px; 
-              margin-bottom : 15px;">
-            <span style="
-                    width: 44%; 
-                    display: inline-block; 
-                    text-align: left; 
-                    color:#666;
-                    font-size: 14px; 
-                    font-weight : 500;">{{int_formatter(payment.need_amount + payment.donation_amount)}} Tomans</span>
-            <span style="
-                    width:44%; 
-                    display:inline-block; 
-                    text-align : right;
-                    color:#666; 
-                    font-size: 12px;">Total need_amount</span>
-        </div>
+                #content hr {
+                background-color: #CDCDCD;
+                width: 90%;
+                }
 
-        {% if payment.credit_amount %}
-        <div style="
-              width: 100%; 
-              margin-top: 15px; 
-              margin-bottom: 15px;">
-            <span style="
-                    width: 44%; 
-                    display:inline-block; 
-                    text-align: left; 
-                    color:#666;
-                    font-size: 14px;
-                    font-weight : 500;">{{int_formatter(payment.credit_amount)}} Tomans</span>
-            <span style="
-                    width: 44%; 
-                    display: inline-block; 
-                    text-align: right;
-                    color:#666; 
-                    font-size : 12px;">Paid from wallet</span>
-        </div>
-        {% endif %}
+                .rowContent {
+                width: 100%; 
+                margin-top: 15px; 
+                margin-bottom : 15px;
+                }
 
-        <!-- {% if payment.bank_amount %} -->
-        <div style="
-              width:100%; 
-              margin-top : 15px; 
-              margin-bottom : 15px;">
-            <span style="
-                    width: 44%; 
-                    display:inline-block; 
-                    text-align: left; 
-                    color:#666;
-                    font-size: 14px; 
-                    font-weight : 500;">{{int_formatter(payment.need_amount)}} Tomans</span>
-            <span style="
-                    width: 44%; 
-                    display :inline-block; 
-                    text-align: right;
-                    color:#666; 
-                    font-size: 12px;">Paid from debit card</span>
-        </div>
-        <!-- {% endif %} -->
+                .rowContent span {
+                width: 44%; 
+                display: inline-block;
+                }
 
-        <div style="
-        width:100%; 
-        margin-top : 15px; 
-        margin-bottom : 15px;">
-                <span style="
-                        width: 44%; 
-                        display:inline-block; 
-                        text-align: left; 
-                        color:#666;
-                        font-size: 14px; 
-                        font-weight : 500;">{{int_formatter(payment.donation_amount)}} Tomans</span>
-                <span style="
-                        width: 44%; 
-                        display :inline-block; 
-                        text-align: right;
-                        color:#666; 
-                        font-size: 12px;">Donation</span>
-         </div>
+                .rowContent span:first-child {
+                text-align : left;
+                font-size: 12px;
+                }
 
-        <hr style="background-color : #CDCDCD; width: 90%;"/>
+                .rowContent span:last-child {
+                text-align: right; 
+                font-size: 14px; 
+                font-weight : 500;
+                }
 
-        {% if payment.credit_amount %}
-        <div style="
-              width:100%; 
-              margin-top : 15px; 
-              margin-bottom : 15px;">
-            <span style="
-                    width: 44%; 
-                    display:inline-block; 
-                    text-align: left; 
-                    color:#666;
-                    font-size: 14px; 
-                    font-weight : 500;">{{payment.order_id}}</span>
-            <span style="
-                    width: 44%; 
-                    display: inline-block; 
-                    text-align : right;
-                    color:#666; 
-                    font-size: 12px;">SAY tracking number</span>
-        </div>
-        {% endif %}
-
-        {% if payment.bank_amount %}
-        <div style="
-              width:100%; 
-              margin-top : 15px; 
-              margin-bottom : 15px;">
-            <span style="
-                    width: 44%; 
-                    display:inline-block; 
-                    text-align: left; 
-                    color:#666;
-                    font-size: 14px; 
-                    font-weight : 500;">{{payment.gateway_track_id}}</span>
-            <span style="
-                    width: 44%; 
-                    display: inline-block; 
-                    text-align : right;
-                    color:#666; 
-                    font-size: 12px;">Bank tracking number</span>
-        </div>
-        {% endif %}
-
-        <hr style="background-color: #CDCDCD; width: 90%;"/>
-
-        {% if payment.bank_amount %}
-        <div style="
-              width: 100%; 
-              margin-top: 15px; 
-              margin-bottom: 15px;">
-            <span style="
-                    width: 44%; 
-                    display:inline-block; 
-                    text-align: left; 
-                    color:#666;
-                    font-size: 14px; 
-                    font-weight : 500;">{{payment.card_no}}</span>
-            <span style="
-                    width: 44%; 
-                    display: inline-block; 
-                    text-align: right;
-                    color:#666; 
-                    font-size: 12px;">Card number</span>
-        </div>
-        {% endif %}
-
-
-        <a style="
-            text-decoration: none; 
-            color: #fff;
-            width: 230px;
-            margin: 0 auto; 
-            display: block;
-            border-radius: 48px;" href="javascript:close();">
-          <div style="
+                #backSAY {
+                text-decoration: none; 
+                color: #fff;
+                width: 230px;
+                margin: 0 auto; 
+                display: block;
                 margin-top: 65px; 
                 background: linear-gradient(90deg, #F59E39 0%, #F05A31 100%);
                 border-radius: 48px; 
                 height: 40px;
                 padding-top: 7px;
-                padding-right: 10px;
-                padding-left: 10px;
-                line-height: 30px;"> Back to SAY </div>
+                line-height: 30px;
+                }
+        </style>
+    </head>
+    <body>
+      
+      <div id="header">
+        
+        <div id="logoWrapper">
+          <img src="https://sayapp.company/public/resources/img/logo.png" />
+        </div>
+        <p>What you hear is real</p>
+        <p>Building a platform to share wealth and love, literally</p>
+      </div>
+
+      <div id="content">
+
+        <h6>Payment successful</h6>
+        <hr />
+
+        <div class="rowContent">
+                <span>Total amount</span>
+                <span>{{int_formatter(payment.need_amount + payment.donation_amount)}} Tomans</span>
+        </div>
+
+        <div class="rowContent">
+                <span>Need amount</span>
+                <span>{{int_formatter(payment.need_amount)}} Tomans</span>
+        </div>
+
+        <div class="rowContent">
+                <span>Donation</span>
+                <span>{{int_formatter(payment.donation_amount)}} Tomans</span>
+        </div>
+
+        <hr />
+
+        {% if payment.credit_amount %}
+        <div class="rowContent">
+                <span>Paid from wallet</span>
+                <span>{{int_formatter(payment.credit_amount)}} Tomans</span>
+        </div>
+        {% endif %}
+
+        {% if payment.bank_amount %}
+        <div class="rowContent">
+                <span>Paid from debit card</span>
+                <span>{{int_formatter(payment.bank_amount)}} Tomans</span>
+        </div>
+        {% endif %}
+
+        <hr />
+
+        {% if payment.credit_amount %}
+        <div class="rowContent">
+                <span>SAY tracking number</span>
+                <span>{{payment.order_id}}</span>
+        </div>
+        {% endif %}
+
+        {% if payment.bank_amount %}
+        <div class="rowContent">
+                <span>Bank tracking number</span>
+                <span>{{payment.gateway_track_id}}</span>
+        </div>
+        {% endif %}
+
+        {% if payment.bank_amount %}
+        <hr />
+
+        <div class="rowContent">
+                <span>Card number</span>
+                <span>{{payment.card_no}}</span>
+        </div>
+        {% endif %}
+
+
+        <a id="backSAY" href="javascript:close();">
+          Back to SAY
         </a>
       </div>
     </body>

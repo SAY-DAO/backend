@@ -25,6 +25,5 @@ khayyam
 celery-redbeat
 ujson
 babel
-PyICU
 flask_monitoringdashboard
 phonenumbers

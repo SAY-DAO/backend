@@ -125,6 +125,26 @@
                 </span>
         </div>
 
+        <div class="rowContent">
+                <span>
+                        {{int_formatter(payment.need_amount)}} تومان
+                </span>
+                <span>
+                        مبلغ نیاز
+                </span>
+        </div>
+
+        <div class="rowContent">
+                <span>
+                        {{int_formatter(payment.donation_amount)}} تومان
+                </span>
+                <span>
+                        هم‌راهی با SAY
+                </span>
+        </div>
+
+        <hr />
+
         {% if payment.credit_amount %}
                 <div class="rowContent">
                         <span>
@@ -136,25 +156,16 @@
                 </div>
         {% endif %}
 
-        <!-- {% if payment.bank_amount %} -->
+        {% if payment.bank_amount %}
                 <div class="rowContent">
                         <span>
-                                {{int_formatter(payment.need_amount)}} تومان
+                        {{int_formatter(payment.bank_amount)}} تومان
                         </span>
                         <span>
-                                مبلغ
+                                پرداخت از کارت بانکی
                         </span>
                 </div>
-        <!-- {% endif %} -->
-
-        <div class="rowContent">
-                <span>
-                        {{int_formatter(payment.donation_amount)}} تومان
-                </span>
-                <span>
-                        هم‌راهی با SAY
-                </span>
-        </div>
+        {% endif %}
 
         <hr />
 
@@ -180,9 +191,9 @@
                 </div>
         {% endif %}
         
-        <hr />
-
         {% if payment.bank_amount %}
+        <hr />
+        
         <div class="rowContent">
                 <span>
                         {{payment.card_no}}

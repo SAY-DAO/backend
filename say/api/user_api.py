@@ -3,6 +3,7 @@ from random import randint
 
 from . import *
 from say.api import jwt
+from say.gender import Gender
 from say.models import session, obj_to_dict
 from say.models.family_model import Family
 from say.models.need_family_model import NeedFamily
@@ -161,10 +162,11 @@ class UpdateUserById(Resource):
                     primary_user.avatarUrl = '/' + primary_user.avatarUrl
 
 
-            if "userName" in request.form.keys():
-                username = request.form["userName"].lower()
+            username = request.form.get("userName", primary_user.userName)
+            if username != primary_user.userName:
                 if session.query(User) \
-                    .filter(User.userName==username) \
+                    .filter(User.formated_username==username.lower()) \
+                    .filter(User.id!=primary_user.id) \
                     .filter(User.isDeleted==False) \
                     .one_or_none() \
                 :
@@ -210,10 +212,18 @@ class UpdateUserById(Resource):
                 )
 
             if "gender" in request.form.keys():
-                primary_user.gender = (
-                    True if request.form["gender"] == "true" else False
-                )
+                gender = request.form['gender']
+                if not hasattr(Gender, gender):
+                    resp = make_response(
+                        jsonify({"message":
+                            f"Invalid gender, only can selected in "
+                            f"{Gender.__members__.keys()}"
+                        }),
+                        498,
+                    )
+                    return resp
 
+                primary_user.gender = request.form["gender"]
 
             secondary_user = obj_to_dict(primary_user)
 
@@ -222,7 +232,7 @@ class UpdateUserById(Resource):
 
         except Exception as e:
             print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
+            resp = make_response(jsonify({"message": str(e)}), 500)
 
         finally:
             session.close()
@@ -324,7 +334,7 @@ class AddUser(Resource):
                 email_address = None
 
             if "gender" in request.form.keys():
-                gender = True if request.form["gender"] == "true" else False
+                gender = request.form["gender"]
             else:
                 gender = None
 
@@ -442,4 +452,5 @@ api.add_resource(UpdateUserById, "/api/v2/user/update/userId=<user_id>")
 api.add_resource(DeleteUserById, "/api/v2/user/delete/userId=<user_id>")
 api.add_resource(AddUser, "/api/v2/user/add")
 api.add_resource(GetUserRole, "/api/v2/user/role/userId=<user_id>&childId=<child_id>")
+
 
