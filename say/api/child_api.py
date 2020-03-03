@@ -184,6 +184,7 @@ class GetChildById(Resource):
                 return
 
             child_dict = obj_to_dict(child)
+            child_dict['socialWorkerGeneratedCode'] = child.social_worker.generatedCode
 
             if get_user_role() in [USER]:  # TODO: priv
                 user_id = get_user_id()
