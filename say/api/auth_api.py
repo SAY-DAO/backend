@@ -246,14 +246,14 @@ class Login(Resource):
                 .filter_by(isDeleted=False)
                 .filter(or_(
                     and_(
-                        User.emailAddress=username,
-                        User.is_email_verified=True,
+                        User.emailAddress==username,
+                        User.is_email_verified==True,
                     ),
                     and_(
-                        User.phone_number=username,
-                        User.is_phonenumber_verified=True,
+                        User.phone_number==username,
+                        User.is_phonenumber_verified==True,
                     ),
-                    User.formated_username=username,
+                    User.formated_username==username,
                 )) \
                 .first()
             )
