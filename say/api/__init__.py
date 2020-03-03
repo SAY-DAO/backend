@@ -78,6 +78,7 @@ app = Flask(__name__)
 app.config['JSON_SORT_KEYS'] = False
 app.config['SET_PASSWORD_URL'] = 'setpassword'
 app.config['RESET_PASSSWORD_EXPIRE_TIME'] = 2 * 3600 # 2 hours
+app.config['RESET_PASSWORD_TOKEN_LENGTH'] = 8 # Chars
 app.config['BASE_URL'] = 'http://0.0.0.0:5000/'
 app.config['SQLALCHEMY_DATABASE_URI'] = conf['dbUrl']
 app.config['SANDBOX'] = True

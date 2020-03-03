@@ -24,7 +24,11 @@ class ResetPassword(base):
 
     id = Column(Integer, nullable=False, primary_key=True)
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
-    token = Column(String, nullable=False, default=secrets.token_urlsafe(6))
+    token = Column(
+        String,
+        nullable=False,
+        default=secrets.token_urlsafe(app.config['RESET_PASSWORD_TOKEN_LENGTH'),
+    )
     expire_at = Column(DateTime, default=expire_at, nullable=False)
     is_used = Column(Boolean, default=False, nullable=False)
 
