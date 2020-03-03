@@ -4,7 +4,8 @@ from urllib.parse import urljoin
 
 from say.api import app
 from say.render_template_i18n import render_template_i18n
-from say.tasks import send_embeded_subject_email
+from say.tasks import send_embeded_subject_email, send_sms
+from say.content import content
 
 from . import *
 
@@ -22,7 +23,7 @@ class ResetPassword(base):
 
     id = Column(Integer, nullable=False, primary_key=True)
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
-    token = Column(String, nullable=False, default=secrets.token_urlsafe)
+    token = Column(String, nullable=False, default=secrets.token_urlsafe(6))
     expire_at = Column(DateTime, default=expire_at, nullable=False)
     is_used = Column(Boolean, default=False, nullable=False)
 
@@ -49,4 +50,11 @@ class ResetPassword(base):
                 locale=language,
             )
         )
+
+    def send_sms(self, language):
+        with ChangeLocaleTo('fa'):
+            send_sms.delay(
+                self.user.phone_number.e164,
+                content['RESET_PASSWORD'] % self.link
+            )
 
