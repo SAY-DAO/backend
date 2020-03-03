@@ -244,7 +244,17 @@ class Login(Resource):
             user = (
                 session.query(User)
                 .filter_by(isDeleted=False)
-                .filter_by(formated_username=username)
+                .filter_by(or_(
+                    formated_username=username,
+                    and_(
+                        emailAddress=username,
+                        is_email_verified=True,
+                    ),
+                    and_(
+                        phone_number=username,
+                        is_phonenumber_verified=True,
+                    ),
+                )) \
                 .first()
             )
             if user is not None:
