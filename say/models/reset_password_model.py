@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 from say.api import app
 from say.render_template_i18n import render_template_i18n
 from say.tasks import send_embeded_subject_email, send_sms
+from say.locale import ChangeLocaleTo
 from say.content import content
 
 from . import *
