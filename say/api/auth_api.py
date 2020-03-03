@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from random import randint
 
+import phonenumbers
 from babel import Locale
 from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
@@ -241,22 +242,26 @@ class Login(Resource):
                 )
                 return
 
-            user = (
-                session.query(User)
-                .filter_by(isDeleted=False)
-                .filter(or_(
-                    and_(
-                        User.emailAddress==username,
-                        User.is_email_verified==True,
-                    ),
-                    and_(
+            user_query = session.query(User).filter_by(isDeleted=False)
+
+            user = None
+            try:
+                user = user_query \
+                    .filter(and_(
                         User.phone_number==username,
                         User.is_phonenumber_verified==True,
-                    ),
-                    User.formated_username==username,
-                )) \
-                .first()
-            )
+                    )).first()
+
+            except phonenumbers.phonenumberutil.NumberParseException:
+                user = user_query \
+                    .filter(or_(
+                        and_(
+                            User.emailAddress==username,
+                            User.is_email_verified==True,
+                        ),
+                        User.formated_username==username,
+                    )).first()
+
             if user is not None:
                 if user.validate_password(password):
                     if not user.isVerified:
