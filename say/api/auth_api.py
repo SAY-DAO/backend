@@ -244,16 +244,16 @@ class Login(Resource):
             user = (
                 session.query(User)
                 .filter_by(isDeleted=False)
-                .filter_by(or_(
+                .filter(or_(
                     and_(
-                        emailAddress=username,
-                        is_email_verified=True,
+                        User.emailAddress=username,
+                        User.is_email_verified=True,
                     ),
                     and_(
-                        phone_number=username,
-                        is_phonenumber_verified=True,
+                        User.phone_number=username,
+                        User.is_phonenumber_verified=True,
                     ),
-                    formated_username=username,
+                    User.formated_username=username,
                 )) \
                 .first()
             )
