@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from random import randint
 
+import phonenumbers
 from babel import Locale
 from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
@@ -241,12 +242,26 @@ class Login(Resource):
                 )
                 return
 
-            user = (
-                session.query(User)
-                .filter_by(isDeleted=False)
-                .filter_by(formated_username=username)
-                .first()
-            )
+            user_query = session.query(User).filter_by(isDeleted=False)
+
+            user = None
+            try:
+                user = user_query \
+                    .filter(and_(
+                        User.phone_number==username,
+                        User.is_phonenumber_verified==True,
+                    )).first()
+
+            except phonenumbers.phonenumberutil.NumberParseException:
+                user = user_query \
+                    .filter(or_(
+                        and_(
+                            User.emailAddress==username,
+                            User.is_email_verified==True,
+                        ),
+                        User.formated_username==username,
+                    )).first()
+
             if user is not None:
                 if user.validate_password(password):
                     if not user.isVerified:
@@ -468,12 +483,12 @@ class TokenRefresh(Resource):
         })
 
 
-class ResetPasswordApi(Resource):
+class ResetPasswordByEmailApi(Resource):
 
     decorators = [limiter.limit("2/minute")]
 
     @commit
-    @swag_from("./docs/auth/reset_password.yml")
+    @swag_from("./docs/auth/reset_password_by_email.yml")
     def post(self):
 
         email = request.form.get('email').lower()
@@ -483,6 +498,7 @@ class ResetPasswordApi(Resource):
 
         user = session.query(User) \
             .filter_by(emailAddress=email) \
+            .filter_by(is_email_verified=True) \
             .first()
 
         if user:
@@ -491,7 +507,34 @@ class ResetPasswordApi(Resource):
             session.flush()
             reset_password.send_email(language)
 
-        return make_response({'message': 'reset password email sent, maybee'})
+        return make_response({'message': 'reset password token sent, maybee'})
+
+
+class ResetPasswordByPhoneApi(Resource):
+
+    decorators = [limiter.limit("2/minute")]
+
+    @commit
+    @swag_from("./docs/auth/reset_password_by_phone.yml")
+    def post(self):
+
+        phone_number = request.form.get('phoneNumber')
+        language = get_locale()
+        if not phone_number:
+            return make_response({'message': 'phoneNumber is missing'}, 400)
+
+        user = session.query(User) \
+            .filter_by(phone_number=phone_number) \
+            .filter_by(is_phonenumber_verified=True) \
+            .first()
+
+        if user:
+            reset_password = ResetPassword(user=user)
+            session.add(reset_password)
+            session.flush()
+            reset_password.send_sms(language)
+
+        return make_response({'message': 'reset password code sent, maybee'})
 
 
 class ConfirmResetPassword(Resource):
@@ -548,7 +591,8 @@ api.add_resource(LogoutRefresh, "/api/v2/auth/logout/refresh")
 api.add_resource(TokenRefresh, "/api/v2/auth/refresh")
 api.add_resource(Verify, "/api/v2/auth/verify/userid=<user_id>")
 api.add_resource(VerifyResend, "/api/v2/auth/verify/resend/userid=<user_id>")
-api.add_resource(ResetPasswordApi, "/api/v2/auth/password/reset")
+api.add_resource(ResetPasswordByEmailApi, "/api/v2/auth/password/reset/email")
+api.add_resource(ResetPasswordByPhoneApi, "/api/v2/auth/password/reset/phone")
 api.add_resource(
     ConfirmResetPassword,
     "/api/v2/auth/password/reset/confirm/token=<token>",
