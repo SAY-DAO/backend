@@ -57,7 +57,7 @@ class ResetPassword(base):
         )
 
     def send_sms(self, language):
-        with ChangeLocaleTo('fa'):
+        with ChangeLocaleTo(language):
             send_sms.delay(
                 self.user.phone_number.e164,
                 content['RESET_PASSWORD'] % self.link
