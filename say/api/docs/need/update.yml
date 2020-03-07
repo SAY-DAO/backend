@@ -91,7 +91,7 @@ parameters:
     in: formData
     type: string
 
-  - name: bankTrackId
+  - name: bank_track_id
     in: formData
     type: string
     description: Only for services, S2 -> S3
