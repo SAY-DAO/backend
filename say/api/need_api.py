@@ -364,6 +364,7 @@ class UpdateNeedById(Resource):
                    request.form["expected_delivery_date"]
                )
 
+
             if "status" in request.form.keys():
                 new_status = int(request.form["status"])
                 prev_status = need.status
@@ -393,6 +394,14 @@ class UpdateNeedById(Resource):
                         f'Can not change status from '
                         f'{prev_status} to {new_status}'
                     )
+
+            if need.type == 0 and need.status == 3:
+                need.bank_track_id = request.form.get(
+                    'bank_track_id',
+                    None,
+                )
+
+
 
             activity.diff = json.dumps(list(diff(temp, obj_to_dict(need))))
 
