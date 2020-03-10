@@ -23,6 +23,7 @@ from say.date import *
 from say.langs import LANGS
 from say.locale import get_locale, DEFAULT_LOCALE
 from say.formatters import int_formatter, expose_datetime
+from say.orm import obj_to_dict, base
 
 
 session_factory = sessionmaker(
@@ -34,16 +35,6 @@ session_factory = sessionmaker(
 )
 
 session = scoped_session(session_factory)
-metadata = MetaData(
-    naming_convention={
-        "ix": "%(column_0_label)s_idx",
-        "uq": "%(table_name)s_%(column_0_name)s_key",
-        "ck": "%(table_name)s_%(constraint_name)s_check",
-        "fk": "%(table_name)s_%(column_0_name)s_%(referred_table_name)s_fkey",
-        "pk": "%(table_name)s_pkey"
-    }
-)
-base = declarative_base(metadata=metadata)
 
 
 def commit(func):
@@ -83,62 +74,7 @@ from .revoked_token_model import RevokedToken
 from .social_worker_model import SocialWorker
 from .user_family_model import UserFamily
 from .user_model import User
-from .verify_model import Verification
+from .verify_model import PhoneVerification, EmailVerification
 from .reset_password_model import ResetPassword
 from .child_migration_model import ChildMigration
-
-
-# this function converts an object to a python dictionary
-def obj_to_dict(obj, relationships=False):
-    if isinstance(obj, dict):
-        return obj
-
-    result = {}
-    for k, c in columns(obj, relationships):
-        key, value = k, getattr(obj, k)
-
-        if isinstance(value, list):
-            result[key] = [obj_to_dict(item) for item in value]
-
-        elif isinstance(value, base):
-            result[key] = obj_to_dict(value)
-
-        elif isinstance(value, Locale):
-            result[key] = str(value)
-
-        elif isinstance(value, PhoneNumber):
-            result[key] = value.e164
-
-        elif isinstance(value, Country):
-            result[key] = {'code': value.code, 'name': value.name}
-
-        elif isinstance(value, enum.Enum):
-            result[key] = value.name
-
-        else:
-            result[key] = value
-    return result
-
-
-def columns(obj, relationships=False, synonyms=True, composites=False,
-                 hybrids=True):
-    cls = obj.__class__
-
-    mapper = inspect(cls)
-    for k, c in mapper.all_orm_descriptors.items():
-
-        if k == '__mapper__':
-            continue
-
-        if c.extension_type == ASSOCIATION_PROXY:
-            continue
-
-        if (not hybrids and c.extension_type == HYBRID_PROPERTY) \
-                or (not relationships and k in mapper.relationships) \
-                or (not synonyms and k in mapper.synonyms):
-                #or (not composites and k in mapper.composites):
-            continue
-
-        yield k, getattr(cls, k)
-
 

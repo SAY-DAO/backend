@@ -5,12 +5,12 @@ import phonenumbers
 from babel import Locale
 from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
-from sqlalchemy_utils import PhoneNumber, Country
+from sqlalchemy_utils import PhoneNumber, Country, PhoneNumberParseException
 
 
 from . import *
 from say.models import session, obj_to_dict, or_, commit,  ResetPassword, \
-    Verification, User, RevokedToken, and_
+    PhoneVerification, User, RevokedToken, and_
 from say.render_template_i18n import render_template_i18n
 from say.tasks import send_embeded_subject_email, send_sms
 from say.locale import ChangeLocaleTo
@@ -24,25 +24,6 @@ Authentication APIs
 def datetime_converter(o):
     if isinstance(o, datetime):
         return o.__str__()
-
-
-def send_verify_sms(to_user, verify_code):
-    with ChangeLocaleTo('fa'):
-        send_sms.delay(
-            to_user.phone_number.e164,
-            content['CONFIRM_PHONE'] % verify_code,
-        )
-
-
-def send_verify_email(to_user, verify_code):
-    send_embeded_subject_email.delay(
-        to=to_user.emailAddress,
-        html=render_template_i18n(
-            'email_verification.html',
-            code=str(verify_code),
-            locale=get_locale(),
-        ),
-    )
 
 
 class CheckUser(Resource):
@@ -363,67 +344,84 @@ class LogoutRefresh(Resource):
             return msg
 
 
-class Verify(Resource):
+class VerifyPhone(Resource):
     decorators = [limiter.limit("5/minute")]
 
-    @swag_from("./docs/auth/verify.yml")
-    def post(self, user_id):
-        resp = {"message": "Something is Wrong"}, 500
+    @json
+    @commit
+    @swag_from("./docs/auth/verify-phone.yml")
+    def post(self):
+            phone_number = request.form.get('phone_number', None)
 
-        try:
-            user_id = int(user_id)
-            user = session.query(User).filter_by(id=user_id).first()
-            if user is None:
-                resp = {"message": "Something is Wrong"}, 500
-                return
+            if not phone_number:
+                return {"message": "phone_number is required"}, 400
 
-            verify = session.query(Verification).filter_by(user_id=user_id).first()
-            sent_verify_code = request.form.get('verifyCode', 'invalid')
+            try:
+                phone_number = PhoneNumber(phone_number)
+            except PhoneNumberParseException:
+                return {"message": "phone_number is invalid"}, 400
 
-            if user.isVerified:
-                resp = {"message": "User Already verified"}, 600
-                return
+            user = session.query(User) \
+                .filter(and_(
+                    User.phone_number==phone_number,
+                    User.is_phonenumber_verified==True,
+                )).first()
 
-            error = None
-            if (
-                verify is None
-                or str(verify.code) != sent_verify_code.replace('-', '')
-            ):
-                error = 'Verify code is invalid'
+            if user:
+                return {"message": "phone_number already exixst"}, 400
 
-            elif verify.expire_at < datetime.utcnow():
-                error = 'Verify code is expired'
-
-            if error:
-                raise Exception(error)
-
-            user.is_phonenumber_verified = True
-
-            access_token = create_user_access_token(user)
-            refresh_token = create_refresh_token(identity=user.id)
-
-            resp = make_response(
-                jsonify({
-                    "message": "User successfully verified",
-                    "accessToken": f"Bearer {access_token}",
-                    "refreshToken": f"Bearer {refresh_token}",
-                    "user": obj_to_dict(user),
-                }),
-                200,
+            verification = PhoneVerification(
+                phone_number=phone_number,
+                expire_at=datetime.utcnow() + timedelta(
+                    minutes=app.config['VERIFICATION_MAXAGE'],
+                ),
             )
-            session.commit()
+            session.add(verification)
+            session.flush()
+            verification.send()
 
-        except Exception as e:
-            print(e)
-            resp = make_response(
-                jsonify({"message": str(e)}),
-                400,
-            )
+            return verification
 
-        finally:
-            session.close()
-            return resp
-
+#            error = None
+#            if (
+#                verify is None
+#                or str(verify.code) != sent_verify_code.replace('-', '')
+#            ):
+#                error = 'Verify code is invalid'
+#
+#            elif verify.expire_at < datetime.utcnow():
+#                error = 'Verify code is expired'
+#
+#            if error:
+#                raise Exception(error)
+#
+#            user.is_phonenumber_verified = True
+#
+#            access_token = create_user_access_token(user)
+#            refresh_token = create_refresh_token(identity=user.id)
+#
+#            resp = make_response(
+#                jsonify({
+#                    "message": "User successfully verified",
+#                    "accessToken": f"Bearer {access_token}",
+#                    "refreshToken": f"Bearer {refresh_token}",
+#                    "user": obj_to_dict(user),
+#                }),
+#                200,
+#            )
+#            session.commit()
+#
+#        except Exception as e:
+#            print(e)
+#            resp = make_response(
+#                jsonify({"message": str(e)}),
+#                400,
+#            )
+#
+#        finally:
+#            session.close()
+#            return resp
+#
 
 class VerifyResend(Resource):
     decorators = [limiter.limit("2/minute")]
@@ -589,7 +587,7 @@ api.add_resource(Login, "/api/v2/auth/login")
 api.add_resource(LogoutAccess, "/api/v2/auth/logout/token")
 api.add_resource(LogoutRefresh, "/api/v2/auth/logout/refresh")
 api.add_resource(TokenRefresh, "/api/v2/auth/refresh")
-api.add_resource(Verify, "/api/v2/auth/verify/userid=<user_id>")
+api.add_resource(VerifyPhone, "/api/v2/auth/verify/phone")
 api.add_resource(VerifyResend, "/api/v2/auth/verify/resend/userid=<user_id>")
 api.add_resource(ResetPasswordByEmailApi, "/api/v2/auth/password/reset/email")
 api.add_resource(ResetPasswordByPhoneApi, "/api/v2/auth/password/reset/phone")
