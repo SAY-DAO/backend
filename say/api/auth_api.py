@@ -111,8 +111,17 @@ class RegisterUser(Resource):
 
         lang = get_locale()
         locale = Locale(lang)
-        country = Country(country.upper())
-        phone_number = PhoneNumber(phoneNumber.replace(' ', ''))
+
+        try:
+            country = Country(country.upper())
+        except ValueError:
+            return {"message": "Invalid countryCode"}, 400
+
+        try:
+            phone_number = PhoneNumber(phoneNumber.replace(' ', ''))
+        except phonenumbers.phonenumberutil.NumberParseException:
+            return {"message": "Invalid phoneNumber"}, 400
+
         code = code.replace('-', '')
 
         alreadyExist = (
@@ -132,12 +141,11 @@ class RegisterUser(Resource):
         if alreadyExist is not None:
             return (
                 {"message": "Username, email or phone number already exists"},
-                400,
+                422,
             )
 
         verification = session.query(Verification) \
             .filter(Verification._code==code) \
-            .filter(Verification.expire_at >= datetime.utcnow()) \
             .filter(or_(
                 EmailVerification.email==email,
                 PhoneVerification.phone_number==phone_number,
@@ -146,6 +154,9 @@ class RegisterUser(Resource):
 
         if not verification:
             return {"message": "Invalid verifyCode"}, 400
+
+        if verification.expire_at <= datetime.utcnow():
+            return {"message": "verifyCode Expired"}, 499
 
         last_login = datetime.utcnow()
         new_user = User(
@@ -337,36 +348,70 @@ class VerifyPhone(Resource):
     @commit
     @swag_from("./docs/auth/verify-phone.yml")
     def post(self):
-            phone_number = request.form.get('phone_number', None)
+        phone_number = request.form.get('phone_number', None)
 
-            if not phone_number:
-                return {"message": "phone_number is required"}, 400
+        if not phone_number:
+            return {"message": "phone_number is required"}, 400
 
-            try:
-                phone_number = PhoneNumber(phone_number)
-            except PhoneNumberParseException:
-                return {"message": "phone_number is invalid"}, 400
+        try:
+            phone_number = PhoneNumber(phone_number)
+        except PhoneNumberParseException:
+            return {"message": "phone_number is invalid"}, 400
 
-            user = session.query(User) \
-                .filter(and_(
-                    User.phone_number==phone_number,
-                    User.is_phonenumber_verified==True,
-                )).first()
+        user = session.query(User) \
+            .filter(and_(
+                User.phone_number==phone_number,
+                User.is_phonenumber_verified==True,
+            )).first()
 
-            if user:
-                return {"message": "phone_number already exixst"}, 400
+        if user:
+            return {"message": "phone_number already exixst"}, 422
 
-            verification = PhoneVerification(
-                phone_number=phone_number,
-                expire_at=datetime.utcnow() + timedelta(
-                    minutes=app.config['VERIFICATION_MAXAGE'],
-                ),
-            )
-            session.add(verification)
-            session.flush()
-            verification.send()
+        verification = PhoneVerification(
+            phone_number=phone_number,
+            expire_at=datetime.utcnow() + timedelta(
+                minutes=app.config['VERIFICATION_MAXAGE'],
+            ),
+        )
+        session.add(verification)
+        session.flush()
+        verification.send()
 
-            return verification
+        return verification
+
+
+class VerifyEmail(Resource):
+    decorators = [limiter.limit("5/minute")]
+
+    @json
+    @commit
+    @swag_from("./docs/auth/verify-email.yml")
+    def post(self):
+        email = request.form.get('email', None)
+
+        if not email:
+            return {"message": "email is required"}, 400
+
+        user = session.query(User) \
+            .filter(and_(
+                User.emailAddress==email,
+                User.is_email_verified==True,
+            )).first()
+
+        if user:
+            return {"message": "email already exixst"}, 422
+
+        verification = EmailVerification(
+            email=email,
+            expire_at=datetime.utcnow() + timedelta(
+                minutes=app.config['VERIFICATION_MAXAGE'],
+            ),
+        )
+        session.add(verification)
+        session.flush()
+        verification.send()
+
+        return verification
 
 
 class TokenRefresh(Resource):
@@ -493,6 +538,7 @@ api.add_resource(LogoutAccess, "/api/v2/auth/logout/token")
 api.add_resource(LogoutRefresh, "/api/v2/auth/logout/refresh")
 api.add_resource(TokenRefresh, "/api/v2/auth/refresh")
 api.add_resource(VerifyPhone, "/api/v2/auth/verify/phone")
+api.add_resource(VerifyEmail, "/api/v2/auth/verify/email")
 api.add_resource(ResetPasswordByEmailApi, "/api/v2/auth/password/reset/email")
 api.add_resource(ResetPasswordByPhoneApi, "/api/v2/auth/password/reset/phone")
 api.add_resource(

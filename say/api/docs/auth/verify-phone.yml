@@ -12,7 +12,9 @@ parameters:
 
 responses:
   400:
-    description: Missing Phone Number, Invalid Phone Number, Phone Number Exists
+    description: Missing phone_number, Invalid phone_number
+  422:
+    description: phone_number Exists
 
   200:
-    description: Ok, A code will send to the phone number
+    description: Ok, A code will send to the phone_number

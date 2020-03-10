@@ -46,7 +46,13 @@ parameters:
 
 responses:
   400:
-    description: Error occurred somewhere!
+    description: Bad Request
+
+  422:
+    description: Already exists
+
+  499:
+    description: VerifyCode Expired
 
   200:
     description: Ok

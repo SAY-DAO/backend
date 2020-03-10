@@ -6,6 +6,7 @@ from sqlalchemy_utils import PhoneNumberType, EmailType
 from . import *
 from say.content import content
 from say.tasks import send_embeded_subject_email, send_sms
+from say.render_template_i18n import render_template_i18n
 
 
 def generate_6_digit_secret():
@@ -51,12 +52,12 @@ class EmailVerification(Verification):
         'polymorphic_identity': 'email',
     }
 
-    def send_verify_email(self):
+    def send(self):
         send_embeded_subject_email.delay(
             to=self.email,
             html=render_template_i18n(
                 'email_verification.html',
-                code=self._code,
+                code=str(self._code),
                 locale=get_locale(),
             ),
         )
