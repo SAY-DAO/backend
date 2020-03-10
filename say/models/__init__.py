@@ -74,7 +74,7 @@ from .revoked_token_model import RevokedToken
 from .social_worker_model import SocialWorker
 from .user_family_model import UserFamily
 from .user_model import User
-from .verify_model import PhoneVerification, EmailVerification
+from .verify_model import PhoneVerification, EmailVerification, Verification
 from .reset_password_model import ResetPassword
 from .child_migration_model import ChildMigration
 

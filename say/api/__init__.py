@@ -252,4 +252,3 @@ def allowed_receipt(filename):
 
     raise TypeError('Wrong receipt format')
 
-
