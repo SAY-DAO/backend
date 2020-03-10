@@ -35,7 +35,7 @@ class CheckUser(Resource):
                 username = request.json["username"]
             else:
                 return Response(
-                    json.dumps({"message": "userName is needed"}), status=500
+                    jsonify({"message": "userName is needed"}), status=500
                 )
 
             alreadyTaken = (
@@ -46,20 +46,20 @@ class CheckUser(Resource):
             )
             if alreadyTaken is not None:
                 resp = Response(
-                    json.dumps(
+                    jsonify(
                         {"status": False, "Message": "UserName is Already Taken"}
                     ),
                     status=200,
                 )
             else:
                 resp = Response(
-                    json.dumps({"status": True, "Message": "UserName is Acceptable"}),
+                    jsonify({"status": True, "Message": "UserName is Acceptable"}),
                     status=200,
                 )
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
+            resp = Response(jsonify({"message": "ERROR OCCURRED"}))
 
         finally:
             session.close()
@@ -76,7 +76,7 @@ class RegisterUser(Resource):
                 username = request.json["username"]
             else:
                 resp = Response(
-                    json.dumps({"message": "userName is needed"}), status=500
+                    jsonify({"message": "userName is needed"}), status=500
                 )
                 return
 
@@ -84,7 +84,7 @@ class RegisterUser(Resource):
                 phoneNumber = request.json["phoneNumber"]
             else:
                 resp = Response(
-                    json.dumps({"message": "phoneNumber is needed"}), status=500
+                    jsonify({"message": "phoneNumber is needed"}), status=500
                 )
                 return
 
@@ -92,7 +92,7 @@ class RegisterUser(Resource):
                 country = request.json["countryCode"]
             else:
                 resp = Response(
-                    json.dumps({"message": "countryCode is needed"}), status=500
+                    jsonify({"message": "countryCode is needed"}), status=500
                 )
                 return
 
@@ -100,7 +100,7 @@ class RegisterUser(Resource):
                 password = request.json["password"]
             else:
                 resp = Response(
-                    json.dumps({"message": "password is needed"}), status=500
+                    jsonify({"message": "password is needed"}), status=500
                 )
                 return
 
@@ -114,7 +114,7 @@ class RegisterUser(Resource):
                 first_name = request.json["firstName"]
             else:
                 resp = Response(
-                    json.dumps({"message": "firstName is needed"}), status=500
+                    jsonify({"message": "firstName is needed"}), status=500
                 )
                 return
 
@@ -122,7 +122,7 @@ class RegisterUser(Resource):
                 last_name = request.json["lastName"]
             else:
                 resp = Response(
-                    json.dumps({"message": "lastName is needed"}), status=500
+                    jsonify({"message": "lastName is needed"}), status=500
                 )
                 return
 
@@ -147,7 +147,7 @@ class RegisterUser(Resource):
 
             if alreadyExist is not None:
                 resp = Response(
-                    json.dumps({
+                    jsonify({
                         "status": False,
                         "Message": "Username, email or phone number already exists"}
                     ),
@@ -190,7 +190,7 @@ class RegisterUser(Resource):
         except Exception as e:
             print(e)
             resp = Response(
-                json.dumps({"message": "Something is Wrong!", "error": str(e)}),
+                jsonify({"message": "Something is Wrong!", "error": str(e)}),
                 status=500,
             )
 
@@ -211,7 +211,7 @@ class Login(Resource):
                 username = request.form["username"].lower()
             else:
                 resp = Response(
-                    json.dumps({"message": "userName is needed"}), status=500
+                    jsonify({"message": "userName is needed"}), status=500
                 )
                 return
 
@@ -219,7 +219,7 @@ class Login(Resource):
                 password = request.form["password"]
             else:
                 resp = Response(
-                    json.dumps({"message": "password is needed"}), status=500
+                    jsonify({"message": "password is needed"}), status=500
                 )
                 return
 
@@ -291,18 +291,18 @@ class Login(Resource):
                     )
                 else:
                     resp = Response(
-                        json.dumps({"message": "Username or Password is Wrong"}),
+                        jsonify({"message": "Username or Password is Wrong"}),
                         status=400,
                     )
 
             else:
                 resp = Response(
-                    json.dumps({"message": "Please Register First"}), status=400
+                    jsonify({"message": "Please Register First"}), status=400
                 )
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": str(e)}), status=400)
+            resp = Response(jsonify({"message": str(e)}), status=400)
 
         finally:
             session.close()
@@ -434,7 +434,7 @@ class VerifyResend(Resource):
             user = session.query(User).filter_by(id=user_id).first()
             if user.isVerified:
                 resp = Response(
-                    json.dumps({"message": "User is already verified."}), status=200
+                    jsonify({"message": "User is already verified."}), status=200
                 )
                 return
 
@@ -451,13 +451,13 @@ class VerifyResend(Resource):
             session.commit()
             send_verify_sms(user, verify.code)
             resp = Response(
-                json.dumps({"message": "Verification Code Sent."}),
+                jsonify({"message": "Verification Code Sent."}),
                 status=200,
             )
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": "Something is Wrong!"}), status=500)
+            resp = Response(jsonify({"message": "Something is Wrong!"}), status=500)
 
         finally:
             session.close()

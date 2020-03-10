@@ -403,7 +403,7 @@ class UpdateNeedById(Resource):
 
 
 
-            activity.diff = json.dumps(list(diff(temp, obj_to_dict(need))))
+            activity.diff = jsonify(list(diff(temp, obj_to_dict(need))))
 
             session.commit()
             secondary_need = obj_to_dict(need)
