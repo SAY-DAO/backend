@@ -16,7 +16,10 @@ class CheckUsername(Resource):
         if not username_validator(username):
             return {'message': 'Invalid Username'}, 400
 
-        user = session.query(User).filter_by(userName=username).one_or_none()
+        user = session.query(User) \
+            .filter_by(formated_username=username.lower()) \
+            .one_or_none()
+
         if user:
             return {'message': 'Username Exists'}, 422
 
