@@ -1,6 +1,6 @@
 from . import *
 from say.models import User, session
-from say.validations import username_validator
+from say.validations import username_validator, email_validator
 
 
 '''
@@ -26,4 +26,23 @@ class CheckUsername(Resource):
         return {'message': 'Username is avaliable'}, 200
 
 
+class CheckEmail(Resource):
+
+    @json
+    @swag_from('./docs/check/email.yml')
+    def get(self, email):
+        if not email_validator(email):
+            return {'message': 'Invalid Email'}, 400
+
+        user = session.query(User) \
+            .filter_by(emailAddress=email.lower()) \
+            .one_or_none()
+
+        if user:
+            return {'message': 'Email Exists'}, 422
+
+        return {'message': 'Email is avaliable'}, 200
+
+
 api.add_resource(CheckUsername, '/api/v2/check/username/<username>')
+api.add_resource(CheckEmail, '/api/v2/check/email/<email>')
