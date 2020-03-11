@@ -22,90 +22,50 @@ def datetime_converter(o):
         return o.__str__()
 
 
-class CheckUser(Resource):
-    def post(self):
-        resp = {"message": "major error occurred!"}
-
-        try:
-            if "username" in request.json.keys():
-                username = request.json["username"]
-            else:
-                return Response(
-                    jsonify({"message": "userName is needed"}), status=500
-                )
-
-            alreadyTaken = (
-                session.query(User)
-                .filter_by(isDeleted=False)
-                .filter_by(userName=username)
-                .first()
-            )
-            if alreadyTaken is not None:
-                resp = Response(
-                    jsonify(
-                        {"status": False, "Message": "UserName is Already Taken"}
-                    ),
-                    status=200,
-                )
-            else:
-                resp = Response(
-                    jsonify({"status": True, "Message": "UserName is Acceptable"}),
-                    status=200,
-                )
-
-        except Exception as e:
-            print(e)
-            resp = Response(jsonify({"message": "ERROR OCCURRED"}))
-
-        finally:
-            session.close()
-            return resp
-
-
 class RegisterUser(Resource):
 
     @json
     @commit
     @swag_from("./docs/auth/register.yml")
     def post(self):
-        if "username" in request.json.keys():
-            username = request.json["username"]
+        if "username" in request.form.keys():
+            username = request.form["username"]
         else:
             return {"message": "userName is needed"}, 400
 
-        if "phoneNumber" in request.json.keys():
-            phoneNumber = request.json["phoneNumber"]
+        if "phoneNumber" in request.form.keys():
+            phoneNumber = request.form["phoneNumber"]
         else:
             return {"message": "phoneNumber is needed"}, 400
 
-        if "countryCode" in request.json.keys():
-            country = request.json["countryCode"]
+        if "countryCode" in request.form.keys():
+            country = request.form["countryCode"]
         else:
             return {"message": "countryCode is needed"}, 400
 
-        if "password" in request.json.keys():
-            password = request.json["password"]
+        if "password" in request.form.keys():
+            password = request.form["password"]
         else:
             return {"message": "password is needed"}, 400
 
         email = None
-        if "email" in request.json.keys():
-            email = request.json["email"].lower()
+        if "email" in request.form.keys():
+            email = request.form["email"].lower()
             if bool(email) == False:
                 email = None
 
-        if "firstName" in request.json.keys():
-            first_name = request.json["firstName"]
+        if "firstName" in request.form.keys():
+            first_name = request.form["firstName"]
         else:
             return {"message": "firstName is needed"}, 400
 
-        if "lastName" in request.json.keys():
-            last_name = request.json["lastName"]
+        if "lastName" in request.form.keys():
+            last_name = request.form["lastName"]
         else:
             return {"message": "lastName is needed"}, 400
 
-        if "verifyCode" in request.json.keys():
-            code = request.json["verifyCode"]
+        if "verifyCode" in request.form.keys():
+            code = request.form["verifyCode"]
         else:
             return {"message": "verifyCode is needed"}, 400
 
@@ -531,7 +491,6 @@ API URLs
 """
 
 
-api.add_resource(CheckUser, "/api/v2/auth/checkUserName")
 api.add_resource(RegisterUser, "/api/v2/auth/register")
 api.add_resource(Login, "/api/v2/auth/login")
 api.add_resource(LogoutAccess, "/api/v2/auth/logout/token")

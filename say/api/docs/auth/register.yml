@@ -4,38 +4,52 @@ Register API
 tags:
   - Auth API
 
-consumes:
-  - application/json
-
 parameters:
-  - in: body
-    name: register
+  - in: formData
+    name: username
     required: true
-    schema:
-      properties:
-        username:
-          type: string
+    type: string
 
-        phoneNumber:
-          type: string
-       
-        countryCode:
-          type: string
+  - in: formData
+    name: phoneNumber
+    required: true
+    type: string
 
-        email:
-          type: string
+  - in: formData
+    name: countryCode
+    required: true
+    type: string
+    default: ir
 
-        firstName:
-          type: string
+  - in: formData
+    name: username
+    required: true
+    type: string
 
-        lastName:
-          type: string
+  - in: formData
+    name: email
+    required: false
+    type: string
 
-        password:
-          type: string
+  - in: formData
+    name: firstName
+    required: true
+    type: string
 
-        verifyCode:
-          type: string
+  - in: formData
+    name: lastName
+    required: true
+    type: string
+
+  - in: formData
+    name: password
+    required: true
+    type: string
+
+  - in: formData
+    name: verifyCode
+    required: true
+    type: string
 
   - in: query
     name: _lang
