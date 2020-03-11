@@ -11,7 +11,7 @@ from . import *
 from say.models import session, obj_to_dict, or_, commit,  ResetPassword, \
     PhoneVerification, Verification, EmailVerification, User, RevokedToken, \
     and_
-
+from say.validations import validate_username, validate_email, validate_phone
 
 """
 Authentication APIs
@@ -77,10 +77,15 @@ class RegisterUser(Resource):
         except ValueError:
             return {"message": "Invalid countryCode"}, 400
 
-        try:
-            phone_number = PhoneNumber(phoneNumber.replace(' ', ''))
-        except phonenumbers.phonenumberutil.NumberParseException:
+        phone_number = phoneNumber.replace(' ', '')
+        if not validate_phone(phone_number):
             return {"message": "Invalid phoneNumber"}, 400
+
+        if not validate_username(username):
+            return {"message": "Invalid username"}, 400
+
+        if email and not validate_email(email):
+            return {"message": "Invalid email"}, 400
 
         code = code.replace('-', '')
 

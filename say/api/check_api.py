@@ -1,6 +1,6 @@
 from . import *
 from say.models import User, session
-from say.validations import username_validator, email_validator, phone_validator
+from say.validations import validate_username, validate_email, validate_phone
 
 
 '''
@@ -13,7 +13,7 @@ class CheckUsername(Resource):
     @json
     @swag_from('./docs/check/username.yml')
     def get(self, username):
-        if not username_validator(username):
+        if not validate_username(username):
             return {'message': 'Invalid Username'}, 400
 
         user = session.query(User) \
@@ -31,7 +31,7 @@ class CheckEmail(Resource):
     @json
     @swag_from('./docs/check/email.yml')
     def get(self, email):
-        if not email_validator(email):
+        if not validate_email(email):
             return {'message': 'Invalid Email'}, 400
 
         user = session.query(User) \
@@ -49,7 +49,7 @@ class CheckPhone(Resource):
     @json
     @swag_from('./docs/check/phone.yml')
     def get(self, phone):
-        if not phone_validator(phone):
+        if not validate_phone(phone):
             return {'message': 'Invalid Phone'}, 400
 
         user = session.query(User) \
