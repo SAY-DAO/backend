@@ -1,6 +1,6 @@
 from . import *
 from say.models import User, session
-from say.validations import username_validator, email_validator
+from say.validations import username_validator, email_validator, phone_validator
 
 
 '''
@@ -44,5 +44,25 @@ class CheckEmail(Resource):
         return {'message': 'Email is avaliable'}, 200
 
 
+class CheckPhone(Resource):
+
+    @json
+    @swag_from('./docs/check/phone.yml')
+    def get(self, phone):
+        if not phone_validator(phone):
+            return {'message': 'Invalid Phone'}, 400
+
+        user = session.query(User) \
+            .filter_by(phone_number=phone) \
+            .one_or_none()
+
+        if user:
+            return {'message': 'Phone Exists'}, 422
+
+        return {'message': 'Phone is avaliable'}, 200
+
+
 api.add_resource(CheckUsername, '/api/v2/check/username/<username>')
 api.add_resource(CheckEmail, '/api/v2/check/email/<email>')
+api.add_resource(CheckPhone, '/api/v2/check/phone/<phone>')
+
