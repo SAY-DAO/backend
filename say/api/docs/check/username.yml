@@ -1,0 +1,23 @@
+Check Username status
+---
+
+tags:
+  - Check API
+
+parameters:
+
+  - in: path
+    name: username
+    required: true
+    type: string
+
+responses:
+  200:
+    description: Ok
+
+  400:
+    description: Invalid Username
+
+  422:
+    description: Username Exists
+
