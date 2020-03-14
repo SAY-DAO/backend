@@ -5,17 +5,13 @@ import phonenumbers
 from babel import Locale
 from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
-from sqlalchemy_utils import PhoneNumber, Country
-
+from sqlalchemy_utils import PhoneNumber, Country, PhoneNumberParseException
 
 from . import *
 from say.models import session, obj_to_dict, or_, commit,  ResetPassword, \
-    Verification, User, RevokedToken, and_
-from say.render_template_i18n import render_template_i18n
-from say.tasks import send_embeded_subject_email, send_sms
-from say.locale import ChangeLocaleTo
-from say.content import content
-
+    PhoneVerification, Verification, EmailVerification, User, RevokedToken, \
+    and_
+from say.validations import validate_username, validate_email, validate_phone
 
 """
 Authentication APIs
@@ -26,196 +22,143 @@ def datetime_converter(o):
         return o.__str__()
 
 
-def send_verify_sms(to_user, verify_code):
-    with ChangeLocaleTo('fa'):
-        send_sms.delay(
-            to_user.phone_number.e164,
-            content['CONFIRM_PHONE'] % verify_code,
-        )
-
-
-def send_verify_email(to_user, verify_code):
-    send_embeded_subject_email.delay(
-        to=to_user.emailAddress,
-        html=render_template_i18n(
-            'email_verification.html',
-            code=str(verify_code),
-            locale=get_locale(),
-        ),
-    )
-
-
-class CheckUser(Resource):
-    def post(self):
-        resp = {"message": "major error occurred!"}
-
-        try:
-            if "username" in request.json.keys():
-                username = request.json["username"]
-            else:
-                return Response(
-                    json.dumps({"message": "userName is needed"}), status=500
-                )
-
-            alreadyTaken = (
-                session.query(User)
-                .filter_by(isDeleted=False)
-                .filter_by(userName=username)
-                .first()
-            )
-            if alreadyTaken is not None:
-                resp = Response(
-                    json.dumps(
-                        {"status": False, "Message": "UserName is Already Taken"}
-                    ),
-                    status=200,
-                )
-            else:
-                resp = Response(
-                    json.dumps({"status": True, "Message": "UserName is Acceptable"}),
-                    status=200,
-                )
-
-        except Exception as e:
-            print(e)
-            resp = Response(json.dumps({"message": "ERROR OCCURRED"}))
-
-        finally:
-            session.close()
-            return resp
-
-
 class RegisterUser(Resource):
 
+    @json
+    @commit
     @swag_from("./docs/auth/register.yml")
     def post(self):
-        resp = {"message": "something is wrong"}, 500
+        if "username" in request.form.keys():
+            username = request.form["username"]
+        else:
+            return {"message": "userName is needed"}, 400
+
+        if "phoneNumber" in request.form.keys():
+            phoneNumber = request.form["phoneNumber"]
+        else:
+            return {"message": "phoneNumber is needed"}, 400
+
+        if "countryCode" in request.form.keys():
+            country = request.form["countryCode"]
+        else:
+            return {"message": "countryCode is needed"}, 400
+
+        if "password" in request.form.keys():
+            password = request.form["password"]
+        else:
+            return {"message": "password is needed"}, 400
+
+        email = None
+        if "email" in request.form.keys():
+            email = request.form["email"].lower()
+            if bool(email) == False:
+                email = None
+
+        if "firstName" in request.form.keys():
+            first_name = request.form["firstName"]
+        else:
+            return {"message": "firstName is needed"}, 400
+
+        if "lastName" in request.form.keys():
+            last_name = request.form["lastName"]
+        else:
+            return {"message": "lastName is needed"}, 400
+
+        if "verifyCode" in request.form.keys():
+            code = request.form["verifyCode"]
+        else:
+            return {"message": "verifyCode is needed"}, 400
+
+        lang = get_locale()
+        locale = Locale(lang)
+
         try:
-            if "username" in request.json.keys():
-                username = request.json["username"]
-            else:
-                resp = Response(
-                    json.dumps({"message": "userName is needed"}), status=500
-                )
-                return
-
-            if "phoneNumber" in request.json.keys():
-                phoneNumber = request.json["phoneNumber"]
-            else:
-                resp = Response(
-                    json.dumps({"message": "phoneNumber is needed"}), status=500
-                )
-                return
-
-            if "countryCode" in request.json.keys():
-                country = request.json["countryCode"]
-            else:
-                resp = Response(
-                    json.dumps({"message": "countryCode is needed"}), status=500
-                )
-                return
-
-            if "password" in request.json.keys():
-                password = request.json["password"]
-            else:
-                resp = Response(
-                    json.dumps({"message": "password is needed"}), status=500
-                )
-                return
-
-            email = None
-            if "email" in request.json.keys():
-                email = request.json["email"].lower()
-                if bool(email) == False:
-                    email = None
-
-            if "firstName" in request.json.keys():
-                first_name = request.json["firstName"]
-            else:
-                resp = Response(
-                    json.dumps({"message": "firstName is needed"}), status=500
-                )
-                return
-
-            if "lastName" in request.json.keys():
-                last_name = request.json["lastName"]
-            else:
-                resp = Response(
-                    json.dumps({"message": "lastName is needed"}), status=500
-                )
-                return
-
-            lang = get_locale()
-            locale = Locale(lang)
             country = Country(country.upper())
-            phone_number = PhoneNumber(phoneNumber.replace(' ', ''))
+        except ValueError:
+            return {"message": "Invalid countryCode"}, 400
 
-            alreadyExist = (
-                session.query(User)
-                .filter_by(isDeleted=False)
-                .filter(or_(
-                    User.formated_username==username.lower(),
-                    User.phone_number==phone_number,
-                    and_(
-                        User.emailAddress==email,
-                        User.emailAddress.isnot(None),
-                    ),
-                ))
-                .first()
+        phone_number = phoneNumber.replace(' ', '')
+        if not validate_phone(phone_number):
+            return {"message": "Invalid phoneNumber"}, 400
+
+        if not validate_username(username):
+            return {"message": "Invalid username"}, 400
+
+        if email and not validate_email(email):
+            return {"message": "Invalid email"}, 400
+
+        code = code.replace('-', '')
+
+        alreadyExist = (
+            session.query(User)
+            .filter_by(isDeleted=False)
+            .filter(or_(
+                User.formated_username==username.lower(),
+                User.phone_number==phone_number,
+                and_(
+                    User.emailAddress==email,
+                    User.emailAddress.isnot(None),
+                ),
+            ))
+            .first()
+        )
+
+        if alreadyExist is not None:
+            return (
+                {"message": "Username, email or phone number already exists"},
+                422,
             )
 
-            if alreadyExist is not None:
-                resp = Response(
-                    json.dumps({
-                        "status": False,
-                        "Message": "Username, email or phone number already exists"}
-                    ),
-                    status=500,
-                )
-            else:
-                last_login = datetime.utcnow()
-                new_user = User(
-                    firstName=first_name,
-                    lastName=last_name,
-                    userName=username,
-                    avatarUrl=None,
-                    emailAddress=email,
-                    gender=None,
-                    city=0,
-                    birthDate=None,
-                    birthPlace=None,
-                    lastLogin=last_login,
-                    password=password,
-                    flagUrl="",
-                    locale=locale,
-                    phone_number=phone_number,
-                    country=country,
-                )
-                session.add(new_user)
-                session.flush()
+        verification = session.query(Verification) \
+            .filter(Verification._code==code) \
+            .filter(or_(
+                EmailVerification.email==email,
+                PhoneVerification.phone_number==phone_number,
+            )) \
+            .one_or_none()
 
-                code = randint(100000, 999999)
-                verify = Verification(user=new_user, code=code)
-                session.add(verify)
+        if not verification:
+            return {"message": "Invalid verifyCode"}, 400
 
-                send_verify_sms(new_user, verify.code)
+        if verification.expire_at <= datetime.utcnow():
+            return {"message": "verifyCode Expired"}, 499
 
-                resp = make_response(
-                    jsonify(obj_to_dict(new_user)),
-                    200,
-                )
-                session.commit()
+        last_login = datetime.utcnow()
+        new_user = User(
+            firstName=first_name,
+            lastName=last_name,
+            userName=username,
+            avatarUrl=None,
+            emailAddress=email,
+            gender=None,
+            city=0,
+            birthDate=None,
+            birthPlace=None,
+            lastLogin=last_login,
+            password=password,
+            flagUrl="",
+            locale=locale,
+            phone_number=phone_number,
+            country=country,
+        )
+        session.add(new_user)
 
-        except Exception as e:
-            print(e)
-            resp = Response(
-                json.dumps({"message": "Something is Wrong!", "error": str(e)}),
-                status=500,
-            )
+        if isinstance(verification, EmailVerification):
+            new_user.is_email_verified = True
+        else:
+            new_user.is_phonenumber_verified = True
 
-        finally:
-            session.close()
-            return resp
+        session.flush()
+        access_token = create_user_access_token(new_user)
+        refresh_token = create_refresh_token(identity=new_user.id)
+
+        resp = {
+            "message": "User successfully created",
+            "accessToken": f"Bearer {access_token}",
+            "refreshToken": f"Bearer {refresh_token}",
+            "user": obj_to_dict(new_user),
+        }
+        return resp
 
 
 class Login(Resource):
@@ -230,7 +173,7 @@ class Login(Resource):
                 username = request.form["username"].lower()
             else:
                 resp = Response(
-                    json.dumps({"message": "userName is needed"}), status=500
+                    jsonify({"message": "userName is needed"}), status=500
                 )
                 return
 
@@ -238,7 +181,7 @@ class Login(Resource):
                 password = request.form["password"]
             else:
                 resp = Response(
-                    json.dumps({"message": "password is needed"}), status=500
+                    jsonify({"message": "password is needed"}), status=500
                 )
                 return
 
@@ -310,18 +253,18 @@ class Login(Resource):
                     )
                 else:
                     resp = Response(
-                        json.dumps({"message": "Username or Password is Wrong"}),
+                        jsonify({"message": "Username or Password is Wrong"}),
                         status=400,
                     )
 
             else:
                 resp = Response(
-                    json.dumps({"message": "Please Register First"}), status=400
+                    jsonify({"message": "Please Register First"}), status=400
                 )
 
         except Exception as e:
             print(e)
-            resp = Response(json.dumps({"message": str(e)}), status=400)
+            resp = Response(jsonify({"message": str(e)}), status=400)
 
         finally:
             session.close()
@@ -363,107 +306,77 @@ class LogoutRefresh(Resource):
             return msg
 
 
-class Verify(Resource):
+class VerifyPhone(Resource):
     decorators = [limiter.limit("5/minute")]
 
-    @swag_from("./docs/auth/verify.yml")
-    def post(self, user_id):
-        resp = {"message": "Something is Wrong"}, 500
+    @json
+    @commit
+    @swag_from("./docs/auth/verify-phone.yml")
+    def post(self):
+        phone_number = request.form.get('phone_number', None)
+
+        if not phone_number:
+            return {"message": "phone_number is required"}, 400
 
         try:
-            user_id = int(user_id)
-            user = session.query(User).filter_by(id=user_id).first()
-            if user is None:
-                resp = {"message": "Something is Wrong"}, 500
-                return
+            phone_number = PhoneNumber(phone_number)
+        except PhoneNumberParseException:
+            return {"message": "phone_number is invalid"}, 400
 
-            verify = session.query(Verification).filter_by(user_id=user_id).first()
-            sent_verify_code = request.form.get('verifyCode', 'invalid')
+        user = session.query(User) \
+            .filter(and_(
+                User.phone_number==phone_number,
+                User.is_phonenumber_verified==True,
+            )).first()
 
-            if user.isVerified:
-                resp = {"message": "User Already verified"}, 600
-                return
+        if user:
+            return {"message": "phone_number already exixst"}, 422
 
-            error = None
-            if (
-                verify is None
-                or str(verify.code) != sent_verify_code.replace('-', '')
-            ):
-                error = 'Verify code is invalid'
+        verification = PhoneVerification(
+            phone_number=phone_number,
+            expire_at=datetime.utcnow() + timedelta(
+                minutes=app.config['VERIFICATION_MAXAGE'],
+            ),
+        )
+        session.add(verification)
+        session.flush()
+        verification.send()
 
-            elif verify.expire_at < datetime.utcnow():
-                error = 'Verify code is expired'
-
-            if error:
-                raise Exception(error)
-
-            user.is_phonenumber_verified = True
-
-            access_token = create_user_access_token(user)
-            refresh_token = create_refresh_token(identity=user.id)
-
-            resp = make_response(
-                jsonify({
-                    "message": "User successfully verified",
-                    "accessToken": f"Bearer {access_token}",
-                    "refreshToken": f"Bearer {refresh_token}",
-                    "user": obj_to_dict(user),
-                }),
-                200,
-            )
-            session.commit()
-
-        except Exception as e:
-            print(e)
-            resp = make_response(
-                jsonify({"message": str(e)}),
-                400,
-            )
-
-        finally:
-            session.close()
-            return resp
+        return verification
 
 
-class VerifyResend(Resource):
-    decorators = [limiter.limit("2/minute")]
+class VerifyEmail(Resource):
+    decorators = [limiter.limit("5/minute")]
 
-    @swag_from("./docs/auth/verify-resend.yml")
-    def post(self, user_id):
-        resp = {"message": "Something is Wrong"}
+    @json
+    @commit
+    @swag_from("./docs/auth/verify-email.yml")
+    def post(self):
+        email = request.form.get('email', None)
 
-        try:
-            user = session.query(User).filter_by(id=user_id).first()
-            if user.isVerified:
-                resp = Response(
-                    json.dumps({"message": "User is already verified."}), status=200
-                )
-                return
+        if not email:
+            return {"message": "email is required"}, 400
 
-            verify = session.query(Verification).filter_by(user_id=user_id).first()
-            if verify is None:
-                verify = Verification(user=user)
-                session.add(verify)
+        user = session.query(User) \
+            .filter(and_(
+                User.emailAddress==email,
+                User.is_email_verified==True,
+            )).first()
 
-            verify.code = randint(100000, 999999)
-            verify.expire_at = datetime.utcnow() + timedelta(
-                minutes=app.config['VERIFICATION_MAXAGE']
-            )
+        if user:
+            return {"message": "email already exixst"}, 422
 
-            session.commit()
-            send_verify_sms(user, verify.code)
-            resp = Response(
-                json.dumps({"message": "Verification Code Sent."}),
-                status=200,
-            )
+        verification = EmailVerification(
+            email=email,
+            expire_at=datetime.utcnow() + timedelta(
+                minutes=app.config['VERIFICATION_MAXAGE'],
+            ),
+        )
+        session.add(verification)
+        session.flush()
+        verification.send()
 
-        except Exception as e:
-            print(e)
-            resp = Response(json.dumps({"message": "Something is Wrong!"}), status=500)
-
-        finally:
-            session.close()
-            return resp
+        return verification
 
 
 class TokenRefresh(Resource):
@@ -583,14 +496,13 @@ API URLs
 """
 
 
-api.add_resource(CheckUser, "/api/v2/auth/checkUserName")
 api.add_resource(RegisterUser, "/api/v2/auth/register")
 api.add_resource(Login, "/api/v2/auth/login")
 api.add_resource(LogoutAccess, "/api/v2/auth/logout/token")
 api.add_resource(LogoutRefresh, "/api/v2/auth/logout/refresh")
 api.add_resource(TokenRefresh, "/api/v2/auth/refresh")
-api.add_resource(Verify, "/api/v2/auth/verify/userid=<user_id>")
-api.add_resource(VerifyResend, "/api/v2/auth/verify/resend/userid=<user_id>")
+api.add_resource(VerifyPhone, "/api/v2/auth/verify/phone")
+api.add_resource(VerifyEmail, "/api/v2/auth/verify/email")
 api.add_resource(ResetPasswordByEmailApi, "/api/v2/auth/password/reset/email")
 api.add_resource(ResetPasswordByPhoneApi, "/api/v2/auth/password/reset/phone")
 api.add_resource(

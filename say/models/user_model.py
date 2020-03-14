@@ -24,9 +24,9 @@ class User(base, Timestamp):
     userName = Column(String, nullable=False, unique=True)
     avatarUrl = Column(String, nullable=True)
     flagUrl = Column(String, nullable=True)
-    phone_number = Column(PhoneNumberType())
+    phone_number = Column(PhoneNumberType(), unique=True, index=True)
     country = Column(CountryType, nullable=False)
-    emailAddress = Column(String, nullable=True, unique=True)
+    emailAddress = Column(String, nullable=True, unique=True, index=True)
     gender = Column(Enum(Gender), nullable=True)
     city = Column(Integer, nullable=False)  # 1:tehran | 2:karaj
     isDeleted = Column(Boolean, nullable=False, default=False)

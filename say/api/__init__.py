@@ -1,10 +1,10 @@
-import os, shutil, copy, json
+import os, shutil, copy
 
 from celery import Celery
 from flask import (
     Flask,
     jsonify,
-    json,
+    json as _json,
     Response,
     request,
     Blueprint,
@@ -27,7 +27,7 @@ from flask_caching import Cache
 from flask_cors import CORS
 import flask_monitoringdashboard as dashboard
 
-from ..payment import IDPay
+from say.payment import IDPay
 from say.celery import beat
 from say.date import *
 from say.authorization import *
@@ -36,6 +36,8 @@ from say.exceptions import *
 from say.langs import LANGS
 from say.locale import ChangeLocaleTo, get_locale
 from say.sms import MeliPayamak
+from say.decorators import json
+from say.orm import obj_to_dict
 
 
 PRODUCTION = os.environ.get('PRODUCTION')
@@ -54,7 +56,7 @@ conf = {
 }
 try:
     with open("./config.json") as config_file:
-        conf = json.load(config_file)
+        conf = _json.load(config_file)
 except:
     pass
 
@@ -112,7 +114,7 @@ app.config['VERIFICATION_MAXAGE'] = 5 # minutes
 
 app.config.update(
     broker_url='redis://localhost:6379/0',
-    result_backend='rpc://',
+    result_backend='redis://localhost:6379/0',
     redbeat_redis_url = "redis://localhost:6379/0"
 )
 
@@ -243,5 +245,4 @@ def allowed_receipt(filename):
         return True
 
     raise TypeError('Wrong receipt format')
-
 

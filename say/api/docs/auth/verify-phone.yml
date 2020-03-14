@@ -1,0 +1,20 @@
+Verify Phone API
+---
+
+tags:
+  - Auth API
+
+parameters:
+  - in: formData
+    name: phone_number
+    required: true
+    type: string
+
+responses:
+  400:
+    description: Missing phone_number, Invalid phone_number
+  422:
+    description: phone_number Exists
+
+  200:
+    description: Ok, A code will send to the phone_number
