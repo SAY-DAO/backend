@@ -172,16 +172,16 @@ class Login(Resource):
             if "username" in request.form.keys():
                 username = request.form["username"].lower()
             else:
-                resp = Response(
-                    jsonify({"message": "userName is needed"}), status=500
+                resp = make_response(
+                    jsonify({"message": "userName is needed"}), 500
                 )
                 return
 
             if "password" in request.form.keys():
                 password = request.form["password"]
             else:
-                resp = Response(
-                    jsonify({"message": "password is needed"}), status=500
+                resp = make_response(
+                    jsonify({"message": "password is needed"}), 500
                 )
                 return
 
@@ -252,19 +252,19 @@ class Login(Resource):
                         200,
                     )
                 else:
-                    resp = Response(
+                    resp = make_response(
                         jsonify({"message": "Username or Password is Wrong"}),
-                        status=400,
+                        400,
                     )
 
             else:
-                resp = Response(
-                    jsonify({"message": "Please Register First"}), status=400
+                resp = make_response(
+                    jsonify({"message": "Please Register First"}), 400
                 )
 
         except Exception as e:
             print(e)
-            resp = Response(jsonify({"message": str(e)}), status=400)
+            resp = make_response(jsonify({"message": str(e)}), 400)
 
         finally:
             session.close()
@@ -324,10 +324,8 @@ class VerifyPhone(Resource):
             return {"message": "phone_number is invalid"}, 400
 
         user = session.query(User) \
-            .filter(and_(
-                User.phone_number==phone_number,
-                User.is_phonenumber_verified==True,
-            )).first()
+            .filter(User.phone_number==phone_number) \
+            .first()
 
         if user:
             return {"message": "phone_number already exixst"}, 422
