@@ -401,9 +401,7 @@ class UpdateNeedById(Resource):
                     None,
                 )
 
-
-
-            activity.diff = jsonify(list(diff(temp, obj_to_dict(need))))
+            activity.diff = ujson.dumps(list(diff(temp, obj_to_dict(need))))
 
             session.commit()
             secondary_need = obj_to_dict(need)
@@ -673,6 +671,7 @@ class AddNeed(Resource):
                 update_need.delay(new_need.id)
 
             resp = make_response(jsonify(obj_to_dict(new_need)), 200)
+
 
         except Exception as e:
             resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
