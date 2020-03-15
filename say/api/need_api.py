@@ -1,8 +1,8 @@
-import json as json_
 from collections import OrderedDict
 
 import ujson
 from dictdiffer import diff
+from flask import json as json_
 from sqlalchemy import or_
 
 from . import *
