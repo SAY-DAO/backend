@@ -1,3 +1,4 @@
+import json as json_
 from collections import OrderedDict
 
 import ujson
@@ -401,7 +402,7 @@ class UpdateNeedById(Resource):
                     None,
                 )
 
-            activity.diff = ujson.dumps(list(diff(temp, obj_to_dict(need))))
+            activity.diff = json_.dumps(list(diff(temp, obj_to_dict(need))))
 
             session.commit()
             secondary_need = obj_to_dict(need)
