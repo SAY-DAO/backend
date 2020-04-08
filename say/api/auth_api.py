@@ -12,7 +12,8 @@ from say.models import session, obj_to_dict, or_, commit,  ResetPassword, \
     PhoneVerification, Verification, EmailVerification, User, RevokedToken, \
     and_
 from say.tasks import subscribe_email
-from say.validations import validate_username, validate_email, validate_phone
+from say.validations import validate_username, validate_email, validate_phone, \
+    validate_password
 
 
 """
@@ -47,6 +48,9 @@ class RegisterUser(Resource):
 
         if "password" in request.form.keys():
             password = request.form["password"]
+            if not validate_password(password):
+                return {"message": "password must be at least 6 charachters"}, 400
+
         else:
             return {"message": "password is needed"}, 400
 

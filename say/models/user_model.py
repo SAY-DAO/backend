@@ -6,6 +6,7 @@ from sqlalchemy.orm import composite
 from sqlalchemy_utils import LocaleType, CountryType, PhoneNumberType
 from babel import Locale
 
+from say.validations import validate_password as _validate_password
 from say.gender import Gender
 from . import *
 
@@ -109,6 +110,9 @@ class User(base, Timestamp):
 
     def _set_password(self, password):
         """Hash ``password`` on the fly and store its hashed version."""
+        if not _validate_password(password):
+            raise ValueError('Password must be at least 6 character')
+
         self._password = self._hash_password(password)
 
     def _get_password(self):
