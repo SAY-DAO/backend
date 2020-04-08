@@ -6,5 +6,6 @@ from .update_needs import update_needs, update_need, \
     change_need_status_to_delivered
 from .report_to_family import report_to_families
 from .report_to_social_worker import report_to_social_workers
+from .subscribe_email import subscribe_email
 
 

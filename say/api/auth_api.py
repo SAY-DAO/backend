@@ -11,7 +11,9 @@ from . import *
 from say.models import session, obj_to_dict, or_, commit,  ResetPassword, \
     PhoneVerification, Verification, EmailVerification, User, RevokedToken, \
     and_
+from say.tasks import subscribe_email
 from say.validations import validate_username, validate_email, validate_phone
+
 
 """
 Authentication APIs
@@ -158,6 +160,13 @@ class RegisterUser(Resource):
             "refreshToken": f"Bearer {refresh_token}",
             "user": obj_to_dict(new_user),
         }
+
+        if new_user.emailAddress:
+            subscribe_email.delay(
+                app.config.get('MAILERLITE_GROUP_ID', 'not-entered'),
+                dict(email=new_user.emailAddress),
+            )
+
         return resp
 
 

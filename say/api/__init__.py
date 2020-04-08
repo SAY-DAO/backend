@@ -26,6 +26,7 @@ from logging import debug, basicConfig, DEBUG
 from flask_caching import Cache
 from flask_cors import CORS
 import flask_monitoringdashboard as dashboard
+from mailerlite import MailerLiteApi
 
 from say.payment import IDPay
 from say.celery import beat
@@ -186,6 +187,8 @@ sms_provider = MeliPayamak(
     app.config['MELI_PAYAMAK_PASSWORD'],
     app.config['MELI_PAYAMAK_FROM'],
 )
+
+mailerlite = MailerLiteApi(app.config.get('MAILERLITE_API_KEY', 'not-entered'))
 
 try:
     from say.basedata import basedata
