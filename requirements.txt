@@ -27,3 +27,5 @@ ujson
 babel
 flask_monitoringdashboard
 phonenumbers
+mailerlite-api-python
+
