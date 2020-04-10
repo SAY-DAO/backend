@@ -2,7 +2,7 @@ add a child
 Adds a new child.
 Calling this API affects child and social_worker tables.
 Adding firstName, lastName, nationality, birthPlace, address, housingStatus, familyCount, education and status are optional.
-For avatarUrl and voiceUrl you have to upload a file; for avatar in png, jpg or jpeg and for voice in wav, m4a, wma, mp3, aac or ogg format.
+For awakeAvatarUrl and voiceUrl you have to upload a file; for avatar in png, jpg or jpeg and for voice in wav, m4a, wma, mp3, aac or ogg format.
 Be aware that city and country are integer fields, so you cannot insert their names in those fields.
 You have to insert the international codes for countries and cities and the same rule is applied for nationality and birthPlace.
 Here is a guide for the codes used in this API:
@@ -33,7 +33,7 @@ parameters:
     in: formData
     type: integer
 
-  - name: avatarUrl
+  - name: awakeAvatarUrl
     in: formData
     type: file
     required: true
