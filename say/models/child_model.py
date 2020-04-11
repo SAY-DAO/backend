@@ -1,3 +1,4 @@
+import pytz
 from datetime import datetime, time
 
 from sqlalchemy.dialects.postgresql import HSTORE
@@ -73,7 +74,8 @@ class Child(base, Timestamp):
         now_time = datetime.utcnow().time()
 
         if self.country == '98' or self.country == '93':
-            now_time += time(4, 30)
+            tz = pytz.timezone('Asia/Tehran')
+            now_time = datetime.now(tz).time()
 
         if now_time >= time(21, 00) or now_time <= time(8, 00):
             return self.sleptAvatarUrl
