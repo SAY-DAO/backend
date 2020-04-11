@@ -36,15 +36,19 @@ class RegisterUser(Resource):
         else:
             return {"message": "userName is needed"}, 400
 
+        phoneNumber = None
         if "phoneNumber" in request.form.keys():
             phoneNumber = request.form["phoneNumber"]
-        else:
-            return {"message": "phoneNumber is needed"}, 400
+            phone_number = phoneNumber.replace(' ', '')
 
-        if "countryCode" in request.form.keys():
+        if "countryCode" in request.form.keys() and request.form['countryCode']:
             country = request.form["countryCode"]
+            try:
+                country = Country(country.upper())
+            except ValueError:
+                return {"message": "Invalid countryCode"}, 400
         else:
-            return {"message": "countryCode is needed"}, 400
+           country = None
 
         if "password" in request.form.keys():
             password = request.form["password"]
@@ -59,6 +63,9 @@ class RegisterUser(Resource):
             email = request.form["email"].lower()
             if bool(email) == False:
                 email = None
+
+        if not email and not phoneNumber:
+            return {'message': 'Email or Phone Number is required'}, 400
 
         if "firstName" in request.form.keys():
             first_name = request.form["firstName"]
@@ -78,13 +85,7 @@ class RegisterUser(Resource):
         lang = get_locale()
         locale = Locale(lang)
 
-        try:
-            country = Country(country.upper())
-        except ValueError:
-            return {"message": "Invalid countryCode"}, 400
-
-        phone_number = phoneNumber.replace(' ', '')
-        if not validate_phone(phone_number):
+        if phoneNumber and not validate_phone(phone_number):
             return {"message": "Invalid phoneNumber"}, 400
 
         if not validate_username(username):
