@@ -71,13 +71,17 @@ class Child(base, Timestamp):
     def avatarUrl(self):
         # TODO: Use right timezone
         now_time = datetime.utcnow().time()
+
+        if self.country == '98' or self.country == '93':
+            now_time += time(4, 30)
+
         if now_time >= time(21, 00) or now_time <= time(8, 00):
             return self.sleptAvatarUrl
         else:
             return self.awakeAvatarUrl
 
     @avatarUrl.expression
-    def avatarUrl_expresion(cls):
+    def avatarUrl(cls):
         return
 
     @aggregated('needs', Column(Integer, default=0, nullable=False))
