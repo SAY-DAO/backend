@@ -10,11 +10,13 @@ validate_username = re.compile(USERNAME_PATTERN).fullmatch
 EMAIL_PATTERN = r'^[^@]+@[^@]+\.[^@]+$'
 validate_email = re.compile(EMAIL_PATTERN).fullmatch
 
+PASSWORD_PATTERN = '^(.){6,64}$'
+validate_password = re.compile(PASSWORD_PATTERN).fullmatch
+
 
 def validate_phone(phone):
     try:
         return PhoneNumber(phone.replace(' ', ''))
     except phonenumbers.phonenumberutil.NumberParseException:
         return False
-
 

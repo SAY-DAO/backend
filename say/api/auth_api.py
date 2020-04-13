@@ -12,7 +12,8 @@ from say.models import session, obj_to_dict, or_, commit,  ResetPassword, \
     PhoneVerification, Verification, EmailVerification, User, RevokedToken, \
     and_
 from say.tasks import subscribe_email
-from say.validations import validate_username, validate_email, validate_phone
+from say.validations import validate_username, validate_email, validate_phone, \
+    validate_password
 
 
 """
@@ -35,18 +36,27 @@ class RegisterUser(Resource):
         else:
             return {"message": "userName is needed"}, 400
 
+        phoneNumber = None
         if "phoneNumber" in request.form.keys():
             phoneNumber = request.form["phoneNumber"]
-        else:
-            return {"message": "phoneNumber is needed"}, 400
+            phone_number = phoneNumber.replace(' ', '')
+            if phone_number == '':
+                phone_number = None
 
-        if "countryCode" in request.form.keys():
+        if "countryCode" in request.form.keys() and request.form['countryCode']:
             country = request.form["countryCode"]
+            try:
+                country = Country(country.upper())
+            except ValueError:
+                return {"message": "Invalid countryCode"}, 400
         else:
-            return {"message": "countryCode is needed"}, 400
+           country = None
 
         if "password" in request.form.keys():
             password = request.form["password"]
+            if not validate_password(password):
+                return {"message": "password must be at least 6 charachters"}, 400
+
         else:
             return {"message": "password is needed"}, 400
 
@@ -55,6 +65,9 @@ class RegisterUser(Resource):
             email = request.form["email"].lower()
             if bool(email) == False:
                 email = None
+
+        if not email and not phoneNumber:
+            return {'message': 'Email or Phone Number is required'}, 400
 
         if "firstName" in request.form.keys():
             first_name = request.form["firstName"]
@@ -74,13 +87,7 @@ class RegisterUser(Resource):
         lang = get_locale()
         locale = Locale(lang)
 
-        try:
-            country = Country(country.upper())
-        except ValueError:
-            return {"message": "Invalid countryCode"}, 400
-
-        phone_number = phoneNumber.replace(' ', '')
-        if not validate_phone(phone_number):
+        if phoneNumber and not validate_phone(phone_number):
             return {"message": "Invalid phoneNumber"}, 400
 
         if not validate_username(username):
@@ -96,7 +103,11 @@ class RegisterUser(Resource):
             .filter_by(isDeleted=False)
             .filter(or_(
                 User.formated_username==username.lower(),
-                User.phone_number==phone_number,
+                and_(
+                    User.phone_number==phone_number,
+                    User.phone_number.isnot(None),
+                    User.phone_number!='',
+                ),
                 and_(
                     User.emailAddress==email,
                     User.emailAddress.isnot(None),

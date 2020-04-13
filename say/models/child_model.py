@@ -1,3 +1,6 @@
+import pytz
+from datetime import datetime, time
+
 from sqlalchemy.dialects.postgresql import HSTORE
 
 from . import *
@@ -30,8 +33,10 @@ class Child(base, Timestamp):
         Integer, nullable=False
     )  # 98:iran | 93:afghanistan | ... (real country codes) / [must be change after using real country/city api]
     city = Column(Integer, nullable=False)  # 1:tehran | 2:karaj / [must be change after using real country/city api]
-    avatarUrl = Column(String, nullable=False)
+
+    awakeAvatarUrl = Column(String, nullable=False)
     sleptAvatarUrl = Column(String, nullable=False)
+
     gender = Column(Boolean, nullable=False)  # true:male | false:female
 
     bio_translations = Column(HSTORE)
@@ -62,6 +67,24 @@ class Child(base, Timestamp):
     isMigrated = Column(Boolean, nullable=False, default=False)
     migratedId = Column(Integer, nullable=True)
     migrateDate = Column(Date, nullable=True)
+
+    @hybrid_property
+    def avatarUrl(self):
+        # TODO: Use right timezone
+        now_time = datetime.utcnow().time()
+
+        if self.country == 98 or self.country == 93:
+            tz = pytz.timezone('Asia/Tehran')
+            now_time = datetime.now(tz).time()
+
+        if now_time >= time(21, 00) or now_time <= time(8, 00):
+            return self.sleptAvatarUrl
+        else:
+            return self.awakeAvatarUrl
+
+    @avatarUrl.expression
+    def avatarUrl(cls):
+        return
 
     @aggregated('needs', Column(Integer, default=0, nullable=False))
     def done_needs_count(cls):

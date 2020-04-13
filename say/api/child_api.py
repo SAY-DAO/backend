@@ -413,7 +413,7 @@ class AddChild(Resource):
             new_child = Child(
                 phoneNumber=phone_number,
                 nationality=nationality,
-                avatarUrl=avatar_url,
+                awakeAvatarUrl=avatar_url,
                 sleptAvatarUrl=avatar_url,
                 housingStatus=housing_status,
                 firstName_translations=first_name_translations,
@@ -439,13 +439,13 @@ class AddChild(Resource):
             session.add(new_child)
             session.flush()
 
-            if "voiceUrl" not in request.files or "avatarUrl" not in request.files:
+            if "voiceUrl" not in request.files or "awakeAvatarUrl" not in request.files:
                 resp = make_response(jsonify({"message": "error occured in file uploading!"}), 500)
                 session.close()
                 return resp
 
             file1 = request.files["voiceUrl"]
-            file2 = request.files["avatarUrl"]
+            file2 = request.files["awakeAvatarUrl"]
             file3 = request.files["sleptAvatarUrl"]
 
             if file1.filename == "":
@@ -503,7 +503,7 @@ class AddChild(Resource):
                     str(new_child.id) + "-avatar_" + filename2,
                 )
                 file2.save(avatar_path)
-                new_child.avatarUrl = '/' + avatar_path
+                new_child.awakeAvatarUrl = '/' + avatar_path
 
             if file3 and allowed_image(file3.filename):
                 # filename3 = secure_filename(file3.filename)
@@ -585,8 +585,8 @@ class UpdateChildById(Resource):
                 resp = error
                 return
 
-            if "avatarUrl" in request.files.keys():
-                file2 = request.files["avatarUrl"]
+            if "awakeAvatarUrl" in request.files.keys():
+                file2 = request.files["awakeAvatarUrl"]
 
                 if file2.filename == "":
                     resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY AVATAR!"}), 500)
@@ -612,12 +612,12 @@ class UpdateChildById(Resource):
                         if obj.split("_")[0] == check:
                             os.remove(os.path.join(temp_avatar_path, obj))
 
-                    primary_child.avatarUrl = os.path.join(
+                    primary_child.awakeAvatarUrl = os.path.join(
                         temp_avatar_path, str(primary_child.id) + "-avatar_" + filename2
                     )
 
-                    file2.save(primary_child.avatarUrl)
-                    primary_child.avatarUrl = '/' + primary_child.avatarUrl
+                    file2.save(primary_child.awakeAvatarUrl)
+                    primary_child.awakeAvatarUrl = '/' + primary_child.awakeAvatarUrl
 
             if "sleptAvatarUrl" in request.files.keys():
                 file3 = request.files["sleptAvatarUrl"]
@@ -984,7 +984,7 @@ class ConfirmChild(Resource):
                                 + str(f.rsplit(".", 1)[1].lower()),
                             )
                             os.rename(os.path.join(new_path, f), avatar_new_path)
-                            secondary_child.avatarUrl = avatar_new_path
+                            secondary_child.awakeAvatarUrl = avatar_new_path
 
                         if str(primary_child.id) + "-voice_" in f:
                             voice_new_path = os.path.join(
