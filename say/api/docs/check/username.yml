@@ -15,9 +15,9 @@ responses:
   200:
     description: Ok
 
-  400:
+  710:
     description: Invalid Username
 
-  422:
+  711:
     description: Username Exists
 

@@ -14,14 +14,14 @@ class CheckUsername(Resource):
     @swag_from('./docs/check/username.yml')
     def get(self, username):
         if not validate_username(username):
-            return {'message': 'Invalid Username'}, 400
+            return {'message': 'Invalid Username'}, 710
 
         user = session.query(User) \
             .filter_by(formated_username=username.lower()) \
             .one_or_none()
 
         if user:
-            return {'message': 'Username Exists'}, 422
+            return {'message': 'Username Exists'}, 711
 
         return {'message': 'Username is avaliable'}, 200
 
@@ -32,14 +32,14 @@ class CheckEmail(Resource):
     @swag_from('./docs/check/email.yml')
     def get(self, email):
         if not validate_email(email):
-            return {'message': 'Invalid Email'}, 400
+            return {'message': 'Invalid Email'}, 720
 
         user = session.query(User) \
             .filter_by(emailAddress=email.lower()) \
             .one_or_none()
 
         if user:
-            return {'message': 'Email Exists'}, 422
+            return {'message': 'Email Exists'}, 721
 
         return {'message': 'Email is avaliable'}, 200
 
@@ -50,14 +50,14 @@ class CheckPhone(Resource):
     @swag_from('./docs/check/phone.yml')
     def get(self, phone):
         if not validate_phone(phone):
-            return {'message': 'Invalid Phone'}, 400
+            return {'message': 'Invalid Phone'}, 730
 
         user = session.query(User) \
             .filter_by(phone_number=phone) \
             .one_or_none()
 
         if user:
-            return {'message': 'Phone Exists'}, 422
+            return {'message': 'Phone Exists'}, 731
 
         return {'message': 'Phone is avaliable'}, 200
 
