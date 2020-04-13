@@ -40,6 +40,8 @@ class RegisterUser(Resource):
         if "phoneNumber" in request.form.keys():
             phoneNumber = request.form["phoneNumber"]
             phone_number = phoneNumber.replace(' ', '')
+            if phone_number == '':
+                phone_number = None
 
         if "countryCode" in request.form.keys() and request.form['countryCode']:
             country = request.form["countryCode"]
@@ -101,7 +103,11 @@ class RegisterUser(Resource):
             .filter_by(isDeleted=False)
             .filter(or_(
                 User.formated_username==username.lower(),
-                User.phone_number==phone_number,
+                and_(
+                    User.phone_number==phone_number,
+                    User.phone_number.isnot(None),
+                    User.phone_number!='',
+                ),
                 and_(
                     User.emailAddress==email,
                     User.emailAddress.isnot(None),

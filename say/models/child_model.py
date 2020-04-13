@@ -73,7 +73,7 @@ class Child(base, Timestamp):
         # TODO: Use right timezone
         now_time = datetime.utcnow().time()
 
-        if self.country == '98' or self.country == '93':
+        if self.country == 98 or self.country == 93:
             tz = pytz.timezone('Asia/Tehran')
             now_time = datetime.now(tz).time()
 
