@@ -2,7 +2,7 @@
 
 set -e
 export CI_PROJECT_NAME_NIGHTLY=$CI_PROJECT_NAME-nightly
-export CI_PROJECT_DIR_NIGHTLY=/tmp/nightly/
+export CI_PROJECT_DIR_NIGHTLY=/tmp
 
 apk update && apk upgrade && apk add openssh
 eval $(ssh-agent -s)
@@ -19,7 +19,6 @@ tar -zcf /tmp/$CI_PROJECT_NAME_NIGHTLY.tar.gz --exclude=.git $CI_PROJECT_NAME
 cd /tmp
 scp $CI_PROJECT_NAME_NIGHTLY.tar.gz $SERVER_USER@$SERVER:$CI_PROJECT_DIR_NIGHTLY
 ssh -t $SERVER_USER@$SERVER "
-mkdir -p $CI_PROJECT_DIR_NIGHTLY &&
 cd $CI_PROJECT_DIR_NIGHTLY &&
 tar -xvf $CI_PROJECT_NAME_NIGHTLY.tar.gz &&
 cd $CI_PROJECT_NAME &&
