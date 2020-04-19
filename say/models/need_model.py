@@ -1,20 +1,15 @@
-from decimal import Decimal
 from datetime import datetime, timedelta
+from decimal import Decimal
 
-from khayyam import JalaliDate
-from sqlalchemy import event
 from sqlalchemy.dialects.postgresql import HSTORE
 from sqlalchemy.orm import object_session
-from sqlalchemy import event
 
-from say.statuses import NeedStatuses
-from say.tasks import send_email, send_embeded_subject_email
-from say.render_template_i18n import render_template_i18n
-
-from .payment_model import Payment
-from .need_family_model import NeedFamily
-from .user_model import User
 from . import *
+from .need_family_model import NeedFamily
+from .payment_model import Payment
+from .user_model import User
+from say.statuses import NeedStatuses
+
 
 """
 Need Model
@@ -351,26 +346,6 @@ class Need(base, Timestamp):
                 self.cost = cost
                 self.purchase_cost = cost
 
-            elif type(cost) is str:
-                session = object_session(self)
-
-                from say.api import app
-                from say.models import Ngo
-
-                SAY_ngo = session.query(Ngo).filter_by(name='SAY').first()
-                if self.child.ngo.name != SAY_ngo.name:
-                    with app.app_context():
-                        send_email.delay(
-                            subject=f'تغییر وضعیت کالا {dkp}',
-                            to=SAY_ngo.coordinator.emailAddress,
-                            html=render_template_i18n(
-                                'product_status_changed.html',
-                                child=self.child,
-                                need=self,
-                                dkp=dkp,
-                                details=cost,
-                            ),
-                        )
         return data
 
     def child_delivery_product(self):

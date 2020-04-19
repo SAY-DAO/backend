@@ -5,7 +5,6 @@ from sqlalchemy_utils import LocaleType
 from . import *
 from say.render_template_i18n import render_template_i18n
 from say.formatters import expose_datetime
-from say.tasks import send_embeded_subject_email
 from say.utils import surname
 from say.locale import ChangeLocaleTo
 
@@ -62,13 +61,14 @@ class SocialWorker(base, Timestamp):
     children = relationship("Child", back_populates='social_worker')
 
     def send_report(self):
-        session = object_session(self)
+        from say.tasks import send_embeded_subject_email
         from say.api import app
         from .need_model import Need
         from .child_model import Child
         from .child_need_model import ChildNeed
         from .ngo_model import Ngo
 
+        session = object_session(self)
         needs = None
         with app.app_context(), ChangeLocaleTo(self.locale):
             needs = session.query(Need) \
