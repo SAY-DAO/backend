@@ -65,6 +65,21 @@ except:
 # see https://docs.sqlalchemy.org/en/13/core/pooling.html#disconnect-handling-pessimistic
 db = create_engine(conf["dbUrl"], pool_pre_ping=True)
 
+@event.listens_for(db, "connect")
+def connect(dbapi_connection, connection_record):
+    connection_record.info['pid'] = os.getpid()
+
+@event.listens_for(db, "checkout")
+def checkout(dbapi_connection, connection_record, connection_proxy):
+    pid = os.getpid()
+    if connection_record.info['pid'] != pid:
+        connection_record.connection = connection_proxy.connection = None
+        raise exc.DisconnectionError(
+                "Connection record belongs to pid %s, "
+                "attempting to check out in pid %s" %
+                (connection_record.info['pid'], pid)
+        )
+
 BASE_FOLDER = os.getcwd()
 
 UPLOAD_FOLDER = "files"
