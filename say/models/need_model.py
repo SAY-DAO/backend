@@ -351,26 +351,6 @@ class Need(base, Timestamp):
                 self.cost = cost
                 self.purchase_cost = cost
 
-            elif type(cost) is str:
-                session = object_session(self)
-
-                from say.api import app
-                from say.models import Ngo
-
-                SAY_ngo = session.query(Ngo).filter_by(name='SAY').first()
-                if self.child.ngo.name != SAY_ngo.name:
-                    with app.app_context():
-                        send_email.delay(
-                            subject=f'تغییر وضعیت کالا {dkp}',
-                            to=SAY_ngo.coordinator.emailAddress,
-                            html=render_template_i18n(
-                                'product_status_changed.html',
-                                child=self.child,
-                                need=self,
-                                dkp=dkp,
-                                details=cost,
-                            ),
-                        )
         return data
 
     def child_delivery_product(self):
