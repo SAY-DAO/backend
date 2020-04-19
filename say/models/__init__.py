@@ -1,13 +1,14 @@
+import os
 import enum
 import functools
 
 from babel import Locale
 from flask import request, g
 from sqlalchemy import Column, ForeignKey, String, Integer, Date, Boolean, \
-    Text, Numeric, DateTime, FLOAT, Unicode, Enum
+    Text, Numeric, DateTime, FLOAT, Unicode, Enum, inspect, or_, not_, and_, \
+    func, select, event
 from sqlalchemy.orm import relationship, synonym, scoped_session, \
     sessionmaker, object_session
-from sqlalchemy import inspect, or_, not_, and_, func, select
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.associationproxy import ASSOCIATION_PROXY
 from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
@@ -77,4 +78,22 @@ from .user_model import User
 from .verify_model import PhoneVerification, EmailVerification, Verification
 from .reset_password_model import ResetPassword
 from .child_migration_model import ChildMigration
+
+
+# Handling mutliprocess engine
+# https://docs.sqlalchemy.org/en/13/core/pooling.html#using-connection-pools-with-multiprocessing
+@event.listens_for(db, "connect")
+def connect(dbapi_connection, connection_record):
+    connection_record.info['pid'] = os.getpid()
+
+@event.listens_for(db, "checkout")
+def checkout(dbapi_connection, connection_record, connection_proxy):
+    pid = os.getpid()
+    if connection_record.info['pid'] != pid:
+        connection_record.connection = connection_proxy.connection = None
+        raise exc.DisconnectionError(
+                "Connection record belongs to pid %s, "
+                "attempting to check out in pid %s" %
+                (connection_record.info['pid'], pid)
+        )
 
