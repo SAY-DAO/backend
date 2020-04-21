@@ -50,6 +50,7 @@ def authorize(*roles):
             except:
                 return make_response(jsonify(message='Unauthorized'), 401)
 
+            import pudb; pudb.set_trace()  # XXX BREAKPOINT
             if get_user_role() not in roles:
                 return make_response(jsonify(message='Permission Denied'), 403)
 
@@ -66,9 +67,11 @@ def authorize(*roles):
 
 
 def get_user_id():
+    verify_jwt_in_request()
     return get_jwt_identity()
 
 
 def get_sw_ngo_id():
+    verify_jwt_in_request()
     return get_jwt_claims().get('ngoId', -1)
 
