@@ -84,6 +84,7 @@ from .user_model import User
 from .verify_model import PhoneVerification, EmailVerification, Verification
 from .reset_password_model import ResetPassword
 from .child_migration_model import ChildMigration
+from .invitations import Invitation
 
 
 # Handling mutliprocess engine
