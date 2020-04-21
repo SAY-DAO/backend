@@ -21,3 +21,4 @@ class InvitationAPI(Resource):
 
 
 api.add_resource(InvitationAPI, "/api/v2/invitations/")
+
