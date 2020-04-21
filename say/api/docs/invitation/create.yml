@@ -1,0 +1,22 @@
+Invite to join to a family
+---
+
+tags:
+  - Invitation API
+
+parameters:
+
+  - in: formData
+    name: family_id
+    required: true
+    type: integer
+
+  - in: formData
+    name: role
+    required: true
+    type: integer
+
+responses:
+  200:
+    description: Response contains the token that needed in Add-to-family API
+
