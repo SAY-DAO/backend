@@ -19,10 +19,18 @@ Search APIs
 
 
 class GetRandomSearchResult(Resource):
-    @authorize
+
     @swag_from("./docs/search/random.yml")
     def get(self):
-        user_id = get_user_id()
+        authorized = False
+        user_id = -1
+
+        try:
+            user_id = get_user_id()
+            authorized = True
+        except:
+            pass
+
         resp = make_response(jsonify({"message": "major error occurred!"}),
                              503)
 
@@ -32,7 +40,6 @@ class GetRandomSearchResult(Resource):
                 .join(UserFamily) \
                 .filter(UserFamily.id_user==user_id) \
                 .filter(UserFamily.isDeleted==False) \
-                .all()
 
             # Flating a nested list like [(1,), (2,)] to [1, 2]
             user_children_ids = list(
@@ -77,10 +84,17 @@ class GetRandomSearchResult(Resource):
 
             child_family_member = []
             for member in random_child.family.members:
+                if authorized:
+                    user_id=member.id_user
+                    username=member.user.userName
+                else:
+                    user_id=None
+                    username=None
+
                 child_family_member.append(dict(
-                    user_id=member.id_user,
+                    user_id=user_id,
                     role=member.userRole,
-                    username=member.user.userName,
+                    username=username,
                     isDeleted=member.isDeleted,
                 ))
 
