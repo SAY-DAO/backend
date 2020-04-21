@@ -24,6 +24,11 @@ class Family(base, Timestamp):
         lazy='selectin',
     )
 
+    invitations = relationship(
+        'Invitation',
+        back_populates='family',
+    )
+
     def current_members(self):
         for member in self.members:
             if member.isDeleted:
