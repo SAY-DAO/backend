@@ -38,6 +38,7 @@ session_factory = sessionmaker(
 session = scoped_session(session_factory)
 
 
+# FIXME: CIRITICAL
 def commit(func):
 
     @functools.wraps(func)
@@ -45,6 +46,11 @@ def commit(func):
 
         try:
             result = func(*args, **kwargs)
+
+            if isinstance(result, tuple):
+                session.rollback()
+                return result
+
             session.commit()
             return result
 
