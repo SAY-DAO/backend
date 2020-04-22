@@ -61,7 +61,9 @@ try:
 except:
     pass
 
-db = create_engine(conf["dbUrl"])
+# using pool_pre_ping to test the connection
+# see https://docs.sqlalchemy.org/en/13/core/pooling.html#disconnect-handling-pessimistic
+db = create_engine(conf["dbUrl"], pool_pre_ping=True)
 
 BASE_FOLDER = os.getcwd()
 

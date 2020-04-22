@@ -8,6 +8,7 @@ def update_needs(self):
         .filter(Need.type == 1) \
         .filter(Need.status < 2) \
         .filter(Need.isDeleted==False) \
+        .filter(Need.isConfirmed==True) \
         .filter(Need.link.isnot(None))
 
     t = []
@@ -20,12 +21,20 @@ def update_needs(self):
 @celery.task(base=celery.DBTask, bind=True)
 def update_need(self, need_id, force=False):
     from say.models.need_model import Need
-    need = self.session.query(Need).get(need_id)
+    need = self.session.query(Need) \
+        .with_for_update() \
+        .get(need_id)
+
     if not force and need.status >= 2:
         return
 
-    data = need.update()
-    self.session.commit()
+    try:
+        data = need.update()
+        self.session.commit()
+    except:
+        self.session.rollback()
+        raise
+
     return data
 
 
