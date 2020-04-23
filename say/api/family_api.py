@@ -107,74 +107,74 @@ class AddUserToFamily(Resource):
     @authorize
     @swag_from("./docs/family/add.yml")
     def post(self):
-        user_id = get_user_id()
-
-        token = request.args.get('invitationToken', None)
-
-        if not token:
-            return {'message': 'invitationToken is required'}, 740
-
-        invitation = session.query(Invitation) \
-            .filter(Invitation.token==token) \
-            .one_or_none()
-
-        if not invitation:
-            return {'message': 'Inviation not found'}, 741
-
-        id_family = invitation.family_id
-        user_role = invitation.role
-        if user_role not in VALID_ROLES:
-            return {'message': 'Invalid Role'}, 742
-
-        family = session.query(Family).with_for_update().get(id_family)
-        if not family or family.child.isDeleted:
-            return {'message': f'family {id_family} not found'}, 743
-
-        if not family.can_join(user, user_role):
-            return
-                jsonify({
-                    'message':
-                        'Can not join this family'
-                }),
-                422,
-            )
-
-        user_family = (
-            session.query(UserFamily)
-            .filter_by(id_user=user_id)
-            .filter_by(id_family=family_id)
-            .first()
-        )
-
-        if not user_family:
-            new_member = UserFamily(
-                user=user,
-                family=family,
-                userRole=user_role,
-            )
-
-        else:
-            if user_family.userRole != user_role:
-                resp = make_response(
-                    jsonify({
-                        'message':
-                            f'You must back to your previous role: '
-                            f'{user_family.userRole}'
-                    }),
-                    422
-                )
-                return
-
-            user_family.isDeleted = False
-            participations = session.query(NeedFamily) \
-                .filter(NeedFamily.id_user==user.id) \
-                .filter(NeedFamily.id_family==family.id)
-
-            for p in participations:
-                p.isDeleted = False
-
-        family.child.sayFamilyCount += 1
-
+#        user_id = get_user_id()
+#
+#        token = request.args.get('invitationToken', None)
+#
+#        if not token:
+#            return {'message': 'invitationToken is required'}, 740
+#
+#        invitation = session.query(Invitation) \
+#            .filter(Invitation.token==token) \
+#            .one_or_none()
+#
+#        if not invitation:
+#            return {'message': 'Inviation not found'}, 741
+#
+#        id_family = invitation.family_id
+#        user_role = invitation.role
+#        if user_role not in VALID_ROLES:
+#            return {'message': 'Invalid Role'}, 742
+#
+#        family = session.query(Family).with_for_update().get(id_family)
+#        if not family or family.child.isDeleted:
+#            return {'message': f'family {id_family} not found'}, 743
+#
+#        if not family.can_join(user, user_role):
+#            return
+#                jsonify({
+#                    'message':
+#                        'Can not join this family'
+#                }),
+#                422,
+#            )
+#
+#        user_family = (
+#            session.query(UserFamily)
+#            .filter_by(id_user=user_id)
+#            .filter_by(id_family=family_id)
+#            .first()
+#        )
+#
+#        if not user_family:
+#            new_member = UserFamily(
+#                user=user,
+#                family=family,
+#                userRole=user_role,
+#            )
+#
+#        else:
+#            if user_family.userRole != user_role:
+#                resp = make_response(
+#                    jsonify({
+#                        'message':
+#                            f'You must back to your previous role: '
+#                            f'{user_family.userRole}'
+#                    }),
+#                    422
+#                )
+#                return
+#
+#            user_family.isDeleted = False
+#            participations = session.query(NeedFamily) \
+#                .filter(NeedFamily.id_user==user.id) \
+#                .filter(NeedFamily.id_family==family.id)
+#
+#            for p in participations:
+#                p.isDeleted = False
+#
+#        family.child.sayFamilyCount += 1
+        return {}
 
 
 class LeaveFamily(Resource):
