@@ -1,4 +1,5 @@
 from say.constants import PAST_PARTICIPANT_ROLE
+from say.validations import VALID_ROLES
 from say.models import session, obj_to_dict
 from say.models.user_model import User
 from say.models.family_model import Family
@@ -101,85 +102,79 @@ class GetAllFamilies(Resource):
 
 
 class AddUserToFamily(Resource):
+
+    @commit
     @authorize
     @swag_from("./docs/family/add.yml")
-    def post(self, family_id):
+    def post(self):
         user_id = get_user_id()
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
-        try:
-            id_user = user_id
-            id_family = family_id
-            user_role = int(request.json["userRole"])
+        token = request.args.get('invitationToken', None)
 
-            user = session.query(User).with_for_update().get(id_user)
-            if not user:
-                resp = jsonify({'message': f'user {id_user} not found'}), 400
-                return
+        if not token:
+            return {'message': 'invitationToken is required'}, 740
 
-            family = session.query(Family).with_for_update().get(id_family)
-            if not family:
-                resp = jsonify({'message': f'family {id_family} not found'}), 400
-                return
+        invitation = session.query(Invitation) \
+            .filter(Invitation.token==token) \
+            .one_or_none()
 
-            if not family.can_join(user, user_role):
+        if not invitation:
+            return {'message': 'Inviation not found'}, 741
+
+        id_family = invitation.family_id
+        user_role = invitation.role
+        if user_role not in VALID_ROLES:
+            return {'message': 'Invalid Role'}, 742
+
+        family = session.query(Family).with_for_update().get(id_family)
+        if not family or family.child.isDeleted:
+            return {'message': f'family {id_family} not found'}, 743
+
+        if not family.can_join(user, user_role):
+            return
+                jsonify({
+                    'message':
+                        'Can not join this family'
+                }),
+                422,
+            )
+
+        user_family = (
+            session.query(UserFamily)
+            .filter_by(id_user=user_id)
+            .filter_by(id_family=family_id)
+            .first()
+        )
+
+        if not user_family:
+            new_member = UserFamily(
+                user=user,
+                family=family,
+                userRole=user_role,
+            )
+
+        else:
+            if user_family.userRole != user_role:
                 resp = make_response(
                     jsonify({
                         'message':
-                            'Can not join this family'
+                            f'You must back to your previous role: '
+                            f'{user_family.userRole}'
                     }),
-                    422,
+                    422
                 )
-                session.close()
-                return resp
+                return
 
-            user_family = (
-                session.query(UserFamily)
-                .filter_by(id_user=user_id)
-                .filter_by(id_family=family_id)
-                .first()
-            )
+            user_family.isDeleted = False
+            participations = session.query(NeedFamily) \
+                .filter(NeedFamily.id_user==user.id) \
+                .filter(NeedFamily.id_family==family.id)
 
-            if not user_family:
-                new_member = UserFamily(
-                    user=user,
-                    family=family,
-                    userRole=user_role,
-                )
+            for p in participations:
+                p.isDeleted = False
 
-            else:
-                if user_family.userRole != user_role:
-                    resp = make_response(
-                        jsonify({
-                            'message':
-                                f'You must back to your previous role: '
-                                f'{user_family.userRole}'
-                        }),
-                        422
-                    )
-                    return
+        family.child.sayFamilyCount += 1
 
-                user_family.isDeleted = False
-                participations = session.query(NeedFamily) \
-                    .filter(NeedFamily.id_user==user.id) \
-                    .filter(NeedFamily.id_family==family.id)
-
-                for p in participations:
-                    p.isDeleted = False
-
-            family.child.sayFamilyCount += 1
-
-            session.commit()
-
-            resp = make_response(jsonify({"msg": "user added to family successfully!"}), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED!"}), 500)
-
-        finally:
-            session.close()
-            return resp
 
 
 class LeaveFamily(Resource):

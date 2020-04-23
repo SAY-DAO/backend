@@ -1,0 +1,24 @@
+Invite to join to a family
+The roles are listed below:
+[0]father, [1]mother, [2] uncle, [3]aunt [4]daii [5]amme
+---
+
+tags:
+  - Invitation API
+
+parameters:
+
+  - in: formData
+    name: family_id
+    required: true
+    type: integer
+
+  - in: formData
+    name: role
+    required: true
+    type: integer
+
+responses:
+  200:
+    description: Response contains the token that needed in Add-to-family API
+

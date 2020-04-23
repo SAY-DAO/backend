@@ -8,7 +8,7 @@ parameters:
   - name: Authorization
     in: header
     description: Access Token
-    required: true
+    required: false
     type: string
     
 responses:
