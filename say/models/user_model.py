@@ -26,7 +26,7 @@ class User(base, Timestamp):
     avatarUrl = Column(String, nullable=True)
     flagUrl = Column(String, nullable=True)
     phone_number = Column(PhoneNumberType(), unique=True, index=True, nullable=True)
-    country = Column(CountryType, nullable=False)
+    country = Column(CountryType, nullable=True)
     city = Column(Integer, nullable=False)  # 1:tehran | 2:karaj
     postal_address = Column(Text, nullable=True)
     postal_code = Column(Integer, nullable=True)
