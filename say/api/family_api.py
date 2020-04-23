@@ -103,7 +103,7 @@ class GetAllFamilies(Resource):
 
 class AddUserToFamily(Resource):
 
-    @commit
+    #@commit
     @authorize
     @swag_from("./docs/family/add.yml")
     def post(self):
