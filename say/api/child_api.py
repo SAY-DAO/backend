@@ -1132,11 +1132,11 @@ class GoneChild(Resource):
                 return HTTP_PERMISION_DENIED()
         return
 
-    @json
+    # @json
     @commit
     @authorize(SUPER_ADMIN, ADMIN)  # TODO: priv
     @swag_from('./docs/child/gone.yml')
-    def patch(self, child_id):
+    def patch(self, child_id, new_status):
         sw_role = get_user_role()
 
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
@@ -1170,33 +1170,34 @@ class GoneChild(Resource):
                 resp = error
                 return
 
-            if not child.isConfirmed:
-                family = (
-                    session.query(Family)
-                    .filter_by(isDeleted=False)
-                    .filter_by(id_child=child_id)
-                    .first()
-                )
-                needs = (
-                    session.query(ChildNeed)
-                    .filter_by(isDeleted=False)
-                    .filter_by(id_child=child_id)
-                )
+            child_needs = (
+                session.query(ChildNeed)
+                .filter_by(isDeleted=False)
+                .filter_by(id_child=child_id)
+            )
 
-                for need in needs:
-                    need.isDeleted = True
+            for child_need in child_needs:
+                if (
+                    child_need.need.type == 0 and child_need.need.status < 4
+                ) or (
+                    child_need.need.type == 1 and child_need.need.status < 5
+                ) :
+                    # status --> 0
+                    child_need.need.status = 0
+                    # TODO: decrease child done needs count? No
+                    # TODO: decrease participants done needs count? No
+                    # TODO: refund (correct?)
+                    child_need.need.refund_extra_credit()
+                    # delete need
+                    child_need.need.isDeleted = True
+                    child_need.isDeleted = True
 
-                child.isDeleted = True
+            child.existence_status = int(new_status)
 
-                if family:
-                    family.isDeleted = True
+            child.social_worker.currentChildCount -= 1
+            child.ngo.currentChildrenCount -= 1
 
-                child.social_worker.currentChildCount -= 1
-                child.ngo.currentChildrenCount -= 1
-
-                resp = make_response(jsonify({"message": "child deleted successfully!"}), 200)
-            else:
-                resp = make_response(jsonify({"message": "error: confirmed child cannot be deleted!"}), 500)
+            resp = make_response(jsonify({"message": "child deleted successfully!"}), 200)
 
         except Exception as e:
             print(e)
