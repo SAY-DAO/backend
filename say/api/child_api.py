@@ -4,7 +4,7 @@ import ujson
 from sqlalchemy.orm import joinedload
 
 from . import *
-from say.models import session, obj_to_dict
+from say.models import session, obj_to_dict, commit
 from say.models.child_model import Child
 from say.models.child_need_model import ChildNeed
 from say.models.family_model import Family
@@ -1116,6 +1116,96 @@ class MigrateChild(Resource):
             jsonify({'message': 'child migrated successfully!'}),
             200,
         )
+
+
+class GoneChild(Resource):
+
+    def check_privilege(self, sw_id, ngo_id, allowed_sw_ids):  # TODO: priv
+        sw_role = get_user_role()
+
+        if sw_role in [SOCIAL_WORKER, COORDINATOR]:
+            if sw_id != get_user_id() or ngo_id != get_sw_ngo_id():
+                return HTTP_PERMISION_DENIED()
+
+        elif sw_role in [NGO_SUPERVISOR]:
+            if sw_id not in allowed_sw_ids or ngo_id != get_sw_ngo_id():
+                return HTTP_PERMISION_DENIED()
+        return
+
+    @json
+    @commit
+    @authorize(SUPER_ADMIN, ADMIN)  # TODO: priv
+    @swag_from('./docs/child/gone.yml')
+    def patch(self, child_id):
+        sw_role = get_user_role()
+
+        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+
+        try:
+            child = (
+                session.query(Child)
+                .filter_by(id=child_id)
+                .filter_by(isDeleted=False)
+                .filter_by(isMigrated=False)
+                .first()
+            )
+
+            allowed_sw_ids = []
+            if sw_role in [NGO_SUPERVISOR]:
+                allowed_sw_ids_tuple = session.query(SocialWorker.id) \
+                    .filter_by(isDeleted=False) \
+                    .filter_by(id_ngo=child.id_ngo) \
+                    .distinct() \
+                    .all()
+
+                allowed_sw_ids = [item[0] for item in allowed_sw_ids_tuple]
+
+            error = self.check_privilege(
+                child.id_social_worker,
+                child.id_ngo,
+                allowed_sw_ids,
+            )
+
+            if error:
+                resp = error
+                return
+
+            if not child.isConfirmed:
+                family = (
+                    session.query(Family)
+                    .filter_by(isDeleted=False)
+                    .filter_by(id_child=child_id)
+                    .first()
+                )
+                needs = (
+                    session.query(ChildNeed)
+                    .filter_by(isDeleted=False)
+                    .filter_by(id_child=child_id)
+                )
+
+                for need in needs:
+                    need.isDeleted = True
+
+                child.isDeleted = True
+
+                if family:
+                    family.isDeleted = True
+
+                child.social_worker.currentChildCount -= 1
+                child.ngo.currentChildrenCount -= 1
+
+                resp = make_response(jsonify({"message": "child deleted successfully!"}), 200)
+            else:
+                resp = make_response(jsonify({"message": "error: confirmed child cannot be deleted!"}), 500)
+
+        except Exception as e:
+            print(e)
+            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
+
+        finally:
+            session.close()
+            return resp
+        
 
 
 """
