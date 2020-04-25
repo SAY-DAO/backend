@@ -258,7 +258,7 @@ class Need(base, Timestamp):
         session = object_session(self)
         total_refund = Decimal(self.paid) - Decimal(self.purchase_cost)
 
-        participants =  session.query(NeedFamily) \
+        participants = session.query(NeedFamily) \
             .filter(NeedFamily.id_need == self.id)
 
         for participant in participants:

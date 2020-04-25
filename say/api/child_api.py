@@ -4,7 +4,7 @@ import ujson
 from sqlalchemy.orm import joinedload
 
 from . import *
-from say.models import session, obj_to_dict
+from say.models import session, obj_to_dict, commit
 from say.models.child_model import Child
 from say.models.child_need_model import ChildNeed
 from say.models.family_model import Family
@@ -125,6 +125,7 @@ class GetAllChildren(Resource):
                 session.query(Child)
                 .filter_by(isDeleted=False)
                 .filter_by(isMigrated=False)
+                .filter_by(existence_status=1)
             )
 
             children_query = filter_by_privilege(children_query)
@@ -172,6 +173,7 @@ class GetChildById(Resource):
                 .filter(Child.isDeleted==False) \
                 .filter(Child.isMigrated==False) \
                 .filter(Child.id==child_id)
+                # .filter(Child.existence_status==1)
 
             if child_id != DEFAULT_CHILD_ID:  # TODO: need needs
                 child_query = filter_by_privilege(child_query)
@@ -1118,6 +1120,94 @@ class MigrateChild(Resource):
         )
 
 
+class GoneChild(Resource):
+
+    def check_privilege(self, sw_id, ngo_id, allowed_sw_ids):  # TODO: priv
+        sw_role = get_user_role()
+
+        if sw_role in [SOCIAL_WORKER, COORDINATOR]:
+            if sw_id != get_user_id() or ngo_id != get_sw_ngo_id():
+                return HTTP_PERMISION_DENIED()
+
+        elif sw_role in [NGO_SUPERVISOR]:
+            if sw_id not in allowed_sw_ids or ngo_id != get_sw_ngo_id():
+                return HTTP_PERMISION_DENIED()
+        return
+
+    @json
+    @commit
+    @authorize(SUPER_ADMIN, ADMIN)  # TODO: priv
+    @swag_from('./docs/child/gone.yml')
+    def patch(self, child_id, new_status):
+        sw_role = get_user_role()
+
+        child = (
+            session.query(Child)
+            .filter_by(id=child_id)
+            .filter_by(isDeleted=False)
+            .filter_by(isMigrated=False)
+            .first()
+        )
+
+        allowed_sw_ids = []
+        if sw_role in [NGO_SUPERVISOR]:
+            allowed_sw_ids_tuple = session.query(SocialWorker.id) \
+                .filter_by(isDeleted=False) \
+                .filter_by(id_ngo=child.id_ngo) \
+                .distinct() \
+                .all()
+
+            allowed_sw_ids = [item[0] for item in allowed_sw_ids_tuple]
+
+        error = self.check_privilege(
+            child.id_social_worker,
+            child.id_ngo,
+            allowed_sw_ids,
+        )
+
+        if error:
+            resp = error
+            return
+
+        if not child.isConfirmed:
+            family = (
+                session.query(Family)
+                .filter_by(isDeleted=False)
+                .filter_by(id_child=child_id)
+                .first()
+            )
+
+            if family:
+                family.isDeleted = True
+
+        child_needs = (
+            session.query(ChildNeed)
+            .filter_by(isDeleted=False)
+            .filter_by(id_child=child_id)
+        )
+
+        for child_need in child_needs:
+            if (
+                child_need.need.type == 0 and child_need.need.status < 4
+            ) or (
+                child_need.need.type == 1 and child_need.need.status < 5
+            ) :
+                child_need.need.status = 0
+                child_need.need.purchase_cost = 0
+                child_need.need.refund_extra_credit()
+                child_need.need.isDeleted = True
+                child_need.isDeleted = True
+
+        child.existence_status = int(new_status)
+
+        child.social_worker.currentChildCount -= 1
+        child.ngo.currentChildrenCount -= 1
+
+        return {"message": "child is gone :("}
+
+        
+
+
 """
 API URLs
 """
@@ -1138,4 +1228,8 @@ api.add_resource(
 api.add_resource(
     MigrateChild,
     "/api/v2/child/migrate/childId=<child_id>",
+)
+api.add_resource(
+    GoneChild,
+    "/api/v2/child/gone/childId=<child_id>&status=<new_status>",
 )
