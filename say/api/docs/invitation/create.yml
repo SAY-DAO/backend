@@ -15,10 +15,12 @@ parameters:
 
   - in: formData
     name: role
-    required: true
     type: integer
 
 responses:
   200:
     description: Response contains the token that needed in Add-to-family API
+
+  404:
+    description: Family not found
 
