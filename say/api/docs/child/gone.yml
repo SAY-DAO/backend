@@ -1,0 +1,29 @@
+when a child is leaving
+---
+
+tags:
+  - Child API
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - in: path
+    name: child_id
+    required: true
+    type: integer
+
+  - in: path
+    name: new_status
+    required: true
+    type: integer
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok

@@ -125,6 +125,7 @@ class GetAllChildren(Resource):
                 session.query(Child)
                 .filter_by(isDeleted=False)
                 .filter_by(isMigrated=False)
+                .filter_by(existence_status=1)
             )
 
             children_query = filter_by_privilege(children_query)
@@ -172,6 +173,7 @@ class GetChildById(Resource):
                 .filter(Child.isDeleted==False) \
                 .filter(Child.isMigrated==False) \
                 .filter(Child.id==child_id)
+                # .filter(Child.existence_status==1)
 
             if child_id != DEFAULT_CHILD_ID:  # TODO: need needs
                 child_query = filter_by_privilege(child_query)
@@ -1132,80 +1134,77 @@ class GoneChild(Resource):
                 return HTTP_PERMISION_DENIED()
         return
 
-    # @json
+    @json
     @commit
     @authorize(SUPER_ADMIN, ADMIN)  # TODO: priv
     @swag_from('./docs/child/gone.yml')
     def patch(self, child_id, new_status):
         sw_role = get_user_role()
 
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+        child = (
+            session.query(Child)
+            .filter_by(id=child_id)
+            .filter_by(isDeleted=False)
+            .filter_by(isMigrated=False)
+            .first()
+        )
 
-        try:
-            child = (
-                session.query(Child)
-                .filter_by(id=child_id)
+        allowed_sw_ids = []
+        if sw_role in [NGO_SUPERVISOR]:
+            allowed_sw_ids_tuple = session.query(SocialWorker.id) \
+                .filter_by(isDeleted=False) \
+                .filter_by(id_ngo=child.id_ngo) \
+                .distinct() \
+                .all()
+
+            allowed_sw_ids = [item[0] for item in allowed_sw_ids_tuple]
+
+        error = self.check_privilege(
+            child.id_social_worker,
+            child.id_ngo,
+            allowed_sw_ids,
+        )
+
+        if error:
+            resp = error
+            return
+
+        if not child.isConfirmed:
+            family = (
+                session.query(Family)
                 .filter_by(isDeleted=False)
-                .filter_by(isMigrated=False)
+                .filter_by(id_child=child_id)
                 .first()
             )
 
-            allowed_sw_ids = []
-            if sw_role in [NGO_SUPERVISOR]:
-                allowed_sw_ids_tuple = session.query(SocialWorker.id) \
-                    .filter_by(isDeleted=False) \
-                    .filter_by(id_ngo=child.id_ngo) \
-                    .distinct() \
-                    .all()
+            if family:
+                family.isDeleted = True
 
-                allowed_sw_ids = [item[0] for item in allowed_sw_ids_tuple]
+        child_needs = (
+            session.query(ChildNeed)
+            .filter_by(isDeleted=False)
+            .filter_by(id_child=child_id)
+        )
 
-            error = self.check_privilege(
-                child.id_social_worker,
-                child.id_ngo,
-                allowed_sw_ids,
-            )
+        for child_need in child_needs:
+            if (
+                child_need.need.type == 0 and child_need.need.status < 4
+            ) or (
+                child_need.need.type == 1 and child_need.need.status < 5
+            ) :
+                child_need.need.status = 0
+                child_need.need.purchase_cost = 0
+                child_need.need.refund_extra_credit()
+                child_need.need.isDeleted = True
+                child_need.isDeleted = True
 
-            if error:
-                resp = error
-                return
+        child.existence_status = int(new_status)
 
-            child_needs = (
-                session.query(ChildNeed)
-                .filter_by(isDeleted=False)
-                .filter_by(id_child=child_id)
-            )
+        child.social_worker.currentChildCount -= 1
+        child.ngo.currentChildrenCount -= 1
 
-            for child_need in child_needs:
-                if (
-                    child_need.need.type == 0 and child_need.need.status < 4
-                ) or (
-                    child_need.need.type == 1 and child_need.need.status < 5
-                ) :
-                    # status --> 0
-                    child_need.need.status = 0
-                    # TODO: decrease child done needs count? No
-                    # TODO: decrease participants done needs count? No
-                    # TODO: refund (correct?)
-                    child_need.need.refund_extra_credit()
-                    # delete need
-                    child_need.need.isDeleted = True
-                    child_need.isDeleted = True
+        return {"message": "child is gone :("}
 
-            child.existence_status = int(new_status)
-
-            child.social_worker.currentChildCount -= 1
-            child.ngo.currentChildrenCount -= 1
-
-            resp = make_response(jsonify({"message": "child deleted successfully!"}), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
         
 
 
@@ -1229,4 +1228,8 @@ api.add_resource(
 api.add_resource(
     MigrateChild,
     "/api/v2/child/migrate/childId=<child_id>",
+)
+api.add_resource(
+    GoneChild,
+    "/api/v2/child/gone/childId=<child_id>&status=<new_status>",
 )

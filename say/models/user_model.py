@@ -29,7 +29,7 @@ class User(base, Timestamp):
     country = Column(CountryType, nullable=False)
     city = Column(Integer, nullable=False)  # 1:tehran | 2:karaj
     postal_address = Column(Text, nullable=True)
-    postal_code = Column(Number, nullable=True)
+    postal_code = Column(Integer, nullable=True)
     emailAddress = Column(String, nullable=True, unique=True, index=True)
     gender = Column(Enum(Gender), nullable=True)
     isDeleted = Column(Boolean, nullable=False, default=False)
