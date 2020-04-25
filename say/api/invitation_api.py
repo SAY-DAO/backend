@@ -1,6 +1,6 @@
 from . import *
 from say.models import commit, session
-from say.models import Invitation, InvitationForm
+from say.models import Invitation, InvitationForm, Family
 
 
 class InvitationAPI(Resource):
@@ -13,6 +13,14 @@ class InvitationAPI(Resource):
         form = InvitationForm(data)
         if not form.validate():
             return form.errors, 400
+
+        family_id = session.query(Family.id) \
+            .filter_by(id=form.data['family_id']) \
+            .filter_by(isDeleted=False) \
+            .one_or_none()
+
+        if not family_id:
+            return {'message': 'Family not found'}, 404
 
         invitation = Invitation(**form.data)
         session.add(invitation)
