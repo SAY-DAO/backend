@@ -26,10 +26,12 @@ class User(base, Timestamp):
     avatarUrl = Column(String, nullable=True)
     flagUrl = Column(String, nullable=True)
     phone_number = Column(PhoneNumberType(), unique=True, index=True, nullable=True)
-    country = Column(CountryType, nullable=False)
+    country = Column(CountryType, nullable=True)
+    city = Column(Integer, nullable=False)  # 1:tehran | 2:karaj
+    postal_address = Column(Text, nullable=True)
+    postal_code = Column(Integer, nullable=True)
     emailAddress = Column(String, nullable=True, unique=True, index=True)
     gender = Column(Enum(Gender), nullable=True)
-    city = Column(Integer, nullable=False)  # 1:tehran | 2:karaj
     isDeleted = Column(Boolean, nullable=False, default=False)
     is_email_verified = Column(Boolean, nullable=False, default=False)
     is_phonenumber_verified = Column(Boolean, nullable=False, default=False)
