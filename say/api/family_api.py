@@ -122,9 +122,6 @@ class AddUserToFamily(Resource):
         id_family = invitation.family_id
         user_role = invitation.role
 
-        session.delete(invitation)
-        session.commit()
-
         if user_role not in VALID_ROLES:
             return {'message': 'Invalid Role'}, 742
 
