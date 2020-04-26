@@ -33,6 +33,15 @@ responses:
   743:
     description: Family not found
 
+  744:
+    description: Can not join this family
+
+  745:
+    description: User not found
+
+  746:
+    description: You must back to your old role
+
   500:
     description: Error occurred somewhere!
 
