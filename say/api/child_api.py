@@ -253,7 +253,7 @@ class GetChildByInvitationToken(Resource):
         child_dict = obj_to_dict(child)
         child_dict['socialWorkerGeneratedCode'] = child.social_worker.generatedCode
         child_dict['familyId'] = family.id
-        child_dict['userRole'] = None
+        child_dict['userRole'] = invitation.role
 
         del child_dict['phoneNumber']
         del child_dict['firstName']
