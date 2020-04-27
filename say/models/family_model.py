@@ -35,13 +35,14 @@ class Family(base, Timestamp):
                 continue
             yield member
 
-    def can_join(self, user, role):
-        session = object_session(self)
-
+    def is_in_family(self, user):
         for member in self.members:
             if member.id_user == user.id and not member.isDeleted:
                 return False
+        return True
 
+    def can_join(self, user, role):
+        for member in self.members:
             # Child has father (xor mother)
             if role in (0, 1) and member.userRole == role \
                     and not member.isDeleted:
