@@ -200,7 +200,17 @@ class UpdateUserById(Resource):
                 primary_user.postal_address = request.form["postal_address"]
 
             if "postal_code" in request.form.keys():
-                primary_user.postal_code = int(request.form["postal_code"])
+                postal_code_temp = request.form["postal_code"]
+                if is_int(postal_code_temp) and len(postal_code_temp) == 10:
+                    primary_user.postal_code = postal_code_temp
+                else:
+                    resp = make_response(
+                        jsonify({"message":
+                            "Invalid postal code, it must have exactly 10 digits without dash."
+                        }),
+                        498,
+                    )
+                    return resp
 
             if "birthPlace" in request.form.keys():
                 primary_user.birthPlace = int(request.form["birthPlace"])
