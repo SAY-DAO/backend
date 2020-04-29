@@ -229,6 +229,15 @@ class GetChildByInvitationToken(Resource):
     @json
     @swag_from("./docs/child/get-by-token.yml")
     def get(self, token):
+        authorized = False
+        user_id = -1
+
+        try:
+            user_id = get_user_id()
+            authorized = True
+        except:
+            pass
+
         invitation = session.query(Invitation) \
             .filter_by(token=token) \
             .one_or_none()
@@ -271,9 +280,18 @@ class GetChildByInvitationToken(Resource):
 
         child_family_member = []
         for member in child.family.current_members():
-            child_family_member.append(dict(
-                role=member.userRole,
+            if authorized:
+                user_id=member.id_user
+                username=member.user.userName
+            else:
+                user_id=None
                 username=None
+
+            child_family_member.append(dict(
+                user_id=user_id,
+                role=member.userRole,
+                username=username,
+                isDeleted=member.isDeleted,
             ))
 
         child_dict["childFamilyMembers"] = child_family_member
