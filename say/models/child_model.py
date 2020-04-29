@@ -118,3 +118,16 @@ class Child(base, Timestamp):
         'ChildMigration',
         back_populates='child',
     )
+
+    @classmethod
+    def get_actives(cls):
+        from . import Need
+        return session.query(cls) \
+            .filter_by(isConfirmed=True) \
+            .filter_by(isDeleted=False) \
+            .filter_by(isMigrated=False) \
+            .filter_by(existence_status=1) \
+            .join(Need) \
+            .filter(Need.isConfirmed==True) \
+            .filter(Need.isDeleted==False) \
+            .order_by(cls.created)

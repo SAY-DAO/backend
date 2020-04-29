@@ -1269,12 +1269,19 @@ class GoneChild(Resource):
         return {"message": "child is gone :("}
 
 
+class GetActiveChildrenApi(Resource):
 
+     @authorize(SUPER_ADMIN, ADMIN)  # TODO: priv
+     @json
+     @commit
+     @swag_from('./docs/child/active-children.yml')
+     def get(self):
+        return Child.get_actives()
 
 """
 API URLs
 """
-
+api.add_resource(GetActiveChildrenApi, "/api/v2/child/actives")
 api.add_resource(GetChildById, "/api/v2/child/childId=<child_id>&confirm=<confirm>")
 api.add_resource(
     GetChildByInvitationToken,
