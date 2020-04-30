@@ -229,6 +229,15 @@ class GetChildByInvitationToken(Resource):
     @json
     @swag_from("./docs/child/get-by-token.yml")
     def get(self, token):
+        authorized = False
+        user_id = -1
+
+        try:
+            user_id = get_user_id()
+            authorized = True
+        except:
+            pass
+
         invitation = session.query(Invitation) \
             .filter_by(token=token) \
             .one_or_none()
@@ -253,7 +262,7 @@ class GetChildByInvitationToken(Resource):
         child_dict = obj_to_dict(child)
         child_dict['socialWorkerGeneratedCode'] = child.social_worker.generatedCode
         child_dict['familyId'] = family.id
-        child_dict['userRole'] = None
+        child_dict['userRole'] = invitation.role
 
         del child_dict['phoneNumber']
         del child_dict['firstName']
@@ -271,9 +280,18 @@ class GetChildByInvitationToken(Resource):
 
         child_family_member = []
         for member in child.family.current_members():
-            child_family_member.append(dict(
-                role=member.userRole,
+            if authorized:
+                user_id=member.id_user
+                username=member.user.userName
+            else:
+                user_id=None
                 username=None
+
+            child_family_member.append(dict(
+                user_id=user_id,
+                role=member.userRole,
+                username=username,
+                isDeleted=member.isDeleted,
             ))
 
         child_dict["childFamilyMembers"] = child_family_member
@@ -1251,12 +1269,19 @@ class GoneChild(Resource):
         return {"message": "child is gone :("}
 
 
+class GetActiveChildrenApi(Resource):
 
+     @authorize(SUPER_ADMIN, ADMIN)  # TODO: priv
+     @json
+     @commit
+     @swag_from('./docs/child/active-children.yml')
+     def get(self):
+        return Child.get_actives()
 
 """
 API URLs
 """
-
+api.add_resource(GetActiveChildrenApi, "/api/v2/child/actives")
 api.add_resource(GetChildById, "/api/v2/child/childId=<child_id>&confirm=<confirm>")
 api.add_resource(
     GetChildByInvitationToken,

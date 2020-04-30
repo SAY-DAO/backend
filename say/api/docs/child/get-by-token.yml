@@ -6,6 +6,12 @@ tags:
 
 parameters:
 
+  - name: Authorization
+    in: header
+    description: Access Token
+    type: string
+
+
   - in: path
     name: token
     required: true

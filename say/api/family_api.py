@@ -137,6 +137,9 @@ class AddUserToFamily(Resource):
         if not family.can_join(user, user_role):
             return {'message': 'Can not join this family'}, 744
 
+        if not family.is_in_family(user):
+            return {'message': 'You already joined'}, 747
+
         user_family = (
             session.query(UserFamily)
             .filter_by(id_user=user_id)

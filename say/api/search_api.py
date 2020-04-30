@@ -46,16 +46,9 @@ class GetRandomSearchResult(Resource):
                 itertools.chain.from_iterable(user_children_ids_tuple)
             )
 
-            random_child = session.query(Child) \
+            random_child = Child.get_actives() \
                 .filter(Child.id.notin_(user_children_ids)) \
-                .filter_by(isConfirmed=True) \
-                .filter_by(isDeleted=False) \
-                .filter_by(isMigrated=False) \
-                .filter_by(existence_status=1) \
-                .join(Need) \
                 .filter(Need.isDone==False) \
-                .filter(Need.isConfirmed==True) \
-                .filter(Need.isDeleted==False) \
                 .order_by(func.random()) \
                 .limit(1) \
                 .first()
