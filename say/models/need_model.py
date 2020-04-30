@@ -194,6 +194,7 @@ class Need(base, Timestamp):
     def status_description(self):
         locale = get_locale()
         raw_status = NeedStatuses.get(self.status, self.type_name, locale)
+        need_name = self.title if self.type == 1 else self.name
 
         if self.status == 2 or (self.type == 1 and self.status == 3):
             '''
@@ -201,7 +202,7 @@ class Need(base, Timestamp):
             تمام هزینه سرویس/کالا پرداخت شده است
             کالا خریداری شده است و به زودی توسط دیجی‌کالا به انجمن می‌رسد
             '''
-            return raw_status % self.title
+            return raw_status % need_name
 
         elif (self.type == 1 and self.status == 5) or (self.type == 0 and self.status == 4):
             '''
@@ -209,14 +210,14 @@ class Need(base, Timestamp):
             کالا به دست اصغر رسید
             هزینه سرویس برای اصغر تمام و کمال پرداخت شد
             '''
-            return raw_status % (self.title, self.childSayName)
+            return raw_status % (need_name, self.childSayName)
 
         elif self.type == 0 and self.status == 3:
             '''
             s3 need status condition
             مبلغ 2000 تومان به حساب انجمن واریز شده است تا هزینه سرویس پرداخت شود
             '''
-            return raw_status % (self.pretty_cost, self.title)
+            return raw_status % (self.pretty_cost, need_name)
 
     @status_description.expression
     def status_description(cls):
