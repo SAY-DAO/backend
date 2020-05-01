@@ -10,6 +10,7 @@ from say.models import session, obj_to_dict, commit
 from say.models.activity_model import Activity
 from say.models.child_model import Child
 from say.models.child_need_model import ChildNeed
+from say.models.need_family_model import NeedFamily
 from say.models.family_model import Family
 from say.models.need_model import Need
 from say.models.social_worker_model import SocialWorker
@@ -419,37 +420,34 @@ class UpdateNeedById(Resource):
 
 class DeleteNeedById(Resource):
 
+    @json
+    @commit
     @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
-    @swag_from("./docs/need/delete.yml")
+    @swag_from('./docs/need/delete.yml')
     def patch(self, need_id):
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+        need = (
+            session.query(Need)
+            .filter_by(isDeleted=False)
+            .filter_by(id=need_id)
+            .first()
+        )
 
-        try:
-            need_query = session.query(Need) \
-                .filter_by(id=need_id) \
-                .filter_by(isDeleted=False)
+        if (need.type == 0 and need.status < 4) or (need.type == 1 and need.status < 5):
+            need.status = 0
+            need.purchase_cost = 0
+            need.refund_extra_credit()
 
-            need = filter_by_privilege(need_query).first()
-
-            if need.isConfirmed:
-                if need.paid != 0:
-                    resp = make_response(jsonify({"message": "error in deletion"}), 500)
-                    session.close()
-                    return resp
+            for participant in need.participants:
+                participant.isDeleted = True
 
             need.isDeleted = True
-            session.commit()
 
-            resp = make_response(jsonify({"message": "need deleted successfully!"}), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
+            return {"message": "need deleted"}
+        
+        else:
+            return {"message": "need has arrived to the child so can not be deleted"}, 422
+                
 
 
 class ConfirmNeed(Resource):
