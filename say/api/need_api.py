@@ -426,17 +426,13 @@ class DeleteNeedById(Resource):
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from('./docs/need/delete.yml')
     def patch(self, need_id):
-        # need_ids = [822, 752, 624, 647, 644, 535, 573, 671, 711]
-        
         need = (
             session.query(Need)
             .filter_by(isDeleted=False)
             .filter_by(id=need_id)
             .first()
-            # .filter(Need.id.in_(need_ids))
         )
 
-        # for need in needs:
         if (need.type == 0 and need.status < 4) or (need.type == 1 and need.status < 5):
             need.status = 0
             need.purchase_cost = 0
@@ -683,36 +679,6 @@ class AddNeed(Resource):
         finally:
             session.close()
             return resp
-
-
-class ReturnMoney(Resource):
-
-    @json
-    @commit
-    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
-               SAY_SUPERVISOR, ADMIN)  # TODO: priv
-    @swag_from('./docs/need/money.yml')
-    def patch(self,):
-        need_ids = [822, 752, 624, 647, 644, 535, 573, 671, 711]
-        
-        needs = (
-            session.query(Need)
-            .filter_by(isDeleted=False)
-            .filter(Need.id.in_(need_ids))
-        )
-
-        for need in needs:
-            if (need.type == 0 and need.status == 4) or (need.type == 1 and need.status == 5):
-                need.status = 0
-                need.purchase_cost = 0
-                need.refund_extra_credit()
-
-                for participant in need.participants:
-                    participant.isDeleted = True
-
-                need.isDeleted = True
-
-        return {"message": "need deleted"}
 
 
 """
