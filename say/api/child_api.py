@@ -279,7 +279,7 @@ class GetChildByInvitationToken(Resource):
         del child_dict['id']
 
         child_family_member = []
-        for member in child.family.current_members():
+        for member in child.family.members:
             if authorized:
                 user_id=member.id_user
                 username=member.user.userName
