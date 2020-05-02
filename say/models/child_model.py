@@ -129,5 +129,5 @@ class Child(base, Timestamp):
             .filter_by(existence_status=1) \
             .join(Need) \
             .filter(Need.isConfirmed==True) \
-            .filter(Need.isDeleted==False) \
-            .order_by(cls.created)
+            .filter(Need.isDeleted==False)
+

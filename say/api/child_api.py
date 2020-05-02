@@ -1276,7 +1276,9 @@ class GetActiveChildrenApi(Resource):
      @commit
      @swag_from('./docs/child/active-children.yml')
      def get(self):
-        return Child.get_actives()
+        return Child.get_actives() \
+            .order_by(Child.created)
+
 
 """
 API URLs
