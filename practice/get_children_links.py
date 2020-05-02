@@ -1,7 +1,3 @@
-from time import sleep
-import json
-import csv
-
 from requests import request
 
 

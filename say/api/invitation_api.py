@@ -22,8 +22,15 @@ class InvitationAPI(Resource):
         if not family_id:
             return {'message': 'Family not found'}, 404
 
-        invitation = Invitation(**form.data)
-        session.add(invitation)
+        role = form.data.get('role', None)
+        invitation = session.query(Invitation) \
+            .filter_by(family_id=family_id) \
+            .filter_by(role=role) \
+            .one_or_none()
+
+        if not invitation:
+            invitation = Invitation(**form.data)
+            session.add(invitation)
 
         return invitation
 
