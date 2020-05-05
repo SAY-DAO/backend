@@ -212,11 +212,8 @@ class UpdateNeedById(Resource):
                 resp = HTTP_NOT_FOUND()
                 return
 
-            if need.isConfirmed and sw_role not in (ADMIN, SUPER_ADMIN) \
-                    and (
-                        list(request.files.keys()) != ['receipts'] \
-                        or len(list(request.form.keys())) != 0
-                    ):
+            # FIXME: receipts are allowed
+            if need.isConfirmed and sw_role not in (ADMIN, SUPER_ADMIN):
                 resp = dict(message='Permission denied'), 403
                 return
 
