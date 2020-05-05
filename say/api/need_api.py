@@ -196,7 +196,6 @@ class UpdateNeedById(Resource):
 
     @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
-    @commit
     @swag_from("./docs/need/update.yml")
     def patch(self, need_id):
         sw_role = get_user_role()
@@ -211,6 +210,10 @@ class UpdateNeedById(Resource):
 
             if need is None:
                 resp = HTTP_NOT_FOUND()
+                return
+
+            if need.isConfirmed and sw_role not in (ADMIN, SUPER_ADMIN):
+                resp = dict(message='Permission denied'), 403
                 return
 
             temp = obj_to_dict(need)
@@ -444,10 +447,9 @@ class DeleteNeedById(Resource):
             need.isDeleted = True
 
             return {"message": "need deleted"}
-        
+
         else:
             return {"message": "need has arrived to the child so can not be deleted"}, 422
-                
 
 
 class ConfirmNeed(Resource):
