@@ -51,12 +51,17 @@ parameters:
     required: true
     type: string
 
+  - in: formData
+    name: isInstalled
+    required: true
+    type: integer
+    default: 0
+
   - in: query
     name: _lang
     required: true
     type: string
     default: fa
-
 
 responses:
   400:

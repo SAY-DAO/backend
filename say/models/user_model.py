@@ -40,6 +40,7 @@ class User(base, Timestamp):
     lastLogin = Column(DateTime, nullable=False)
     _password = Column(String, nullable=False)
     locale = Column(LocaleType, default=Locale('fa'), nullable=False)
+    is_installed = Column(Boolean, default=False, nullable=False)
 
     @hybrid_property
     def formated_username(self):

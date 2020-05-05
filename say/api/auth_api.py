@@ -84,6 +84,11 @@ class RegisterUser(Resource):
         else:
             return {"message": "verifyCode is needed"}, 400
 
+        if "isInstalled" in request.form.keys():
+            is_installed = bool(request.form["isInstalled"])
+        else:
+            return {"message": "isInstalled is needed"}, 400
+
         lang = get_locale()
         locale = Locale(lang)
 
@@ -153,6 +158,7 @@ class RegisterUser(Resource):
             locale=locale,
             phone_number=phone_number,
             country=country,
+            is_installed=is_installed,
         )
         session.add(new_user)
 
@@ -205,6 +211,12 @@ class Login(Resource):
                 )
                 return
 
+            if "isInstalled" in request.form.keys():
+                is_installed = bool(int(request.form["isInstalled"]))
+            else:
+                resp = {"message": "isInstalled is needed"}, 400
+                return
+
             user_query = session.query(User).filter_by(isDeleted=False)
 
             user = None
@@ -255,6 +267,7 @@ class Login(Resource):
                     lang = get_locale()
                     user.locale = Locale(lang)
                     user.lastLogin = datetime.utcnow()
+                    user.is_installed = is_installed
                     session.commit()
 
                     access_token = create_user_access_token(user)
