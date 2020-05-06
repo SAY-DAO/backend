@@ -194,7 +194,9 @@ class Need(base, Timestamp):
     def status_description(self):
         locale = get_locale()
         raw_status = NeedStatuses.get(self.status, self.type_name, locale)
-        need_name = self.title if self.type == 1 else self.name
+        need_name = self.name
+        # FIXME: proper detail based on neda excel
+        #need_name = self.title if self.type == 1 else self.name
 
         if self.status == 2 or (self.type == 1 and self.status == 3):
             '''
