@@ -148,11 +148,22 @@ class AddUserToFamily(Resource):
         )
 
         if not user_family:
+            if not user.is_installed:
+                family_count = session.query(UserFamily) \
+                    .filter(UserFamily.id_user==user_id) \
+                    .count()
+
+                if family_count == 0:
+                    # TODO: remove this after content and icon
+                    pass
+                    #user.send_installion_notif()
+
             new_member = UserFamily(
                 user=user,
                 family=family,
                 userRole=user_role,
             )
+            session.add(new_member)
 
         else:
             if user_family.userRole != user_role:
@@ -170,6 +181,7 @@ class AddUserToFamily(Resource):
                 p.isDeleted = False
 
         family.child.sayFamilyCount += 1
+
 
         return family
 

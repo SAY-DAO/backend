@@ -8,6 +8,11 @@ from babel import Locale
 
 from say.validations import validate_password as _validate_password
 from say.gender import Gender
+from say.tasks import send_sms, send_embeded_subject_email
+from say.content import content
+from say.locale import ChangeLocaleTo
+from say.render_template_i18n import render_template_i18n
+
 from . import *
 
 
@@ -144,4 +149,20 @@ class User(base, Timestamp):
         payment.verify()
         self.payments.append(payment)
         session.add(payment)
+
+    def send_installion_notif(self):
+        with ChangeLocaleTo(self.locale):
+            if self.is_phonenumber_verified:
+                send_sms.delay(self.phone_number.e164, content['INSTALLION'])
+
+            elif self.is_email_verified:
+                send_embeded_subject_email.delay(
+                    to=self.emailAddress,
+                    html=render_template_i18n(
+                        'installion.html',
+                        locale=self.locale,
+                    ),
+                 )
+            else:
+                raise Exception('User has not a verified contact, BUG!')
 
