@@ -226,6 +226,7 @@ class GetChildById(Resource):
 
 class GetChildByInvitationToken(Resource):
 
+    @commit
     @json
     @swag_from("./docs/child/get-by-token.yml")
     def get(self, token):
@@ -240,10 +241,13 @@ class GetChildByInvitationToken(Resource):
 
         invitation = session.query(Invitation) \
             .filter_by(token=token) \
+            .with_for_update() \
             .one_or_none()
 
         if not invitation:
             return {'messasge': 'Invitation not found'}, 400
+
+        invitation.see_count += 1
 
         family = session.query(Family).get(invitation.family_id)
 
