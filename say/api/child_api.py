@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 import ujson
+from sqlalchemy.orm import selectinload
 
 from . import *
 from say.models import session, obj_to_dict, commit
@@ -258,6 +259,7 @@ class GetChildByInvitationToken(Resource):
             .filter(Child.isDeleted==False) \
             .filter(Child.isMigrated==False) \
             .filter(Child.id==family.id_child) \
+            .options(selectinload('family.members.user'))\
             .one_or_none()
 
         if child is None:
