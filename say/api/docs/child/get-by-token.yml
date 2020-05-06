@@ -1,0 +1,35 @@
+get child by invitation token
+---
+
+tags:
+  - Child API
+
+parameters:
+
+  - name: Authorization
+    in: header
+    description: Access Token
+    type: string
+
+
+  - in: path
+    name: token
+    required: true
+    type: string
+
+responses:
+
+  200:
+    description: Ok
+    schema:
+      id: child_model
+
+  400:
+    description: Invitation not found
+
+  404:
+    description: Child not found
+
+  743:
+    description: family {invitation.family_id not found
+

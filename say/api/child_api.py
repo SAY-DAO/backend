@@ -1,21 +1,11 @@
 from collections import OrderedDict
 
 import ujson
-from sqlalchemy.orm import joinedload
 
 from . import *
 from say.models import session, obj_to_dict, commit
-from say.models.child_model import Child
-from say.models.child_need_model import ChildNeed
-from say.models.family_model import Family
-from say.models.need_family_model import NeedFamily
-from say.models.need_model import Need
-from say.models.ngo_model import Ngo
-from say.models.social_worker_model import SocialWorker
-from say.models.user_family_model import UserFamily
-from say.models.user_model import User
-
-from say.models.child_migration_model import ChildMigration
+from say.models import ChildMigration, Child, ChildNeed, Family, Need, Ngo,\
+    SocialWorker, UserFamily, Invitation
 
 
 # api_bp = Blueprint('api', __name__)
@@ -232,6 +222,81 @@ class GetChildById(Resource):
         finally:
             session.close()
             return resp
+
+
+class GetChildByInvitationToken(Resource):
+
+    @json
+    @swag_from("./docs/child/get-by-token.yml")
+    def get(self, token):
+        authorized = False
+        user_id = -1
+
+        try:
+            user_id = get_user_id()
+            authorized = True
+        except:
+            pass
+
+        invitation = session.query(Invitation) \
+            .filter_by(token=token) \
+            .one_or_none()
+
+        if not invitation:
+            return {'messasge': 'Invitation not found'}, 400
+
+        family = session.query(Family).get(invitation.family_id)
+
+        if not family or family.child.isDeleted:
+            return {'message': f'family {invitation.family_id} not found'}, 743
+
+        child = session.query(Child) \
+            .filter(Child.isDeleted==False) \
+            .filter(Child.isMigrated==False) \
+            .filter(Child.id==family.id_child) \
+            .one_or_none()
+
+        if child is None:
+            return HTTP_NOT_FOUND()
+
+        child_dict = obj_to_dict(child)
+        child_dict['socialWorkerGeneratedCode'] = child.social_worker.generatedCode
+        child_dict['familyId'] = family.id
+        child_dict['userRole'] = invitation.role
+
+        del child_dict['phoneNumber']
+        del child_dict['firstName']
+        del child_dict['firstName_translations']
+        del child_dict['lastName']
+        del child_dict['lastName_translations']
+        del child_dict['nationality']
+        del child_dict['country']
+        del child_dict['city']
+        del child_dict['birthPlace']
+        del child_dict['address']
+        del child_dict['id_social_worker']
+        del child_dict['id_ngo']
+        del child_dict['id']
+
+        child_family_member = []
+        for member in child.family.members:
+            if authorized:
+                user_id=member.id_user
+                username=member.user.userName
+            else:
+                user_id=None
+                username=None
+
+            child_family_member.append(dict(
+                user_id=user_id,
+                role=member.userRole,
+                username=username,
+                isDeleted=member.isDeleted,
+            ))
+
+        child_dict["childFamilyMembers"] = child_family_member
+
+        return child_dict
 
 
 class GetChildNeeds(Resource):
@@ -1203,14 +1268,27 @@ class GoneChild(Resource):
 
         return {"message": "child is gone :("}
 
-        
+
+class GetActiveChildrenApi(Resource):
+
+     @authorize(SUPER_ADMIN, ADMIN)  # TODO: priv
+     @json
+     @commit
+     @swag_from('./docs/child/active-children.yml')
+     def get(self):
+        return Child.get_actives() \
+            .order_by(Child.created)
 
 
 """
 API URLs
 """
-
+api.add_resource(GetActiveChildrenApi, "/api/v2/child/actives")
 api.add_resource(GetChildById, "/api/v2/child/childId=<child_id>&confirm=<confirm>")
+api.add_resource(
+    GetChildByInvitationToken,
+    "/api/v2/child/invitations/<token>",
+)
 api.add_resource(GetChildNeeds, "/api/v2/child/childId=<child_id>/needs")
 api.add_resource(GetAllChildren, "/api/v2/child/all/confirm=<confirm>")
 api.add_resource(

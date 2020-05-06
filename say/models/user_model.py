@@ -8,6 +8,11 @@ from babel import Locale
 
 from say.validations import validate_password as _validate_password
 from say.gender import Gender
+from say.tasks import send_sms, send_embeded_subject_email
+from say.content import content
+from say.locale import ChangeLocaleTo
+from say.render_template_i18n import render_template_i18n
+
 from . import *
 
 
@@ -29,7 +34,7 @@ class User(base, Timestamp):
     country = Column(CountryType, nullable=True)
     city = Column(Integer, nullable=False)  # 1:tehran | 2:karaj
     postal_address = Column(Text, nullable=True)
-    postal_code = Column(Integer, nullable=True)
+    postal_code = Column(Unicode(10), nullable=True)
     emailAddress = Column(String, nullable=True, unique=True, index=True)
     gender = Column(Enum(Gender), nullable=True)
     isDeleted = Column(Boolean, nullable=False, default=False)
@@ -40,6 +45,7 @@ class User(base, Timestamp):
     lastLogin = Column(DateTime, nullable=False)
     _password = Column(String, nullable=False)
     locale = Column(LocaleType, default=Locale('fa'), nullable=False)
+    is_installed = Column(Boolean, default=False, nullable=False)
 
     @hybrid_property
     def formated_username(self):
@@ -143,4 +149,20 @@ class User(base, Timestamp):
         payment.verify()
         self.payments.append(payment)
         session.add(payment)
+
+    def send_installion_notif(self):
+        with ChangeLocaleTo(self.locale):
+            if self.is_phonenumber_verified:
+                send_sms.delay(self.phone_number.e164, content['INSTALLION'])
+
+            elif self.is_email_verified:
+                send_embeded_subject_email.delay(
+                    to=self.emailAddress,
+                    html=render_template_i18n(
+                        'installion.html',
+                        locale=self.locale,
+                    ),
+                 )
+            else:
+                raise Exception('User has not a verified contact, BUG!')
 

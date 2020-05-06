@@ -66,9 +66,11 @@ def authorize(*roles):
 
 
 def get_user_id():
+    verify_jwt_in_request()
     return get_jwt_identity()
 
 
 def get_sw_ngo_id():
+    verify_jwt_in_request()
     return get_jwt_claims().get('ngoId', -1)
 

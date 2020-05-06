@@ -1,0 +1,28 @@
+Get all active children
+---
+
+tags:
+  - Child API
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+ 
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+    schema:
+      properties:
+        totalCount: 
+          type: integer
+        children: 
+          type: array
+          items:
+            schema: 
+              id: child_model

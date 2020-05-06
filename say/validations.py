@@ -3,6 +3,8 @@ import phonenumbers
 from sqlalchemy_utils import PhoneNumber
 
 
+VALID_ROLES = [*range(-1, 6)]
+
 # TODO: Check the pattern with parsa and neda
 USERNAME_PATTERN = r'^[a-zA-Z0-9_.]{4,12}$'
 validate_username = re.compile(USERNAME_PATTERN).fullmatch

@@ -46,6 +46,14 @@ parameters:
     in: formData
     type: string
 
+  - name: postal_address
+    in: formData
+    type: string
+
+  - name: postal_code
+    in: formData
+    type: string
+
   - name: gender
     in: formData
     type: string

@@ -2,8 +2,6 @@ add user to family
 Adds a user to the family.
 Calling this API affects family and user_family tables.
 Each user has a role in family.
-The roles are listed below:
-[0]father, [1]mother, [2] uncle, [3]aunt
 ---
 
 tags:
@@ -16,20 +14,37 @@ parameters:
     required: true
     type: string
 
-  - in: path
-    name: family_id
+  - in: formData
+    name: invitationToken
     required: true
-    type: integer
-
-  - in: body
-    name: role
-    required: true
-    schema:
-      properties:
-        userRole:
-          type: integer
+    type: string
+    description: Related to inviation model and contains family_id and role
 
 responses:
+  740:
+    description: invitationToken is required
+
+  741:
+    description: Inviation not found
+
+  742:
+    description: Invalid role
+
+  743:
+    description: Family not found
+
+  744:
+    description: Can not join this family
+
+  745:
+    description: User not found
+
+  746:
+    description: You must back to your old role
+
+  747:
+    description: Already joined
+
   500:
     description: Error occurred somewhere!
 

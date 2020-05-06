@@ -22,7 +22,8 @@ def upgrade():
 
     op.create_index(
         op.f('user_emailAddress_idx'),
-        'user', ['emailAddress'],
+        'user',
+        ['emailAddress'],
         postgresql_concurrently=True,
         unique=True,
     )

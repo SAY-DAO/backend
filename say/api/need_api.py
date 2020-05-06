@@ -212,6 +212,7 @@ class UpdateNeedById(Resource):
                 resp = HTTP_NOT_FOUND()
                 return
 
+            # FIXME: receipts are allowed
             if need.isConfirmed and sw_role not in (ADMIN, SUPER_ADMIN):
                 resp = dict(message='Permission denied'), 403
                 return

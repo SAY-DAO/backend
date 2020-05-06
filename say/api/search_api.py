@@ -19,10 +19,18 @@ Search APIs
 
 
 class GetRandomSearchResult(Resource):
-    @authorize
+
     @swag_from("./docs/search/random.yml")
     def get(self):
-        user_id = get_user_id()
+        authorized = False
+        user_id = -1
+
+        try:
+            user_id = get_user_id()
+            authorized = True
+        except:
+            pass
+
         resp = make_response(jsonify({"message": "major error occurred!"}),
                              503)
 
@@ -32,23 +40,15 @@ class GetRandomSearchResult(Resource):
                 .join(UserFamily) \
                 .filter(UserFamily.id_user==user_id) \
                 .filter(UserFamily.isDeleted==False) \
-                .all()
 
             # Flating a nested list like [(1,), (2,)] to [1, 2]
             user_children_ids = list(
                 itertools.chain.from_iterable(user_children_ids_tuple)
             )
 
-            random_child = session.query(Child) \
+            random_child = Child.get_actives() \
                 .filter(Child.id.notin_(user_children_ids)) \
-                .filter_by(isConfirmed=True) \
-                .filter_by(isDeleted=False) \
-                .filter_by(isMigrated=False) \
-                .filter_by(existence_status=1) \
-                .join(Need) \
                 .filter(Need.isDone==False) \
-                .filter(Need.isConfirmed==True) \
-                .filter(Need.isDeleted==False) \
                 .order_by(func.random()) \
                 .limit(1) \
                 .first()
@@ -73,13 +73,21 @@ class GetRandomSearchResult(Resource):
             del child_dict['address']
             del child_dict['id_social_worker']
             del child_dict['id_ngo']
+            del child_dict['id']
 
             child_family_member = []
             for member in random_child.family.members:
+                if authorized:
+                    user_id=member.id_user
+                    username=member.user.userName
+                else:
+                    user_id=None
+                    username=None
+
                 child_family_member.append(dict(
-                    user_id=member.id_user,
+                    user_id=user_id,
                     role=member.userRole,
-                    username=member.user.userName,
+                    username=username,
                     isDeleted=member.isDeleted,
                 ))
 
