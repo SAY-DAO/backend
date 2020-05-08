@@ -85,7 +85,9 @@ class RegisterUser(Resource):
             return {"message": "verifyCode is needed"}, 400
 
         if "isInstalled" in request.form.keys():
-            is_installed = bool(request.form["isInstalled"])
+            is_installed = bool(
+                int(request.form["isInstalled"])
+            )
         else:
             return {"message": "isInstalled is needed"}, 400
 
