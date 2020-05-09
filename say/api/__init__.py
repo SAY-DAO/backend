@@ -42,8 +42,7 @@ from say.orm import obj_to_dict
 
 
 PRODUCTION = os.environ.get('PRODUCTION')
-
-
+ADD_TO_HOME_URL = 'https://sayapp.company/add'
 DEFAULT_CHILD_ID = 104  # TODO: Remove this after implementing pre needs
 
 CELERY_TASK_LIST = [
@@ -66,7 +65,6 @@ except:
 db = create_engine(conf["dbUrl"], pool_pre_ping=True)
 
 BASE_FOLDER = os.getcwd()
-
 UPLOAD_FOLDER = "files"
 
 if not os.path.isdir(UPLOAD_FOLDER):
@@ -80,6 +78,7 @@ ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
 ALLOWED_RECEIPT_EXTENSIONS = ALLOWED_IMAGE_EXTENSIONS | {"pdf"}
 
 app = Flask(__name__)
+app.config['ADD_TO_HOME_URL'] = ADD_TO_HOME_URL
 app.config['JSON_SORT_KEYS'] = False
 app.config['SET_PASSWORD_URL'] = 'setpassword'
 app.config['RESET_PASSSWORD_EXPIRE_TIME'] = 2 * 3600 # 2 hours
