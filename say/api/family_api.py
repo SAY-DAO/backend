@@ -154,9 +154,7 @@ class AddUserToFamily(Resource):
                     .count()
 
                 if family_count == 0:
-                    # TODO: remove this after content and icon
-                    pass
-                    #user.send_installion_notif()
+                    user.send_installion_notif(app.config['ADD_TO_HOME_URL'])
 
             new_member = UserFamily(
                 user=user,

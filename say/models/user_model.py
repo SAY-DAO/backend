@@ -150,10 +150,13 @@ class User(base, Timestamp):
         self.payments.append(payment)
         session.add(payment)
 
-    def send_installion_notif(self):
+    def send_installion_notif(self, notif_url):
         with ChangeLocaleTo(self.locale):
             if self.is_phonenumber_verified:
-                send_sms.delay(self.phone_number.e164, content['INSTALLION'])
+                send_sms.delay(
+                    self.phone_number.e164,
+                    content['INSTALLION'] % notif_url,
+                )
 
             elif self.is_email_verified:
                 send_embeded_subject_email.delay(
@@ -161,7 +164,8 @@ class User(base, Timestamp):
                     html=render_template_i18n(
                         'installion.html',
                         locale=self.locale,
-                    ),
+                        link=notif_url,
+                    )
                  )
             else:
                 raise Exception('User has not a verified contact, BUG!')
