@@ -32,7 +32,7 @@
             font-weight: normal;
             width: 90%;
             max-width: 500px; 
-            margin: 0 auto 30px;">
+            margin: 0 auto;">
         <thead>
             <tr>
                 <td style="
@@ -74,7 +74,12 @@
                     font-family: iranyekan, Tahoma; 
                     padding: 20px 2px;
                     border: 2px solid #cccccc;
-                    ">{{need.title}}</td>
+                    ">
+                    {% if need.oncePurchased %}
+                        <span style="color: #f05a31;">* </span>
+                        {{need.title}}
+                    {% endif %}
+                </td>
                 <td style="
                     font-family: iranyekan, Tahoma; 
                     padding: 20px 2px;
@@ -84,6 +89,22 @@
             {% endfor %}
         </tbody>
     </table>
+
+    {% if need.oncePurchased %}
+    <p style="
+            font-family: iranyekan, Tahoma; 
+            font-size: 14px;
+            font-weight: lighter; 
+            max-width: 500px; 
+            margin: 0 auto;
+            padding: 0 10px; 
+            color: #f05a31;
+            direction: rtl;
+            ">
+            * این کالا پیش‌تر قرار بود به دست شما برسد اما به دلیل جا به جایی سفارشات تاریخ دریافت آن تغییر کرده است.
+    </p>
+    {% endif %}
+    
     <p style="
             font-family: iranyekan, Tahoma; 
             font-size: 16px;
