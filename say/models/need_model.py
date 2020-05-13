@@ -183,9 +183,9 @@ class Need(base, Timestamp):
         if self.title is None:
             return None
 
-        for sep in DIGIKALA_TITLE_SEP:
-            if sep in self.title:
-                return self.title.split(sep)[0].strip()
+        for word in self.title.split(' '):
+            if word in DIGIKALA_TITLE_SEP:
+                return self.title[: self.title.find(word)].strip()
 
         return self.title
 
