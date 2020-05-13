@@ -381,8 +381,8 @@ def status_event(need, new_status, old_status, initiator):
 
     elif need.type == 1:  # Product
         if new_status == 3:
-            if self.purchase_date is not None:
-                self.oncePurchased = True
+            if need.purchase_date is not None:
+                need.oncePurchased = True
 
             need.purchase_date = datetime.utcnow()
 
