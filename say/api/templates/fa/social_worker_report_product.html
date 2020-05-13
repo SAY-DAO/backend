@@ -11,6 +11,9 @@
     اطلاع‌رسانی خرید کالا
 {% endblock %}
 {% block mcontent %}
+
+    {% set oncePurchased = False %}
+
     <strong>
         {{surname}} {{social_worker.firstName}} {{social_worker.lastName}}
     </strong>
@@ -78,6 +81,7 @@
                     {% if need.oncePurchased %}
                         <span style="color: #f05a31;">* </span>
                         {{need.title}}
+                        {% set oncePurchased = True %}
                     {% endif %}
                 </td>
                 <td style="
@@ -90,7 +94,7 @@
         </tbody>
     </table>
 
-    {% if need.oncePurchased %}
+    {% if oncePurchased %}
     <p style="
             font-family: iranyekan, Tahoma; 
             font-size: 14px;
