@@ -12,6 +12,8 @@
 {% endblock %}
 {% block mcontent %}
 
+    {% set ns = namespace(oncePurchased=false) %}
+
     <strong>
         {{surname}} {{social_worker.firstName}} {{social_worker.lastName}}
     </strong>
@@ -78,7 +80,7 @@
                     ">
                     {% if need.oncePurchased %}
                         <span style="color: #f05a31;">* </span>
-                        {% set oncePurchased = true %}
+                        {% set ns.oncePurchased = true %}
                     {% endif %}
                     {{need.title}}
                 </td>
@@ -88,25 +90,24 @@
                     border: 2px solid #cccccc;
                 ">{{ date_formater(need.expected_delivery_date) }}</td>
             </tr>
-            {% else %}
+            {% endfor %}
         </tbody>
     </table>
 
-        {% if oncePurchased %}
-        <p style="
-                font-family: iranyekan, Tahoma; 
-                font-size: 14px;
-                font-weight: lighter; 
-                max-width: 500px; 
-                margin: 0 auto;
-                padding: 0 10px; 
-                color: #f05a31;
-                direction: rtl;
-                ">
-                * این کالا پیش‌تر قرار بود به دست شما برسد اما به دلیل جا به جایی سفارشات تاریخ دریافت آن تغییر کرده است.
-        </p>
-        {% endif %}
-    {% endfor %}
+    {% if ns.oncePurchased %}
+    <p style="
+            font-family: iranyekan, Tahoma; 
+            font-size: 14px;
+            font-weight: lighter; 
+            max-width: 500px; 
+            margin: 0 auto;
+            padding: 0 10px; 
+            color: #f05a31;
+            direction: rtl;
+            ">
+            * این کالا پیش‌تر قرار بود به دست شما برسد اما به دلیل جا به جایی سفارشات تاریخ دریافت آن تغییر کرده است.
+    </p>
+    {% endif %}
     
     <p style="
             font-family: iranyekan, Tahoma; 
