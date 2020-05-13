@@ -380,6 +380,7 @@ class UpdateNeedById(Resource):
                    SUPER_ADMIN, SAY_SUPERVISOR, ADMIN,
                 ] and new_status == 3 and need.type == 1:
 
+                    need.status = new_status
                     need.purchase_cost = purchase_cost
 
                 if new_status != 5 and new_status - prev_status == 1:
