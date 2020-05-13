@@ -9,6 +9,7 @@ from .need_family_model import NeedFamily
 from .payment_model import Payment
 from .user_model import User
 from say.statuses import NeedStatuses
+from say.constants import DIGIKALA_TITLE_SEP
 
 
 """
@@ -178,6 +179,21 @@ class Need(base, Timestamp):
             self.done()
 
     @hybrid_property
+    def clean_title(self):
+        if self.title is None:
+            return None
+
+        for word in self.title.split(' '):
+            if word in DIGIKALA_TITLE_SEP:
+                return self.title[: self.title.find(word)].strip()
+
+        return self.title
+
+    @clean_title.expression
+    def clean_title(cls):
+        pass
+
+    @hybrid_property
     def type_name(self):
         if self.type == 0:
             return 'service'
@@ -194,9 +210,7 @@ class Need(base, Timestamp):
     def status_description(self):
         locale = get_locale()
         raw_status = NeedStatuses.get(self.status, self.type_name, locale)
-        need_name = self.name
-        # FIXME: proper detail based on neda excel
-        #need_name = self.title if self.type == 1 else self.name
+        need_name = self.clean_title if self.type == 1 else self.name
 
         if self.status == 2 or (self.type == 1 and self.status == 3):
             '''

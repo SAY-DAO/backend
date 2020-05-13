@@ -381,6 +381,8 @@ class UpdateNeedById(Resource):
                 ] and new_status == 3 and need.type == 1:
 
                     need.purchase_cost = purchase_cost
+                    if need.purchase_date is not None:
+                        need.oncePurchased = True
 
                 if new_status != 5 and new_status - prev_status == 1:
                     if new_status == 4 and need.isReported != True:
