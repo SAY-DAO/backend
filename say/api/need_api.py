@@ -381,7 +381,6 @@ class UpdateNeedById(Resource):
                 ] and new_status == 3 and need.type == 1:
 
                     need.purchase_cost = purchase_cost
-                    import pudb; pudb.set_trace()  # XXX BREAKPOINT
                     if need.purchase_date is not None:
                         need.oncePurchased = True
 
