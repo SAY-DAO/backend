@@ -79,7 +79,7 @@
                     border: 2px solid #cccccc;
                     ">
                     {% if need.oncePurchased %}
-                        <span style="color: #f05a31;">* </span>
+                        <span style="color: #f05a31; font-size: 20px;">* </span>
                         {% set ns.oncePurchased = true %}
                     {% endif %}
                     {{need.title}}
@@ -105,7 +105,7 @@
             color: #f05a31;
             direction: rtl;
             ">
-            * این کالا پیش‌تر قرار بود به دست شما برسد اما به دلیل جا به جایی سفارشات تاریخ دریافت آن تغییر کرده است.
+            </span>*<span style="font-size: 20px;"> این کالا پیش‌تر قرار بود به دست شما برسد اما به دلیل جا به جایی سفارشات تاریخ دریافت آن تغییر کرده است.
     </p>
     {% endif %}
     
