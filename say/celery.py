@@ -12,7 +12,7 @@ beat = {
     },
     'report_to_family': {
         'task': 'say.tasks.report_to_family.report_to_families',
-        'schedule': crontab(minute=30, hour='3'),
+        'schedule': 60# crontab(minute=30, hour='3'),
     },
 }
 

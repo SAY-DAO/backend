@@ -180,6 +180,9 @@ class Need(base, Timestamp):
 
     @hybrid_property
     def clean_title(self):
+        if self.title is None:
+            return None
+
         for sep in DIGIKALA_TITLE_SEP:
             if sep in self.title:
                 return self.title.split(sep)[0].strip()
