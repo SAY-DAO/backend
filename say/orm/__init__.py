@@ -8,6 +8,8 @@ from sqlalchemy_utils import PhoneNumber, Country
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql.schema import MetaData
 
+from .base import BaseModel
+
 
 metadata = MetaData(
     naming_convention={
@@ -18,7 +20,8 @@ metadata = MetaData(
         "pk": "%(table_name)s_pkey"
     }
 )
-base = declarative_base(metadata=metadata)
+
+base = declarative_base(cls=BaseModel, metadata=metadata)
 
 
 # this function converts an object to a python dictionary

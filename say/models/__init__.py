@@ -1,6 +1,7 @@
 import os
 import enum
 import functools
+from typing import Optional
 
 from babel import Locale
 from flask import request, g
@@ -55,8 +56,7 @@ def commit(func):
             return result
 
         except Exception as ex:
-            if session.is_active:
-                session.rollback()
+            session.rollback()
             raise
 
     return wrapper
@@ -85,6 +85,7 @@ from .verify_model import PhoneVerification, EmailVerification, Verification
 from .reset_password_model import ResetPassword
 from .child_migration_model import ChildMigration
 from .invitations import Invitation, InvitationForm
+from .change_cost import *
 
 
 # Handling mutliprocess engine

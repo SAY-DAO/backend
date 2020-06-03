@@ -1,0 +1,42 @@
+Reject a change cost of a need
+---
+
+tags:
+  - Change Cost API
+
+parameters:
+
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - in: path
+    name: need_id
+    required: true
+    type: integer
+
+  - in: path
+    name: id
+    required: true
+    type: integer
+
+  - in: formData
+    name: rejectCause
+    type: string
+
+responses:
+
+  200:
+    description: OK
+
+    schema:
+      id: change_cost
+
+  400:
+    description: Bad form data
+
+  404:
+    description: Need or ChangeCost not found
+
