@@ -30,4 +30,3 @@ phonenumbers
 mailerlite-api-python
 WTForms-Alchemy
 pydantic
-

@@ -29,6 +29,12 @@ def obj_to_dict(obj, relationships=False):
     if isinstance(obj, dict):
         return obj
 
+    if isinstance(obj, tuple) or isinstance(obj, list):
+        return [obj_to_dict(x) for x in obj]
+
+    if not isinstance(obj, base):
+        return obj
+
     result = {}
     for k, c in columns(obj, relationships):
         key, value = k, getattr(obj, k)

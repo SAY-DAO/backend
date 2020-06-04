@@ -56,7 +56,7 @@ class ChangeCost(base, Timestamp):
 
 
 class ChangeCostCreateSchema(BaseModel):
-    to: conint(gt=0, lt=MAX_NEED_COST)
+    to: conint(gt=-1, lt=MAX_NEED_COST)
     description: constr(max_length=DESCRIPTION_MAX_LENGTH) = ''
 
 
@@ -66,7 +66,7 @@ class ChangeCostRejectSchema(BaseModel):
 
 class ChangeCostAcceptSchema(BaseModel):
     reviewer_id: int
-    to: Optional[conint(gt=0, lt=MAX_NEED_COST)]
+    to: Optional[conint(gt=-1, lt=MAX_NEED_COST)]
     description: Optional[constr(max_length=DESCRIPTION_MAX_LENGTH)]
     status: ChangeCostStatus
 

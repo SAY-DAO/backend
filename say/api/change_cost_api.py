@@ -1,30 +1,54 @@
-from . import *
 from say.models import commit, session
 from say.models import Need, SocialWorker, ChangeCost, ChangeCostStatus, Child, \
     ChangeCostCreateSchema, ChangeCostRejectSchema, ChangeCostAcceptSchema
 
+from . import *
 
-def get_need(need_id):
+
+def filter_by_priv(query):
     sw_id = get_user_id()
     ngo_id = get_sw_ngo_id()
     sw_role = get_user_role()
 
-    need_query = session.query(Need) \
-        .filter(Need.id == need_id) \
+    query = query \
         .filter(Need.isDeleted == False) \
         .filter(Need.isConfirmed == True)
 
     if sw_role == SOCIAL_WORKER:
-        need_query \
+        query = query \
             .join(Child, Child.id == Need.child_id) \
             .filter(Child.id_social_worker == sw_id)
 
     elif sw_role == NGO_SUPERVISOR:
-        need_query \
+        query = query \
             .join(Child, Child.id == Need.child_id) \
             .filter(Child.id_ngo == ngo_id)
 
-    return need_query
+    return query
+
+
+def get_need(need_id=None):
+    query = filter_by_priv(session.query(Need)) \
+        .filter(Need.id == need_id)
+
+    return query
+
+
+class PendingChangeCostAPi(Resource):
+
+    @authorize(SOCIAL_WORKER, NGO_SUPERVISOR, ADMIN, SUPER_ADMIN)
+    @json
+    @swag_from('./docs/change_cost/pending.yml')
+    def get(self):
+        sw_id = get_user_id()
+
+        change_costs = session.query(ChangeCost, Need) \
+            .filter_by(status = ChangeCostStatus.pending) \
+            .join(Need, Need.id == ChangeCost.need_id)
+
+        change_costs = filter_by_priv(change_costs)
+
+        return change_costs
 
 
 class ChangeCostAPi(Resource):
@@ -135,7 +159,10 @@ class ChangeCostAcceptApi(Resource):
         except ValueError as e:
             return e.json(), 400
 
-        need = get_need(need_id).one_or_none()
+        need = get_need(need_id) \
+            .with_for_update() \
+            .one_or_none()
+
         if not need:
             return HTTP_NOT_FOUND()
 
@@ -147,10 +174,11 @@ class ChangeCostAcceptApi(Resource):
                 ]),
             ).one_or_none()
 
-        if not change_cost:
+        if not change_cost or change_cost.need_id != need_id:
             return HTTP_NOT_FOUND()
 
         change_cost.update(**data.dict(exclude_unset=True))
+        need.change_cost(change_cost.to)
         return change_cost
 
 
@@ -169,3 +197,7 @@ api.add_resource(
     '/api/v2/need/<int:need_id>/change_cost/<id>/accept',
 )
 
+api.add_resource(
+    PendingChangeCostAPi,
+    '/api/v2/change_cost/pending',
+)

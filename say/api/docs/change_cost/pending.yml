@@ -1,0 +1,23 @@
+List of pending change cost requests
+---
+
+tags:
+  - Change Cost API
+
+parameters:
+
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+
+responses:
+
+  200:
+    description: OK
+
+    schema:
+      id: change_cost
+
