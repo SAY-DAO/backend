@@ -1,5 +1,3 @@
-from .digikala import get_data
-
 
 def surname(gender):
     surname = ''
@@ -10,3 +8,4 @@ def surname(gender):
         surname = 'جناب اقای'
 
     return surname
+

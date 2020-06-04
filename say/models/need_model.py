@@ -359,7 +359,6 @@ class Need(base, Timestamp):
         from say.utils import digikala
         data = digikala.get_data(self.link)
 
-        dkp = data['dkp']
         img = data['img']
         title = data['title']
         cost = data['cost']
