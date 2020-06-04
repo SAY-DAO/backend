@@ -29,4 +29,6 @@ flask_monitoringdashboard
 phonenumbers
 mailerlite-api-python
 WTForms-Alchemy
+pydantic
+future
 
