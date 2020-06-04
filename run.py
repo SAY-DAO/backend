@@ -15,6 +15,8 @@ from say.api.child_api import *
 from say.api.payment_api import *
 from say.api.check_api import *
 from say.api.invitation_api import *
+from say.api.change_cost_api import *
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")

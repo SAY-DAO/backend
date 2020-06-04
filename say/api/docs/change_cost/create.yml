@@ -1,0 +1,45 @@
+Request to change cost of a need
+---
+
+tags:
+  - Change Cost API
+
+parameters:
+
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - in: path
+    name: need_id
+    required: true
+    type: integer
+
+  - in: formData
+    name: to
+    type: integer
+    required: true
+    description: 0 to 2147483647 
+    
+  - in: formData
+    name: description
+    type: string
+    description: "max len: 128"
+
+
+responses:
+
+  200:
+    description: OK
+
+    schema:
+      id: change_cost
+
+  400:
+    description: Value error
+
+  404:
+    description: Need not found
+
