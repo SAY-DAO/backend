@@ -1,3 +1,5 @@
+from sqlalchemy import and_, or_
+
 from say.api import celery
 
 
@@ -5,11 +7,19 @@ from say.api import celery
 def update_needs(self):
     from say.models.need_model import Need
     needs = self.session.query(Need) \
-        .filter(Need.type == 1) \
-        .filter(Need.status < 2) \
-        .filter(Need.isDeleted==False) \
-        .filter(Need.isConfirmed==True) \
-        .filter(Need.link.isnot(None))
+        .filter(
+            Need.type == 1,
+            or_(
+                Need.status < 2,
+                and_(
+                    Need.link.isnot(None),
+                    Need.title.is_(None),
+                ),
+            ),
+            Need.isDeleted==False,
+            Need.isConfirmed==True,
+            Need.link.isnot(None),
+        )
 
     t = []
     for need in needs:
@@ -24,9 +34,6 @@ def update_need(self, need_id, force=False):
     need = self.session.query(Need) \
         .with_for_update() \
         .get(need_id)
-
-    if not force and need.status >= 2:
-        return
 
     try:
         data = need.update()
