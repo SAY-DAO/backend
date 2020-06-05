@@ -77,12 +77,8 @@ class GetRandomSearchResult(Resource):
 
             child_family_member = []
             for member in random_child.family.members:
-                if authorized:
-                    user_id=member.id_user
-                    username=member.user.userName
-                else:
-                    user_id=None
-                    username=None
+                user_id=member.id_user
+                username=member.user.userName
 
                 child_family_member.append(dict(
                     user_id=user_id,
