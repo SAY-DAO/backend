@@ -10,11 +10,8 @@ def update_needs(self):
         .filter(
             Need.type == 1,
             or_(
-                Need.status < 2,
-                and_(
-                    Need.link.isnot(None),
-                    Need.title.is_(None),
-                ),
+                Need.status < 4,
+                Need.title.is_(None),
             ),
             Need.isDeleted==False,
             Need.isConfirmed==True,
