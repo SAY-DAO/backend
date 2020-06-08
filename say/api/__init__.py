@@ -144,6 +144,7 @@ def create_celery_app(app=None):
 
         def after_return(self, *args, **kwargs):
             if self._session is not None:
+                self._session.close()
                 self._session.remove()
 
         @property

@@ -2,12 +2,14 @@ from say.api import celery
 from say.models.social_worker_model import SocialWorker
 
 
-@celery.task(base=celery.DBTask, bind=True)
+@celery.task(base=celery.DBTask, bind=True, max_retries=2)
 def report_to_social_workers(self):
-    social_workers_id = self.session.query(SocialWorker.id)
-    for social_worker_id, in social_workers_id:
-        report_to_social_worker.delay(social_worker_id)
-    return
+    try:
+        social_workers_id = self.session.query(SocialWorker.id)
+        for social_worker_id, in social_workers_id:
+            report_to_social_worker.delay(social_worker_id)
+    except NameError:
+        self.retry(countdown=3**self.request.retries)
 
 
 @celery.task(base=celery.DBTask, bind=True)

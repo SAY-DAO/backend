@@ -10,13 +10,16 @@ from .send_email import send_embeded_subject_email
 from say.render_template_i18n import render_template_i18n
 
 
-@celery.task(base=celery.DBTask, bind=True)
+@celery.task(base=celery.DBTask, bind=True, max_retries=2)
 def report_to_families(self):
     from say.models.family_model import Family
 
-    families_id = self.session.query(Family.id)
-    for family_id in families_id:
-        report_to_family.delay(family_id[0])
+    try:
+        families_id = self.session.query(Family.id)
+        for family_id in families_id:
+            report_to_family.delay(family_id[0])
+    except NameError:
+        self.retry(countdown=3**self.request.retries)
 
 
 @celery.task(base=celery.DBTask, bind=True)
