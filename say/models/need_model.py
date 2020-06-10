@@ -8,6 +8,7 @@ from . import *
 from .need_family_model import NeedFamily
 from .payment_model import Payment
 from .user_model import User
+from say.api import app
 from say.statuses import NeedStatuses
 from say.constants import DIGIKALA_TITLE_SEP
 
@@ -54,6 +55,10 @@ class Need(base, Timestamp):
     title = Column(Text, nullable=True)
     oncePurchased = Column(Boolean, nullable=False, default=False)
     bank_track_id = Column(Unicode(30), nullable=True) # Only for services
+
+    # product
+    unavailable_from = Column(DateTime, nullable=True)
+
     # Dates:
     doneAt = Column(DateTime, nullable=True)
     purchase_date = Column(DateTime)
@@ -109,6 +114,35 @@ class Need(base, Timestamp):
     @pretty_paid.expression
     def pretty_donated(self):
         pass
+
+    @hybrid_property
+    def unpayable(self):
+        return bool(self.unavailable_from \
+            and self.unavailable_from < datetime.utcnow() \
+                - timedelta(days=app.config['PRODUCT_UNPAYABLE_PERIOD'])
+        )
+
+    @unpayable.expression
+    def unpayable(cls):
+        return cls.unavailable_from \
+            and cls.unavailable_from < datetime.utcnow() \
+                - timedelta(days=app.config['PRODUCT_UNPAYABLE_PERIOD'])
+
+    @hybrid_property
+    def unpayable_from(self):
+        if not self.unavailable_from:
+            return None
+
+        return self.unavailable_from \
+            + timedelta(days=app.config['PRODUCT_UNPAYABLE_PERIOD'])
+
+    @unpayable_from.expression
+    def unpayable_from(cls):
+        if not cls.unavailable_from:
+            return None
+
+        return cls.unavailable_from \
+            + timedelta(days=app.config['PRODUCT_UNPAYABLE_PERIOD'])
 
     @hybrid_property
     def progress(self):
@@ -370,10 +404,13 @@ class Need(base, Timestamp):
         if title:
             self.title = title
 
-        if cost and not self.isDone:
+        if self.isDone:
             if type(cost) is int:
                 self.cost = cost
                 self.purchase_cost = cost
+                self.change_availability(True)
+            else:
+                self.change_availability(False)
 
         return data
 
@@ -400,6 +437,13 @@ class Need(base, Timestamp):
         else:
             raise NotImplementedError('cost > paid')
         # TODO: When cost > paid?
+
+    def change_availability(self, is_):
+        if is_:
+            self.unavailable_from = None
+        else:
+            if not self.unavailable_from:
+                self.unavailable_from = datetime.utcnow()
 
 
 @event.listens_for(Need.status, "set")
