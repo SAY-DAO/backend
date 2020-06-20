@@ -404,13 +404,13 @@ class Need(base, Timestamp):
         if title:
             self.title = title
 
-        if self.isDone:
-            if type(cost) is int:
+        if type(cost) is int:
+            if not self.isDone:
                 self.cost = cost
                 self.purchase_cost = cost
-                self.change_availability(True)
-            else:
-                self.change_availability(False)
+            self.change_availability(True)
+        else:
+            self.change_availability(False)
 
         return data
 
