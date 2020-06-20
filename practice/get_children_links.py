@@ -1,7 +1,7 @@
 from requests import request
 
 
-BASE_URL = 'https://nigthly.sayapp.company'
+BASE_URL = 'https://sayapp.company'
 API_URL = f'{BASE_URL}/api/v2'
 
 PANEL_LOGIN = f'{API_URL}/panel/auth/login'
