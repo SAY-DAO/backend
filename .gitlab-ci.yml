@@ -45,8 +45,11 @@ build-nigthly:
 #    - export REPO_UPLOAD_ADD=$(echo "$CI_REGISTRY/$CI_REGISTRY_USER/$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
 #    - export 
   script:
-    - docker build -t "$DOCKER_REGISTRY/$CI_PROJECT_NAME:staging" . -f Dockerfile_nigthly
-      #- chmod +x scripts/*
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - docker build --cache-from $CI_REGISTRY_IMAGE:latest -t $CI_REGISTRY_IMAGE:staging . -f Dockerfile_staging
+    - docker push $CI_REGISTRY_IMAGE:latest
+
+        #- chmod +x scripts/*
       #- source scripts/deploy_nigthly.sh 
   only:
     - develop
