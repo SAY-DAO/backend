@@ -14,21 +14,27 @@ chmod 700 ~/.ssh
 ssh-keyscan $SERVER >> ~/.ssh/known_hosts
 
 cd /builds/$CI_PROJECT_NAMESPACE/
-tar -zcf /tmp/$CI_PROJECT_NAME_NIGHTLY.tar.gz --exclude=.git $CI_PROJECT_NAME
+#tar -zcf /tmp/$CI_PROJECT_NAME_NIGHTLY.tar.gz --exclude=.git $CI_PROJECT_NAME
 
-ssh -t $SERVER_USER@$SERVER "mkdir -p $CI_PROJECT_DIR_NIGHTLY"
+#ssh -t $SERVER_USER@$SERVER "mkdir -p $CI_PROJECT_DIR_NIGHTLY"
 
-cd /tmp
-scp $CI_PROJECT_NAME_NIGHTLY.tar.gz $SERVER_USER@$SERVER:$CI_PROJECT_DIR_NIGHTLY
+#cd /tmp
+#scp $CI_PROJECT_NAME_NIGHTLY.tar.gz $SERVER_USER@$SERVER:$CI_PROJECT_DIR_NIGHTLY
 
-ssh -t $SERVER_USER@$SERVER "
-cd $CI_PROJECT_DIR_NIGHTLY &&
-tar -xvf $CI_PROJECT_NAME_NIGHTLY.tar.gz &&
-cd $CI_PROJECT_NAME &&
-docker build -t $NIGHTLY_IMAGE_NAME . -f Dockerfile_nigthly &&
-cd .. &&
-rm -rf $CI_PROJECT_NAME $CI_PROJECT_NAME_NIGHTLY.tar.gz &&
-cd /home/server/say-installer &&
-docker-compose up -d
-"
+export STAGING_IMAGE_NAME=$DOCKER_REGISTRY/CI_PROJECT_NAME:STAGING
+cd $CI_PROJECT_NAME
+docker build -t $STAGING_IMAGE_NAME . -f Dockerfile_nigthly
+docker push	 $STAGING_IMAGE_NAME
+
+#
+#ssh -t $SERVER_USER@$SERVER "
+#cd $CI_PROJECT_DIR_NIGHTLY &&
+#tar -xvf $CI_PROJECT_NAME_NIGHTLY.tar.gz &&
+#cd $CI_PROJECT_NAME &&
+#docker build -t $NIGHTLY_IMAGE_NAME . -f Dockerfile_nigthly &&
+#cd .. &&
+#rm -rf $CI_PROJECT_NAME $CI_PROJECT_NAME_NIGHTLY.tar.gz &&
+#cd /home/server/say-installer &&
+#docker-compose up -d
+#"
 echo 'DONE'
