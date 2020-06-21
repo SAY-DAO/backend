@@ -37,17 +37,20 @@ build-nigthly:
   variables:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
-    #  before_script:
+  before_script:
+    - docker login $DOCKER_REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASSWORD
+    - export IMAGE_NAME=$(echo "$DOCKER_REGISTRY/$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
+    - export IMAGE_TAG=$(echo "$IMAGE_NAME:staging")
+
 #    - apk update
 #    - apk add openssh
 #    - apk add git
 #    - echo "91.98.112.89 git.pendara.co" >> /etc/hosts
-#    - export REPO_UPLOAD_ADD=$(echo "$CI_REGISTRY/$CI_REGISTRY_USER/$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
 #    - export 
   script:
-    - docker pull $CI_REGISTRY_IMAGE:latest || true
-    - docker build --cache-from $CI_REGISTRY_IMAGE:latest -t $CI_REGISTRY_IMAGE:staging . -f Dockerfile_staging
-    - docker push $CI_REGISTRY_IMAGE:latest
+    - docker pull $IMAGE_TAG || true
+    - docker build --cache-from $IMAGE_NAME -t $IMAGE_TAG . -f Dockerfile_staging
+    - docker push $IMAGE_TAG
 
         #- chmod +x scripts/*
       #- source scripts/deploy_nigthly.sh 
