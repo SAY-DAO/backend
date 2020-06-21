@@ -30,7 +30,7 @@ build-nigthly:
   stage: deploy
   cache:
     paths:
-      - node_modules/
+      - /root/.cache
   services:
     - name: docker:dind
       alias: docker-service
@@ -55,5 +55,9 @@ build-nigthly:
 
         #- chmod +x scripts/*
       #- source scripts/deploy_nigthly.sh 
+
+  after_script:
+    - docker logout
+
   only:
     - develop
