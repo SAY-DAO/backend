@@ -1,3 +1,4 @@
+jinja2==2.11.1
 werkzeug
 Flask
 Flask-RESTful

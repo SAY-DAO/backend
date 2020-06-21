@@ -66,8 +66,9 @@ deploy-staging:
     - export IMAGE_TAG=$(echo "$IMAGE_NAME:staging")
 
   script:
+    - cp /etc/staging-say/.env_staging .env
     - COMPOSE_PROJECT_NAME=say-staging docker-compose -f docker-compose-staging.yml pull 
-    - COMPOSE_PROJECT_NAME=say-staging docker-compose -f docker-compose-staging.yml restart $IMAGE_TAG
+    - COMPOSE_PROJECT_NAME=say-staging docker-compose -f docker-compose-staging.yml up -d
 
   after_script:
     - docker logout
