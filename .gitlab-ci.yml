@@ -48,6 +48,8 @@ build-staging:
 
   only:
     - develop
+  tags:
+    - build
 
 deploy-staging:
   image: docker:latest
