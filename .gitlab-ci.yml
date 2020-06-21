@@ -73,5 +73,5 @@ deploy-staging:
   only:
     - develop
   tags:
-    deploy-staging
+    - deploy-staging
 
