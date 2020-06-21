@@ -1,3 +1,7 @@
+before_script:
+  - docker login $DOCKER_REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASSWORD
+  - export IMAGE_NAME=$(echo "$DOCKER_REGISTRY/$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
+
 build-prod:
   # Official docker image.
   image: docker:latest
@@ -24,13 +28,9 @@ build-prod:
   only:
     - master
 
-build-nigthly:
-  # Official docker image.
+build-staging:
   image: docker:latest
-  stage: deploy
-  cache:
-    paths:
-      - node_modules/
+  stage: build
   services:
     - name: docker:dind
       alias: docker-service
@@ -38,14 +38,40 @@ build-nigthly:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
   before_script:
-    - apk update
-    - apk add openssh
-    - apk add git
-    - echo "91.98.112.89 git.pendara.co" >> /etc/hosts
-    - export REPO_UPLOAD_ADD=$(echo "$CI_REGISTRY/$CI_REGISTRY_USER/$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
-    - export 
+    - export IMAGE_TAG=$(echo "$IMAGE_NAME:staging")
+
   script:
-    - chmod +x scripts/*
-    - source scripts/deploy_nigthly.sh 
+    - docker pull $IMAGE_TAG || true
+    - docker build --cache-from $IMAGE_NAME -t $IMAGE_TAG . -f Dockerfile_staging
+    - docker push $IMAGE_TAG
+
+  after_script:
+    - docker logout
+
   only:
     - develop
+
+deploy-staging:
+  image: docker:latest
+  stage: deploy
+  services:
+    - name: docker:dind
+      alias: docker-service
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
+  before_script:
+    - export IMAGE_TAG=$(echo "$IMAGE_NAME:staging")
+
+  script:
+    - docker-compose -f docker-compose-staging.yml  pull 
+    - docker-compose -f docker-compose-staging.yml restart $IMAGE_TAG
+
+  after_script:
+    - docker logout
+
+  only:
+    - develop
+  tags:
+    deploy-staging
+
