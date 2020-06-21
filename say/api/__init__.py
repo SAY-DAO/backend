@@ -60,12 +60,16 @@ try:
 except:
     pass
 
+db_url = os.environ.get('DB')
+if db_url:
+    conf["dbUrl"] = db_url
+
 # using pool_pre_ping to test the connection
 # see https://docs.sqlalchemy.org/en/13/core/pooling.html#disconnect-handling-pessimistic
 db = create_engine(conf["dbUrl"], pool_pre_ping=True)
 
 BASE_FOLDER = os.getcwd()
-UPLOAD_FOLDER = "files"
+UPLOAD_FOLDER = "data/files"
 
 if not os.path.isdir(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -199,6 +203,7 @@ except:
     pass
 
 APIMD_CONFIG_FILE_PROD = 'apimd-config-prod.cfg'
+APIMD_CONFIG_FILE = 'apimd-config.cfg'
 if PRODUCTION:
     if not os.path.isfile(APIMD_CONFIG_FILE_PROD):
         raise Exception('''
@@ -209,6 +214,7 @@ if PRODUCTION:
 
     dashboard.config.init_from(file=APIMD_CONFIG_FILE_PROD)
 else:
+    dashboard.config.init_from(file=APIMD_CONFIG_FILE)
     print(
         'Open http://localhost/dashboard and use admin admin to see '
         'API monitoring dashboard'

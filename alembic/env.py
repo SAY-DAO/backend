@@ -31,7 +31,11 @@ target_metadata = base.metadata
 
 with open("./config.json") as config_file:
     conf = json.load(config_file)
-    config.set_main_option('sqlalchemy.url', conf['dbUrl'])
+    config.set_main_option('sqlalchemy.url', conf.get('dbUrl', ''))
+
+db_url = os.environ.get('DB')
+if db_url:
+    config.set_main_option('sqlalchemy.url', db_url)
 
 
 def run_migrations_offline():
