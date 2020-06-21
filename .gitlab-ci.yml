@@ -38,6 +38,7 @@ build-nigthly:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
   before_script:
+    - export 
     - docker login $DOCKER_REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASSWORD
     - export IMAGE_NAME=$(echo "$DOCKER_REGISTRY/$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
     - export IMAGE_TAG=$(echo "$IMAGE_NAME:staging")
