@@ -3,7 +3,7 @@ FROM python:3.8
 # We copy just the requirements.txt first to leverage Docker cache
 RUN pip install virtualenv
 RUN virtualenv venv
-RUN source venv/bin/activate
+RUN . venv/bin/activate
 
 COPY ./requirements.txt /app/requirements.txt
 WORKDIR /app
