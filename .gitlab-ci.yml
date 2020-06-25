@@ -42,9 +42,6 @@ build-staging:
     - docker login $DOCKER_REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASSWORD
     - export IMAGE_NAME=$(echo "$DOCKER_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
     - export IMAGE_TAG=$(echo "$IMAGE_NAME:staging")
-    - pip install virtualenv
-    - virtualenv venv
-    - source venv/bin/activate
 
   script:
     - docker pull $IMAGE_TAG || true
