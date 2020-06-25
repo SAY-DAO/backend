@@ -3,7 +3,7 @@ variables:
 
 cache:
   paths:
-    - .pip
+    - ~/.pip
 
 build-prod:
   # Official docker image.
@@ -65,7 +65,11 @@ deploy-staging:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
   before_script:
+    - export IMAGE_NAME=$(echo "$DOCKER_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
+    - export IMAGE_TAG=$(echo "$IMAGE_NAME:staging")
+
     - mkdir ~/.ssh
+    - export IMAGE_TAG=$(echo "$IMAGE_NAME:staging")    - mkdir ~/.ssh
     - echo "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
     - eval $(ssh-agent -s)
@@ -73,7 +77,7 @@ deploy-staging:
 
   script:
     - ssh $SERVER_USER@$SERVER "docker login $DOCKER_REGISTRY -u '$REGISTRY_USER' -p '$REGISTRY_PASSWORD'"
-    - ssh $SERVER_USER@$SERVER "cd /home/server/say-installer && docker-compose pull && docker-compose up -d"
+    - ssh $SERVER_USER@$SERVER "cd /home/server/say-installer && docker-compose pull $IMAGE_TAG && docker-compose up -d"
 
   only:
     - develop
