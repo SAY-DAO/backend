@@ -1,3 +1,10 @@
+variables:
+    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+
 build-prod:
   # Official docker image.
   image: docker:latest

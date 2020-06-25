@@ -11,7 +11,7 @@ flask_jwt_extended
 Flask-WTF
 SQLAlchemy
 sqlalchemy_utils
-psycopg2
+psycopg2-binary
 requests
 flasgger
 pyotp
