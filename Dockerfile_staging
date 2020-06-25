@@ -3,7 +3,8 @@ FROM python:3.8
 # We copy just the requirements.txt first to leverage Docker cache
 COPY ./requirements.txt /app/requirements.txt
 WORKDIR /app
-RUN echo "PIP_CACHE_DIR"
+RUN echo "$PIP_CACHE_DIR"
+RUN pip install pip -U --no-cache
 RUN pip --cache-dir "$PIP_CACHE_DIR" install -r requirements.txt
 
 COPY . /app
