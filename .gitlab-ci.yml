@@ -52,7 +52,7 @@ build-staging:
     - build
 
 deploy-staging:
-  image: docker:latest
+  image: kroniak/ssh-client
   stage: deploy
   services:
     - name: docker:dind
@@ -61,17 +61,15 @@ deploy-staging:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
   before_script:
-    - docker login $DOCKER_REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASSWORD
-    - export IMAGE_NAME=$(echo "$DOCKER_REGISTRY/$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
-    - export IMAGE_TAG=$(echo "$IMAGE_NAME:staging")
+    - mkdir ~/.ssh
+    - echo "$SERVER" >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - eval $(ssh-agent -s)
+    - ssh-add <(echo "$SSH_PRIVATE_KEY")
 
   script:
-    - cp /etc/staging-say/.env_staging .env
-    - COMPOSE_PROJECT_NAME=say-staging docker-compose -f docker-compose-staging.yml pull 
-    - COMPOSE_PROJECT_NAME=say-staging docker-compose -f docker-compose-staging.yml up -d
-
-  after_script:
-    - docker logout
+    - ssh $SERVER_USER@$SERVER "docker login $DOCKER_REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASSWORD"
+    - ssh $SERVER_USER@$SERVER "cd /home/server/say-installer && docker-compose pull && docker-compose up -d"
 
   only:
     - develop
