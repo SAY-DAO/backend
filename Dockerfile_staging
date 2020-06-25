@@ -1,4 +1,4 @@
-FROM python:3.7
+FROM python:3.8-slim
 
 #MAINTANER Your Name "qarekhani@gmail.com"
 
@@ -8,12 +8,9 @@ FROM python:3.7
 # We copy just the requirements.txt first to leverage Docker cache
 COPY ./requirements.txt /app/requirements.txt
 
-WORKDIR /app
-
 RUN pip install -r requirements.txt
 
 COPY . /app
-
-
+WORKDIR /app
 CMD ["./scripts/run-staging.sh"]
 
