@@ -3,16 +3,12 @@ variables:
 
 cache:
   paths:
-    - .cache/pip
-    - /root/.cache/pip/wheels/
+    - .pip
 
 build-prod:
   # Official docker image.
   image: docker:latest
   stage: deploy
-  cache:
-    paths:
-      - node_modules/
   services:
     - name: docker:dind
       alias: docker-service
@@ -43,7 +39,7 @@ build-staging:
     DOCKER_DRIVER: overlay2
   before_script:
     - docker login $DOCKER_REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASSWORD
-    - export IMAGE_NAME=$(echo "$DOCKER_REGISTRY/$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
+    - export IMAGE_NAME=$(echo "$DOCKER_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
     - export IMAGE_TAG=$(echo "$IMAGE_NAME:staging")
 
   script:
