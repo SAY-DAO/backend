@@ -1,9 +1,9 @@
 variables:
-  PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
+  PIP_CACHE_DIR: "/builds/Say/api/pip-cache"
 
 cache:
   paths:
-    - "$CI_PROJECT_DIR/pip-cache"
+    - "/builds/Say/api/pip-cache"
   key: "$CI_PROJECT_ID"
 
 build-prod:
