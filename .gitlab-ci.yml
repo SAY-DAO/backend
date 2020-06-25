@@ -1,9 +1,10 @@
 variables:
-    PIP_CACHE_DIR: "/builds/.pip/"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/pip-cache"
 
 cache:
   paths:
-    - PIP_CACHE_DIR
+    - "$CI_PROJECT_DIR/pip-cache"
+  key: "$CI_PROJECT_ID"
 
 build-prod:
   # Official docker image.
@@ -44,7 +45,7 @@ build-staging:
 
   script:
     - docker pull $IMAGE_TAG || true
-    - docker build --cache-from $IMAGE_NAME -t $IMAGE_TAG . -f Dockerfile_staging
+    - docker build --compress --cache-from $IMAGE_NAME -t $IMAGE_TAG . -f Dockerfile_staging
     - docker push $IMAGE_TAG
 
   after_script:
