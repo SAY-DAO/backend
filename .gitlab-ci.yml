@@ -3,7 +3,7 @@ variables:
 
 cache:
   paths:
-    - ~/.pip
+    - /app/.pip
 
 build-prod:
   # Official docker image.
