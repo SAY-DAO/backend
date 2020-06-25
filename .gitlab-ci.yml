@@ -47,7 +47,7 @@ build-staging:
   script:
     - docker pull $COMPILE_IMAGE_TAG || true
     - docker pull $IMAGE_TAG || true
-    - docker build --target compile-image --cache-from=$COMPILE_IMAGE_TAG --tag $COMPILE_IMAGE_TAG .
+    - docker build --target compile-image --cache-from=$COMPILE_IMAGE_TAG --tag $COMPILE_IMAGE_TAG . -f Dockerfile_staging
     - docker build --compress --cache-from $COMPILE_IMAGE_TAG --cache-from $IMAGE_NAME -t $IMAGE_TAG . -f Dockerfile_staging
     - docker push $COMPILE_IMAGE_TAG
     - docker push $IMAGE_TAG
