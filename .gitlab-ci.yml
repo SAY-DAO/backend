@@ -26,6 +26,8 @@ build:
   only:
     - branches
     - tags
+  tags:
+    - build
 
 deploy-branches:
   image: kroniak/ssh-client
