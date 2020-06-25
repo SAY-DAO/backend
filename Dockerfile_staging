@@ -18,10 +18,13 @@ FROM python:3.8-slim AS runtime-image
 
 COPY --from=compile-image $VIRTUAL_ENV $VIRTUAL_ENV
 
+ENV VIRTUAL_ENV=/opt/venv
+
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY . /app
 
 WORKDIR /app
+
 CMD ["./scripts/run-staging.sh"]
 
