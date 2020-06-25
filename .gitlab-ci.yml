@@ -4,6 +4,7 @@ variables:
 cache:
   paths:
     - .cache/pip
+    - /root/.cache/pip/wheels/
 
 build-prod:
   # Official docker image.
@@ -69,7 +70,7 @@ deploy-staging:
     DOCKER_DRIVER: overlay2
   before_script:
     - mkdir ~/.ssh
-    - echo "$SERVER" >> ~/.ssh/known_hosts
+    - echo "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
     - eval $(ssh-agent -s)
     - ssh-add <(echo "$SSH_PRIVATE_KEY")
