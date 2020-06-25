@@ -1,9 +1,7 @@
 FROM python:3.8-slim
 
-#MAINTANER Your Name "qarekhani@gmail.com"
-
-#RUN apt-get update -y && \
-#    apt-get install -y python-pip python-dev
+RUN apt-get update 
+RUN apt-get install gcc
 
 # We copy just the requirements.txt first to leverage Docker cache
 COPY ./requirements.txt /app/requirements.txt
