@@ -4,32 +4,27 @@ from sqlalchemy import and_, or_
 from say.api import celery
 
 
-@celery.task(base=celery.DBTask, bind=True, max_retries=3)
+@celery.task(base=celery.DBTask, bind=True)
 def update_needs(self):
-    try:
-        from say.models.need_model import Need
-        needs = self.session.query(Need) \
-            .filter(
-                Need.type == 1,
-                or_(
-                    Need.status < 4,
-                    Need.title.is_(None),
-                ),
-                Need.isDeleted==False,
-                Need.isConfirmed==True,
-                Need.link.isnot(None),
-                Need.updated < datetime.utcnow() - timedelta(hours=1),
-            )
+    from say.models.need_model import Need
+    needs = self.session.query(Need) \
+        .filter(
+            Need.type == 1,
+            or_(
+                Need.status < 4,
+                Need.title.is_(None),
+            ),
+            Need.isDeleted==False,
+            Need.isConfirmed==True,
+            Need.link.isnot(None),
+        )
 
-        t = []
-        for need in needs:
-            t.append(need.id)
-            update_need.delay(need.id)
+    t = []
+    for need in needs:
+        t.append(need.id)
+        update_need.delay(need.id)
 
-        return t
-    except Exception as ex:
-        self.session.rollback()
-        self.retry(countdown=3**self.request.retries)
+    return t
 
 
 @celery.task(base=celery.DBTask, bind=True, max_retires=3)
