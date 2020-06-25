@@ -1,7 +1,6 @@
 FROM python:3.8 AS compile-image
 
 # We copy just the requirements.txt first to leverage Docker cache
-WORKDIR /app
 
 ENV VIRTUAL_ENV=/opt/venv
 
@@ -15,7 +14,7 @@ COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
-FROM python:3.7-slim AS build-image
+FROM python:3.8-slim AS runtime-image
 
 COPY --from=compile-image $VIRTUAL_ENV $VIRTUAL_ENV
 
@@ -23,5 +22,6 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY . /app
 
+WORKDIR /app
 CMD ["./scripts/run-staging.sh"]
 

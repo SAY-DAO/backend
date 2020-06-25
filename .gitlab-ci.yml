@@ -42,10 +42,14 @@ build-staging:
     - docker login $DOCKER_REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASSWORD
     - export IMAGE_NAME=$(echo "$DOCKER_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
     - export IMAGE_TAG=$(echo "$IMAGE_NAME:staging")
+    - export COMPILE_IMAGE_TAG=$(echo "$IMAGE_NAME:compile")
 
   script:
+    - docker pull $COMPILE_IMAGE_TAG || true
     - docker pull $IMAGE_TAG || true
-    - docker build --compress --cache-from $IMAGE_NAME -t $IMAGE_TAG . -f Dockerfile_staging
+    - docker build --target compile-image --cache-from=$COMPILE_IMAGE_TAG --tag $COMPILE_IMAGE_TAG .
+    - docker build --compress --cache-from $COMPILE_IMAGE_TAG --cache-from $IMAGE_NAME -t $IMAGE_TAG . -f Dockerfile_staging
+    - docker push $COMPILE_IMAGE_TAG
     - docker push $IMAGE_TAG
 
   after_script:
