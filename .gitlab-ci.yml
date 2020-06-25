@@ -1,9 +1,9 @@
 variables:
-    PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+    PIP_CACHE_DIR: "/builds/.pip/"
 
 cache:
   paths:
-    - /app/.pip
+    - PIP_CACHE_DIR
 
 build-prod:
   # Official docker image.
@@ -76,7 +76,7 @@ deploy-staging:
 
   script:
     - ssh $SERVER_USER@$SERVER "docker login $DOCKER_REGISTRY -u '$REGISTRY_USER' -p '$REGISTRY_PASSWORD'"
-    - ssh $SERVER_USER@$SERVER "cd /home/server/say-installer && docker-compose pull $IMAGE_TAG && docker-compose up -d"
+    - ssh $SERVER_USER@$SERVER "cd /home/server/say-installer && docker pull $IMAGE_TAG && docker-compose up --remove-orphans -d"
 
   only:
     - develop

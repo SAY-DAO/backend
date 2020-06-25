@@ -69,7 +69,7 @@ if db_url:
 db = create_engine(conf["dbUrl"], pool_pre_ping=True)
 
 BASE_FOLDER = os.getcwd()
-UPLOAD_FOLDER = "data/files"
+UPLOAD_FOLDER = "files"
 
 if not os.path.isdir(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
