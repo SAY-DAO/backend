@@ -5,7 +5,8 @@ WORKDIR /app
 
 ENV VIRTUAL_ENV=venv
 
-RUN python3 -m virtualenv --python=/usr/bin/python3 $VIRTUAL_ENV
+RUN pip install virtualenv
+RUN virtualenv $VIRTUAL_ENV
 
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
