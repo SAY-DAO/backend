@@ -76,7 +76,7 @@ deploy-staging:
     - ssh-add <(echo "$SSH_PRIVATE_KEY")
 
   script:
-    - ssh $SERVER_USER@$SERVER "docker login $DOCKER_REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASSWORD"
+    - ssh $SERVER_USER@$SERVER "docker login $DOCKER_REGISTRY -u '$REGISTRY_USER' -p '$REGISTRY_PASSWORD'"
     - ssh $SERVER_USER@$SERVER "cd /home/server/say-installer && docker-compose pull && docker-compose up -d"
 
   only:
