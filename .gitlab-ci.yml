@@ -1,10 +1,10 @@
 variables:
-  PIP_CACHE_DIR: "/builds/Say/api/pip-cache"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
 cache:
   paths:
-    - "/builds/Say/api/pip-cache"
-  key: "$CI_PROJECT_ID"
+    - .cache/pip
+    - venv/
 
 build-prod:
   # Official docker image.
