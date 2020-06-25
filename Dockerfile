@@ -1,20 +1,30 @@
-FROM python:3.7
-
-#MAINTANER Your Name "qarekhani@gmail.com"
-
-#RUN apt-get update -y && \
-#    apt-get install -y python-pip python-dev
+FROM python:3.8 AS compile-image
 
 # We copy just the requirements.txt first to leverage Docker cache
-COPY ./requirements.txt /app/requirements.txt
 
-WORKDIR /app
+ENV VIRTUAL_ENV=/opt/venv
+
+RUN pip install virtualenv
+
+RUN virtualenv $VIRTUAL_ENV
+
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
+FROM python:3.8-slim AS runtime-image
+
+COPY --from=compile-image $VIRTUAL_ENV $VIRTUAL_ENV
+
+ENV VIRTUAL_ENV=/opt/venv
+
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
 COPY . /app
 
+WORKDIR /app
 
 CMD ["./scripts/run.sh"]
-
 
