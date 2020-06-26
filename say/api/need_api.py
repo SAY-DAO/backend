@@ -51,7 +51,7 @@ def filter_by_privilege(query):  # TODO: priv
             .join(Family) \
             .join(UserFamily) \
             .filter(UserFamily.id_user == user_id) \
-            .filter(UserFamily.isDeleted is False)
+            .filter(UserFamily.isDeleted.is_(False))
 
     return query
 
@@ -76,7 +76,7 @@ class GetAllNeeds(Resource):
         try:
             done = int(done)
             needs = session.query(Need) \
-                .filter(Need.isDeleted == False) \
+                .filter(Need.isDeleted.is_(False)) \
                 .order_by(Need.doneAt.desc())
 
             if int(confirm) == 1:
