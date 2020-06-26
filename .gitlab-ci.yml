@@ -16,7 +16,7 @@ build:
     - docker pull $COMPILE_IMAGE_TAG || true
     - docker pull $IMAGE_TAG || true
     - docker build --target compile-image --tag $COMPILE_IMAGE_TAG . -f Dockerfile
-    - docker build --target runtime-image --tag $IMAGE_TAG . -f Dockerfile
+    - docker build --tag $IMAGE_TAG . -f Dockerfile
     - docker push $COMPILE_IMAGE_TAG
     - docker push $IMAGE_TAG
   only:
