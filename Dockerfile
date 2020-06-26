@@ -14,14 +14,11 @@ COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
-FROM python:3.8-slim AS ready-image
+FROM python:3.8-slim AS runtime-image
 
 ENV VIRTUAL_ENV=/opt/venv
+
 COPY --from=compile-image $VIRTUAL_ENV $VIRTUAL_ENV
-
-FROM ready-image AS runtime-image
-
-ENV VIRTUAL_ENV=/opt/venv
 
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
