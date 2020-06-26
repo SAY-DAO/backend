@@ -16,7 +16,7 @@ def get_subject_from_html(html):
     return subject_element.text
 
 
-@celery.task(bind=True, max_retries=3)
+@celery.task(bind=True, max_retries=2)
 def send_email(self, subject, to, html, cc=[], bcc=[]):
     if isinstance(to, str):
         to = [to]
@@ -37,7 +37,7 @@ def send_email(self, subject, to, html, cc=[], bcc=[]):
         self.retry(countdown=3**self.request.retries)
 
 
-@celery.task(bind=True, max_retries=3)
+@celery.task(bind=True, max_retries=2)
 def send_embeded_subject_email(self, to, html, cc=[], bcc=[]):
     subject = get_subject_from_html(html).strip()
 

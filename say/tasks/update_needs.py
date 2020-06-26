@@ -27,7 +27,7 @@ def update_needs(self):
     return t
 
 
-@celery.task(base=celery.DBTask, bind=True, max_retires=3)
+@celery.task(base=celery.DBTask, bind=True, max_retries=2)
 def update_need(self, need_id, force=False):
     from say.models.need_model import Need
     try:
