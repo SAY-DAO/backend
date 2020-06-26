@@ -60,6 +60,10 @@ try:
 except:
     pass
 
+db_url = os.environ.get('DB')
+if db_url:
+    conf["dbUrl"] = db_url
+
 # using pool_pre_ping to test the connection
 # see https://docs.sqlalchemy.org/en/13/core/pooling.html#disconnect-handling-pessimistic
 db = create_engine(conf["dbUrl"], pool_pre_ping=True)
@@ -93,6 +97,7 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["DELIVER_TO_CHILD_DELAY"] = 4 * 60 * 60 # 4 hours
 app.config["RATELIMIT_DEFAULT"] = "100 per minutes"
 app.config['PAYMENT_ORDER_ID_LENGTH'] = 8
+app.config['PRODUCT_UNPAYABLE_PERIOD'] = 3 # Days
 
 app.config.update({
     "CACHE_TYPE": "redis", # Flask-Caching related configs
@@ -144,6 +149,7 @@ def create_celery_app(app=None):
 
         def after_return(self, *args, **kwargs):
             if self._session is not None:
+                self._session.close()
                 self._session.remove()
 
         @property
@@ -198,6 +204,7 @@ except:
     pass
 
 APIMD_CONFIG_FILE_PROD = 'apimd-config-prod.cfg'
+APIMD_CONFIG_FILE = 'apimd-config.cfg'
 if PRODUCTION:
     if not os.path.isfile(APIMD_CONFIG_FILE_PROD):
         raise Exception('''
@@ -208,6 +215,7 @@ if PRODUCTION:
 
     dashboard.config.init_from(file=APIMD_CONFIG_FILE_PROD)
 else:
+    dashboard.config.init_from(file=APIMD_CONFIG_FILE)
     print(
         'Open http://localhost/dashboard and use admin admin to see '
         'API monitoring dashboard'

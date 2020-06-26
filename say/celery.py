@@ -14,5 +14,9 @@ beat = {
         'task': 'say.tasks.report_to_family.report_to_families',
         'schedule': crontab(minute=30, hour='3'),
     },
+    'report_unpayables': {
+        'task': 'say.tasks.report_unpayables.report_unpayables',
+        'schedule': crontab(minute=0, hour='4'),
+    },
 }
 

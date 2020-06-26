@@ -1,34 +1,4 @@
-before_script:
-  - docker login $DOCKER_REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASSWORD
-  - export IMAGE_NAME=$(echo "$DOCKER_REGISTRY/$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
-
-build-prod:
-  # Official docker image.
-  image: docker:latest
-  stage: deploy
-  cache:
-    paths:
-      - node_modules/
-  services:
-    - name: docker:dind
-      alias: docker-service
-  variables:
-    DOCKER_TLS_CERTDIR: ""
-    DOCKER_DRIVER: overlay2
-  before_script:
-    - apk update
-    - apk add openssh
-    - apk add git
-    - echo "91.98.112.89 git.pendara.co" >> /etc/hosts
-    - export REPO_UPLOAD_ADD=$(echo "$CI_REGISTRY/$CI_REGISTRY_USER/$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
-    - export 
-  script:
-    - chmod +x scripts/*
-    - source scripts/deploy.sh 
-  only:
-    - master
-
-build-staging:
+build:
   image: docker:latest
   stage: build
   services:
@@ -38,21 +8,26 @@ build-staging:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
   before_script:
-    - export IMAGE_TAG=$(echo "$IMAGE_NAME:staging")
-
+    - docker login $DOCKER_REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASSWORD
+    - export IMAGE_NAME=$(echo "$DOCKER_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
+    - export IMAGE_TAG=$(echo "$IMAGE_NAME:$CI_COMMIT_REF_SLUG")
+    - export COMPILE_IMAGE_TAG=$(echo "$IMAGE_TAG-compile")
   script:
+    - docker pull $COMPILE_IMAGE_TAG || true
     - docker pull $IMAGE_TAG || true
-    - docker build --cache-from $IMAGE_NAME -t $IMAGE_TAG . -f Dockerfile_staging
+    - docker build --target compile-image --tag $COMPILE_IMAGE_TAG . -f Dockerfile
+    - docker build --tag $IMAGE_TAG . -f Dockerfile
+    - docker images
+    - docker push $COMPILE_IMAGE_TAG
     - docker push $IMAGE_TAG
-
-  after_script:
-    - docker logout
-
   only:
-    - develop
+    - branches
+    - tags
+  tags:
+    - build
 
-deploy-staging:
-  image: docker:latest
+deploy-branches:
+  image: kroniak/ssh-client
   stage: deploy
   services:
     - name: docker:dind
@@ -61,17 +36,49 @@ deploy-staging:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
   before_script:
-    - export IMAGE_TAG=$(echo "$IMAGE_NAME:staging")
+    - export IMAGE_NAME=$(echo "$DOCKER_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
+    - export IMAGE_TAG=$(echo "$IMAGE_NAME:$CI_COMMIT_REF_SLUG")
+
+    - mkdir ~/.ssh
+    - echo "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    - eval $(ssh-agent -s)
+    - ssh-add <(echo "$SSH_PRIVATE_KEY")
 
   script:
-    - docker-compose -f docker-compose-staging.yml  pull 
-    - docker-compose -f docker-compose-staging.yml restart $IMAGE_TAG
-
-  after_script:
-    - docker logout
+    - ssh $SERVER_USER@$SERVER "docker login $DOCKER_REGISTRY -u '$REGISTRY_USER' -p '$REGISTRY_PASSWORD'"
+    - ssh $SERVER_USER@$SERVER "cd /home/server/say-installer && docker pull $IMAGE_TAG && docker-compose up --remove-orphans -d"
 
   only:
     - develop
+  # except:
+    - master
   tags:
-    - deploy-staging
+    - deploy
 
+# stop_staging:
+#   stage: deploy
+#   variables:
+#     GIT_STRATEGY: none
+#   script:
+#     # add the server as a known host
+#     - mkdir ~/.ssh
+#     - echo "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+#     - chmod 644 ~/.ssh/known_hosts
+#     # add ssh key stored in SSH_PRIVATE_KEY variable to the agent store
+#     - eval $(ssh-agent -s)
+#     - ssh-add <(echo "$SSH_PRIVATE_KEY")
+#     # log into Docker registry
+#     - ssh deployer@thecodingmachine.io "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.thecodingmachine.com"
+#     # stop container, remove image.
+#     - ssh deployer@thecodingmachine.io "docker stop thecodingmachine.io_${CI_COMMIT_REF_SLUG}" || true
+#     - ssh deployer@thecodingmachine.io "docker rm thecodingmachine.io_${CI_COMMIT_REF_SLUG}" || true
+#     - ssh deployer@thecodingmachine.io "docker rmi registry.thecodingmachine.com/tcm-projects/thecodingmachine.io:${CI_COMMIT_REF_SLUG}" || true
+#   when: manual
+#   environment:
+#     name: review/$CI_COMMIT_REF_NAME
+#     action: stop
+#   only:
+#     - branches
+#   except:
+#     - master

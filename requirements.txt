@@ -1,3 +1,4 @@
+jinja2==2.11.1
 werkzeug
 Flask
 Flask-RESTful
@@ -10,7 +11,7 @@ flask_jwt_extended
 Flask-WTF
 SQLAlchemy
 sqlalchemy_utils
-psycopg2
+psycopg2-binary
 requests
 flasgger
 pyotp

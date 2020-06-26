@@ -1,6 +1,7 @@
 import os
 import enum
 import functools
+from typing import Optional
 
 from babel import Locale
 from flask import request, g
@@ -18,6 +19,10 @@ from sqlalchemy.sql.functions import coalesce
 from sqlalchemy_utils import TranslationHybrid, aggregated, observes, \
     PhoneNumber, Country
 from sqlalchemy_utils.models import Timestamp
+from sqlalchemy import exc
+from sqlalchemy import event
+from sqlalchemy.pool import Pool
+
 
 from say.api import db
 from say.date import *
@@ -25,6 +30,22 @@ from say.langs import LANGS
 from say.locale import get_locale, DEFAULT_LOCALE
 from say.formatters import int_formatter, expose_datetime
 from say.orm import obj_to_dict, base
+
+
+@event.listens_for(Pool, "checkout")
+def ping_connection(dbapi_connection, connection_record, connection_proxy):
+    cursor = dbapi_connection.cursor()
+    try:
+        cursor.execute("SELECT 1")
+    except:
+        # optional - dispose the whole pool
+        # instead of invalidating one at a time
+        # connection_proxy._pool.dispose()
+
+        # raise DisconnectionError - pool will try
+        # connecting again up to three times before raising.
+        raise exc.DisconnectionError()
+    cursor.close()
 
 
 session_factory = sessionmaker(
@@ -55,8 +76,7 @@ def commit(func):
             return result
 
         except Exception as ex:
-            if session.is_active:
-                session.rollback()
+            session.rollback()
             raise
 
     return wrapper
@@ -85,6 +105,7 @@ from .verify_model import PhoneVerification, EmailVerification, Verification
 from .reset_password_model import ResetPassword
 from .child_migration_model import ChildMigration
 from .invitations import Invitation, InvitationForm
+from .change_cost import *
 
 
 # Handling mutliprocess engine

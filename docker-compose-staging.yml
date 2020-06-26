@@ -1,0 +1,123 @@
+---
+version: '3.1'
+
+services:
+
+  redis:
+    env_file:
+      - /etc/staging-say/.env_staging
+    image: redis:6
+    restart: always
+    volumes:
+      - redis_volume:/data
+
+  db:
+    image: postgres:12
+    restart: always
+    env_file:
+      - /etc/staging-say/.env_staging
+    environment:
+      POSTGRES_USER    : ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes: 
+      - postgres_volume:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    restart: always
+    env_file:
+      - /etc/staging-say/.env_staging
+    hostname: say-rabbit 
+    volumes:
+        - rabbitmq_data_volume:/var/lib/rabbitmq/
+        - rabbitmq_log_volume:/var/log/rabbitmq/
+    environment:
+        RABBITMQ_DEFAULT_USER: $RABBITMQ_DEFAULT_USER
+        RABBITMQ_DEFAULT_PASS: $RABBITMQ_DEFAULT_PASS
+
+  pgbackups:
+    image: prodrigestivill/postgres-backup-local:11-alpine
+    restart: always
+    env_file:
+      - /etc/staging-say/.env_staging
+    volumes:
+      - db_backups_volume:/backups
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=$POSTGRES_DB
+      - POSTGRES_USER=$POSTGRES_USER
+      - POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+      - POSTGRES_EXTRA_OPTS=-Z9 --schema=public --blobs
+      - SCHEDULE=@daily
+      - BACKUP_KEEP_DAYS=30
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=6
+      - HEALTHCHECK_PORT=80 
+
+  backend:
+    image: "${DOCKER_REGISTRY}/api:staging"
+    env_file:
+      - /etc/staging-say/.env_staging
+    environment:
+      - PRODUCTION=true
+      - DB=postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST/$POSTGRES_DB
+    restart: always
+    ports:
+      - 5000:5000
+    volumes:
+      - /etc/say-staging/backend/config.json:/app/config.json
+      - /etc/say-staging/backend/apimd-config-staging.cfg:/app/apimd-config-prod.cfg
+      - backend_volume:/app/data
+    logging:
+      driver: journald
+    depends_on:
+      - "redis"
+      - "db"
+      - "rabbitmq"
+ 
+  worker:
+    image: "${DOCKER_REGISTRY}/api:staging"
+    env_file:
+      - /etc/staging-say/.env_staging
+    environment:
+      - PRODUCTION=true
+      - DB=postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST/$POSTGRES_DB
+    restart: always
+    volumes:
+      - /etc/say/backend/config.json:/app/config.json
+      - /etc/say/backend/apimd-config-prod.cfg:/app/apimd-config-prod.cfg
+      - backend_volume:/app/data
+    logging:
+      driver: journald
+    command: celery -A say.api.celery worker --loglevel=INFO --concurrency 2
+    depends_on:
+      - backend
+
+  beat:
+    image: "${DOCKER_REGISTRY}/api:staging"
+    env_file:
+      - /etc/staging-say/.env_staging
+    environment:
+      - PRODUCTION=true
+      - DB=postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST/$POSTGRES_DB
+    restart: always
+    volumes:
+      - /etc/say/backend/config.json:/app/config.json
+      - /etc/say/backend/apimd-config-prod.cfg:/app/apimd-config-prod.cfg
+      - backend_volume:/app/data
+    logging:
+      driver: journald
+    command: celery -A say.api.celery beat -S redbeat.RedBeatScheduler --loglevel=WARNING
+    depends_on:
+      - worker
+
+volumes:
+  redis_volume:
+  postgres_volume:
+  rabbitmq_data_volume:
+  rabbitmq_log_volume:
+  db_backups_volume:
+  backend_volume:
+

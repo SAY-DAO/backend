@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from uuid import uuid4
 
 import ujson
 from sqlalchemy.orm import selectinload
@@ -585,7 +586,6 @@ class AddChild(Resource):
                 file3.save(slept_avatar_path)
                 new_child.sleptAvatarUrl = '/' + slept_avatar_path
 
-
             new_child.ngo.childrenCount += 1
             new_child.social_worker.childCount += 1
 
@@ -654,6 +654,18 @@ class UpdateChildById(Resource):
                 resp = error
                 return
 
+            child_path = os.path.join(
+                app.config["UPLOAD_FOLDER"],
+                str(primary_child.id) + "-child",
+            )
+
+            if not os.path.isdir(child_path):
+                os.makedirs(child_path, exist_ok=True)
+
+            need_path = os.path.join(child_path, "needs")
+            if not os.path.isdir(need_path):
+                os.makedirs(need_path, exist_ok=True)
+
             if "awakeAvatarUrl" in request.files.keys():
                 file2 = request.files["awakeAvatarUrl"]
 
@@ -682,7 +694,7 @@ class UpdateChildById(Resource):
                             os.remove(os.path.join(temp_avatar_path, obj))
 
                     primary_child.awakeAvatarUrl = os.path.join(
-                        temp_avatar_path, str(primary_child.id) + "-avatar_" + filename2
+                        temp_avatar_path, str(primary_child.id) + "-avatar_" + uuid4().hex + filename2
                     )
 
                     file2.save(primary_child.awakeAvatarUrl)
@@ -716,7 +728,7 @@ class UpdateChildById(Resource):
                             os.remove(os.path.join(temp_sleptAvatar_path, obj))
 
                     primary_child.sleptAvatarUrl = os.path.join(
-                        temp_sleptAvatar_path, str(primary_child.id) + "-sleptAvatar_" + filename2
+                        temp_sleptAvatar_path, str(primary_child.id) + "-sleptAvatar_" + uuid4().hex + filename2
                     )
 
                     file3.save(primary_child.sleptAvatarUrl)
@@ -750,7 +762,7 @@ class UpdateChildById(Resource):
                             os.remove(os.path.join(temp_voice_path, obj))
 
                     primary_child.voiceUrl = os.path.join(
-                        temp_voice_path, str(primary_child.id) + "-voice_" + filename1
+                        temp_voice_path, str(primary_child.id) + "-voice_" + uuid4().hex + filename1
                     )
 
                     file1.save(primary_child.voiceUrl)

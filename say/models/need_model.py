@@ -8,6 +8,7 @@ from . import *
 from .need_family_model import NeedFamily
 from .payment_model import Payment
 from .user_model import User
+from say.api import app
 from say.statuses import NeedStatuses
 from say.constants import DIGIKALA_TITLE_SEP
 
@@ -54,6 +55,10 @@ class Need(base, Timestamp):
     title = Column(Text, nullable=True)
     oncePurchased = Column(Boolean, nullable=False, default=False)
     bank_track_id = Column(Unicode(30), nullable=True) # Only for services
+
+    # product
+    unavailable_from = Column(DateTime, nullable=True)
+
     # Dates:
     doneAt = Column(DateTime, nullable=True)
     purchase_date = Column(DateTime)
@@ -109,6 +114,35 @@ class Need(base, Timestamp):
     @pretty_paid.expression
     def pretty_donated(self):
         pass
+
+    @hybrid_property
+    def unpayable(self):
+        return bool(self.unavailable_from \
+            and self.unavailable_from < datetime.utcnow() \
+                - timedelta(days=app.config['PRODUCT_UNPAYABLE_PERIOD'])
+        )
+
+    @unpayable.expression
+    def unpayable(cls):
+        return cls.unavailable_from \
+            and cls.unavailable_from < datetime.utcnow() \
+                - timedelta(days=app.config['PRODUCT_UNPAYABLE_PERIOD'])
+
+    @hybrid_property
+    def unpayable_from(self):
+        if not self.unavailable_from:
+            return None
+
+        return self.unavailable_from \
+            + timedelta(days=app.config['PRODUCT_UNPAYABLE_PERIOD'])
+
+    @unpayable_from.expression
+    def unpayable_from(cls):
+        if not cls.unavailable_from:
+            return None
+
+        return cls.unavailable_from \
+            + timedelta(days=app.config['PRODUCT_UNPAYABLE_PERIOD'])
 
     @hybrid_property
     def progress(self):
@@ -169,10 +203,7 @@ class Need(base, Timestamp):
             for payment in self.payments
         )
 
-        if paid == 0:
-            self.status = 0
-
-        elif paid < self.cost:
+        if paid < self.cost:
             self.status = 1
 
         elif paid == self.cost:
@@ -271,21 +302,28 @@ class Need(base, Timestamp):
             for member in self.child.family.current_members()
         }
 
-    def refund_extra_credit(self):
+    def refund_extra_credit(self, new_paid):
         session = object_session(self)
-        total_refund = Decimal(self.paid) - Decimal(self.purchase_cost)
+        total_refund = Decimal(self.paid) - Decimal(new_paid)
+
+        if total_refund <= 0:
+            return
 
         participants = session.query(NeedFamily) \
             .filter(NeedFamily.id_need == self.id)
 
+        total_reminder = Decimal(0)
+        refunds = []
         for participant in participants:
-
             participation_ratio = Decimal(participant.paid) / Decimal(self.paid)
-
             refund_amount = Decimal(participation_ratio) * Decimal(total_refund)
 
             if refund_amount <= 0:
                 continue
+
+            reminder = refund_amount - int(refund_amount)
+            total_reminder += reminder
+            refund_amount = refund_amount - reminder
 
             refund_payment = Payment(
                 need=self,
@@ -295,10 +333,18 @@ class Need(base, Timestamp):
                 desc='Refund payment',
             )
 
-            self.payments.append(refund_payment)
-            refund_payment.verify()
+            refunds.append(refund_payment)
 
-        session.flush()
+        min_refund = min(refunds, key=lambda r: -r.need_amount)
+        min_refund.need_amount -= total_reminder
+        min_refund.credit_amount -= total_reminder
+
+        for refund in refunds:
+            if refund.need_amount == 0:
+                session.delete(refund)
+                continue
+
+            refund.verify()
 
         return
 
@@ -358,10 +404,13 @@ class Need(base, Timestamp):
         if title:
             self.title = title
 
-        if cost and not self.isDone:
-            if type(cost) is int:
+        if type(cost) is int:
+            if not self.isDone:
                 self.cost = cost
                 self.purchase_cost = cost
+            self.change_availability(True)
+        else:
+            self.change_availability(False)
 
         return data
 
@@ -376,6 +425,25 @@ class Need(base, Timestamp):
             (self.id,),
             eta=deliver_to_child_delay,
         )
+
+    def change_cost(self, new_cost):
+        self.cost = new_cost
+
+        if self.cost <= self.paid:
+            self.refund_extra_credit(self.cost)
+            if not self.isDone:
+                self.done()
+
+        else:
+            raise NotImplementedError('cost > paid')
+        # TODO: When cost > paid?
+
+    def change_availability(self, is_):
+        if is_:
+            self.unavailable_from = None
+        else:
+            if not self.unavailable_from:
+                self.unavailable_from = datetime.utcnow()
 
 
 @event.listens_for(Need.status, "set")
@@ -415,7 +483,7 @@ def status_event(need, new_status, old_status, initiator):
             need.child_delivery_product()
 
             if need.purchase_cost < need.paid:
-                need.refund_extra_credit()
+                need.refund_extra_credit(need.purchase_cost)
 
             elif need.purchase_cost > need.paid:
                 need.say_extra_payment()
