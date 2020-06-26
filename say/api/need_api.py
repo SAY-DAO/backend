@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from uuid import uuid4
 
 import ujson
 from dictdiffer import diff
@@ -17,7 +18,6 @@ from say.models.social_worker_model import SocialWorker
 from say.models.user_family_model import UserFamily
 from say.tasks import update_need
 
-
 """
 Need APIs
 """
@@ -32,26 +32,26 @@ def filter_by_privilege(query):  # TODO: priv
         query = query \
             .join(Child) \
             .filter(or_(
-                Child.id_social_worker==user_id,
-                Child.id==DEFAULT_CHILD_ID,
-             ))
+                Child.id_social_worker == user_id,
+                Child.id == DEFAULT_CHILD_ID,
+            ))
 
     elif user_role in [NGO_SUPERVISOR]:
         query = query \
             .join(Child) \
             .join(SocialWorker) \
             .filter(or_(
-                SocialWorker.id_ngo==ngo_id,
-                Child.id==DEFAULT_CHILD_ID,
-             ))
+                SocialWorker.id_ngo == ngo_id,
+                Child.id == DEFAULT_CHILD_ID,
+            ))
 
     elif user_role in [USER]:
         query = query \
             .join(Child) \
             .join(Family) \
             .join(UserFamily) \
-            .filter(UserFamily.id_user==user_id) \
-            .filter(UserFamily.isDeleted==False) \
+            .filter(UserFamily.id_user == user_id) \
+            .filter(UserFamily.isDeleted is False)
 
     return query
 
@@ -76,22 +76,21 @@ class GetAllNeeds(Resource):
         try:
             done = int(done)
             needs = session.query(Need) \
-                .filter(Need.isDeleted==False) \
+                .filter(Need.isDeleted == False) \
                 .order_by(Need.doneAt.desc())
-
 
             if int(confirm) == 1:
                 needs = (
                     needs
-                    .filter_by(isDeleted=False)
-                    .filter_by(isConfirmed=True)
+                        .filter_by(isDeleted=False)
+                        .filter_by(isConfirmed=True)
                 )
 
             elif int(confirm) == 0:
                 needs = (
                     needs
-                    .filter_by(isDeleted=False)
-                    .filter_by(isConfirmed=False)
+                        .filter_by(isDeleted=False)
+                        .filter_by(isConfirmed=False)
                 )
 
             if done == 1:
@@ -119,7 +118,7 @@ class GetAllNeeds(Resource):
                 needs = needs \
                     .join(Child) \
                     .join(SocialWorker) \
-                    .filter(SocialWorker.id_ngo==ngo_id)
+                    .filter(SocialWorker.id_ngo == ngo_id)
 
             needs = filter_by_privilege(needs)
 
@@ -232,13 +231,11 @@ class UpdateNeedById(Resource):
                 new_cost = int(request.form['cost'].replace(',', ''))
 
                 if (
-                    (
-                        (sw_role in [SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR]
-                            and need.isConfirmed)
-                        or need.isDone
-                    ) and new_cost != need._cost
+                        (
+                            (sw_role in [SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR] and need.isConfirmed)
+                            or need.isDone
+                        ) and new_cost != need._cost
                 ):
-
                     resp = make_response(
                         jsonify({"message": "Can not change cost when need is done"}),
                         503,
@@ -277,7 +274,7 @@ class UpdateNeedById(Resource):
                             os.remove(os.path.join(temp_need_path, obj))
 
                     need.imageUrl = os.path.join(
-                        temp_need_path, str(need.id) + "-image_" + filename
+                        temp_need_path, str(need.id) + "-image_" + uuid4().hex + filename
                     )
                     file.save(need.imageUrl)
                     need.imageUrl = '/' + need.imageUrl
@@ -294,9 +291,9 @@ class UpdateNeedById(Resource):
                     # filename = secure_filename(file2.filename)
                     if need.receipts is not None:
                         filename = (
-                            str(len(need.receipts.split(",")))
-                            + "."
-                            + file2.filename.split(".")[-1]
+                                str(len(need.receipts.split(",")))
+                                + "."
+                                + file2.filename.split(".")[-1]
                         )
                     else:
                         filename = str(0) + "." + file2.filename.split(".")[-1]
@@ -321,7 +318,6 @@ class UpdateNeedById(Resource):
                         need.receipts = str(receipt_path)
                     else:
                         need.receipts += "," + str(receipt_path)
-
 
             if "category" in request.form.keys():
                 need.category = int(request.form["category"])
@@ -361,15 +357,14 @@ class UpdateNeedById(Resource):
                 need.details = request.form["details"]
 
             if request.form.get("expected_delivery_date"):
-               if not(2 <= need.status <= 3):
-                  raise Exception(
-                      'Expected delivery date can not changed in this status'
-                  )
-               need.isReported = False
-               need.expected_delivery_date = parse_datetime(
-                   request.form["expected_delivery_date"]
-               )
-
+                if not (2 <= need.status <= 3):
+                    raise Exception(
+                        'Expected delivery date can not changed in this status'
+                    )
+                need.isReported = False
+                need.expected_delivery_date = parse_datetime(
+                    request.form["expected_delivery_date"]
+                )
 
             if "status" in request.form.keys():
                 new_status = int(request.form["status"])
@@ -377,7 +372,7 @@ class UpdateNeedById(Resource):
 
                 purchase_cost = request.form.get('purchase_cost', None)
                 if purchase_cost and sw_role in [
-                   SUPER_ADMIN, SAY_SUPERVISOR, ADMIN,
+                    SUPER_ADMIN, SAY_SUPERVISOR, ADMIN,
                 ] and new_status == 3 and need.type == 1:
 
                     need.purchase_cost = purchase_cost
@@ -434,9 +429,9 @@ class DeleteNeedById(Resource):
     def patch(self, need_id):
         need = (
             session.query(Need)
-            .filter_by(isDeleted=False)
-            .filter_by(id=need_id)
-            .first()
+                .filter_by(isDeleted=False)
+                .filter_by(id=need_id)
+                .first()
         )
 
         if (need.type == 0 and need.status < 4) or (need.type == 1 and need.status < 5):
@@ -467,9 +462,9 @@ class ConfirmNeed(Resource):
         try:
             primary_need = (
                 session.query(Need)
-                .filter_by(id=need_id)
-                .filter_by(isDeleted=False)
-                .first()
+                    .filter_by(id=need_id)
+                    .filter_by(isDeleted=False)
+                    .first()
             )
 
             if primary_need.isConfirmed:
@@ -530,11 +525,11 @@ class AddNeed(Resource):
             child_id = int(request.form["child_id"])
             child = (
                 session.query(Child)
-                .filter_by(id=child_id)
-                .filter_by(isDeleted=False)
-                .filter_by(isMigrated=False)
-                .filter_by(isConfirmed=True)
-                .first()
+                    .filter_by(id=child_id)
+                    .filter_by(isDeleted=False)
+                    .filter_by(isMigrated=False)
+                    .filter_by(isConfirmed=True)
+                    .first()
             )
 
             sw_id = int(request.form.get("sw_id", get_user_id()))
@@ -643,7 +638,6 @@ class AddNeed(Resource):
                 file.save(image_path)
                 new_need.imageUrl = '/' + image_path
 
-
             if "receipts" in request.files.keys():
                 file2 = request.files["receipts"]
                 if file2.filename == "":
@@ -675,7 +669,6 @@ class AddNeed(Resource):
                 update_need.delay(new_need.id)
 
             resp = make_response(jsonify(obj_to_dict(new_need)), 200)
-
 
         except Exception as e:
             resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
