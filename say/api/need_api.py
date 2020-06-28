@@ -437,7 +437,7 @@ class DeleteNeedById(Resource):
         if (need.type == 0 and need.status < 4) or (need.type == 1 and need.status < 5):
             need.status = 0
             need.purchase_cost = 0
-            need.refund_extra_credit()
+            need.refund_extra_credit(new_paid=0)
 
             for participant in need.participants:
                 participant.isDeleted = True
