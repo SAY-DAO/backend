@@ -193,9 +193,9 @@ class Need(base, Timestamp):
         )
 
     @observes('payments.verified')
-    def payments_observer(self, _):
+    def payments_observer(self, verification_dates):
         session = object_session(self)
-        if self.status is None or self.status > 2:
+        if len(verification_dates) == 0 or self.status is None or self.status > 2:
             return
 
         paid = sum(
