@@ -416,7 +416,7 @@ class Need(base, Timestamp):
 
     def child_delivery_product(self):
         from say.api import app
-        from say.tasks.update_needs import change_need_status_to_delivered
+        from say.tasks import change_need_status_to_delivered
 
         deliver_to_child_delay = datetime.utcnow() \
             + timedelta(seconds=app.config['DELIVER_TO_CHILD_DELAY'])
