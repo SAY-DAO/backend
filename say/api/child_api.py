@@ -1273,7 +1273,7 @@ class GoneChild(Resource):
             ) :
                 child_need.need.status = 0
                 child_need.need.purchase_cost = 0
-                child_need.need.refund_extra_credit()
+                child_need.need.refund_extra_credit(new_paid=0)
 
         child.existence_status = int(new_status)
 
