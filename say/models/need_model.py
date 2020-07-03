@@ -62,6 +62,8 @@ class Need(base, Timestamp):
     # Dates:
     doneAt = Column(DateTime, nullable=True)
     purchase_date = Column(DateTime)
+    # Digikala purchase code
+    dkc = Column(String(20), nullable=True)
     expected_delivery_date = Column(DateTime)
     ngo_delivery_date = Column(DateTime)
     child_delivery_date = Column(DateTime)

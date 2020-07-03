@@ -356,6 +356,9 @@ class UpdateNeedById(Resource):
             if "details" in request.form.keys():
                 need.details = request.form["details"]
 
+            if dkc := request.form.get("dkc"):
+                need.dkc = dkc
+
             if request.form.get("expected_delivery_date"):
                 if not (2 <= need.status <= 3):
                     raise Exception(
