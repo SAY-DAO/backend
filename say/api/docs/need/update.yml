@@ -91,6 +91,11 @@ parameters:
     in: formData
     type: string
 
+  - name: dkc
+    in: formData
+    type: string
+    description: Digikala purchase code (only in s3)
+
   - name: bank_track_id
     in: formData
     type: string
