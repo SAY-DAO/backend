@@ -11,7 +11,7 @@ from .user_model import User
 from say.api import app
 from say.statuses import NeedStatuses
 from say.constants import DIGIKALA_TITLE_SEP
-
+from ..orm import session, translation_hybrid
 
 """
 Need Model

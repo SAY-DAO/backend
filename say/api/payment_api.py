@@ -6,7 +6,8 @@ from urllib.parse import urljoin
 from werkzeug.exceptions import abort
 
 from . import *
-from say.models import session, obj_to_dict, commit
+from say.models import obj_to_dict
+from ..orm import session, commit
 from say.models.child_need_model import ChildNeed
 from say.models.family_model import Family
 from say.models.need_model import Need

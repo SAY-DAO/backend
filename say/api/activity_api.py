@@ -1,4 +1,5 @@
-from say.models import session, obj_to_dict
+import say.orm
+from say.models import obj_to_dict
 from say.models.activity_model import Activity
 from . import *
 """
@@ -154,7 +155,7 @@ class AddActivity(Resource):
                                          activityCode=activity_code)
 
             session.add(new_activity)
-            session.commit()
+            say.orm.commit()
 
             resp = make_response(jsonify({"message": "new activity added!"}),
                                  200)

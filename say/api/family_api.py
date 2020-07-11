@@ -1,6 +1,6 @@
-from say.constants import PAST_PARTICIPANT_ROLE
+import say.orm
 from say.validations import VALID_ROLES
-from say.models import session, obj_to_dict, commit
+from ..orm import commit
 from say.models import User, Family, UserFamily, NeedFamily, Invitation
 from . import *
 
@@ -221,7 +221,7 @@ class LeaveFamily(Resource):
 
             family.child.sayFamilyCount -= 1
 
-            session.commit()
+            say.orm.commit()
 
             resp = make_response(jsonify({"message": "DELETED SUCCESSFULLY!"}), 200)
 

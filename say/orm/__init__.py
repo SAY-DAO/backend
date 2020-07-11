@@ -1,15 +1,28 @@
 import enum
+import functools
+import os
 
 from babel import Locale
-from sqlalchemy import inspect
+from sqlalchemy import inspect, event, exc
 from sqlalchemy.ext.associationproxy import ASSOCIATION_PROXY
 from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
-from sqlalchemy_utils import PhoneNumber, Country
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.pool import Pool
+from sqlalchemy_utils import PhoneNumber, Country, TranslationHybrid
+from sqlalchemy import create_engine as sa_create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.sql.schema import MetaData
+from sqlalchemy.ext.declarative import declarative_base
 
 from .base import BaseModel
+from ..config import config
+from ..locale import get_locale, DEFAULT_LOCALE
 
+
+def create_engine(url):
+    return sa_create_engine(url, pool_pre_ping=True)
+
+
+engine = create_engine(config['dbUrl'])
 
 metadata = MetaData(
     naming_convention={
@@ -22,6 +35,15 @@ metadata = MetaData(
 )
 
 base = declarative_base(cls=BaseModel, metadata=metadata)
+
+session_factory = sessionmaker(
+    engine,
+    autoflush=False,
+    autocommit=False,
+    expire_on_commit=True,
+    twophase=False,
+)
+session = scoped_session(session_factory)
 
 
 # this function converts an object to a python dictionary
@@ -86,3 +108,78 @@ def columns(obj, relationships=False, synonyms=True, composites=False,
         yield k, getattr(cls, k)
 
 
+def init_model(engine):
+    """
+    Call me before using any of the tables or classes in the model.
+    :param engine: SqlAlchemy engine to bind the session
+    :return:
+    """
+    session.remove()
+    session.configure(bind=engine)
+
+
+def setup_schema(session=session):
+    engine = session.bind
+    engine.execute('CREATE EXTENSION IF NOT EXISTS HSTORE;')
+    metadata.create_all(bind=engine)
+
+
+@event.listens_for(Pool, "checkout")
+def ping_connection(dbapi_connection, connection_record, connection_proxy):
+    cursor = dbapi_connection.cursor()
+    try:
+        cursor.execute("SELECT 1")
+    except:
+        # optional - dispose the whole pool
+        # instead of invalidating one at a time
+        # connection_proxy._pool.dispose()
+
+        # raise DisconnectionError - pool will try
+        # connecting again up to three times before raising.
+        raise exc.DisconnectionError()
+    cursor.close()
+
+
+def commit(func):
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+
+        try:
+            result = func(*args, **kwargs)
+
+            if isinstance(result, tuple):
+                session.rollback()
+                return result
+
+            session.commit()
+            return result
+
+        except Exception as ex:
+            session.rollback()
+            raise
+
+    return wrapper
+
+
+translation_hybrid = TranslationHybrid(
+    current_locale=get_locale,
+    default_locale=DEFAULT_LOCALE,
+)
+
+
+@event.listens_for(engine, "connect")
+def connect(dbapi_connection, connection_record):
+    connection_record.info['pid'] = os.getpid()
+
+
+@event.listens_for(engine, "checkout")
+def checkout(dbapi_connection, connection_record, connection_proxy):
+    pid = os.getpid()
+    if connection_record.info['pid'] != pid:
+        connection_record.connection = connection_proxy.connection = None
+        raise exc.DisconnectionError(
+                "Connection record belongs to pid %s, "
+                "attempting to check out in pid %s" %
+                (connection_record.info['pid'], pid)
+        )

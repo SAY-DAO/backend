@@ -1,16 +1,17 @@
-import os
 from random import randint
 
+import say.orm
 from . import *
 from say.api import jwt
 from say.gender import Gender
-from say.models import session, obj_to_dict
+from say.models import obj_to_dict
+from ..orm import session
 from say.models.family_model import Family
 from say.models.need_family_model import NeedFamily
 from say.models.revoked_token_model import RevokedToken
 from say.models.user_family_model import UserFamily
 from say.models.user_model import User
-
+from ..validations import allowed_image
 
 """
 User APIs
@@ -243,7 +244,7 @@ class UpdateUserById(Resource):
 
             secondary_user = obj_to_dict(primary_user)
 
-            session.commit()
+            say.orm.commit()
             resp = make_response(jsonify(secondary_user), 200)
 
         except Exception as e:
@@ -290,7 +291,7 @@ class DeleteUserById(Resource):
 
             user.isDeleted = True
 
-            session.commit()
+            say.orm.commit()
 
             resp = make_response(jsonify({"message": "user deleted successfully!"}), 200)
 
@@ -391,7 +392,6 @@ class AddUser(Resource):
             last_login = datetime.utcnow()
 
             avatar_url = "wrong url"
-            flag_url = os.path.join(FLAGS, country_code + ".png")
 
             new_user = User(
                 firstName=first_name,
@@ -407,7 +407,6 @@ class AddUser(Resource):
                 birthPlace=birth_place,
                 lastLogin=last_login,
                 password=password,
-                flagUrl=flag_url,
             )
 
             session.add(new_user)
@@ -444,7 +443,7 @@ class AddUser(Resource):
 
             new_user.avatarUrl = avatar_url
 
-            session.commit()
+            say.orm.commit()
 
             resp = make_response(jsonify({"message": "USER ADDED SUCCESSFULLY!"}), 200)
 

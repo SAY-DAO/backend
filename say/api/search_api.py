@@ -4,7 +4,8 @@ from random import randrange
 from sqlalchemy import func
 
 from . import *
-from say.models import session, obj_to_dict
+from say.models import obj_to_dict
+from ..orm import session
 from say.models.child_model import Child
 from say.models.child_need_model import ChildNeed
 from say.models.need_model import Need

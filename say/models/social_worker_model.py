@@ -2,6 +2,7 @@ from babel import Locale
 from sqlalchemy.orm import object_session
 from sqlalchemy_utils import LocaleType
 
+import say.orm
 from . import *
 from say.render_template_i18n import render_template_i18n
 from say.formatters import expose_datetime
@@ -141,6 +142,6 @@ class SocialWorker(base, Timestamp):
                 for need in products:
                     need.isReported = True
 
-            session.commit()
+            say.orm.commit()
             return [need.id for need in needs]
 

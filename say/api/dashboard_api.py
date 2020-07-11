@@ -1,4 +1,4 @@
-from say.models import session, obj_to_dict
+from say.models import obj_to_dict
 from say.models.user_model import User
 from . import *
 

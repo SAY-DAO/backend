@@ -4,8 +4,10 @@ from hashlib import md5
 from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
 
+import say.orm
 from . import *
-from say.models import session, obj_to_dict
+from say.models import obj_to_dict
+from ..orm import session
 from say.models.revoked_token_model import RevokedToken
 from say.models.social_worker_model import SocialWorker
 
@@ -47,7 +49,7 @@ class PanelLogin(Resource):
             if social_worker is not None:
                 if social_worker.password == password:
                     social_worker.lastLogin = datetime.utcnow()
-                    session.commit()
+                    say.orm.commit()
 
                     access_token = create_sw_access_token(social_worker)
 
@@ -103,7 +105,7 @@ class PanelLogoutAccess(Resource):
         try:
             revoked_token = RevokedToken(jti = jti)
             session.add(revoked_token)
-            session.commit()
+            say.orm.commit()
             msg = {'message': 'Access token has been revoked'}
         except:
             msg = {'message': 'Something went wrong'}, 500
@@ -120,7 +122,7 @@ class PanelLogoutRefresh(Resource):
         try:
             revoked_token = RevokedToken(jti = jti)
             session.add(revoked_token)
-            session.commit()
+            say.orm.commit()
             msg = {'message': 'Refresh token has been revoked'}
         except:
             msg = {'message': 'Something went wrong'}, 500

@@ -1,5 +1,5 @@
 from . import *
-from say.models import commit, session
+from ..orm import session, commit
 from say.models import Invitation, InvitationForm, Family
 
 

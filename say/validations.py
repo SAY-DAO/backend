@@ -22,3 +22,37 @@ def validate_phone(phone):
     except phonenumbers.phonenumberutil.NumberParseException:
         return False
 
+
+ALLOWED_VOICE_EXTENSIONS = {"wav", "m4a", "wma", "mp3", "aac", "ogg"}
+ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
+ALLOWED_RECEIPT_EXTENSIONS = ALLOWED_IMAGE_EXTENSIONS | {"pdf"}
+
+
+def allowed_voice(filename):
+    if (
+        "." in filename
+        and filename.rsplit(".", 1)[1].lower() in ALLOWED_VOICE_EXTENSIONS
+    ):
+        return True
+
+    raise TypeError('Wrong voice format')
+
+
+def allowed_image(filename):
+    if (
+        "." in filename
+        and filename.rsplit(".", 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
+    ):
+        return True
+
+    raise TypeError('Wrong image format')
+
+
+def allowed_receipt(filename):
+    if (
+        "." in filename
+        and filename.rsplit(".", 1)[1].lower() in ALLOWED_RECEIPT_EXTENSIONS
+    ):
+        return True
+
+    raise TypeError('Wrong receipt format')

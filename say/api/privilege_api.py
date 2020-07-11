@@ -1,4 +1,5 @@
-from say.models import session, obj_to_dict
+import say.orm
+from say.models import obj_to_dict
 from say.models.privilege_model import Privilege
 from . import *
 
@@ -46,7 +47,7 @@ class AddPrivilege(Resource):
             new_privilege = Privilege(name=name, privilege=privilege)
 
             session.add(new_privilege)
-            session.commit()
+            say.orm.commit()
 
             resp = make_response(jsonify({"message": "new Privilege is added"}), 200)
 
@@ -159,7 +160,7 @@ class UpdatePrivilege(Resource):
                 base_privilege.privilege = int(request.form["privilege"])
 
             res = obj_to_dict(base_privilege)
-            session.commit()
+            say.orm.commit()
 
             resp = make_response(jsonify(res), 200)
 

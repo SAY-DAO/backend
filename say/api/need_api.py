@@ -6,17 +6,19 @@ from dictdiffer import diff
 from flask import json as json_
 from sqlalchemy import or_
 
+import say.orm
 from . import *
-from say.models import session, obj_to_dict, commit
+from say.models import obj_to_dict
+from ..orm import session, commit
 from say.models.activity_model import Activity
 from say.models.child_model import Child
 from say.models.child_need_model import ChildNeed
-from say.models.need_family_model import NeedFamily
 from say.models.family_model import Family
 from say.models.need_model import Need
 from say.models.social_worker_model import SocialWorker
 from say.models.user_family_model import UserFamily
 from say.tasks import update_need
+from ..validations import allowed_image, allowed_receipt
 
 """
 Need APIs
@@ -409,7 +411,7 @@ class UpdateNeedById(Resource):
 
             activity.diff = json_.dumps(list(diff(temp, obj_to_dict(need))))
 
-            session.commit()
+            say.orm.commit()
             secondary_need = obj_to_dict(need)
             resp = make_response(jsonify(secondary_need), 200)
 
@@ -490,7 +492,7 @@ class ConfirmNeed(Resource):
             child.social_worker.currentNeedCount += 1
 
             session.add(new_child_need)
-            session.commit()
+            say.orm.commit()
 
             resp = make_response(jsonify({"message": "need confirmed successfully!"}), 200)
 
@@ -666,7 +668,7 @@ class AddNeed(Resource):
                     file2.save(receipt_path)
                     new_need.receipts = '/' + receipt_path
 
-            session.commit()
+            say.orm.commit()
 
             if new_need.link:
                 update_need.delay(new_need.id)

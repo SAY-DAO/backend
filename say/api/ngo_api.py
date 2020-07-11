@@ -1,9 +1,11 @@
 import traceback
 
-from say.models import session, obj_to_dict
+import say.orm
+from say.models import obj_to_dict
 from say.models.ngo_model import Ngo
 from say.models.social_worker_model import SocialWorker
 from . import *
+from ..validations import allowed_image
 
 """
 Activity APIs
@@ -124,7 +126,7 @@ class AddNgo(Resource):
             )
 
             session.add(new_ngo)
-            session.commit()
+            say.orm.commit()
 
             resp = make_response(jsonify({"msg": "ngo is created"}), 200)
             resp.headers["Access-Control-Allow-Origin"] = "*"
@@ -268,7 +270,7 @@ class UpdateNgo(Resource):
             res = obj_to_dict(base_ngo)
 
             resp = make_response(jsonify(res), 200)
-            session.commit()
+            say.orm.commit()
 
         except Exception as e:
             print(e)
@@ -294,7 +296,7 @@ class DeleteNgo(Resource):
 
             base_ngo.isDeleted = True
 
-            session.commit()
+            say.orm.commit()
 
             resp = make_response(jsonify({"msg": "ngo deleted successfully!"}), 200)
 
@@ -324,7 +326,7 @@ class DeactivateNgo(Resource):
 
             base_ngo.isActive = False
 
-            session.commit()
+            say.orm.commit()
             resp = make_response(jsonify({"msg": "ngo deactivated successfully!"}), 200)
 
         except Exception as e:
@@ -353,7 +355,7 @@ class ActivateNgo(Resource):
 
             base_ngo.isActive = True
 
-            session.commit()
+            say.orm.commit()
             resp = make_response(jsonify({"msg": "ngo activated successfully!"}), 200)
 
         except Exception as e:

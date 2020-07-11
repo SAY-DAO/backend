@@ -1,9 +1,12 @@
 from hashlib import md5
 
-from say.models import session, obj_to_dict
+import say.orm
+from say.models import obj_to_dict
 from say.models.ngo_model import Ngo
 from say.models.social_worker_model import SocialWorker
 from . import *
+from ..validations import allowed_image
+
 """
 Social Worker APIs
 """
@@ -291,7 +294,7 @@ class AddSocialWorker(Resource):
             new_social_worker.passportUrl = passport_url,
             new_social_worker.avatarUrl = avatar_url,
             new_social_worker.idCardUrl = id_card_url,
-            session.commit()
+            say.orm.commit()
 
             resp = make_response(jsonify({"message": "social_worker is created"}),
                                  200)
@@ -633,7 +636,7 @@ class UpdateSocialWorker(Resource):
                 this_ngo.socialWorkerCount += 1
 
             session.add(base_social_worker)
-            session.commit()
+            say.orm.commit()
             resp = make_response(jsonify(res), 200)
 
         except Exception as e:
@@ -668,7 +671,7 @@ class DeleteSocialWorker(Resource):
             this_ngo.currentChildrenCount -= base_social_worker.currentChildCount
             this_ngo.currentSocialWorkerCount -= 1
 
-            session.commit()
+            say.orm.commit()
             resp = make_response(
                 jsonify({"message": "social worker deleted successfully!"}), 200)
 
@@ -699,7 +702,7 @@ class DeactivateSocialWorker(Resource):
 
             base_social_worker.isActive = False
 
-            session.commit()
+            say.orm.commit()
             resp = make_response(
                 jsonify({"message": "social worker deactivated successfully!"}),
                 200,
@@ -732,7 +735,7 @@ class ActivateSocialWorker(Resource):
 
             base_social_worker.isActive = True
 
-            session.commit()
+            say.orm.commit()
             resp = make_response(
                 jsonify({"message": "social worker deactivated successfully!"}),
                 200)

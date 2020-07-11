@@ -4,7 +4,7 @@ from datetime import datetime, time
 from sqlalchemy.dialects.postgresql import HSTORE
 
 from . import *
-
+from ..orm import session, translation_hybrid
 
 """
 Child Model

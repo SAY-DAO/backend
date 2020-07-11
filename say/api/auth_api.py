@@ -6,9 +6,11 @@ from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_raw_jwt
 from sqlalchemy_utils import PhoneNumber, Country, PhoneNumberParseException
 
-from say.models import session, obj_to_dict, or_, commit, ResetPassword, \
+import say.orm
+from say.models import obj_to_dict, or_, ResetPassword, \
     PhoneVerification, Verification, EmailVerification, User, RevokedToken, \
     and_
+from ..orm import commit
 from say.tasks import subscribe_email
 from say.validations import validate_username, validate_email, validate_phone, \
     validate_password
@@ -257,7 +259,7 @@ class Login(Resource):
                             minutes=app.config['VERIFICATION_EMAIL_MAXAGE']
                         )
 
-                        session.commit()
+                        say.orm.commit()
                         send_verify_email(user, verify.code)
 
                         resp = make_response(
@@ -272,7 +274,7 @@ class Login(Resource):
                     user.locale = Locale(lang)
                     user.lastLogin = datetime.utcnow()
                     user.is_installed = is_installed
-                    session.commit()
+                    say.orm.commit()
 
                     access_token = create_user_access_token(user)
                     refresh_token = create_refresh_token(identity=user.id)
@@ -317,7 +319,7 @@ class LogoutAccess(Resource):
         try:
             revoked_token = RevokedToken(jti=jti)
             session.add(revoked_token)
-            session.commit()
+            say.orm.commit()
             msg = {'message': 'Access token has been revoked'}
         except:
             msg = {'message': 'Something went wrong'}, 500
@@ -334,7 +336,7 @@ class LogoutRefresh(Resource):
         try:
             revoked_token = RevokedToken(jti=jti)
             session.add(revoked_token)
-            session.commit()
+            say.orm.commit()
             msg = {'message': 'Refresh token has been revoked'}
         except:
             msg = {'message': 'Something went wrong'}, 500
@@ -525,6 +527,7 @@ class ConfirmResetPassword(Resource):
         )
 
         return resp
+
 
 """
 API URLs

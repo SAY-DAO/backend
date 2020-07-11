@@ -1,5 +1,6 @@
 from . import *
-from say.models import User, session
+from say.models import User
+from ..orm import session
 from say.validations import validate_username, validate_email, validate_phone
 
 

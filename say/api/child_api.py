@@ -4,14 +4,17 @@ from uuid import uuid4
 import ujson
 from sqlalchemy.orm import selectinload
 
+import say.orm
 from . import *
-from say.models import session, obj_to_dict, commit
+from say.models import obj_to_dict
+from ..orm import session, commit
 from say.models import ChildMigration, Child, ChildNeed, Family, Need, Ngo,\
     SocialWorker, UserFamily, Invitation
 
 
 # api_bp = Blueprint('api', __name__)
 # api = Api(api_bp)
+from ..validations import allowed_voice, allowed_image
 
 """
 Child APIs
@@ -589,7 +592,7 @@ class AddChild(Resource):
             new_child.ngo.childrenCount += 1
             new_child.social_worker.childCount += 1
 
-            session.commit()
+            say.orm.commit()
 
             resp = make_response(jsonify(obj_to_dict(new_child)), 200)
 
@@ -844,7 +847,7 @@ class UpdateChildById(Resource):
                     primary_child.social_worker.currentChildCount -= 1
                     primary_child.ngo.currentChildrenCount -= 1
 
-            session.commit()
+            say.orm.commit()
 
             child_dict = obj_to_dict(primary_child)
             resp = make_response(jsonify(child_dict), 200)
@@ -933,7 +936,7 @@ class DeleteChildById(Resource):
                 child.social_worker.currentChildCount -= 1
                 child.ngo.currentChildrenCount -= 1
 
-                session.commit()
+                say.orm.commit()
 
                 resp = make_response(jsonify({"message": "child deleted successfully!"}), 200)
             else:
@@ -984,7 +987,7 @@ class ConfirmChild(Resource):
                 new_family = Family(id_child=primary_child.id)
 
                 session.add(new_family)
-                session.commit()
+                say.orm.commit()
 
             else:
                 secondary_child = child
@@ -1095,7 +1098,7 @@ class ConfirmChild(Resource):
                     need.id_child = secondary_child.id
                     need.need.imageUrl = need_dump[str(need.id_need)]
 
-                session.commit()
+                say.orm.commit()
 
             resp = make_response(jsonify({"message": "child confirmed successfully!"}), 200)
 
@@ -1191,7 +1194,7 @@ class MigrateChild(Resource):
 
         child.migrations.append(migration)
 
-        session.commit()
+        say.orm.commit()
 
         return make_response(
             jsonify({'message': 'child migrated successfully!'}),

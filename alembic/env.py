@@ -7,6 +7,7 @@ from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 
+import say.orm
 
 sys.path.insert(0, os.getcwd())
 
@@ -75,7 +76,7 @@ def run_migrations_online():
         poolclass=pool.NullPool,
     )
 
-    with connectable.connect() as connection:
+    with say.orm.connect() as connection:
         context.configure(
             connection=connection, target_metadata=target_metadata
         )
