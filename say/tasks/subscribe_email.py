@@ -1,5 +1,5 @@
-from say.api import mailerlite, app
-from . import celery
+from say.app import celery, app
+from say.mailerlite import mailerlite
 
 
 @celery.task()
@@ -10,4 +10,3 @@ def subscribe_email(group_id, data):
             [data],
             as_json=True,
         )
-

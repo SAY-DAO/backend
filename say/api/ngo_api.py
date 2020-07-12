@@ -16,6 +16,7 @@ from ..authorization import authorize
 from ..orm import session
 from ..roles import ADMIN, SUPER_ADMIN, SAY_SUPERVISOR
 from ..validations import allowed_image
+from ..config import config
 
 """
 Activity APIs
@@ -88,7 +89,7 @@ class AddNgo(Resource):
                 )
 
                 temp_logo_path = os.path.join(
-                    app.config["UPLOAD_FOLDER"], str(current_id) + "-ngo"
+                    config["UPLOAD_FOLDER"], str(current_id) + "-ngo"
                 )
 
                 if not os.path.isdir(temp_logo_path):
@@ -258,7 +259,7 @@ class UpdateNgo(Resource):
                         format(base_ngo.id, "03d") + "." + file.filename.split(".")[-1]
                     )
                     temp_logo_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(base_ngo.id) + "-ngo"
+                        config["UPLOAD_FOLDER"], str(base_ngo.id) + "-ngo"
                     )
 
                     if not os.path.isdir(temp_logo_path):

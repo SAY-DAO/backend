@@ -17,6 +17,7 @@ TEST_DB_URL = 'postgresql://postgres:postgres@localhost/say_test'
 def client():
     config['dbUrl'] = TEST_DB_URL
     config['UPLOAD_FOLDER'] = tempfile.mkdtemp()
+    config['TESTING'] = True
 
     with app.test_client() as client:
         yield client

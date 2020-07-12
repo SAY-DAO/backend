@@ -14,12 +14,13 @@ from say.models.need_family_model import NeedFamily
 from say.models.revoked_token_model import RevokedToken
 from say.models.user_family_model import UserFamily
 from say.models.user_model import User
+from .ext import jwt
 from .. import app
-from ..app import jwt
 from ..authorization import authorize, get_user_role, get_user_id
 from ..orm import session
 from ..roles import ADMIN, SUPER_ADMIN, USER
 from ..validations import allowed_image
+from ..config import config
 
 """
 User APIs
@@ -151,7 +152,7 @@ class UpdateUserById(Resource):
                     filename = str(primary_user.id) + '.' + file.filename.split('.')[-1]
 
                     temp_user_path = os.path.join(
-                        app.config['UPLOAD_FOLDER'],
+                        config['UPLOAD_FOLDER'],
                         str(primary_user.id) + '-user',
                     )
 
@@ -431,7 +432,7 @@ class AddUser(Resource):
                 if file and allowed_image(file.filename):
                     filename = str(phone_number) + '.' + file.filename.split('.')[-1]
                     temp_user_path = os.path.join(
-                        app.config['UPLOAD_FOLDER'],
+                        config['UPLOAD_FOLDER'],
                         str(new_user.id) + '-user'
                     )
 

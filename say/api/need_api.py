@@ -19,7 +19,8 @@ from say.models.family_model import Family
 from say.models.need_model import Need
 from say.models.social_worker_model import SocialWorker
 from say.models.user_family_model import UserFamily
-from ..app import DEFAULT_CHILD_ID, app
+from ..config import config
+from ..constants import DEFAULT_CHILD_ID
 from ..authorization import get_user_role, get_user_id, get_sw_ngo_id, authorize
 from ..date import parse_datetime
 from ..decorators import json
@@ -28,6 +29,7 @@ from ..orm import session, commit
 from ..roles import SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, USER, \
     SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
 from ..validations import allowed_image, allowed_receipt
+from ..config import config
 
 """
 Need APIs
@@ -268,7 +270,7 @@ class UpdateNeedById(Resource):
                     filename = str(need.id) + "." + file.filename.split(".")[-1]
 
                     temp_need_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(child.id) + "-child"
+                        config["UPLOAD_FOLDER"], str(child.id) + "-child"
                     )
                     temp_need_path = os.path.join(temp_need_path, "needs")
                     temp_need_path = os.path.join(
@@ -310,7 +312,7 @@ class UpdateNeedById(Resource):
                         filename = str(0) + "." + file2.filename.split(".")[-1]
 
                     temp_need_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(child.id) + "-child"
+                        config["UPLOAD_FOLDER"], str(child.id) + "-child"
                     )
                     temp_need_path = os.path.join(temp_need_path, "needs")
                     temp_need_path = os.path.join(
@@ -622,7 +624,7 @@ class AddNeed(Resource):
             session.flush()
 
             child_path = os.path.join(
-                app.config["UPLOAD_FOLDER"],
+                config["UPLOAD_FOLDER"],
                 str(child.id) + "-child",
             )
             needs_path = os.path.join(child_path, "needs")
@@ -681,6 +683,7 @@ class AddNeed(Resource):
             session.commit()
 
             if new_need.link:
+                from say.tasks import update_need
                 update_need.delay(new_need.id)
 
             resp = make_response(jsonify(obj_to_dict(new_need)), 200)

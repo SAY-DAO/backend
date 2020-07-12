@@ -20,11 +20,12 @@ from say.models.user_model import User
 from say.render_template_i18n import render_template_i18n
 from .. import app
 
-from ..app import idpay
+from ..payment_gateways.idpay import idpay
 from ..authorization import authorize, get_user_id
 from ..orm import commit
 from ..orm import session
 from ..roles import ADMIN, SUPER_ADMIN, SAY_SUPERVISOR
+from ..config import config
 
 
 def validate_amount(need, amount):
@@ -37,7 +38,7 @@ def validate_amount(need, amount):
     return amount
 
 
-def generate_order_id(N=app.config['PAYMENT_ORDER_ID_LENGTH']):
+def generate_order_id(N=config['PAYMENT_ORDER_ID_LENGTH']):
     '''
         Generate a random string containing lowercase, uppercase and digits
     '''
@@ -203,7 +204,7 @@ class AddPayment(Resource):
 
         desc = f'{need.name}-{need.child.sayName}'
         name = f'{user.firstName} {user.lastName}'
-        callback = urljoin(app.config['BASE_URL'], 'api/v2/payment/verify')
+        callback = urljoin(config['BASE_URL'], 'api/v2/payment/verify')
 
         credit = 0
         if use_credit:

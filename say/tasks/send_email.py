@@ -1,7 +1,8 @@
 from flask_mail import Message
 import bs4 as bs
 
-from say.app import celery, mail
+from say.app import celery
+from say.api.ext import mail
 
 '''
 Extract subject (title) from rendered html of email

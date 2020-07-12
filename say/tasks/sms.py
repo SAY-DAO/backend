@@ -1,4 +1,5 @@
 from say.app import celery
+from say.sms import sms_provider
 
 
 @celery.task(bind=True, max_retries=2)

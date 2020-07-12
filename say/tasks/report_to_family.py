@@ -75,7 +75,7 @@ def report_to_family(self, family_id):
         to_members_email = list(
             set(to_members_email).intersection(set(all_members_email))
         )
-        base_url = app.config['BASE_URL']
+        base_url = config['BASE_URL']
         child_page = os.path.join(base_url, 'childPage', str(child_id), '0')
 
         send_embeded_subject_email(

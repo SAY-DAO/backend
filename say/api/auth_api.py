@@ -1,6 +1,5 @@
 import re
 from datetime import timedelta, datetime
-from random import randint
 
 import phonenumbers
 from babel import Locale
@@ -16,13 +15,15 @@ from say.models import obj_to_dict, or_, ResetPassword, \
     and_
 from say.validations import validate_username, validate_email, validate_phone, \
     validate_password, USERNAME_PATTERN, EMAIL_PATTERN
-from ..app import limiter, app
+from .ext import limiter
 from ..authorization import create_user_access_token, authorize
+from ..config import config
 from ..decorators import json
 from ..locale import get_locale
 from ..orm import commit
 from ..orm import session
 from ..schema.user import NewUserSchema
+from ..config import config
 
 """
 Authentication APIs
@@ -194,7 +195,7 @@ class RegisterUser(Resource):
         if new_user.emailAddress:
             from say.tasks import subscribe_email
             subscribe_email.delay(
-                app.config.get('MAILERLITE_GROUP_ID', 'not-entered'),
+                config.get('MAILERLITE_GROUP_ID', 'not-entered'),
                 dict(email=new_user.emailAddress),
             )
 
@@ -358,7 +359,7 @@ class VerifyPhone(Resource):
         verification = PhoneVerification(
             phone_number=phone_number,
             expire_at=datetime.utcnow() + timedelta(
-                minutes=app.config['VERIFICATION_MAXAGE'],
+                minutes=config['VERIFICATION_MAXAGE'],
             ),
         )
         session.add(verification)
@@ -392,7 +393,7 @@ class VerifyEmail(Resource):
         verification = EmailVerification(
             email=email,
             expire_at=datetime.utcnow() + timedelta(
-                minutes=app.config['VERIFICATION_MAXAGE'],
+                minutes=config['VERIFICATION_MAXAGE'],
             ),
         )
         session.add(verification)

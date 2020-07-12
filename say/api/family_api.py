@@ -4,8 +4,8 @@ from flask_restful import Resource
 
 from say.models import User, Family, UserFamily, NeedFamily, Invitation
 from say.validations import VALID_ROLES
-from ..app import app
 from ..authorization import authorize, get_user_id
+from ..config import config
 from ..decorators import json
 from ..orm import commit, session
 from ..roles import SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
@@ -160,7 +160,7 @@ class AddUserToFamily(Resource):
                     .count()
 
                 if family_count == 0:
-                    user.send_installion_notif(app.config['ADD_TO_HOME_URL'])
+                    user.send_installion_notif(config['ADD_TO_HOME_URL'])
 
             new_member = UserFamily(
                 user=user,

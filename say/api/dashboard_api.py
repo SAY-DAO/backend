@@ -2,12 +2,14 @@ from flasgger import swag_from
 from flask import make_response, jsonify
 from flask_restful import Resource
 
-from say.app import api
 from say.authorization import authorize, get_user_id, get_user_role
 from say.models import obj_to_dict
 from say.models.user_model import User
 from say.orm import session
 from say.roles import USER
+from ..config import config
+from ..config import config
+
 
 """
 Dashboard API

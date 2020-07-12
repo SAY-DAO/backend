@@ -14,13 +14,15 @@ from sqlalchemy.orm import selectinload
 from say.models import ChildMigration, Child, ChildNeed, Family, Need, Ngo, \
     SocialWorker, UserFamily, Invitation
 from say.models import obj_to_dict
-from ..app import DEFAULT_CHILD_ID, app
+from ..constants import DEFAULT_CHILD_ID
 from ..authorization import get_user_id, get_sw_ngo_id, get_user_role, authorize
+from ..config import config
 from ..decorators import json
 from ..exceptions import HTTP_PERMISION_DENIED, HTTP_NOT_FOUND
 from ..orm import session, commit
 from ..roles import *
 from ..validations import allowed_voice, allowed_image
+from ..config import config
 
 """
 Child APIs
@@ -88,7 +90,7 @@ class GetAllChildren(Resource):
     def check_privileges(func):  # TODO: priv
 
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrr(*args, **kwargs):
             query = request.args
 
             ngo_id = query.get('ngo_id', None)
@@ -105,7 +107,7 @@ class GetAllChildren(Resource):
 
             return func(*args, **kwargs)
 
-        return wrapper
+        return wrr
 
     @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
@@ -147,7 +149,7 @@ class GetAllChildren(Resource):
                 children=[],
             )
             for child in children:
-                result['children'].append(obj_to_dict(child))
+                result['children'].nd(obj_to_dict(child))
 
             resp = make_response(jsonify(result), 200)
 
@@ -216,7 +218,7 @@ class GetChildById(Resource):
                 del child_dict['id_ngo']
 
                 for member in child.family.current_members():
-                    child_family_member.append(dict(
+                    child_family_member.nd(dict(
                         role=member.userRole,
                         username=member.user.userName,
                     ))
@@ -299,7 +301,7 @@ class GetChildByInvitationToken(Resource):
             user_id=member.id_user
             username=member.user.userName
 
-            child_family_member.append(dict(
+            child_family_member.nd(dict(
                 user_id=user_id,
                 role=member.userRole,
                 username=username,
@@ -350,7 +352,7 @@ class GetChildNeeds(Resource):
                     {'user_avatar': p.user_avatar}
                     for p in need.current_participants
                 ]
-                needs.append(need_dict)
+                needs.nd(need_dict)
 
             result = dict(
                 total_count=len(needs),
@@ -551,7 +553,7 @@ class AddChild(Resource):
                 return resp
 
             child_path = os.path.join(
-                app.config["UPLOAD_FOLDER"],
+                config["UPLOAD_FOLDER"],
                 str(new_child.id) + "-child",
             )
 
@@ -664,7 +666,7 @@ class UpdateChildById(Resource):
                 return
 
             child_path = os.path.join(
-                app.config["UPLOAD_FOLDER"],
+                config["UPLOAD_FOLDER"],
                 str(primary_child.id) + "-child",
             )
 
@@ -693,7 +695,7 @@ class UpdateChildById(Resource):
                     )
 
                     temp_avatar_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
+                        config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
                     )
 
                     for obj in os.listdir(temp_avatar_path):
@@ -727,7 +729,7 @@ class UpdateChildById(Resource):
                     )
 
                     temp_sleptAvatar_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
+                        config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
                     )
 
                     for obj in os.listdir(temp_sleptAvatar_path):
@@ -761,7 +763,7 @@ class UpdateChildById(Resource):
                     )
 
                     temp_voice_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
+                        config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
                     )
 
                     for obj in os.listdir(temp_voice_path):
@@ -1052,10 +1054,10 @@ class ConfirmChild(Resource):
                 family.id_child = secondary_child.id
 
                 old_path = os.path.join(
-                    app.config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
+                    config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
                 )
                 new_path = os.path.join(
-                    app.config["UPLOAD_FOLDER"], str(secondary_child.id) + "-child"
+                    config["UPLOAD_FOLDER"], str(secondary_child.id) + "-child"
                 )
 
                 shutil.copytree(old_path, new_path)
@@ -1198,7 +1200,7 @@ class MigrateChild(Resource):
             new_generated_code=new_generated_code,
         )
 
-        child.migrations.append(migration)
+        child.migrations.nd(migration)
 
         session.commit()
 

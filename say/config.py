@@ -3,6 +3,7 @@ import json
 
 
 conf = {
+    'TESTING': False,
     'dbUrl': 'postgresql://postgres:postgres@localhost/say_en',
     'UPLOAD_FOLDER': 'files',
     'JWT_SECRET_KEY': '6A4FAD52ABC88B144B9A44499A249',

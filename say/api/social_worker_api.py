@@ -16,6 +16,7 @@ from ..orm import session
 from ..roles import ADMIN, SUPER_ADMIN, COORDINATOR, NGO_SUPERVISOR, \
     SAY_SUPERVISOR
 from ..validations import allowed_image
+from ..config import config
 
 """
 Social Worker APIs
@@ -218,7 +219,7 @@ class AddSocialWorker(Resource):
                     ".")[-1]
 
                 temp_avatar_path = os.path.join(
-                    app.config["UPLOAD_FOLDER"],
+                    config["UPLOAD_FOLDER"],
                     str(current_id) + "-socialworker")
 
                 if not os.path.isdir(temp_avatar_path):
@@ -247,7 +248,7 @@ class AddSocialWorker(Resource):
                         ".")[-1]
 
                     temp_idcard_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"],
+                        config["UPLOAD_FOLDER"],
                         str(current_id) + "-socialworker")
 
                     if not os.path.isdir(temp_idcard_path):
@@ -281,7 +282,7 @@ class AddSocialWorker(Resource):
                         ".")[-1]
 
                     temp_passport_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"],
+                        config["UPLOAD_FOLDER"],
                         str(current_id) + "-socialworker")
 
                     if not os.path.isdir(temp_passport_path):
@@ -455,7 +456,7 @@ class UpdateSocialWorker(Resource):
                                  file1.filename.split(".")[-1])
 
                     temp_idcard_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"],
+                        config["UPLOAD_FOLDER"],
                         str(base_social_worker.id) + "-socialworker",
                     )
 
@@ -493,7 +494,7 @@ class UpdateSocialWorker(Resource):
                                  file2.filename.split(".")[-1])
 
                     temp_passport_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"],
+                        config["UPLOAD_FOLDER"],
                         str(base_social_worker.id) + "-socialworker",
                     )
 
@@ -530,7 +531,7 @@ class UpdateSocialWorker(Resource):
                                  file3.filename.split(".")[-1])
 
                     temp_avatar_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"],
+                        config["UPLOAD_FOLDER"],
                         str(base_social_worker.id) + "-socialworker",
                     )
 
