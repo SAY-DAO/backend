@@ -10,13 +10,11 @@ from flask_restful import Resource
 from say.models import obj_to_dict
 from say.models.ngo_model import Ngo
 from say.models.social_worker_model import SocialWorker
-from .. import app
-
 from ..authorization import authorize
+from ..config import config
 from ..orm import session
 from ..roles import ADMIN, SUPER_ADMIN, SAY_SUPERVISOR
 from ..validations import allowed_image
-from ..config import config
 
 """
 Activity APIs

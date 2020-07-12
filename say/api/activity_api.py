@@ -4,7 +4,6 @@ from flask_restful import Resource
 
 from say.models import obj_to_dict
 from say.models.activity_model import Activity
-
 from ..orm import session
 
 """

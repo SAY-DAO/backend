@@ -7,9 +7,6 @@ from say.models import obj_to_dict
 from say.models.user_model import User
 from say.orm import session
 from say.roles import USER
-from ..config import config
-from ..config import config
-
 
 """
 Dashboard API

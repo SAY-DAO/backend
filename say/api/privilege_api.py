@@ -4,7 +4,6 @@ from flask_restful import Resource
 
 from say.models import obj_to_dict
 from say.models.privilege_model import Privilege
-
 from ..authorization import authorize
 from ..orm import session
 from ..roles import ADMIN, SUPER_ADMIN, SAY_SUPERVISOR

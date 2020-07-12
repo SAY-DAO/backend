@@ -3,7 +3,6 @@ from flask_restful import Resource
 
 from say.models import User
 from say.validations import validate_username, validate_email, validate_phone
-
 from ..decorators import json
 from ..orm import session
 

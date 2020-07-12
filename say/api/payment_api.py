@@ -18,14 +18,12 @@ from say.models.payment_model import Payment
 from say.models.user_family_model import UserFamily
 from say.models.user_model import User
 from say.render_template_i18n import render_template_i18n
-from .. import app
-
-from ..payment_gateways.idpay import idpay
 from ..authorization import authorize, get_user_id
+from ..config import config
 from ..orm import commit
 from ..orm import session
+from ..payment_gateways.idpay import idpay
 from ..roles import ADMIN, SUPER_ADMIN, SAY_SUPERVISOR
-from ..config import config
 
 
 def validate_amount(need, amount):

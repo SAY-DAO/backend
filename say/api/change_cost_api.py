@@ -4,7 +4,6 @@ from flask_restful import Resource
 
 from say.models import Need, ChangeCost, ChangeCostStatus, Child, \
     ChangeCostCreateSchema, ChangeCostRejectSchema, ChangeCostAcceptSchema
-
 from ..authorization import get_user_id, get_sw_ngo_id, get_user_role, authorize
 from ..decorators import json
 from ..exceptions import HTTP_NOT_FOUND

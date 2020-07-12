@@ -3,10 +3,8 @@ from flask import request
 from flask_restful import Resource
 
 from say.models import Invitation, InvitationForm, Family
-
 from ..decorators import json
 from ..orm import session, commit
-from ..config import config
 
 
 class InvitationAPI(Resource):

@@ -23,7 +23,6 @@ from ..locale import get_locale
 from ..orm import commit
 from ..orm import session
 from ..schema.user import NewUserSchema
-from ..config import config
 
 """
 Authentication APIs

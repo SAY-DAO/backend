@@ -14,15 +14,14 @@ from sqlalchemy.orm import selectinload
 from say.models import ChildMigration, Child, ChildNeed, Family, Need, Ngo, \
     SocialWorker, UserFamily, Invitation
 from say.models import obj_to_dict
-from ..constants import DEFAULT_CHILD_ID
 from ..authorization import get_user_id, get_sw_ngo_id, get_user_role, authorize
 from ..config import config
+from ..constants import DEFAULT_CHILD_ID
 from ..decorators import json
 from ..exceptions import HTTP_PERMISION_DENIED, HTTP_NOT_FOUND
 from ..orm import session, commit
 from ..roles import *
 from ..validations import allowed_voice, allowed_image
-from ..config import config
 
 """
 Child APIs

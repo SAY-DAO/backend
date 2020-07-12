@@ -15,12 +15,11 @@ from say.models.revoked_token_model import RevokedToken
 from say.models.user_family_model import UserFamily
 from say.models.user_model import User
 from .ext import jwt
-from .. import app
 from ..authorization import authorize, get_user_role, get_user_id
+from ..config import config
 from ..orm import session
 from ..roles import ADMIN, SUPER_ADMIN, USER
 from ..validations import allowed_image
-from ..config import config
 
 """
 User APIs

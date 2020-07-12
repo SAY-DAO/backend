@@ -9,14 +9,12 @@ from flask_restful import Resource
 from say.models import obj_to_dict
 from say.models.ngo_model import Ngo
 from say.models.social_worker_model import SocialWorker
-from .. import app
-
 from ..authorization import authorize, get_user_role, get_user_id
+from ..config import config
 from ..orm import session
 from ..roles import ADMIN, SUPER_ADMIN, COORDINATOR, NGO_SUPERVISOR, \
     SAY_SUPERVISOR
 from ..validations import allowed_image
-from ..config import config
 
 """
 Social Worker APIs
