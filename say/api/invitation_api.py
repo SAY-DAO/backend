@@ -1,6 +1,11 @@
-from . import *
-from ..orm import session, commit
+from flasgger import swag_from
+from flask import request
+from flask_restful import Resource
+
 from say.models import Invitation, InvitationForm, Family
+
+from ..decorators import json
+from ..orm import session, commit
 
 
 class InvitationAPI(Resource):
@@ -35,5 +40,4 @@ class InvitationAPI(Resource):
         return invitation
 
 
-api.add_resource(InvitationAPI, "/api/v2/invitations/")
 

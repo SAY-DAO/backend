@@ -1,15 +1,17 @@
+import os
 from collections import OrderedDict
+from datetime import datetime
 from uuid import uuid4
 
 import ujson
 from dictdiffer import diff
-from flask import json as json_
+from flasgger import swag_from
+from flask import json as json_, request, make_response, jsonify
+from flask_restful import Resource
 from sqlalchemy import or_
+from werkzeug.utils import secure_filename
 
-import say.orm
-from . import *
 from say.models import obj_to_dict
-from ..orm import session, commit
 from say.models.activity_model import Activity
 from say.models.child_model import Child
 from say.models.child_need_model import ChildNeed
@@ -17,7 +19,14 @@ from say.models.family_model import Family
 from say.models.need_model import Need
 from say.models.social_worker_model import SocialWorker
 from say.models.user_family_model import UserFamily
-from say.tasks import update_need
+from ..app import DEFAULT_CHILD_ID, app
+from ..authorization import get_user_role, get_user_id, get_sw_ngo_id, authorize
+from ..date import parse_datetime
+from ..decorators import json
+from ..exceptions import HTTP_NOT_FOUND, HTTP_PERMISION_DENIED
+from ..orm import session, commit
+from ..roles import SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, USER, \
+    SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
 from ..validations import allowed_image, allowed_receipt
 
 """
@@ -337,6 +346,7 @@ class UpdateNeedById(Resource):
                 if new_link != need.link:
                     need.link = new_link
                     session.flush()
+                    from say.tasks import update_need
                     update_need.delay(need.id, force=True)
 
             if "affiliateLinkUrl" in request.form.keys():
@@ -411,7 +421,7 @@ class UpdateNeedById(Resource):
 
             activity.diff = json_.dumps(list(diff(temp, obj_to_dict(need))))
 
-            say.orm.commit()
+            session.commit()
             secondary_need = obj_to_dict(need)
             resp = make_response(jsonify(secondary_need), 200)
 
@@ -492,7 +502,7 @@ class ConfirmNeed(Resource):
             child.social_worker.currentNeedCount += 1
 
             session.add(new_child_need)
-            say.orm.commit()
+            session.commit()
 
             resp = make_response(jsonify({"message": "need confirmed successfully!"}), 200)
 
@@ -668,7 +678,7 @@ class AddNeed(Resource):
                     file2.save(receipt_path)
                     new_need.receipts = '/' + receipt_path
 
-            say.orm.commit()
+            session.commit()
 
             if new_need.link:
                 update_need.delay(new_need.id)
@@ -687,13 +697,3 @@ class AddNeed(Resource):
 """
 API URLs
 """
-
-api.add_resource(GetNeedById, "/api/v2/need/needId=<need_id>")
-api.add_resource(GetAllNeeds, "/api/v2/need/all/confirm=<confirm>")
-api.add_resource(UpdateNeedById, "/api/v2/need/update/needId=<need_id>")
-api.add_resource(DeleteNeedById, "/api/v2/need/delete/needId=<need_id>")
-api.add_resource(
-    ConfirmNeed,
-    "/api/v2/need/confirm/needId=<need_id>",
-)
-api.add_resource(AddNeed, "/api/v2/need/")

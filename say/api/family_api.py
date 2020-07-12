@@ -1,8 +1,14 @@
-import say.orm
-from say.validations import VALID_ROLES
-from ..orm import commit
+from flasgger import swag_from
+from flask import make_response, jsonify, request
+from flask_restful import Resource
+
 from say.models import User, Family, UserFamily, NeedFamily, Invitation
-from . import *
+from say.validations import VALID_ROLES
+from ..app import app
+from ..authorization import authorize, get_user_id
+from ..decorators import json
+from ..orm import commit, session
+from ..roles import SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
 
 """
 Family APIs
@@ -180,7 +186,6 @@ class AddUserToFamily(Resource):
 
         family.child.sayFamilyCount += 1
 
-
         return family
 
 
@@ -221,7 +226,7 @@ class LeaveFamily(Resource):
 
             family.child.sayFamilyCount -= 1
 
-            say.orm.commit()
+            session.commit()
 
             resp = make_response(jsonify({"message": "DELETED SUCCESSFULLY!"}), 200)
 
@@ -237,14 +242,4 @@ class LeaveFamily(Resource):
 """
 API URLs
 """
-
-api.add_resource(GetFamilyById, "/api/v2/family/familyId=<family_id>")
-api.add_resource(
-    AddUserToFamily, "/api/v2/family/add"
-)
-api.add_resource(GetAllFamilies, "/api/v2/family/all")
-api.add_resource(
-    LeaveFamily,
-    "/api/v2/family/<family_id>/leave",
-)
 

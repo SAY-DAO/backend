@@ -1,8 +1,11 @@
-from . import *
+from flasgger import swag_from
+from flask_restful import Resource
+
 from say.models import User
-from ..orm import session
 from say.validations import validate_username, validate_email, validate_phone
 
+from ..decorators import json
+from ..orm import session
 
 '''
 Check APIs
@@ -62,8 +65,4 @@ class CheckPhone(Resource):
 
         return {'message': 'Phone is avaliable'}, 200
 
-
-api.add_resource(CheckUsername, '/api/v2/check/username/<username>')
-api.add_resource(CheckEmail, '/api/v2/check/email/<email>')
-api.add_resource(CheckPhone, '/api/v2/check/phone/<phone>')
 

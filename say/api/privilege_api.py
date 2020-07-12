@@ -1,7 +1,13 @@
-import say.orm
+from flasgger import swag_from
+from flask import make_response, jsonify, request
+from flask_restful import Resource
+
 from say.models import obj_to_dict
 from say.models.privilege_model import Privilege
-from . import *
+
+from ..authorization import authorize
+from ..orm import session
+from ..roles import ADMIN, SUPER_ADMIN, SAY_SUPERVISOR
 
 """
 Privilege APIs
@@ -47,7 +53,7 @@ class AddPrivilege(Resource):
             new_privilege = Privilege(name=name, privilege=privilege)
 
             session.add(new_privilege)
-            say.orm.commit()
+            session.commit()
 
             resp = make_response(jsonify({"message": "new Privilege is added"}), 200)
 
@@ -160,7 +166,7 @@ class UpdatePrivilege(Resource):
                 base_privilege.privilege = int(request.form["privilege"])
 
             res = obj_to_dict(base_privilege)
-            say.orm.commit()
+            session.commit()
 
             resp = make_response(jsonify(res), 200)
 
@@ -177,11 +183,3 @@ class UpdatePrivilege(Resource):
 API URLs
 """
 
-api.add_resource(GetAllPrivileges, "/api/v2/privilege/all")
-api.add_resource(AddPrivilege, "/api/v2/privilege/add")
-api.add_resource(GetPrivilegeByName, "/api/v2/privilege/name=<name>")
-api.add_resource(GetPrivilegeById, "/api/v2/privilege/privilegeId=<privilege_id>")
-api.add_resource(
-    GetPrivilegeByPrivilege, "/api/v2/privilege/privilege=<privilege_type>"
-)
-api.add_resource(UpdatePrivilege, "/api/v2/privilege/update/privilegeId=<privilege_id>")

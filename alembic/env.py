@@ -2,12 +2,10 @@ import os
 import sys
 from logging.config import fileConfig
 
-from flask import json
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 
-import say.orm
 
 sys.path.insert(0, os.getcwd())
 
@@ -30,9 +28,8 @@ target_metadata = base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-with open("./config.json") as config_file:
-    conf = json.load(config_file)
-    config.set_main_option('sqlalchemy.url', conf.get('dbUrl', ''))
+from say.config import config as conf
+config.set_main_option('sqlalchemy.url', conf.get('dbUrl', ''))
 
 db_url = os.environ.get('DB')
 if db_url:
@@ -76,7 +73,7 @@ def run_migrations_online():
         poolclass=pool.NullPool,
     )
 
-    with say.orm.connect() as connection:
+    with connectable.connect() as connection:
         context.configure(
             connection=connection, target_metadata=target_metadata
         )

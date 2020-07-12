@@ -1,10 +1,20 @@
+import datetime
+import os
 import traceback
+from datetime import datetime
 
-import say.orm
+from flasgger import swag_from
+from flask import make_response, jsonify, request
+from flask_restful import Resource
+
 from say.models import obj_to_dict
 from say.models.ngo_model import Ngo
 from say.models.social_worker_model import SocialWorker
-from . import *
+from .. import app
+
+from ..authorization import authorize
+from ..orm import session
+from ..roles import ADMIN, SUPER_ADMIN, SAY_SUPERVISOR
 from ..validations import allowed_image
 
 """
@@ -126,7 +136,7 @@ class AddNgo(Resource):
             )
 
             session.add(new_ngo)
-            say.orm.commit()
+            session.commit()
 
             resp = make_response(jsonify({"msg": "ngo is created"}), 200)
             resp.headers["Access-Control-Allow-Origin"] = "*"
@@ -270,7 +280,7 @@ class UpdateNgo(Resource):
             res = obj_to_dict(base_ngo)
 
             resp = make_response(jsonify(res), 200)
-            say.orm.commit()
+            session.commit()
 
         except Exception as e:
             print(e)
@@ -296,7 +306,7 @@ class DeleteNgo(Resource):
 
             base_ngo.isDeleted = True
 
-            say.orm.commit()
+            session.commit()
 
             resp = make_response(jsonify({"msg": "ngo deleted successfully!"}), 200)
 
@@ -326,7 +336,7 @@ class DeactivateNgo(Resource):
 
             base_ngo.isActive = False
 
-            say.orm.commit()
+            session.commit()
             resp = make_response(jsonify({"msg": "ngo deactivated successfully!"}), 200)
 
         except Exception as e:
@@ -355,7 +365,7 @@ class ActivateNgo(Resource):
 
             base_ngo.isActive = True
 
-            say.orm.commit()
+            session.commit()
             resp = make_response(jsonify({"msg": "ngo activated successfully!"}), 200)
 
         except Exception as e:
@@ -370,11 +380,3 @@ class ActivateNgo(Resource):
 """
 API URLs
 """
-
-api.add_resource(GetAllNgo, "/api/v2/ngo/all")
-api.add_resource(AddNgo, "/api/v2/ngo/add")
-api.add_resource(GetNgoById, "/api/v2/ngo/ngoId=<ngo_id>")
-api.add_resource(UpdateNgo, "/api/v2/ngo/update/ngoId=<ngo_id>")
-api.add_resource(DeleteNgo, "/api/v2/ngo/delete/ngoId=<ngo_id>")
-api.add_resource(DeactivateNgo, "/api/v2/ngo/deactivate/ngoId=<ngo_id>")
-api.add_resource(ActivateNgo, "/api/v2/ngo/activate/ngoId=<ngo_id>")

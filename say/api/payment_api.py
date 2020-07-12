@@ -1,13 +1,16 @@
+import datetime
 import random
 import string
 from datetime import datetime
 from urllib.parse import urljoin
 
+from flasgger import swag_from
+from flask import Response
+from flask import make_response, jsonify, request
+from flask_restful import Resource
 from werkzeug.exceptions import abort
 
-from . import *
 from say.models import obj_to_dict
-from ..orm import session, commit
 from say.models.child_need_model import ChildNeed
 from say.models.family_model import Family
 from say.models.need_model import Need
@@ -15,6 +18,13 @@ from say.models.payment_model import Payment
 from say.models.user_family_model import UserFamily
 from say.models.user_model import User
 from say.render_template_i18n import render_template_i18n
+from .. import app
+
+from ..app import idpay
+from ..authorization import authorize, get_user_id
+from ..orm import commit
+from ..orm import session
+from ..roles import ADMIN, SUPER_ADMIN, SAY_SUPERVISOR
 
 
 def validate_amount(need, amount):
@@ -73,7 +83,7 @@ class GetAllPayment(Resource):
             return Response(status=400)
 
         payments = session.query(self.model) \
-            .filter_by(verified.isnot(None))
+            .filter(Payment.verified.isnot(None))
 
         if need_id:
             payments = payments.filter_by(id_need=need_id)
@@ -321,10 +331,3 @@ class VerifyPayment(Resource):
             user=user,
             locale=user.locale,
         ))
-
-
-api.add_resource(AddPayment, "/api/v2/payment")
-api.add_resource(GetPayment, "/api/v2/payment/<int:id>")
-api.add_resource(GetAllPayment, "/api/v2/payment/all")
-api.add_resource(VerifyPayment, "/api/v2/payment/verify")
-

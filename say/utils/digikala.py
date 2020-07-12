@@ -1,7 +1,7 @@
 import re
 import requests
-from ..api import cache
 
+from say.app import cache
 
 COST_PATTERN = r's-rrp-price ">(.*?)<|js-price-value">(.*?)<'
 DISCONTINUED_PATTERN = 'c-product__stock-status--stop-production'

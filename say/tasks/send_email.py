@@ -1,15 +1,15 @@
 from flask_mail import Message
 import bs4 as bs
 
-from . import celery
-from say.api import mail
-
+from say.app import celery, mail
 
 '''
 Extract subject (title) from rendered html of email
 
 <title ...> some title </title>
 '''
+
+
 def get_subject_from_html(html):
     soup = bs.BeautifulSoup(html)
     subject_element = soup.find('title')

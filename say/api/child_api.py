@@ -1,19 +1,25 @@
+import functools
+import os
+import shutil
 from collections import OrderedDict
+from datetime import datetime
 from uuid import uuid4
 
 import ujson
+from flasgger import swag_from
+from flask import request, make_response, jsonify
+from flask_restful import Resource
 from sqlalchemy.orm import selectinload
 
-import say.orm
-from . import *
-from say.models import obj_to_dict
-from ..orm import session, commit
-from say.models import ChildMigration, Child, ChildNeed, Family, Need, Ngo,\
+from say.models import ChildMigration, Child, ChildNeed, Family, Need, Ngo, \
     SocialWorker, UserFamily, Invitation
-
-
-# api_bp = Blueprint('api', __name__)
-# api = Api(api_bp)
+from say.models import obj_to_dict
+from ..app import DEFAULT_CHILD_ID, app
+from ..authorization import get_user_id, get_sw_ngo_id, get_user_role, authorize
+from ..decorators import json
+from ..exceptions import HTTP_PERMISION_DENIED, HTTP_NOT_FOUND
+from ..orm import session, commit
+from ..roles import *
 from ..validations import allowed_voice, allowed_image
 
 """
@@ -592,7 +598,7 @@ class AddChild(Resource):
             new_child.ngo.childrenCount += 1
             new_child.social_worker.childCount += 1
 
-            say.orm.commit()
+            session.commit()
 
             resp = make_response(jsonify(obj_to_dict(new_child)), 200)
 
@@ -847,7 +853,7 @@ class UpdateChildById(Resource):
                     primary_child.social_worker.currentChildCount -= 1
                     primary_child.ngo.currentChildrenCount -= 1
 
-            say.orm.commit()
+            session.commit()
 
             child_dict = obj_to_dict(primary_child)
             resp = make_response(jsonify(child_dict), 200)
@@ -936,7 +942,7 @@ class DeleteChildById(Resource):
                 child.social_worker.currentChildCount -= 1
                 child.ngo.currentChildrenCount -= 1
 
-                say.orm.commit()
+                session.commit()
 
                 resp = make_response(jsonify({"message": "child deleted successfully!"}), 200)
             else:
@@ -987,7 +993,7 @@ class ConfirmChild(Resource):
                 new_family = Family(id_child=primary_child.id)
 
                 session.add(new_family)
-                say.orm.commit()
+                session.commit()
 
             else:
                 secondary_child = child
@@ -1098,7 +1104,7 @@ class ConfirmChild(Resource):
                     need.id_child = secondary_child.id
                     need.need.imageUrl = need_dump[str(need.id_need)]
 
-                say.orm.commit()
+                session.commit()
 
             resp = make_response(jsonify({"message": "child confirmed successfully!"}), 200)
 
@@ -1194,7 +1200,7 @@ class MigrateChild(Resource):
 
         child.migrations.append(migration)
 
-        say.orm.commit()
+        session.commit()
 
         return make_response(
             jsonify({'message': 'child migrated successfully!'}),
@@ -1288,11 +1294,11 @@ class GoneChild(Resource):
 
 class GetActiveChildrenApi(Resource):
 
-     @authorize(SUPER_ADMIN, ADMIN)  # TODO: priv
-     @json
-     @commit
-     @swag_from('./docs/child/active-children.yml')
-     def get(self):
+    @authorize(SUPER_ADMIN, ADMIN)  # TODO: priv
+    @json
+    @commit
+    @swag_from('./docs/child/active-children.yml')
+    def get(self):
         return Child.get_actives() \
             .order_by(Child.created)
 
@@ -1300,29 +1306,3 @@ class GetActiveChildrenApi(Resource):
 """
 API URLs
 """
-api.add_resource(GetActiveChildrenApi, "/api/v2/child/actives")
-api.add_resource(GetChildById, "/api/v2/child/childId=<child_id>&confirm=<confirm>")
-api.add_resource(
-    GetChildByInvitationToken,
-    "/api/v2/child/invitations/<token>",
-)
-api.add_resource(GetChildNeeds, "/api/v2/child/childId=<child_id>/needs")
-api.add_resource(GetAllChildren, "/api/v2/child/all/confirm=<confirm>")
-api.add_resource(
-    AddChild,
-    "/api/v2/child/add/",
-)
-api.add_resource(UpdateChildById, "/api/v2/child/update/childId=<child_id>")
-api.add_resource(DeleteChildById, "/api/v2/child/delete/childId=<child_id>")
-api.add_resource(
-    ConfirmChild,
-    "/api/v2/child/confirm/childId=<child_id>",
-)
-api.add_resource(
-    MigrateChild,
-    "/api/v2/child/migrate/childId=<child_id>",
-)
-api.add_resource(
-    GoneChild,
-    "/api/v2/child/gone/childId=<child_id>&status=<new_status>",
-)

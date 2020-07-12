@@ -2,13 +2,13 @@ from datetime import datetime, timedelta
 from sqlalchemy import and_, or_
 
 import say.orm
-from say.api import celery
+from say.app import celery
 
 
 @celery.task(base=celery.DBTask, bind=True)
 def update_needs(self):
     from say.models.need_model import Need
-    needs = say.orm.session.query(Need) \
+    needs = self.session.query(Need) \
         .filter(
             Need.type == 1,
             or_(
@@ -32,14 +32,14 @@ def update_needs(self):
 def update_need(self, need_id, force=False):
     from say.models.need_model import Need
     try:
-        need = say.orm.session.query(Need) \
+        need = self.session.query(Need) \
             .with_for_update() \
             .get(need_id)
 
         data = need.update()
-        say.orm.commit()
+        self.session.commit()
     except:
-        say.orm.session.rollback()
+        self.session.rollback()
         self.retry(countdown=3**self.request.retries)
 
     return data

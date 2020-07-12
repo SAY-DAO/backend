@@ -1,10 +1,20 @@
+import datetime
+import os
 from hashlib import md5
 
-import say.orm
+from flasgger import swag_from
+from flask import make_response, jsonify, request
+from flask_restful import Resource
+
 from say.models import obj_to_dict
 from say.models.ngo_model import Ngo
 from say.models.social_worker_model import SocialWorker
-from . import *
+from .. import app
+
+from ..authorization import authorize, get_user_role, get_user_id
+from ..orm import session
+from ..roles import ADMIN, SUPER_ADMIN, COORDINATOR, NGO_SUPERVISOR, \
+    SAY_SUPERVISOR
 from ..validations import allowed_image
 
 """
@@ -294,7 +304,7 @@ class AddSocialWorker(Resource):
             new_social_worker.passportUrl = passport_url,
             new_social_worker.avatarUrl = avatar_url,
             new_social_worker.idCardUrl = id_card_url,
-            say.orm.commit()
+            session.commit()
 
             resp = make_response(jsonify({"message": "social_worker is created"}),
                                  200)
@@ -636,7 +646,7 @@ class UpdateSocialWorker(Resource):
                 this_ngo.socialWorkerCount += 1
 
             session.add(base_social_worker)
-            say.orm.commit()
+            session.commit()
             resp = make_response(jsonify(res), 200)
 
         except Exception as e:
@@ -671,7 +681,7 @@ class DeleteSocialWorker(Resource):
             this_ngo.currentChildrenCount -= base_social_worker.currentChildCount
             this_ngo.currentSocialWorkerCount -= 1
 
-            say.orm.commit()
+            session.commit()
             resp = make_response(
                 jsonify({"message": "social worker deleted successfully!"}), 200)
 
@@ -702,7 +712,7 @@ class DeactivateSocialWorker(Resource):
 
             base_social_worker.isActive = False
 
-            say.orm.commit()
+            session.commit()
             resp = make_response(
                 jsonify({"message": "social worker deactivated successfully!"}),
                 200,
@@ -735,7 +745,7 @@ class ActivateSocialWorker(Resource):
 
             base_social_worker.isActive = True
 
-            say.orm.commit()
+            session.commit()
             resp = make_response(
                 jsonify({"message": "social worker deactivated successfully!"}),
                 200)
@@ -753,26 +763,3 @@ class ActivateSocialWorker(Resource):
 API URLs
 """
 
-api.add_resource(GetAllSocialWorkers, "/api/v2/socialWorker/all")
-api.add_resource(AddSocialWorker, "/api/v2/socialWorker/add")
-api.add_resource(
-    GetSocialWorkerById,
-    "/api/v2/socialWorker/socialWorkerId=<social_worker_id>",
-)
-api.add_resource(GetSocialWorkerByNgoId, "/api/v2/socialWorker/ngoId=<ngo_id>")
-api.add_resource(
-    UpdateSocialWorker,
-    "/api/v2/socialWorker/update/socialWorkerId=<social_worker_id>",
-)
-api.add_resource(
-    DeleteSocialWorker,
-    "/api/v2/socialWorker/delete/socialWorkerId=<social_worker_id>",
-)
-api.add_resource(
-    DeactivateSocialWorker,
-    "/api/v2/socialWorker/deactivate/socialWorkerId=<social_worker_id>",
-)
-api.add_resource(
-    ActivateSocialWorker,
-    "/api/v2/socialWorker/activate/socialWorkerId=<social_worker_id>",
-)

@@ -4,18 +4,19 @@ from sqlalchemy import and_, or_
 import say.orm
 from say.api import celery
 
+
 # This task is a temporary social worker that deliver a product to child
 @celery.task(base=celery.DBTask, bind=True, max_retries=2)
 def change_need_status_to_delivered(self, need_id):
     from say.models.need_model import Need
     try:
-        need = say.orm.session.query(Need).get(need_id)
+        need = self.session.query(Need).get(need_id)
         need.status = 5
         need.child_delivery_date = need.ngo_delivery_date
-        say.orm.commit()
+        self.session.commit()
     except Exception as ex:
         print(str(ex))
-        say.orm.session.rollback()
+        self.session.rollback()
         self.retry(countdown=3**self.request.retries)
         raise
 
@@ -25,7 +26,7 @@ def change_need_status_to_delivered(self, need_id):
 @celery.task(base=celery.DBTask, bind=True)
 def delivere_to_child(self):
     from say.models.need_model import Need
-    needs_id = say.orm.session.query(Need.id) \
+    needs_id = self.session.query(Need.id) \
         .filter(
             Need.type == 1,
             Need.status == 4,

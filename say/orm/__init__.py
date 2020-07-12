@@ -18,12 +18,6 @@ from ..config import config
 from ..locale import get_locale, DEFAULT_LOCALE
 
 
-def create_engine(url):
-    return sa_create_engine(url, pool_pre_ping=True)
-
-
-engine = create_engine(config['dbUrl'])
-
 metadata = MetaData(
     naming_convention={
         "ix": "%(column_0_label)s_idx",
@@ -36,8 +30,12 @@ metadata = MetaData(
 
 base = declarative_base(cls=BaseModel, metadata=metadata)
 
+
+def create_engine(url, *args, **kwargs):
+    return sa_create_engine(url, pool_pre_ping=True, *args, **kwargs)
+
+
 session_factory = sessionmaker(
-    engine,
     autoflush=False,
     autocommit=False,
     expire_on_commit=True,
@@ -168,18 +166,18 @@ translation_hybrid = TranslationHybrid(
 )
 
 
-@event.listens_for(engine, "connect")
-def connect(dbapi_connection, connection_record):
-    connection_record.info['pid'] = os.getpid()
-
-
-@event.listens_for(engine, "checkout")
-def checkout(dbapi_connection, connection_record, connection_proxy):
-    pid = os.getpid()
-    if connection_record.info['pid'] != pid:
-        connection_record.connection = connection_proxy.connection = None
-        raise exc.DisconnectionError(
-                "Connection record belongs to pid %s, "
-                "attempting to check out in pid %s" %
-                (connection_record.info['pid'], pid)
-        )
+# @event.listens_for(engine, "connect")
+# def connect(dbapi_connection, connection_record):
+#     connection_record.info['pid'] = os.getpid()
+#
+#
+# @event.listens_for(engine, "checkout")
+# def checkout(dbapi_connection, connection_record, connection_proxy):
+#     pid = os.getpid()
+#     if connection_record.info['pid'] != pid:
+#         connection_record.connection = connection_proxy.connection = None
+#         raise exc.DisconnectionError(
+#                 "Connection record belongs to pid %s, "
+#                 "attempting to check out in pid %s" %
+#                 (connection_record.info['pid'], pid)
+#         )

@@ -1,7 +1,12 @@
-import say.orm
+from flasgger import swag_from
+from flask import make_response, jsonify, request
+from flask_restful import Resource
+
 from say.models import obj_to_dict
 from say.models.activity_model import Activity
-from . import *
+
+from ..orm import session
+
 """
 Activity APIs
 """
@@ -155,7 +160,7 @@ class AddActivity(Resource):
                                          activityCode=activity_code)
 
             session.add(new_activity)
-            say.orm.commit()
+            session.commit()
 
             resp = make_response(jsonify({"message": "new activity added!"}),
                                  200)
@@ -175,10 +180,3 @@ class AddActivity(Resource):
 API URLs
 """
 
-api.add_resource(GetActivityById, "/api/v2/activity/activityId=<activity_id>")
-api.add_resource(GetActivityBySocialWorker,
-                 "/api/v2/activity/socialWorker=<social_worker_id>")
-api.add_resource(GetActivityByType, "/api/v2/activity/type=<activity_code>")
-api.add_resource(GetAllActivities, "/api/v2/activity/all")
-api.add_resource(AddActivity,
-                 "/api/v2/activity/add/socialWorker=<social_worker_id>")

@@ -1,16 +1,24 @@
+import datetime
+import functools
+import os
 from random import randint
 
-import say.orm
-from . import *
-from say.api import jwt
+from flasgger import swag_from
+from flask import make_response, jsonify, request
+from flask_restful import Resource
+
 from say.gender import Gender
 from say.models import obj_to_dict
-from ..orm import session
 from say.models.family_model import Family
 from say.models.need_family_model import NeedFamily
 from say.models.revoked_token_model import RevokedToken
 from say.models.user_family_model import UserFamily
 from say.models.user_model import User
+from .. import app
+from ..app import jwt
+from ..authorization import authorize, get_user_role, get_user_id
+from ..orm import session
+from ..roles import ADMIN, SUPER_ADMIN, USER
 from ..validations import allowed_image
 
 """
@@ -244,7 +252,7 @@ class UpdateUserById(Resource):
 
             secondary_user = obj_to_dict(primary_user)
 
-            say.orm.commit()
+            session.commit()
             resp = make_response(jsonify(secondary_user), 200)
 
         except Exception as e:
@@ -291,7 +299,7 @@ class DeleteUserById(Resource):
 
             user.isDeleted = True
 
-            say.orm.commit()
+            session.commit()
 
             resp = make_response(jsonify({"message": "user deleted successfully!"}), 200)
 
@@ -443,7 +451,7 @@ class AddUser(Resource):
 
             new_user.avatarUrl = avatar_url
 
-            say.orm.commit()
+            session.commit()
 
             resp = make_response(jsonify({"message": "USER ADDED SUCCESSFULLY!"}), 200)
 
@@ -461,12 +469,4 @@ class AddUser(Resource):
 """
 API URLs
 """
-
-api.add_resource(GetUserById, "/api/v2/user/userId=<user_id>")
-api.add_resource(GetUserChildren, "/api/v2/user/children/userId=<user_id>")
-api.add_resource(UpdateUserById, "/api/v2/user/update/userId=<user_id>")
-api.add_resource(DeleteUserById, "/api/v2/user/delete/userId=<user_id>")
-api.add_resource(AddUser, "/api/v2/user/add")
-api.add_resource(GetUserRole, "/api/v2/user/role/userId=<user_id>&childId=<child_id>")
-
 

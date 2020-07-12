@@ -7,10 +7,9 @@ from sqlalchemy.orm import object_session
 from . import *
 from .need_family_model import NeedFamily
 from .payment_model import Payment
-from .user_model import User
-from say.api import app
 from say.statuses import NeedStatuses
 from say.constants import DIGIKALA_TITLE_SEP
+from .. import config
 from ..orm import session, translation_hybrid
 
 """
@@ -121,14 +120,14 @@ class Need(base, Timestamp):
     def unpayable(self):
         return bool(self.unavailable_from \
             and self.unavailable_from < datetime.utcnow() \
-                - timedelta(days=app.config['PRODUCT_UNPAYABLE_PERIOD'])
+                - timedelta(days=config['PRODUCT_UNPAYABLE_PERIOD'])
         )
 
     @unpayable.expression
     def unpayable(cls):
         return cls.unavailable_from \
             and cls.unavailable_from < datetime.utcnow() \
-                - timedelta(days=app.config['PRODUCT_UNPAYABLE_PERIOD'])
+                - timedelta(days=config['PRODUCT_UNPAYABLE_PERIOD'])
 
     @hybrid_property
     def unpayable_from(self):
@@ -136,7 +135,7 @@ class Need(base, Timestamp):
             return None
 
         return self.unavailable_from \
-            + timedelta(days=app.config['PRODUCT_UNPAYABLE_PERIOD'])
+            + timedelta(days=config['PRODUCT_UNPAYABLE_PERIOD'])
 
     @unpayable_from.expression
     def unpayable_from(cls):
@@ -144,7 +143,7 @@ class Need(base, Timestamp):
             return None
 
         return cls.unavailable_from \
-            + timedelta(days=app.config['PRODUCT_UNPAYABLE_PERIOD'])
+            + timedelta(days=config['PRODUCT_UNPAYABLE_PERIOD'])
 
     @hybrid_property
     def progress(self):
@@ -351,6 +350,8 @@ class Need(base, Timestamp):
         return
 
     def say_extra_payment(self):
+        from .user_model import User
+
         extra_cost = self.purchase_cost - self.paid
 
         session = object_session(self)
@@ -421,7 +422,7 @@ class Need(base, Timestamp):
         from say.tasks import change_need_status_to_delivered
 
         deliver_to_child_delay = datetime.utcnow() \
-            + timedelta(seconds=app.config['DELIVER_TO_CHILD_DELAY'])
+            + timedelta(seconds=config['DELIVER_TO_CHILD_DELAY'])
 
         change_need_status_to_delivered.apply_async(
             (self.id,),

@@ -1,8 +1,12 @@
 from celery import Celery
 from celery.schedules import crontab
 
-from say.api import CELERY_TASK_LIST
-from say.orm import session
+from say.config import config
+from say.orm import session, create_engine, init_model
+
+CELERY_TASK_LIST = [
+    'say.tasks',
+]
 
 beat = {
     'report-to-social-workers': {
@@ -37,11 +41,15 @@ def create_celery_app(app):
     """
     app = app
 
-    celery = Celery(app.import_name, broker=app.config['broker_url'],
+    celery = Celery(app.import_name, broker=config['broker_url'],
                     include=CELERY_TASK_LIST)
     celery.conf.timezone = 'UTC'
     celery.conf.beat_schedule = beat
-    celery.conf.update(app.config)
+    celery.conf.update(config)
+
+    engine = create_engine(url=config['dbUrl'])
+    init_model(engine)
+
     TaskBase = celery.Task
 
     class DBTask(TaskBase):

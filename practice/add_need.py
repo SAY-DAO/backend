@@ -1,4 +1,4 @@
-import say.orm
+from say.orm import session
 
 
 def insert(child_id):
@@ -37,5 +37,5 @@ def insert(child_id):
         s = sm()
         s.add(n)
         s.add(cn)
-        say.orm.commit()
+        session.commit()
     return n

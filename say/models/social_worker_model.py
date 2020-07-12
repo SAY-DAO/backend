@@ -6,7 +6,6 @@ import say.orm
 from . import *
 from say.render_template_i18n import render_template_i18n
 from say.formatters import expose_datetime
-from say.utils import surname
 from say.locale import ChangeLocaleTo
 
 
@@ -68,6 +67,7 @@ class SocialWorker(base, Timestamp):
         from .child_model import Child
         from .child_need_model import ChildNeed
         from .ngo_model import Ngo
+        from say.utils import surname
 
         session = object_session(self)
         needs = None
@@ -142,6 +142,6 @@ class SocialWorker(base, Timestamp):
                 for need in products:
                     need.isReported = True
 
-            say.orm.commit()
+            session.commit()
             return [need.id for need in needs]
 
