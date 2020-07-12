@@ -1,5 +1,6 @@
 import os
 import tempfile
+from random import randint
 
 import pytest
 import sqlalchemy.orm.session
@@ -8,6 +9,18 @@ from say.app import app
 from say.config import config
 from say.orm import setup_schema, session_factory, create_engine, init_model
 from say.db import PostgreSQLManager as DBManager
+
+from flask.testing import FlaskClient
+
+
+# class CustomClient(FlaskClient):
+#     def __init__(self, *args, **kwargs):
+#         self._authorization = kwargs.pop("authorization")
+#         super(CustomClient, self).__init__(*args, **kwargs)
+#
+#
+# app.test_client_class = CustomClient
+# client = app.test_client(authentication='Basic ....')
 
 
 TEST_DB_URL = 'postgresql://postgres:postgres@localhost/say_test'
@@ -18,13 +31,16 @@ def client():
     config['dbUrl'] = TEST_DB_URL
     config['UPLOAD_FOLDER'] = tempfile.mkdtemp()
     config['TESTING'] = True
-
+    app.testing = True
     with app.test_client() as client:
+        # if token := client._authorization:
+        #     client.environ_base['Authorization'] = f'Bearer {token}'
+
         yield client
         os.rmdir(config['UPLOAD_FOLDER'])
 
 
-@pytest.fixture
+@pytest.fixture(scope='function')
 def db():
     # Drop the previously created db if exists.
     with DBManager(url=TEST_DB_URL) as m:
