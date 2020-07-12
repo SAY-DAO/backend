@@ -47,9 +47,6 @@ def create_celery_app(app):
     celery.conf.beat_schedule = beat
     celery.conf.update(config)
 
-    engine = create_engine(url=config['dbUrl'])
-    init_model(engine)
-
     TaskBase = celery.Task
 
     class DBTask(TaskBase):
@@ -64,6 +61,10 @@ def create_celery_app(app):
         def session(self):
             if self._session is None:
                 self._session = session
+
+            if not self._session.bind:
+                engine = create_engine(url=config['dbUrl'])
+                init_model(engine)
 
             return self._session
 

@@ -1,17 +1,38 @@
+import tempfile
 from datetime import datetime
 from random import randint
 
 import pytest
 
+from say.config import config
 from say.models import User
+from tests.conftest import TEST_DB_URL
+
+LOGIN_URL = '/api/v2/auth/login'
 
 
 class BaseTestClass:
 
+    _authorization__ = None
+
     @pytest.fixture(scope='function', autouse=True)
-    def init_class(self, db):
+    def init_class(self, db, client):
+        config['dbUrl'] = TEST_DB_URL
+        config['UPLOAD_FOLDER'] = tempfile.mkdtemp()
+        config['TESTING'] = True
+
+        # DBSession
         self.session = db()
+
+        # Insert mockup data
         self.mockup()
+
+        # get client
+        self._client = client
+
+    @property
+    def client(self):
+        return self._client
 
     def mockup(self):
         # Override this method to add mockup data
@@ -36,3 +57,20 @@ class BaseTestClass:
             lastLogin=datetime.utcnow(),
         )
         return user
+
+    def logout(self):
+        del self._client.environ_base['HTTP_AUTHORIZATION']
+
+    def login(self, username, password, is_installed=1):
+        res = self.client.post(
+            LOGIN_URL,
+            data={
+                'username': username,
+                'password': password,
+                'isInstalled': is_installed,
+            },
+        )
+        assert res.status_code == 200
+        assert (token := res.json['accessToken']) is not None
+        self._client.environ_base['HTTP_AUTHORIZATION'] = token
+        return res

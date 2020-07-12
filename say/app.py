@@ -65,7 +65,7 @@ def setup_monitoring(app):
 
 @app.before_first_request
 def init_orm():
-    engine = create_engine(url=config['dbUrl'])
+    engine = session.bind or create_engine(url=config['dbUrl'])
     init_model(engine)
 
 

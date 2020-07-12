@@ -116,8 +116,8 @@ def init_model(engine):
     session.configure(bind=engine)
 
 
-def setup_schema(session=session):
-    engine = session.bind
+def setup_schema(session_=session):
+    engine = session_.bind
     engine.execute('CREATE EXTENSION IF NOT EXISTS HSTORE;')
     metadata.create_all(bind=engine)
 

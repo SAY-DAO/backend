@@ -1,6 +1,4 @@
-from tests.helper import BaseTestClass
-
-LOGIN_URL = '/api/v2/auth/login'
+from tests.helper import BaseTestClass, LOGIN_URL
 
 
 class TestLogin(BaseTestClass):
@@ -8,15 +6,11 @@ class TestLogin(BaseTestClass):
         self.password = '123456'
         self.user = self.create_user(self.password)
 
-    def test_login_by_username(self, client):
+    def test_login_by_username(self):
 
-        res = client.post(
-            LOGIN_URL,
-            data={
-                'username': self.user.userName,
-                'password': self.password,
-                'isInstalled': 0,
-            },
+        res = self.login(
+            username=self.user.userName,
+            password=self.password,
         )
         assert res.status_code == 200
         assert res.json['accessToken'] is not None
@@ -24,7 +18,7 @@ class TestLogin(BaseTestClass):
         assert res.json['user']['id'] is not None
 
         # when password is wrong
-        res = client.post(
+        res = self.client.post(
             LOGIN_URL,
             data={
                 'username': self.user.userName,

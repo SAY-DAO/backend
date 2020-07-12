@@ -1,13 +1,14 @@
 import os
 import tempfile
-from random import randint
 
 import pytest
 import sqlalchemy.orm.session
+from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.pool import NullPool
 
 from say.app import app
 from say.config import config
-from say.orm import setup_schema, session_factory, create_engine, init_model
+from say.orm import setup_schema, create_engine, init_model
 from say.db import PostgreSQLManager as DBManager
 
 from flask.testing import FlaskClient
@@ -27,17 +28,20 @@ TEST_DB_URL = 'postgresql://postgres:postgres@localhost/say_test'
 
 
 @pytest.fixture
-def client():
-    config['dbUrl'] = TEST_DB_URL
-    config['UPLOAD_FOLDER'] = tempfile.mkdtemp()
-    config['TESTING'] = True
+def flask_app():
     app.testing = True
+    return app
+
+
+@pytest.fixture
+def client(flask_app):
     with app.test_client() as client:
         # if token := client._authorization:
         #     client.environ_base['Authorization'] = f'Bearer {token}'
 
         yield client
-        os.rmdir(config['UPLOAD_FOLDER'])
+
+    os.rmdir(config['UPLOAD_FOLDER'])
 
 
 @pytest.fixture(scope='function')
@@ -48,18 +52,20 @@ def db():
         m.create_database()
 
     # An engine to create db schema and bind future created sessions
-    engine = create_engine(TEST_DB_URL)
+    # NullPool used to disable Connection Pool
+    engine = create_engine(TEST_DB_URL, poolclass=NullPool)
 
     # A session factory to create and store session to close it on tear down
     sessions = []
 
     def _connect(*a, expire_on_commit=True, **kw):
-        new_session = session_factory(
+        session_factory = sessionmaker(
             bind=engine,
             *a,
             expire_on_commit=expire_on_commit,
             **kw
         )
+        new_session = scoped_session(session_factory)
         sessions.append(new_session)
 
         # Just for testing, don't do this at base code
@@ -76,8 +82,9 @@ def db():
     setup_schema(session)
     session.commit()
 
-    # Closing the session to free the connection for future sessions.
-    session.close()
+    # Removing the session to free the connection for future sessions.
+    session.remove()
+
 
     # Preparing and binding the application shared scoped session, due the
     # some errors when a model trying use the mentioned session internally.
@@ -87,7 +94,7 @@ def db():
 
     # Closing all sessions created by the tests writer
     for s in sessions:
-        s.close()
+        s.remove()
 
     sqlalchemy.orm.session.close_all_sessions()
     engine.dispose()

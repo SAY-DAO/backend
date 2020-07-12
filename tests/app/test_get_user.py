@@ -6,9 +6,9 @@
 from datetime import datetime
 
 from say.models import User
-from tests.helper import create_user, BaseTestClass
+from tests.helper import BaseTestClass
 
-USER_GET_URL = '/api/v2/user/%s'
+USER_GET_URL = '/api/v2/user/userId=%s'
 
 
 # def test_user_get(db, client):
@@ -33,29 +33,27 @@ USER_GET_URL = '/api/v2/user/%s'
 class TestGetUser(BaseTestClass):
 
     def mockup(self):
-        session = self.session
-        self.password = '123456'
-        u = User(
-            userName='test',
-            emailAddress='test@test.com',
-            phone_number='+989990009900',
-            password=self.password,
-            firstName='test',
-            lastName='test',
-            city=1,
-            country=1,
-            lastLogin=datetime.utcnow(),
+        self.pw = '123456'
+        self.user = self.create_user(password=self.pw)
+
+    def test_user_get_me(self):
+        self.login(self.user.userName, self.pw)
+
+        res = self.client.get(
+            USER_GET_URL % 'me',
         )
-        session.add(u)
-        session.commit()
-        self.user = u
+        assert res.status_code == 200
+        assert res.json['id'] == self.user.id
 
-    def test_get(self):
-        assert self.user.id is not None
-        #
-        # a = self.login(self.user.userName, self.password)
-        # assert a.status_code == 200
-        # assert a.json['accessToken'] is not None
-        # assert a.json['user']['id'] is not None
+        # get user by id instead of me
+        res = self.client.get(
+            USER_GET_URL % 1,
+        )
+        assert res.status_code == 403
 
-#
+        # when logged out or unauthorized
+        self.logout()
+        res = self.client.get(
+            USER_GET_URL % 'me',
+        )
+        assert res.status_code == 401
