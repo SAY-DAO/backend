@@ -1,7 +1,7 @@
 from . import *
 from say.models import User, session
-from say.validations import validate_username, validate_email, validate_phone
-
+from say.validations import validate_email, validate_phone
+from ..schema.user import UsernameSchema
 
 '''
 Check APIs
@@ -13,11 +13,13 @@ class CheckUsername(Resource):
     @json
     @swag_from('./docs/check/username.yml')
     def get(self, username):
-        if not validate_username(username):
-            return {'message': 'Invalid Username'}, 710
+        try:
+            data = UsernameSchema(username=username)
+        except ValueError as e:
+            return e.json(), 710
 
         user = session.query(User) \
-            .filter_by(formated_username=username.lower()) \
+            .filter_by(formated_username=data.username.lower()) \
             .one_or_none()
 
         if user:
