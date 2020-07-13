@@ -42,14 +42,3 @@ def update_need(self, need_id, force=False):
         self.retry(countdown=3**self.request.retries)
 
     return data
-
-
-# This task is a temporary social worker that deliver a product to child
-@celery.task(base=celery.DBTask, bind=True)
-def change_need_status_to_delivered(self, need_id):
-    from say.models.need_model import Need
-    need = self.session.query(Need).get(need_id)
-    need.status = 5
-    need.child_delivery_date = need.ngo_delivery_date
-    self.session.commit()
-

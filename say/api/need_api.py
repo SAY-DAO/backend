@@ -356,6 +356,9 @@ class UpdateNeedById(Resource):
             if "details" in request.form.keys():
                 need.details = request.form["details"]
 
+            if dkc := request.form.get("dkc"):
+                need.dkc = dkc
+
             if request.form.get("expected_delivery_date"):
                 if not (2 <= need.status <= 3):
                     raise Exception(
@@ -437,7 +440,7 @@ class DeleteNeedById(Resource):
         if (need.type == 0 and need.status < 4) or (need.type == 1 and need.status < 5):
             need.status = 0
             need.purchase_cost = 0
-            need.refund_extra_credit()
+            need.refund_extra_credit(new_paid=0)
 
             for participant in need.participants:
                 participant.isDeleted = True

@@ -62,6 +62,8 @@ class Need(base, Timestamp):
     # Dates:
     doneAt = Column(DateTime, nullable=True)
     purchase_date = Column(DateTime)
+    # Digikala purchase code
+    dkc = Column(String(20), nullable=True)
     expected_delivery_date = Column(DateTime)
     ngo_delivery_date = Column(DateTime)
     child_delivery_date = Column(DateTime)
@@ -193,9 +195,9 @@ class Need(base, Timestamp):
         )
 
     @observes('payments.verified')
-    def payments_observer(self, _):
+    def payments_observer(self, verification_dates):
         session = object_session(self)
-        if self.status is None or self.status > 2:
+        if len(verification_dates) == 0 or self.status is None or self.status >= 2:
             return
 
         paid = sum(
@@ -416,7 +418,7 @@ class Need(base, Timestamp):
 
     def child_delivery_product(self):
         from say.api import app
-        from say.tasks.update_needs import change_need_status_to_delivered
+        from say.tasks import change_need_status_to_delivered
 
         deliver_to_child_delay = datetime.utcnow() \
             + timedelta(seconds=app.config['DELIVER_TO_CHILD_DELAY'])

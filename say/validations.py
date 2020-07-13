@@ -6,7 +6,7 @@ from sqlalchemy_utils import PhoneNumber
 VALID_ROLES = [*range(-1, 6)]
 
 # TODO: Check the pattern with parsa and neda
-USERNAME_PATTERN = r'^[a-zA-Z0-9_.]{4,12}$'
+USERNAME_PATTERN = r'[A-Za-z0-9][.A-Za-z0-9]{3,11}$'
 validate_username = re.compile(USERNAME_PATTERN).fullmatch
 
 EMAIL_PATTERN = r'^[^@]+@[^@]+\.[^@]+$'
