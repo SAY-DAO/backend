@@ -15,7 +15,7 @@ def update_needs(self):
                 Need.title.is_(None),
             ),
             Need.isDeleted==False,
-            Need.isConfirmed==True,
+#            Need.isConfirmed==True,
             Need.link.isnot(None),
         )
 
