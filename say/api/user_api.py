@@ -388,7 +388,6 @@ class AddUser(Resource):
                 session.close()
                 return resp
 
-            last_update = datetime.utcnow()
             last_login = datetime.utcnow()
 
             avatar_url = "wrong url"
@@ -424,15 +423,17 @@ class AddUser(Resource):
 
                 if file and allowed_image(file.filename):
                     filename = str(phone_number) + '.' + file.filename.split('.')[-1]
-
-                    temp_user_path = os.path.join(app.config['UPLOAD_FOLDER'], str(current_id) + '-user')
+                    temp_user_path = os.path.join(
+                        app.config['UPLOAD_FOLDER'],
+                        str(new_user.id) + '-user'
+                    )
 
                     if not os.path.isdir(temp_user_path):
                         os.makedirs(temp_user_path, exist_ok=True)
 
                     path = os.path.join(
                         temp_user_path,
-                        str(current_id) + str(randint(1000, 100000)) + '-avatar_' + filename,
+                        f'{randint(1000, 100000)}-avatar_{filename}'
                     )
 
                     file.save(path)

@@ -1,24 +1,24 @@
-from datetime import datetime, timedelta
 from random import randint
 
 import phonenumbers
 from babel import Locale
 from flask_jwt_extended import create_refresh_token, \
-    jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
+    jwt_refresh_token_required, get_raw_jwt
 from sqlalchemy_utils import PhoneNumber, Country, PhoneNumberParseException
 
-from . import *
-from say.models import session, obj_to_dict, or_, commit,  ResetPassword, \
+from say.models import session, obj_to_dict, or_, commit, ResetPassword, \
     PhoneVerification, Verification, EmailVerification, User, RevokedToken, \
     and_
 from say.tasks import subscribe_email
 from say.validations import validate_username, validate_email, validate_phone, \
     validate_password
-
+from . import *
+from ..schema.user import NewUserSchema
 
 """
 Authentication APIs
 """
+
 
 def datetime_converter(o):
     if isinstance(o, datetime):
@@ -31,10 +31,12 @@ class RegisterUser(Resource):
     @commit
     @swag_from("./docs/auth/register.yml")
     def post(self):
-        if "username" in request.form.keys():
-            username = request.form["username"]
-        else:
-            return {"message": "userName is needed"}, 400
+        try:
+            data = NewUserSchema(**request.form.to_dict())
+        except ValueError as e:
+            return e.json(), 400
+
+        username = data.username
 
         phoneNumber = None
         if "phoneNumber" in request.form.keys():

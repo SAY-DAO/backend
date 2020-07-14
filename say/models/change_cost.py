@@ -1,11 +1,9 @@
-import enum
+from pydantic import conint, constr
+from pydantic import BaseModel as PydanticBaseModel
 
-from pydantic import BaseModel, ValidationError, validator, constr, conint
-from sqlalchemy import Integer, Enum
-
-from say.constants import *
 from . import *
-
+from ..constants import MAX_NEED_COST
+from ..orm import base
 
 DESCRIPTION_MAX_LENGTH = 128
 REJECT_CAUSE_MAX_LENGTH = 128
@@ -15,6 +13,22 @@ class ChangeCostStatus(enum.Enum):
     pending = 'pending'
     accepted = 'accepted'
     rejected = 'rejected'
+
+
+class ChangeCostCreateSchema(PydanticBaseModel):
+    to: conint(gt=-2, lt=MAX_NEED_COST)
+    description: constr(max_length=DESCRIPTION_MAX_LENGTH) = ''
+
+
+class ChangeCostRejectSchema(PydanticBaseModel):
+    rejectCause: constr(max_length=REJECT_CAUSE_MAX_LENGTH) = ''
+
+
+class ChangeCostAcceptSchema(PydanticBaseModel):
+    reviewer_id: int
+    to: Optional[conint(gt=-2, lt=MAX_NEED_COST)]
+    description: Optional[constr(max_length=DESCRIPTION_MAX_LENGTH)]
+    status: ChangeCostStatus
 
 
 class ChangeCost(base, Timestamp):
@@ -54,19 +68,4 @@ class ChangeCost(base, Timestamp):
         uselist=False,
     )
 
-
-class ChangeCostCreateSchema(BaseModel):
-    to: conint(gt=-1, lt=MAX_NEED_COST)
-    description: constr(max_length=DESCRIPTION_MAX_LENGTH) = ''
-
-
-class ChangeCostRejectSchema(BaseModel):
-    rejectCause: constr(max_length=REJECT_CAUSE_MAX_LENGTH) = ''
-
-
-class ChangeCostAcceptSchema(BaseModel):
-    reviewer_id: int
-    to: Optional[conint(gt=-1, lt=MAX_NEED_COST)]
-    description: Optional[constr(max_length=DESCRIPTION_MAX_LENGTH)]
-    status: ChangeCostStatus
 
