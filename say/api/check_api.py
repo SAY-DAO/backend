@@ -1,7 +1,7 @@
 from . import *
 from say.models import User, session
 from say.validations import validate_email, validate_phone
-from ..schema.user import UsernameSchema
+from ..schema.user import UserNameSchema
 
 '''
 Check APIs
@@ -14,7 +14,7 @@ class CheckUsername(Resource):
     @swag_from('./docs/check/username.yml')
     def get(self, username):
         try:
-            data = UsernameSchema(username=username)
+            data = UserNameSchema(username=username)
         except ValueError as e:
             return e.json(), 710
 
