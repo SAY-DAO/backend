@@ -41,6 +41,7 @@ class PanelLogin(Resource):
             social_worker = (
                 session.query(SocialWorker)
                 .filter_by(isDeleted=False)
+                .filter_by(isActive=True)
                 .filter_by(userName=username)
                 .first()
             )
