@@ -10,6 +10,7 @@ from say.models.need_family_model import NeedFamily
 from say.models.revoked_token_model import RevokedToken
 from say.models.user_family_model import UserFamily
 from say.models.user_model import User
+from ..schema.user import UserNameSchema
 
 
 """
@@ -166,7 +167,7 @@ class UpdateUserById(Resource):
             raw_username = request.form.get("userName", primary_user.userName)
             if raw_username != primary_user.userName:
                 try:
-                    username = UpdateUserSchema(username=raw_username).username
+                    username = UserNameSchema(username=raw_username).username
                 except ValueError as ex:
                     resp = ex.json(), 400
                     return resp
