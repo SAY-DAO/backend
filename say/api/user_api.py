@@ -10,7 +10,7 @@ from say.models.need_family_model import NeedFamily
 from say.models.revoked_token_model import RevokedToken
 from say.models.user_family_model import UserFamily
 from say.models.user_model import User
-from ..schema.user import UpdateUserSchema
+
 
 """
 User APIs
