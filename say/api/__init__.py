@@ -197,11 +197,11 @@ sms_provider = MeliPayamak(
 
 mailerlite = MailerLiteApi(app.config.get('MAILERLITE_API_KEY', 'not-entered'))
 
-try:
-    from say.basedata import basedata
-    basedata(db)
-except:
-    pass
+# try:
+#     from say.basedata import basedata
+#     basedata(db)
+# except:
+#     pass
 
 APIMD_CONFIG_FILE_PROD = 'apimd-config-prod.cfg'
 APIMD_CONFIG_FILE = 'apimd-config.cfg'

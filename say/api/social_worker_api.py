@@ -1,8 +1,10 @@
 from hashlib import md5
 
 from say.models import session, obj_to_dict
+from say.models import Child
 from say.models.ngo_model import Ngo
 from say.models.social_worker_model import SocialWorker
+from say.models import commit
 from . import *
 """
 Social Worker APIs
@@ -684,34 +686,38 @@ class DeleteSocialWorker(Resource):
 class DeactivateSocialWorker(Resource):
 
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @json
+    @commit
     @swag_from("./docs/social_worker/deactivate.yml")
     def patch(self, social_worker_id):
-        resp = make_response(
-            jsonify({"message": "major error occurred!"}),
-            503,
-        )
 
-        try:
-            base_social_worker = session.query(SocialWorker) \
-                .filter_by(id=social_worker_id) \
-                .filter_by(isDeleted=False) \
-                .first()
+        sw = session.query(SocialWorker) \
+            .filter_by(id=social_worker_id) \
+            .filter_by(isDeleted=False) \
+            .filter_by(isActive=True) \
+            .with_for_update() \
+            .one_or_none()
 
-            base_social_worker.isActive = False
+        if not sw:
+            return {
+                'message': f'Social worker {social_worker_id} not found',
+            }, 404
 
-            session.commit()
-            resp = make_response(
-                jsonify({"message": "social worker deactivated successfully!"}),
-                200,
-            )
+        has_active_child = session.query(Child.id) \
+            .filter(Child.id_social_worker==social_worker_id) \
+            .filter(Child.isConfirmed.is_(True)) \
+            .filter(Child.isDeleted.is_(False)) \
+            .filter(Child.isMigrated.is_(False)) \
+            .count()
 
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "error"}), 500)
+        if has_active_child:
+            return {
+                'message': f'Social worker {social_worker_id} has active'
+                    ' children and can not deactivate',
+            }, 400
 
-        finally:
-            session.close()
-            return resp
+        sw.isActive = True
+        return sw
 
 
 class ActivateSocialWorker(Resource):
