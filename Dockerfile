@@ -1,7 +1,5 @@
 FROM python:3.8 AS compile-image
 
-# We copy just the requirements.txt first to leverage Docker cache
-
 ENV VIRTUAL_ENV=/opt/venv
 
 RUN pip install virtualenv
