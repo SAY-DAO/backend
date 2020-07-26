@@ -5,14 +5,15 @@ from random import randint
 import pytest
 
 from say.config import config
-from say.models import User
+from say.models import User, SocialWorker, Privilege, Ngo
 from tests.conftest import TEST_DB_URL
 
 LOGIN_URL = '/api/v2/auth/login'
 
+UNAUTHORIZED_ERROR_CODE = 401
+
 
 class BaseTestClass:
-
     _authorization__ = None
 
     @pytest.fixture(scope='function', autouse=True)
@@ -38,13 +39,63 @@ class BaseTestClass:
         # Override this method to add mockup data
         pass
 
+    def create_panel_user(self, password='password'):
+        seed = randint(10 ** 3, 10 ** 4)
+        ngo = Ngo(
+            id=seed,
+            coordinatorId=0,
+            country=1,
+            city=1,
+            name=f'test{seed}',
+            postalAddress=f'test{seed}',
+            emailAddress=f'{seed}test@test.com',
+            phoneNumber='09127616539',
+            website=f'test{seed}',
+            logoUrl='',
+            balance=0,
+            socialWorkerCount=1,
+            currentSocialWorkerCount=1,
+            childrenCount=2,
+            currentChildrenCount=1,
+            registerDate=datetime.utcnow(),
+            isActive=1,
+            isDeleted=0
+        )
+        self.session.save(ngo)
+        privilege = Privilege(
+            id=seed,
+            name=f'{seed}',
+            privilege=2  # Social Worker
+        )
+        self.session.save(privilege)
+        social_worker = SocialWorker(
+            id=seed,
+            generatedCode=seed,
+            lastName=f'test{seed}',
+            userName=f'test{seed}',
+            password=password,
+            avatarUrl='',
+            emailAddress=f'{seed}test@test.com',
+            phoneNumber='09121111111',
+            gender=1,
+            idNumber=f'{seed}',
+            id_ngo=seed,
+            emergencyPhoneNumber='09124548745',
+            telegramId='fuck',
+            registerDate=datetime.utcnow(),
+            lastLoginDate=datetime.utcnow(),
+            id_type=seed
+        )
+        self.session.save(social_worker)
+        return social_worker
+
     def create_user(self, password='password'):
         user = self._create_random_user(password)
         self.session.save(user)
         return user
 
     def _create_random_user(self, password):
-        seed = randint(10**3, 10**4)
+        seed = randint(10 ** 3, 10 ** 4)
         user = User(
             userName=seed,
             emailAddress=f'{seed}test@test.com',
@@ -73,4 +124,4 @@ class BaseTestClass:
         assert res.status_code == 200
         assert (token := res.json['accessToken']) is not None
         self._client.environ_base['HTTP_AUTHORIZATION'] = token
-        return res
+        return token
