@@ -716,7 +716,7 @@ class DeactivateSocialWorker(Resource):
                     ' children and can not deactivate',
             }, 400
 
-        sw.isActive = True
+        sw.isActive = False
         return sw
 
 
