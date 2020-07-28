@@ -53,7 +53,6 @@ class Child(base, Timestamp):
         Integer, nullable=True
     )  # 0:Street child | 1:Living at home | 2:Care centers
     familyCount = Column(Integer, nullable=True)
-    sayFamilyCount = Column(Integer, nullable=False, default=0)
     education = Column(
         Integer, nullable=True
     )  # -3:Deprived of education | -2:Kinder garden | -1:Not attending | 0:Pre-school | 1:1st grade | 2:2nd grade | ... | 13:University
@@ -84,6 +83,14 @@ class Child(base, Timestamp):
 
     @avatarUrl.expression
     def avatarUrl(cls):
+        return
+
+    @hybrid_property
+    def sayFamilyCount(self):
+        return 0
+
+    @sayFamilyCount.expression
+    def sayFamilyCount(cls):
         return
 
     @aggregated('needs', Column(Integer, default=0, nullable=False))
@@ -128,6 +135,41 @@ class Child(base, Timestamp):
             .filter_by(isMigrated=False) \
             .filter_by(existence_status=1) \
             .join(Need) \
-            .filter(Need.isConfirmed==True) \
-            .filter(Need.isDeleted==False)
+            .filter(Need.isConfirmed == True) \
+            .filter(Need.isDeleted == False)
 
+    def migrate(self, new_sw):
+        assert new_sw.id != self.social_worker.id
+
+        from .child_migration_model import ChildMigration
+
+        old_sw = self.social_worker
+        old_generated_code = self.generatedCode
+        new_generated_code = new_sw.generatedCode \
+            + format(new_sw.childCount + 1, '04d'),
+
+        migration = ChildMigration(
+            new_sw=new_sw,
+            old_sw=old_sw,
+            old_generated_code=old_generated_code,
+            new_generated_code=new_generated_code,
+        )
+        self.migrations.append(migration)
+
+        new_sw.childCount += 1
+        old_sw.childCount -= 1
+        if new_sw.id_ngo != old_sw.id_ngo:
+            new_sw.ngo.childrenCount += 1
+            old_sw.ngo.childrenCount -= 1
+            if self.isConfirmed:
+                new_sw.ngo.currentChildrenCount += 1
+                old_sw.ngo.currentChildrenCount -= 1
+
+        if self.isConfirmed:
+            new_sw.currentChildCount += 1
+            old_sw.currentChildCount -= 1
+
+        self.generatedCode = new_generated_code
+        self.social_worker = new_sw
+
+        return migration

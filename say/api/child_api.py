@@ -1155,42 +1155,14 @@ class MigrateChild(Resource):
                 404,
             )
 
-        old_generated_code = child.generatedCode
         old_sw = child.social_worker
-
         if old_sw.id == new_sw_id:
             return make_response(
                 jsonify({'message': 'Can not migrate to same sw'}),
                 422,
             )
 
-        new_generated_code = new_sw.generatedCode \
-            + format(new_sw.childCount + 1, '04d'),
-
-        child.generatedCode = new_generated_code
-        child.social_worker = new_sw
-        new_sw.childCount += 1
-
-        if new_sw.id_ngo != old_sw.id_ngo:
-            new_sw.ngo.childrenCount += 1
-            if child.isConfirmed:
-               new_sw.ngo.currentChildrenCount += 1
-               old_sw.ngo.currentChildrenCount -= 1
-
-        if child.isConfirmed:
-            new_sw.currentChildCount += 1
-            old_sw.currentChildCount -= 1
-
-        migration = ChildMigration(
-            child=child,
-            new_sw=new_sw,
-            old_sw=old_sw,
-            old_generated_code=old_generated_code,
-            new_generated_code=new_generated_code,
-        )
-
-        child.migrations.append(migration)
-
+        child.migrate(new_sw)
         session.commit()
 
         return make_response(
