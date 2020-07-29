@@ -802,10 +802,11 @@ class MigrateSocialWorkerChildren(Resource):
             .filter(Child.isDeleted.is_(False)) \
             .with_for_update()
 
+        resp = []
         for child in children:
-            child.migrate(destination_sw)
-
-        return {}, 200
+            migration = child.migrate(destination_sw)
+            resp.append(migration)
+        return resp
 
 
 """
