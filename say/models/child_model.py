@@ -1,10 +1,9 @@
-import pytz
-from datetime import datetime, time
+from datetime import time
 
+import pytz
 from sqlalchemy.dialects.postgresql import HSTORE
 
 from . import *
-
 
 """
 Child Model
@@ -44,7 +43,7 @@ class Child(base, Timestamp):
 
     bio_summary_translations = Column(HSTORE)
     bioSummary = translation_hybrid(bio_summary_translations)
-
+    sayFamilyCount = Column(Integer, nullable=False, default=0)
     voiceUrl = Column(String, nullable=False)
     birthPlace = Column(Text, nullable=True)  # 1:tehran | 2:karaj / [must be change after using real country/city api]
     birthDate = Column(Date, nullable=True)
@@ -85,20 +84,12 @@ class Child(base, Timestamp):
     def avatarUrl(cls):
         return
 
-    @hybrid_property
-    def sayFamilyCount(self):
-        return 0
-
-    @sayFamilyCount.expression
-    def sayFamilyCount(cls):
-        return
-
     @aggregated('needs', Column(Integer, default=0, nullable=False))
     def done_needs_count(cls):
         from . import Need
         # passing a dummy '1' to count
         return func.count('1') \
-            .filter(Need.status > 1) \
+            .filter(Need.status > 1)
 
     @aggregated('needs.payments', Column(Integer, default=0, nullable=False))
     def spent_credit(cls):
