@@ -19,8 +19,11 @@ parameters:
     type: string
 
 responses:
-  500:
-    description: Error occurred somewhere!
-
   200:
     description: Ok
+
+  404:
+    description: not found
+
+  400:
+    description: Social worker {social_worker_id} has active children and can not deactivate

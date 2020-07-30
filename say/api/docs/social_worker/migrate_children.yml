@@ -1,0 +1,33 @@
+Migrate all children of sw to another
+
+---
+
+tags:
+  - Social Worker API
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+  
+  - in: path
+    name: id
+    required: true
+    type: integer
+
+  - in: formData
+    name: destinationSocialWorkerId
+    required: true
+    type: integer
+
+responses:
+  200:
+    description: Ok
+
+  400:
+    description: invalid data
+
+  404:
+    description: not found

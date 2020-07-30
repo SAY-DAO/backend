@@ -1,11 +1,15 @@
 from hashlib import md5
 
+from sqlalchemy.orm import joinedload
+
 from say.models import session, obj_to_dict
 from say.models import Child
 from say.models.ngo_model import Ngo
 from say.models.social_worker_model import SocialWorker
 from say.models import commit
 from . import *
+from ..schema.social_worker import MigrateSocialWorkerChildrenSchema
+
 """
 Social Worker APIs
 """
@@ -716,7 +720,7 @@ class DeactivateSocialWorker(Resource):
                     ' children and can not deactivate',
             }, 400
 
-        sw.isActive = True
+        sw.isActive = False
         return sw
 
 
@@ -752,6 +756,59 @@ class ActivateSocialWorker(Resource):
             return resp
 
 
+class MigrateSocialWorkerChildren(Resource):
+
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @json
+    @commit
+    @swag_from("./docs/social_worker/migrate_children.yml")
+    def post(self, id):
+        try:
+            data = MigrateSocialWorkerChildrenSchema(
+                **request.form.to_dict(),
+            )
+        except ValueError as ex:
+            return ex.json(), 400
+
+        if data.destination_social_worker_id == id:
+            return {'message': 'Can not migrate to same sw'}, 400
+
+        sw = session.query(SocialWorker) \
+            .filter_by(id=id) \
+            .filter_by(isDeleted=False) \
+            .filter_by(isActive=True) \
+            .with_for_update(SocialWorker) \
+            .one_or_none()
+
+        if not sw:
+            return {
+                'message': f'Social worker {id} not found',
+            }, 404
+
+        destination_sw = session.query(SocialWorker) \
+            .filter_by(id=data.destination_social_worker_id) \
+            .filter_by(isDeleted=False) \
+            .filter_by(isActive=True) \
+            .with_for_update() \
+            .one_or_none()
+
+        if not destination_sw:
+            return {
+                'message': f'destination social worker not found',
+            }, 400
+
+        children = session.query(Child) \
+            .filter(Child.id_social_worker == id) \
+            .filter(Child.isDeleted.is_(False)) \
+            .with_for_update()
+
+        resp = []
+        for child in children:
+            migration = child.migrate(destination_sw)
+            resp.append(migration)
+        return resp
+
+
 """
 API URLs
 """
@@ -778,4 +835,9 @@ api.add_resource(
 api.add_resource(
     ActivateSocialWorker,
     "/api/v2/socialWorker/activate/socialWorkerId=<social_worker_id>",
+)
+
+api.add_resource(
+    MigrateSocialWorkerChildren,
+    "/api/v2/socialWorker/<int:id>/children/migrate",
 )
