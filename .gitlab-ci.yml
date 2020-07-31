@@ -42,15 +42,15 @@ deploy-branches:
     - export TARGET_DIR=say/$CI_COMMIT_REF_SLUG/api
     - export COMPOSE_PROJECT_NAME=$CI_PROJECT_NAMESPACE_$CI_PROJECT_NAME
     - mkdir ~/.ssh
-    - echo "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
-    - chmod 644 ~/.ssh/known_hosts
     - eval $(ssh-agent -s)
     - ssh-add <(echo "$STAGING_SSH_PRIVATE_KEY")
+    - alias ssh-staging='ssh $STAGING_USER@$STAGING -p $STAGING_PORT -o StrictHostKeyChecking=no'
+    - alias scp-staging='scp -P $STAGING_PORT -o StrictHostKeyChecking=no'
   script:
-    - ssh $STAGING_USER@$STAGING "docker login $DOCKER_REGISTRY -u '$REGISTRY_USER' -p '$REGISTRY_PASSWORD'"
-    - ssh $STAGING_USER@$STAGING "mkdir -p $TARGET_DIR"
-    - scp /builds/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/docker-compose-staging.yml $STAGING_USER@$STAGING:$TARGET_DIR/docker-compose.yml"
-    - ssh $STAGING_USER@$STAGING "cd $TARGET_DIR && docker-compose pull && COMPOSE_PROJECT_NAME=$COMPOSE_PROJECT_NAME docker-compose up --remove-orphans -d"
+    - ssh-staging "docker login $DOCKER_REGISTRY -u '$REGISTRY_USER' -p '$REGISTRY_PASSWORD'"
+    - ssh-staging "mkdir -p $TARGET_DIR"
+    - scp-staging /builds/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/docker-compose-staging.yml $STAGING_USER@$STAGING:$TARGET_DIR/docker-compose.yml"
+    - ssh-staging "cd $TARGET_DIR && docker-compose pull && COMPOSE_PROJECT_NAME=$COMPOSE_PROJECT_NAME docker-compose up --remove-orphans -d"
   environment:
     name: $CI_COMMIT_REF_NAME
     url: http://${CI_COMMIT_REF_NAME}.api.staging.sayapp.company
