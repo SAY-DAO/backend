@@ -99,6 +99,10 @@ app.config["RATELIMIT_DEFAULT"] = "100 per minutes"
 app.config['PAYMENT_ORDER_ID_LENGTH'] = 8
 app.config['PRODUCT_UNPAYABLE_PERIOD'] = 3 # Days
 
+app.config["MELI_PAYAMAK_USERNAME"] = "change-this"
+app.config["MELI_PAYAMAK_PASSWORD"] = "change-this"
+app.config["MELI_PAYAMAK_FROM"] = "chage-this"
+
 app.config.update({
     "CACHE_TYPE": "redis", # Flask-Caching related configs
     "CACHE_DEFAULT_TIMEOUT": 300
