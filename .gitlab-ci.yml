@@ -8,6 +8,7 @@ build:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
   before_script:
+    - export
     - docker login $DOCKER_REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASSWORD
     - export IMAGE_NAME=$(echo "$DOCKER_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
     - export IMAGE_TAG=$(echo "$IMAGE_NAME:$CI_COMMIT_REF_SLUG")
@@ -38,21 +39,25 @@ deploy-branches:
   before_script:
     - export IMAGE_NAME=$(echo "$DOCKER_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
     - export IMAGE_TAG=$(echo "$IMAGE_NAME:$CI_COMMIT_REF_SLUG")
-
+    - export TARGET_DIR=say/$CI_COMMIT_REF_SLUG/api
+    - export COMPOSE_PROJECT_NAME=$CI_PROJECT_NAMESPACE_$CI_PROJECT_NAME
     - mkdir ~/.ssh
     - echo "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
     - eval $(ssh-agent -s)
-    - ssh-add <(echo "$SSH_PRIVATE_KEY")
-
+    - ssh-add <(echo "$STAGING_SSH_PRIVATE_KEY")
   script:
-    - ssh $SERVER_USER@$SERVER "docker login $DOCKER_REGISTRY -u '$REGISTRY_USER' -p '$REGISTRY_PASSWORD'"
-    - ssh $SERVER_USER@$SERVER "cd /home/server/say-installer && docker pull $IMAGE_TAG && docker-compose up --remove-orphans -d"
-
-  only:
-    - develop
-  # except:
-    - master
+    - ssh $STAGING_USER@$STAGING "docker login $DOCKER_REGISTRY -u '$REGISTRY_USER' -p '$REGISTRY_PASSWORD'"
+    - ssh $STAGING_USER@$STAGING "mkdir -p $TARGET_DIR"
+    - scp /builds/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/docker-compose-staging.yml $STAGING_USER@$STAGING:$TARGET_DIR/docker-compose.yml"
+    - ssh $STAGING_USER@$STAGING "cd $TARGET_DIR && docker-compose pull && COMPOSE_PROJECT_NAME=$COMPOSE_PROJECT_NAME docker-compose up --remove-orphans -d"
+  environment:
+    name: $CI_COMMIT_REF_NAME
+    url: http://${CI_COMMIT_REF_NAME}.api.staging.sayapp.company
+#  only:
+#    - develop
+#   except:
+#    - master
   tags:
     - deploy
 
