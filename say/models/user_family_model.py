@@ -1,3 +1,4 @@
+from sqlalchemy.orm import attributes
 
 from . import *
 
@@ -29,4 +30,3 @@ class UserFamily(base, Timestamp):
         uselist=False,
         back_populates='user_families',
     )
-

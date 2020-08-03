@@ -1,19 +1,23 @@
-get child by invitations token
+Reject an invitation
 ---
 
 tags:
-  - Child API
+  - Invitation API
 
 parameters:
-
   - name: Authorization
     in: header
     description: Access Token
+    required: true
     type: string
-
 
   - in: path
     name: token
+    required: true
+    type: string
+
+  - in: formData
+    name: rejectReason
     required: true
     type: string
 
@@ -21,15 +25,9 @@ responses:
 
   200:
     description: Ok
-    schema:
-      id: child_model
 
   400:
-    description: Invitation not found
+    description: invalid data
 
   404:
-    description: Child not found
-
-  743:
-    description: family {invitations.family_id not found
-
+    desciption: inviation not found

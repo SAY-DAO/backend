@@ -1,0 +1,32 @@
+Invite a user to join to a family
+The roles are listed below:
+[0]father, [1]mother, [2] uncle, [3]aunt [4]daii [5]amme
+---
+
+tags:
+  - Invitation API
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - in: formData
+    name: family_id
+    required: true
+    type: integer
+
+  - in: formData
+    name: role
+    type: integer
+
+  - in: formData
+    name: invited_username
+    type: string
+    required: true
+
+responses:
+  200:
+    description: Pending Invitation

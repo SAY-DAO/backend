@@ -1,8 +1,10 @@
-from say.constants import PAST_PARTICIPANT_ROLE
 from say.validations import VALID_ROLES
-from say.models import session, obj_to_dict, commit
+from say.models import session, obj_to_dict, commit, InvitationStatus
 from say.models import User, Family, UserFamily, NeedFamily, Invitation
 from . import *
+from .. import crud
+from ..crud.user_family import UserAlreadyInFamily, NoAvailableRole
+from ..schema.family import AvailableRolesSchema
 
 """
 Family APIs
@@ -113,11 +115,11 @@ class AddUserToFamily(Resource):
             return {'message': 'invitationToken is required'}, 740
 
         invitation = session.query(Invitation) \
-            .filter(Invitation.token==token) \
+            .filter(Invitation.token == token) \
             .one_or_none()
 
         if not invitation:
-            return {'message': 'Inviation not found'}, 741
+            return {'message': 'Invitation not found'}, 741
 
         id_family = invitation.family_id
         user_role = invitation.role
@@ -171,6 +173,7 @@ class AddUserToFamily(Resource):
                 }, 746
 
             user_family.isDeleted = False
+
             participations = session.query(NeedFamily) \
                 .filter(NeedFamily.id_user==user.id) \
                 .filter(NeedFamily.id_family==family.id)
@@ -178,8 +181,22 @@ class AddUserToFamily(Resource):
             for p in participations:
                 p.isDeleted = False
 
-        family.child.sayFamilyCount += 1
+        family.say_family_count += 1
 
+        if invitation:
+            invitation.accept()
+
+            # Reject other invitations to this family
+            session.query(Invitation) \
+                .filter(Invitation.id != invitation.id) \
+                .filter(Invitation.family_id == invitation.family_id) \
+                .filter(Invitation.status == InvitationStatus.pending.value) \
+                .filter(Invitation.invitee_id == user_id) \
+                .update({
+                    'status': InvitationStatus.rejected.value,
+                    'reject_reason': 'Madjeed, you say!',
+                    'rejected_at': datetime.utcnow(),
+                })
 
         return family
 
@@ -219,7 +236,7 @@ class LeaveFamily(Resource):
             for p in participations:
                 p.isDeleted = True
 
-            family.child.sayFamilyCount -= 1
+            family.say_family_count -= 1
 
             session.commit()
 
@@ -232,6 +249,34 @@ class LeaveFamily(Resource):
         finally:
             session.close()
             return resp
+
+
+class AvailableRoles(Resource):
+
+    @json
+    @swag_from("./docs/family/available_roles.yml")
+    def post(self, family_id):
+        try:
+            data = AvailableRolesSchema(**request.form.to_dict())
+        except ValueError as ex:
+            return ex.json(), 400
+
+        user_id = get_user_id()
+        if not crud.user_family.is_user_in_family(user_id=user_id):
+            return HTTP_NOT_FOUND()
+
+        roles = []
+
+        try:
+            roles = crud.user_family.available_roles(
+                family_id=family_id, username=data.username,
+            )
+        except UserAlreadyInFamily:
+            return {'message': 'user in family'}, 400
+        except NoAvailableRole:
+            return {'message': 'no available role'}, 400
+
+        return list(roles)
 
 
 """
@@ -248,3 +293,7 @@ api.add_resource(
     "/api/v2/family/<family_id>/leave",
 )
 
+api.add_resource(
+    AvailableRoles,
+    "/api/v2/family/<family_id>/available_roles",
+)

@@ -16,7 +16,7 @@ requests
 flasgger
 pyotp
 gunicorn
-dictdiffer
+dictdifferment
 Flask-Caching
 beautifulsoup4
 requests
@@ -34,3 +34,4 @@ pydantic
 future
 flower
 humps
+itsdangerous

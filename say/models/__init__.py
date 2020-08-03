@@ -104,7 +104,7 @@ from .user_model import User
 from .verify_model import PhoneVerification, EmailVerification, Verification
 from .reset_password_model import ResetPassword
 from .child_migration_model import ChildMigration
-from .invitations import Invitation, InvitationForm
+from .invite import Invitation, InvitationStatus
 from .change_cost import *
 
 
@@ -113,6 +113,7 @@ from .change_cost import *
 @event.listens_for(db, "connect")
 def connect(dbapi_connection, connection_record):
     connection_record.info['pid'] = os.getpid()
+
 
 @event.listens_for(db, "checkout")
 def checkout(dbapi_connection, connection_record, connection_proxy):

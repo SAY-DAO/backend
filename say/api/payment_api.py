@@ -251,6 +251,7 @@ class AddPayment(Resource):
 
         return resp
 
+
 class VerifyPayment(Resource):
     @commit
     def post(self):

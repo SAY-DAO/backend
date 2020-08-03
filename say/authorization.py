@@ -1,9 +1,12 @@
 
 import functools
-from flask import jsonify, request, make_response
-from flask_jwt_extended import verify_jwt_in_request, get_jwt_claims, \
-    get_jwt_identity, create_access_token
 
+from flask import jsonify, make_response
+from flask_jwt_extended import verify_jwt_in_request, get_jwt_claims, \
+    get_jwt_identity, create_access_token, verify_jwt_refresh_token_in_request
+
+from say.api.ext.jwt import jwt
+from say.api.ext.redis import revoked_store
 from say.roles import *
 
 
@@ -39,6 +42,20 @@ def create_sw_access_token(social_worker, fresh=False):
     )
 
 
+def authorize_refresh(func):
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            verify_jwt_refresh_token_in_request()
+        except:
+            return make_response(jsonify(message='Unauthorized'), 401)
+
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
 def authorize(*roles):
 
     def decorator(func):
@@ -66,11 +83,21 @@ def authorize(*roles):
 
 
 def get_user_id():
-    verify_jwt_in_request()
     return get_jwt_identity()
 
 
 def get_sw_ngo_id():
-    verify_jwt_in_request()
     return get_jwt_claims().get('ngoId', -1)
 
+
+def revoke_jwt(jti, expire):
+    revoked_store.set(
+        jti, 'true', expire,
+    )
+
+
+@jwt.token_in_blacklist_loader
+def check_if_token_is_revoked(decrypted_token):
+    jti = decrypted_token['jti']
+    entry = revoked_store.get(jti)
+    return True if entry else False

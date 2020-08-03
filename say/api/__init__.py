@@ -28,6 +28,7 @@ from flask_cors import CORS
 import flask_monitoringdashboard as dashboard
 from mailerlite import MailerLiteApi
 
+from say.api.ext.jwt import jwt
 from say.payment import IDPay
 from say.celery import beat
 from say.date import *
@@ -83,6 +84,7 @@ ALLOWED_RECEIPT_EXTENSIONS = ALLOWED_IMAGE_EXTENSIONS | {"pdf"}
 
 app = Flask(__name__)
 app.config['ADD_TO_HOME_URL'] = ADD_TO_HOME_URL
+app.config['ADD_TO_HOME_URL'] = ADD_TO_HOME_URL
 app.config['JSON_SORT_KEYS'] = False
 app.config['SET_PASSWORD_URL'] = 'setpassword'
 app.config['RESET_PASSSWORD_EXPIRE_TIME'] = 2 * 3600 # 2 hours
@@ -121,12 +123,12 @@ app.config.update({
     'JWT_BLACKLIST_TOKEN_CHECKS': ['access', 'refresh'],
 })
 
-app.config['VERIFICATION_MAXAGE'] = 5 # minutes
+app.config['VERIFICATION_MAXAGE'] = 5  # minutes
 
 app.config.update(
     broker_url='redis://localhost:6379/0',
     result_backend='redis://localhost:6379/0',
-    redbeat_redis_url = "redis://localhost:6379/0"
+    redbeat_redis_url="redis://localhost:6379/0"
 )
 
 app.config.update(conf)
@@ -189,7 +191,7 @@ limiter = Limiter(
 
 mail = Mail(app)
 
-jwt = JWTManager(app)
+jwt.init_app(app)
 
 idpay = IDPay(app.config['IDPAY_API_KEY'], app.config['SANDBOX'])
 

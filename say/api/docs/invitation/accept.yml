@@ -1,0 +1,28 @@
+Accept an invitation
+---
+
+tags:
+  - Invitation API
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - in: path
+    name: token
+    required: true
+    type: string
+ 
+responses:
+
+  200:
+    description: Ok
+
+  404:
+    desciption: inviation not found
+
+  747:
+    desciption: already in family

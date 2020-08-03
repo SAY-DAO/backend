@@ -7,9 +7,14 @@ tags:
   - Invitation API
 
 parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
 
   - in: formData
-    name: family_id
+    name: familyId
     required: true
     type: integer
 
@@ -17,10 +22,31 @@ parameters:
     name: role
     type: integer
 
+  - in: formData
+    name: inviteeUsername
+    type: string
+
 responses:
   200:
     description: Response contains the token that needed in Add-to-family API
 
-  404:
-    description: Family not found
+  400:
+    description: invalid input data
 
+  700:
+    description: invalid role
+
+  701:
+    description: username not exists
+
+  702:
+    description: family not exists
+
+  745:
+    description: only role {roles} is valid
+
+  744:
+    description: no available role
+
+  747:
+    description: user in family

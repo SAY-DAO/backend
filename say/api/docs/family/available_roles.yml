@@ -1,0 +1,30 @@
+Get avaliable roles for a user
+---
+
+tags:
+  - Family API
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - in: path
+    name: family_id
+    required: true
+    type: integer
+
+  - in: formData
+    name: username
+    required: true
+    type: string
+
+
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok

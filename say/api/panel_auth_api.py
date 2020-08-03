@@ -84,7 +84,7 @@ class PanelLogin(Resource):
 
 class PanelTokenRefresh(Resource):
 
-    @jwt_refresh_token_required
+    @authorize_refresh
     @swag_from("./docs/panel_auth/refresh.yml")
     def post(self):
         id = get_jwt_identity()
@@ -114,7 +114,7 @@ class PanelLogoutAccess(Resource):
 
 
 class PanelLogoutRefresh(Resource):
-    @jwt_refresh_token_required
+    @authorize_refresh
     @swag_from("./docs/panel_auth/logout-refresh.yml")
     def post(self):
         jti = get_raw_jwt()['jti']

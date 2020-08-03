@@ -3,7 +3,7 @@ from random import randint
 import phonenumbers
 from babel import Locale
 from flask_jwt_extended import create_refresh_token, \
-    jwt_refresh_token_required, get_raw_jwt
+    get_raw_jwt
 from sqlalchemy_utils import PhoneNumber, Country, PhoneNumberParseException
 
 from say.models import session, obj_to_dict, or_, commit, ResetPassword, \
@@ -313,34 +313,17 @@ class LogoutAccess(Resource):
     @swag_from("./docs/auth/logout-access.yml")
     def post(self):
         jti = get_raw_jwt()['jti']
-        msg = None
-        try:
-            revoked_token = RevokedToken(jti=jti)
-            session.add(revoked_token)
-            session.commit()
-            msg = {'message': 'Access token has been revoked'}
-        except:
-            msg = {'message': 'Something went wrong'}, 500
-        finally:
-            session.close()
-            return msg
+        revoke_jwt(jti, int(app.config['JWT_ACCESS_TOKEN_EXPIRES'] * 1.1))
+        return {}, 201
 
 
 class LogoutRefresh(Resource):
-    @jwt_refresh_token_required
+    @authorize_refresh
     @swag_from("./docs/auth/logout-refresh.yml")
     def post(self):
         jti = get_raw_jwt()['jti']
-        try:
-            revoked_token = RevokedToken(jti=jti)
-            session.add(revoked_token)
-            session.commit()
-            msg = {'message': 'Refresh token has been revoked'}
-        except:
-            msg = {'message': 'Something went wrong'}, 500
-        finally:
-            session.close()
-            return msg
+        revoke_jwt(jti, int(app.config['JWT_REFRESH_TOKEN_EXPIRES'] * 1.1))
+        return {}, 201
 
 
 class VerifyPhone(Resource):
@@ -416,7 +399,7 @@ class VerifyEmail(Resource):
 
 class TokenRefresh(Resource):
 
-    @jwt_refresh_token_required
+    @authorize_refresh
     @swag_from("./docs/auth/refresh.yml")
     def post(self):
         id = get_jwt_identity()
@@ -424,6 +407,9 @@ class TokenRefresh(Resource):
         session.close()
         access_token = create_user_access_token(user, fresh=True)
         refresh_token = create_refresh_token(identity=user.id)
+
+        jti = get_raw_jwt()['jti']
+        revoke_jwt(jti, int(app.config['JWT_REFRESH_TOKEN_EXPIRES'] * 1.1))
 
         return jsonify({
             'accessToken': f'Bearer {access_token}',
@@ -507,7 +493,7 @@ class ConfirmResetPassword(Resource):
         if new_password != confirm_new_password:
             return make_response({'message': 'passwords dose not match'}, 499)
 
-        user = session.query(User).get(reset_password.user_id)
+        user = session.query(User).get(reset_password.invitee_id)
 
         user.password = new_password
         reset_password.is_used = True

@@ -14,7 +14,7 @@ from say.locale import ChangeLocaleTo
 from say.render_template_i18n import render_template_i18n
 
 from . import *
-
+from ..constants import DEFAULT_AVATAR_URI
 
 """
 User Model
@@ -28,7 +28,7 @@ class User(base, Timestamp):
     firstName = Column(String, nullable=False)
     lastName = Column(String, nullable=False)
     userName = Column(String, nullable=False, unique=True)
-    avatarUrl = Column(String, nullable=True)
+    avatarUrl = Column(String, nullable=False, default=DEFAULT_AVATAR_URI)
     flagUrl = Column(String, nullable=True)
     phone_number = Column(PhoneNumberType(), unique=True, index=True, nullable=True)
     country = Column(CountryType, nullable=True)

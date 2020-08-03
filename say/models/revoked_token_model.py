@@ -4,6 +4,7 @@ from . import *
 Revoke Token Model
 """
 
+
 class RevokedToken(base):
     __tablename__ = 'revoked_tokens'
     id = Column(Integer, primary_key = True)

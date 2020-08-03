@@ -2,8 +2,9 @@ from datetime import time
 
 import pytz
 from sqlalchemy.dialects.postgresql import HSTORE
-
+from sqlalchemy.orm import column_property
 from . import *
+from .family_model import Family
 
 """
 Child Model
@@ -65,6 +66,12 @@ class Child(base, Timestamp):
     isMigrated = Column(Boolean, nullable=False, default=False)
     migratedId = Column(Integer, nullable=True)
     migrateDate = Column(Date, nullable=True)
+
+    sayFamilyCount = column_property(
+        select([Family.say_family_count])
+        .where(Family.id_child == id)
+        .correlate_except(Family)
+    )
 
     @hybrid_property
     def avatarUrl(self):
