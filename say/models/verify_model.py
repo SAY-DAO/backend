@@ -5,7 +5,6 @@ from sqlalchemy_utils import PhoneNumberType, EmailType
 
 from . import *
 from say.content import content
-from say.tasks import send_embeded_subject_email, send_sms
 from say.render_template_i18n import render_template_i18n
 
 
@@ -39,6 +38,7 @@ class PhoneVerification(Verification):
     }
 
     def send(self):
+        from say.tasks import send_sms
         send_sms.delay(
             self.phone_number.e164,
             content['CONFIRM_PHONE'] % self._code,
@@ -53,6 +53,7 @@ class EmailVerification(Verification):
     }
 
     def send(self):
+        from say.tasks import send_embeded_subject_email
         send_embeded_subject_email.delay(
             to=self.email,
             html=render_template_i18n(

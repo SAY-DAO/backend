@@ -1,3 +1,6 @@
+from say.orm import session
+
+
 def insert(child_id):
     import pandas as pd
     from datetime import datetime
@@ -34,5 +37,5 @@ def insert(child_id):
         s = sm()
         s.add(n)
         s.add(cn)
-        s.commit()
+        session.commit()
     return n

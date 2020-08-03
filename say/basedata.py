@@ -1,24 +1,15 @@
 from datetime import datetime
 
-from sqlalchemy.orm import scoped_session, sessionmaker
+from say.orm import session, create_engine, bind_session
+from say.models.user_model import User
+from say.config import config
 
 
-def basedata(db):
+def basedata():
+    engine = create_engine(config['dbUrl'])
+    bind_session(engine)
 
-    from say.models.user_model import User
-
-    # Creating DB Session
-    session_factory = sessionmaker(
-        db,
-        autoflush=False,
-        autocommit=False,
-        expire_on_commit=True,
-        twophase=False,
-    )
-
-    session = scoped_session(session_factory)
-
-    # Inserting BaseData
+    # Add Base data here #
 
     say_user = User(
         userName='SAY',
@@ -32,6 +23,19 @@ def basedata(db):
         lastLogin=datetime.utcnow(),
     )
     session.add(say_user)
+
+    test_user = User(
+        userName='test',
+        password='test',
+        emailAddress='test@say.company',
+        avatarUrl='',
+        firstName='test',
+        lastName='test',
+        city=1,  # Tehran
+        country=1,  # Iran
+        lastLogin=datetime.utcnow(),
+    )
+    session.add(test_user)
 
     try:
         session.commit()

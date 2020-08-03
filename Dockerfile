@@ -1,7 +1,5 @@
 FROM python:3.8 AS compile-image
 
-# We copy just the requirements.txt first to leverage Docker cache
-
 ENV VIRTUAL_ENV=/opt/venv
 
 RUN pip install virtualenv
@@ -15,6 +13,15 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 FROM python:3.8-slim AS runtime-image
+
+ARG CI_COMMIT_REF_SLUG
+
+LABEL traefik.backend=${CI_COMMIT_REF_SLUG}_api
+LABEL traefik.frontend.rule=Host:${CI_COMMIT_REF_SLUG}.api.s.sayapp.company
+LABEL traefik.docker.network=staging 
+LABEL traefik.enable=true 
+LABEL traefik.port=5000 
+LABEL traefik.default.protocol=http
 
 ENV VIRTUAL_ENV=/opt/venv
 

@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 from sqlalchemy import and_, or_
 
-from say.api import celery
+import say.orm
+from say.app import celery
 
 
 @celery.task(base=celery.DBTask, bind=True)
@@ -15,7 +16,7 @@ def update_needs(self):
                 Need.title.is_(None),
             ),
             Need.isDeleted==False,
-            Need.isConfirmed==True,
+#            Need.isConfirmed==True,
             Need.link.isnot(None),
         )
 

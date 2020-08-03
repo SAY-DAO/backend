@@ -1,17 +1,27 @@
+import functools
+import os
+import shutil
 from collections import OrderedDict
+from datetime import datetime
 from uuid import uuid4
 
 import ujson
+from flasgger import swag_from
+from flask import request, make_response, jsonify
+from flask_restful import Resource
 from sqlalchemy.orm import selectinload
 
-from . import *
-from say.models import session, obj_to_dict, commit
-from say.models import ChildMigration, Child, ChildNeed, Family, Need, Ngo,\
+from say.models import ChildMigration, Child, ChildNeed, Family, Need, Ngo, \
     SocialWorker, UserFamily, Invitation
-
-
-# api_bp = Blueprint('api', __name__)
-# api = Api(api_bp)
+from say.models import obj_to_dict
+from ..authorization import get_user_id, get_sw_ngo_id, get_user_role, authorize
+from ..config import config
+from ..constants import DEFAULT_CHILD_ID
+from ..decorators import json
+from ..exceptions import HTTP_PERMISION_DENIED, HTTP_NOT_FOUND
+from ..orm import session, commit
+from ..roles import *
+from ..validations import allowed_voice, allowed_image
 
 """
 Child APIs
@@ -79,7 +89,7 @@ class GetAllChildren(Resource):
     def check_privileges(func):  # TODO: priv
 
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrr(*args, **kwargs):
             query = request.args
 
             ngo_id = query.get('ngo_id', None)
@@ -96,7 +106,7 @@ class GetAllChildren(Resource):
 
             return func(*args, **kwargs)
 
-        return wrapper
+        return wrr
 
     @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
@@ -138,7 +148,7 @@ class GetAllChildren(Resource):
                 children=[],
             )
             for child in children:
-                result['children'].append(obj_to_dict(child))
+                result['children'].nd(obj_to_dict(child))
 
             resp = make_response(jsonify(result), 200)
 
@@ -207,7 +217,7 @@ class GetChildById(Resource):
                 del child_dict['id_ngo']
 
                 for member in child.family.current_members():
-                    child_family_member.append(dict(
+                    child_family_member.nd(dict(
                         role=member.userRole,
                         username=member.user.userName,
                     ))
@@ -290,7 +300,7 @@ class GetChildByInvitationToken(Resource):
             user_id=member.id_user
             username=member.user.userName
 
-            child_family_member.append(dict(
+            child_family_member.nd(dict(
                 user_id=user_id,
                 role=member.userRole,
                 username=username,
@@ -341,7 +351,7 @@ class GetChildNeeds(Resource):
                     {'user_avatar': p.user_avatar}
                     for p in need.current_participants
                 ]
-                needs.append(need_dict)
+                needs.nd(need_dict)
 
             result = dict(
                 total_count=len(needs),
@@ -542,7 +552,7 @@ class AddChild(Resource):
                 return resp
 
             child_path = os.path.join(
-                app.config["UPLOAD_FOLDER"],
+                config["UPLOAD_FOLDER"],
                 str(new_child.id) + "-child",
             )
 
@@ -655,7 +665,7 @@ class UpdateChildById(Resource):
                 return
 
             child_path = os.path.join(
-                app.config["UPLOAD_FOLDER"],
+                config["UPLOAD_FOLDER"],
                 str(primary_child.id) + "-child",
             )
 
@@ -684,7 +694,7 @@ class UpdateChildById(Resource):
                     )
 
                     temp_avatar_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
+                        config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
                     )
 
                     for obj in os.listdir(temp_avatar_path):
@@ -718,7 +728,7 @@ class UpdateChildById(Resource):
                     )
 
                     temp_sleptAvatar_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
+                        config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
                     )
 
                     for obj in os.listdir(temp_sleptAvatar_path):
@@ -752,7 +762,7 @@ class UpdateChildById(Resource):
                     )
 
                     temp_voice_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
+                        config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
                     )
 
                     for obj in os.listdir(temp_voice_path):
@@ -1043,10 +1053,10 @@ class ConfirmChild(Resource):
                 family.id_child = secondary_child.id
 
                 old_path = os.path.join(
-                    app.config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
+                    config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
                 )
                 new_path = os.path.join(
-                    app.config["UPLOAD_FOLDER"], str(secondary_child.id) + "-child"
+                    config["UPLOAD_FOLDER"], str(secondary_child.id) + "-child"
                 )
 
                 shutil.copytree(old_path, new_path)
@@ -1155,42 +1165,14 @@ class MigrateChild(Resource):
                 404,
             )
 
-        old_generated_code = child.generatedCode
         old_sw = child.social_worker
-
         if old_sw.id == new_sw_id:
             return make_response(
                 jsonify({'message': 'Can not migrate to same sw'}),
                 422,
             )
 
-        new_generated_code = new_sw.generatedCode \
-            + format(new_sw.childCount + 1, '04d'),
-
-        child.generatedCode = new_generated_code
-        child.social_worker = new_sw
-        new_sw.childCount += 1
-
-        if new_sw.id_ngo != old_sw.id_ngo:
-            new_sw.ngo.childrenCount += 1
-            if child.isConfirmed:
-               new_sw.ngo.currentChildrenCount += 1
-               old_sw.ngo.currentChildrenCount -= 1
-
-        if child.isConfirmed:
-            new_sw.currentChildCount += 1
-            old_sw.currentChildCount -= 1
-
-        migration = ChildMigration(
-            child=child,
-            new_sw=new_sw,
-            old_sw=old_sw,
-            old_generated_code=old_generated_code,
-            new_generated_code=new_generated_code,
-        )
-
-        child.migrations.append(migration)
-
+        child.migrate(new_sw)
         session.commit()
 
         return make_response(
@@ -1285,11 +1267,11 @@ class GoneChild(Resource):
 
 class GetActiveChildrenApi(Resource):
 
-     @authorize(SUPER_ADMIN, ADMIN)  # TODO: priv
-     @json
-     @commit
-     @swag_from('./docs/child/active-children.yml')
-     def get(self):
+    @authorize(SUPER_ADMIN, ADMIN)  # TODO: priv
+    @json
+    @commit
+    @swag_from('./docs/child/active-children.yml')
+    def get(self):
         return Child.get_actives() \
             .order_by(Child.created)
 
@@ -1297,29 +1279,3 @@ class GetActiveChildrenApi(Resource):
 """
 API URLs
 """
-api.add_resource(GetActiveChildrenApi, "/api/v2/child/actives")
-api.add_resource(GetChildById, "/api/v2/child/childId=<child_id>&confirm=<confirm>")
-api.add_resource(
-    GetChildByInvitationToken,
-    "/api/v2/child/invitations/<token>",
-)
-api.add_resource(GetChildNeeds, "/api/v2/child/childId=<child_id>/needs")
-api.add_resource(GetAllChildren, "/api/v2/child/all/confirm=<confirm>")
-api.add_resource(
-    AddChild,
-    "/api/v2/child/add/",
-)
-api.add_resource(UpdateChildById, "/api/v2/child/update/childId=<child_id>")
-api.add_resource(DeleteChildById, "/api/v2/child/delete/childId=<child_id>")
-api.add_resource(
-    ConfirmChild,
-    "/api/v2/child/confirm/childId=<child_id>",
-)
-api.add_resource(
-    MigrateChild,
-    "/api/v2/child/migrate/childId=<child_id>",
-)
-api.add_resource(
-    GoneChild,
-    "/api/v2/child/gone/childId=<child_id>&status=<new_status>",
-)

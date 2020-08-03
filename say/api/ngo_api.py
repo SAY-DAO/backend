@@ -1,9 +1,20 @@
+import datetime
+import os
 import traceback
+from datetime import datetime
 
-from say.models import session, obj_to_dict
+from flasgger import swag_from
+from flask import make_response, jsonify, request
+from flask_restful import Resource
+
+from say.models import obj_to_dict
 from say.models.ngo_model import Ngo
 from say.models.social_worker_model import SocialWorker
-from . import *
+from ..authorization import authorize
+from ..config import config
+from ..orm import session
+from ..roles import ADMIN, SUPER_ADMIN, SAY_SUPERVISOR
+from ..validations import allowed_image
 
 """
 Activity APIs
@@ -76,7 +87,7 @@ class AddNgo(Resource):
                 )
 
                 temp_logo_path = os.path.join(
-                    app.config["UPLOAD_FOLDER"], str(current_id) + "-ngo"
+                    config["UPLOAD_FOLDER"], str(current_id) + "-ngo"
                 )
 
                 if not os.path.isdir(temp_logo_path):
@@ -246,7 +257,7 @@ class UpdateNgo(Resource):
                         format(base_ngo.id, "03d") + "." + file.filename.split(".")[-1]
                     )
                     temp_logo_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(base_ngo.id) + "-ngo"
+                        config["UPLOAD_FOLDER"], str(base_ngo.id) + "-ngo"
                     )
 
                     if not os.path.isdir(temp_logo_path):
@@ -368,11 +379,3 @@ class ActivateNgo(Resource):
 """
 API URLs
 """
-
-api.add_resource(GetAllNgo, "/api/v2/ngo/all")
-api.add_resource(AddNgo, "/api/v2/ngo/add")
-api.add_resource(GetNgoById, "/api/v2/ngo/ngoId=<ngo_id>")
-api.add_resource(UpdateNgo, "/api/v2/ngo/update/ngoId=<ngo_id>")
-api.add_resource(DeleteNgo, "/api/v2/ngo/delete/ngoId=<ngo_id>")
-api.add_resource(DeactivateNgo, "/api/v2/ngo/deactivate/ngoId=<ngo_id>")
-api.add_resource(ActivateNgo, "/api/v2/ngo/activate/ngoId=<ngo_id>")

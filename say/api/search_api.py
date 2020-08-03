@@ -1,17 +1,17 @@
 import itertools
-from random import randrange
 
+from flasgger import swag_from
+from flask import make_response, jsonify
+from flask_restful import Resource
 from sqlalchemy import func
 
-from . import *
-from say.models import session, obj_to_dict
+from say.models import obj_to_dict
 from say.models.child_model import Child
-from say.models.child_need_model import ChildNeed
-from say.models.need_model import Need
 from say.models.family_model import Family
+from say.models.need_model import Need
 from say.models.user_family_model import UserFamily
-from say.models.user_model import User
-
+from ..authorization import authorize, get_user_id
+from ..orm import session
 
 """
 Search APIs
@@ -113,7 +113,3 @@ class GetSayBrainSearchResult(Resource):
 API URLs
 """
 
-api.add_resource(GetRandomSearchResult,
-                 "/api/v2/search/random")
-api.add_resource(GetSayBrainSearchResult,
-                 "/api/v2/search/saybrain")

@@ -1,8 +1,8 @@
 import os
 import sys
 from logging.config import fileConfig
+from pathlib import Path
 
-from flask import json
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
@@ -29,9 +29,8 @@ target_metadata = base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-with open("./config.json") as config_file:
-    conf = json.load(config_file)
-    config.set_main_option('sqlalchemy.url', conf.get('dbUrl', ''))
+from say.config import config as conf
+config.set_main_option('sqlalchemy.url', conf.get('dbUrl', ''))
 
 db_url = os.environ.get('DB')
 if db_url:

@@ -1,22 +1,34 @@
+import os
 from collections import OrderedDict
+from datetime import datetime
 from uuid import uuid4
 
 import ujson
 from dictdiffer import diff
-from flask import json as json_
+from flasgger import swag_from
+from flask import json as json_, request, make_response, jsonify
+from flask_restful import Resource
 from sqlalchemy import or_
+from werkzeug.utils import secure_filename
 
-from . import *
-from say.models import session, obj_to_dict, commit
+from say.models import obj_to_dict
 from say.models.activity_model import Activity
 from say.models.child_model import Child
 from say.models.child_need_model import ChildNeed
-from say.models.need_family_model import NeedFamily
 from say.models.family_model import Family
 from say.models.need_model import Need
 from say.models.social_worker_model import SocialWorker
 from say.models.user_family_model import UserFamily
-from say.tasks import update_need
+from ..authorization import get_user_role, get_user_id, get_sw_ngo_id, authorize
+from ..config import config
+from ..constants import DEFAULT_CHILD_ID
+from ..date import parse_datetime
+from ..decorators import json
+from ..exceptions import HTTP_NOT_FOUND, HTTP_PERMISION_DENIED
+from ..orm import session, commit
+from ..roles import SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, USER, \
+    SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+from ..validations import allowed_image, allowed_receipt
 
 """
 Need APIs
@@ -257,7 +269,7 @@ class UpdateNeedById(Resource):
                     filename = str(need.id) + "." + file.filename.split(".")[-1]
 
                     temp_need_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(child.id) + "-child"
+                        config["UPLOAD_FOLDER"], str(child.id) + "-child"
                     )
                     temp_need_path = os.path.join(temp_need_path, "needs")
                     temp_need_path = os.path.join(
@@ -299,7 +311,7 @@ class UpdateNeedById(Resource):
                         filename = str(0) + "." + file2.filename.split(".")[-1]
 
                     temp_need_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(child.id) + "-child"
+                        config["UPLOAD_FOLDER"], str(child.id) + "-child"
                     )
                     temp_need_path = os.path.join(temp_need_path, "needs")
                     temp_need_path = os.path.join(
@@ -335,6 +347,7 @@ class UpdateNeedById(Resource):
                 if new_link != need.link:
                     need.link = new_link
                     session.flush()
+                    from say.tasks import update_need
                     update_need.delay(need.id, force=True)
 
             if "affiliateLinkUrl" in request.form.keys():
@@ -610,7 +623,7 @@ class AddNeed(Resource):
             session.flush()
 
             child_path = os.path.join(
-                app.config["UPLOAD_FOLDER"],
+                config["UPLOAD_FOLDER"],
                 str(child.id) + "-child",
             )
             needs_path = os.path.join(child_path, "needs")
@@ -669,6 +682,7 @@ class AddNeed(Resource):
             session.commit()
 
             if new_need.link:
+                from say.tasks import update_need
                 update_need.delay(new_need.id)
 
             resp = make_response(jsonify(obj_to_dict(new_need)), 200)
@@ -685,13 +699,3 @@ class AddNeed(Resource):
 """
 API URLs
 """
-
-api.add_resource(GetNeedById, "/api/v2/need/needId=<need_id>")
-api.add_resource(GetAllNeeds, "/api/v2/need/all/confirm=<confirm>")
-api.add_resource(UpdateNeedById, "/api/v2/need/update/needId=<need_id>")
-api.add_resource(DeleteNeedById, "/api/v2/need/delete/needId=<need_id>")
-api.add_resource(
-    ConfirmNeed,
-    "/api/v2/need/confirm/needId=<need_id>",
-)
-api.add_resource(AddNeed, "/api/v2/need/")

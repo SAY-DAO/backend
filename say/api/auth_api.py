@@ -1,18 +1,27 @@
-from random import randint
+import re
+from datetime import timedelta, datetime
 
 import phonenumbers
 from babel import Locale
+from flasgger import swag_from
+from flask import request, make_response, jsonify
 from flask_jwt_extended import create_refresh_token, \
-    jwt_refresh_token_required, get_raw_jwt
+    jwt_refresh_token_required, get_raw_jwt, get_jwt_identity
+from flask_restful import Resource
 from sqlalchemy_utils import PhoneNumber, Country, PhoneNumberParseException
 
-from say.models import session, obj_to_dict, or_, commit, ResetPassword, \
+from say.models import obj_to_dict, or_, ResetPassword, \
     PhoneVerification, Verification, EmailVerification, User, RevokedToken, \
     and_
-from say.tasks import subscribe_email
 from say.validations import validate_username, validate_email, validate_phone, \
-    validate_password
-from . import *
+    validate_password, USERNAME_PATTERN, EMAIL_PATTERN
+from .ext import limiter
+from ..authorization import create_user_access_token, authorize
+from ..config import config
+from ..decorators import json
+from ..locale import get_locale
+from ..orm import commit
+from ..orm import session
 from ..schema.user import NewUserSchema
 
 """
@@ -183,8 +192,9 @@ class RegisterUser(Resource):
         }
 
         if new_user.emailAddress:
+            from say.tasks import subscribe_email
             subscribe_email.delay(
-                app.config.get('MAILERLITE_GROUP_ID', 'not-entered'),
+                config.get('MAILERLITE_GROUP_ID', 'not-entered'),
                 dict(email=new_user.emailAddress),
             )
 
@@ -198,7 +208,6 @@ class Login(Resource):
         resp = {"message": "Something is Wrong!"}
 
         try:
-
             if "username" in request.form.keys():
                 username = request.form["username"].lower()
             else:
@@ -221,53 +230,32 @@ class Login(Resource):
                 resp = {"message": "isInstalled is needed"}, 400
                 return
 
-            user_query = session.query(User).filter_by(isDeleted=False)
+            user_query = session.query(User) \
+                .filter(User.isDeleted.isnot(True)) \
 
             user = None
-            try:
-                user = user_query \
-                    .filter(and_(
-                        User.phone_number==username,
-                        User.is_phonenumber_verified==True,
-                    )).first()
+            if re.match(USERNAME_PATTERN, username):
+                user = user_query.filter(
+                    User.formated_username == username,
+                ).one_or_none()
+            elif re.match(EMAIL_PATTERN, username):
+                user = user_query.filter(
+                    User.formated_username == username,
+                    User.is_email_verified.isnot(False),
+                ).one_or_none()
+            else:
+                try:
+                    user = user_query \
+                        .filter(and_(
+                            User.phone_number == username,
+                            User.is_phonenumber_verified.isnot(False),
+                        )).one_or_none()
 
-            except phonenumbers.phonenumberutil.NumberParseException:
-                user = user_query \
-                    .filter(or_(
-                        and_(
-                            User.emailAddress==username,
-                            User.is_email_verified==True,
-                        ),
-                        User.formated_username==username,
-                    )).first()
+                except phonenumbers.phonenumberutil.NumberParseException:
+                    user = None
 
             if user is not None:
                 if user.validate_password(password):
-                    if not user.isVerified:
-                        verify = session.query(Verification) \
-                            .filter_by(user_id=user.id) \
-                            .first()
-
-                        if verify is None:
-                            verify = Verification(user=user)
-                            session.add(verify)
-
-                        verify.code = randint(100000, 999999)
-                        verify.expire_at = datetime.utcnow() + timedelta(
-                            minutes=app.config['VERIFICATION_EMAIL_MAXAGE']
-                        )
-
-                        session.commit()
-                        send_verify_email(user, verify.code)
-
-                        resp = make_response(
-                            jsonify({
-                                'user': obj_to_dict(user),
-                            }),
-                            302,
-                        )
-                        return
-
                     lang = get_locale()
                     user.locale = Locale(lang)
                     user.lastLogin = datetime.utcnow()
@@ -370,7 +358,7 @@ class VerifyPhone(Resource):
         verification = PhoneVerification(
             phone_number=phone_number,
             expire_at=datetime.utcnow() + timedelta(
-                minutes=app.config['VERIFICATION_MAXAGE'],
+                minutes=config['VERIFICATION_MAXAGE'],
             ),
         )
         session.add(verification)
@@ -404,7 +392,7 @@ class VerifyEmail(Resource):
         verification = EmailVerification(
             email=email,
             expire_at=datetime.utcnow() + timedelta(
-                minutes=app.config['VERIFICATION_MAXAGE'],
+                minutes=config['VERIFICATION_MAXAGE'],
             ),
         )
         session.add(verification)
@@ -526,21 +514,7 @@ class ConfirmResetPassword(Resource):
 
         return resp
 
+
 """
 API URLs
 """
-
-
-api.add_resource(RegisterUser, "/api/v2/auth/register")
-api.add_resource(Login, "/api/v2/auth/login")
-api.add_resource(LogoutAccess, "/api/v2/auth/logout/token")
-api.add_resource(LogoutRefresh, "/api/v2/auth/logout/refresh")
-api.add_resource(TokenRefresh, "/api/v2/auth/refresh")
-api.add_resource(VerifyPhone, "/api/v2/auth/verify/phone")
-api.add_resource(VerifyEmail, "/api/v2/auth/verify/email")
-api.add_resource(ResetPasswordByEmailApi, "/api/v2/auth/password/reset/email")
-api.add_resource(ResetPasswordByPhoneApi, "/api/v2/auth/password/reset/phone")
-api.add_resource(
-    ConfirmResetPassword,
-    "/api/v2/auth/password/reset/confirm/token=<token>",
-)

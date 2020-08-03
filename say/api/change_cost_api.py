@@ -1,8 +1,14 @@
-from say.models import commit, session
-from say.models import Need, SocialWorker, ChangeCost, ChangeCostStatus, Child, \
-    ChangeCostCreateSchema, ChangeCostRejectSchema, ChangeCostAcceptSchema
+from flasgger import swag_from
+from flask import request
+from flask_restful import Resource
 
-from . import *
+from say.models import Need, ChangeCost, ChangeCostStatus, Child, \
+    ChangeCostCreateSchema, ChangeCostRejectSchema, ChangeCostAcceptSchema
+from ..authorization import get_user_id, get_sw_ngo_id, get_user_role, authorize
+from ..decorators import json
+from ..exceptions import HTTP_NOT_FOUND
+from ..orm import commit, session
+from ..roles import SOCIAL_WORKER, NGO_SUPERVISOR, SUPER_ADMIN, ADMIN
 
 
 def filter_by_priv(query):
@@ -180,24 +186,3 @@ class ChangeCostAcceptApi(Resource):
         change_cost.update(**data.dict(exclude_unset=True))
         need.change_cost(change_cost.to)
         return change_cost
-
-
-api.add_resource(
-    ChangeCostAPi,
-    '/api/v2/need/<int:need_id>/change_cost',
-)
-
-api.add_resource(
-    ChangeCostRejectApi,
-    '/api/v2/need/<int:need_id>/change_cost/<id>/reject',
-)
-
-api.add_resource(
-    ChangeCostAcceptApi,
-    '/api/v2/need/<int:need_id>/change_cost/<id>/accept',
-)
-
-api.add_resource(
-    PendingChangeCostAPi,
-    '/api/v2/change_cost/pending',
-)

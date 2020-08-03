@@ -1,16 +1,27 @@
+import datetime
+import functools
 import os
 from random import randint
 
-from . import *
-from say.api import jwt
+from flasgger import swag_from
+from flask import make_response, jsonify, request
+from flask_restful import Resource
+
 from say.gender import Gender
-from say.models import session, obj_to_dict
+from say.models import obj_to_dict
 from say.models.family_model import Family
 from say.models.need_family_model import NeedFamily
 from say.models.revoked_token_model import RevokedToken
 from say.models.user_family_model import UserFamily
 from say.models.user_model import User
-
+from ..decorators import json
+from ..schema.user import UserNameSchema
+from .ext import jwt
+from ..authorization import authorize, get_user_role, get_user_id
+from ..config import config
+from ..orm import session
+from ..roles import ADMIN, SUPER_ADMIN, USER
+from ..validations import allowed_image
 
 """
 User APIs
@@ -115,8 +126,10 @@ class GetUserChildren(Resource):
 
 
 class UpdateUserById(Resource):
+
     @authorize(USER, ADMIN, SUPER_ADMIN)
     @me_or_user_id
+    @json
     @swag_from("./docs/user/update.yml")
     def patch(self, user_id):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
@@ -142,7 +155,7 @@ class UpdateUserById(Resource):
                     filename = str(primary_user.id) + '.' + file.filename.split('.')[-1]
 
                     temp_user_path = os.path.join(
-                        app.config['UPLOAD_FOLDER'],
+                        config['UPLOAD_FOLDER'],
                         str(primary_user.id) + '-user',
                     )
 
@@ -161,9 +174,14 @@ class UpdateUserById(Resource):
                     file.save(primary_user.avatarUrl)
                     primary_user.avatarUrl = '/' + primary_user.avatarUrl
 
+            raw_username = request.form.get("userName", primary_user.userName)
+            if raw_username != primary_user.userName:
+                try:
+                    username = UserNameSchema(username=raw_username).username
+                except ValueError as ex:
+                    resp = ex.json(), 400
+                    return resp
 
-            username = request.form.get("userName", primary_user.userName)
-            if username != primary_user.userName:
                 if session.query(User) \
                     .filter(User.formated_username==username.lower()) \
                     .filter(User.id!=primary_user.id) \
@@ -391,7 +409,6 @@ class AddUser(Resource):
             last_login = datetime.utcnow()
 
             avatar_url = "wrong url"
-            flag_url = os.path.join(FLAGS, country_code + ".png")
 
             new_user = User(
                 firstName=first_name,
@@ -407,7 +424,6 @@ class AddUser(Resource):
                 birthPlace=birth_place,
                 lastLogin=last_login,
                 password=password,
-                flagUrl=flag_url,
             )
 
             session.add(new_user)
@@ -424,7 +440,7 @@ class AddUser(Resource):
                 if file and allowed_image(file.filename):
                     filename = str(phone_number) + '.' + file.filename.split('.')[-1]
                     temp_user_path = os.path.join(
-                        app.config['UPLOAD_FOLDER'],
+                        config['UPLOAD_FOLDER'],
                         str(new_user.id) + '-user'
                     )
 
@@ -455,19 +471,3 @@ class AddUser(Resource):
         finally:
             session.close()
             return resp
-
-
-
-
-"""
-API URLs
-"""
-
-api.add_resource(GetUserById, "/api/v2/user/userId=<user_id>")
-api.add_resource(GetUserChildren, "/api/v2/user/children/userId=<user_id>")
-api.add_resource(UpdateUserById, "/api/v2/user/update/userId=<user_id>")
-api.add_resource(DeleteUserById, "/api/v2/user/delete/userId=<user_id>")
-api.add_resource(AddUser, "/api/v2/user/add")
-api.add_resource(GetUserRole, "/api/v2/user/role/userId=<user_id>&childId=<child_id>")
-
-

@@ -1,8 +1,14 @@
-from say.constants import PAST_PARTICIPANT_ROLE
-from say.validations import VALID_ROLES
-from say.models import session, obj_to_dict, commit
+from flasgger import swag_from
+from flask import make_response, jsonify, request
+from flask_restful import Resource
+
 from say.models import User, Family, UserFamily, NeedFamily, Invitation
-from . import *
+from say.validations import VALID_ROLES
+from ..authorization import authorize, get_user_id
+from ..config import config
+from ..decorators import json
+from ..orm import commit, session
+from ..roles import SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
 
 """
 Family APIs
@@ -154,7 +160,7 @@ class AddUserToFamily(Resource):
                     .count()
 
                 if family_count == 0:
-                    user.send_installion_notif(app.config['ADD_TO_HOME_URL'])
+                    user.send_installion_notif(config['ADD_TO_HOME_URL'])
 
             new_member = UserFamily(
                 user=user,
@@ -179,7 +185,6 @@ class AddUserToFamily(Resource):
                 p.isDeleted = False
 
         family.child.sayFamilyCount += 1
-
 
         return family
 
@@ -237,14 +242,4 @@ class LeaveFamily(Resource):
 """
 API URLs
 """
-
-api.add_resource(GetFamilyById, "/api/v2/family/familyId=<family_id>")
-api.add_resource(
-    AddUserToFamily, "/api/v2/family/add"
-)
-api.add_resource(GetAllFamilies, "/api/v2/family/all")
-api.add_resource(
-    LeaveFamily,
-    "/api/v2/family/<family_id>/leave",
-)
 

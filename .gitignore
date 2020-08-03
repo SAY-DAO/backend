@@ -35,7 +35,7 @@ wheels/
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Unit test / coverage reports
+# Unit tests / coverage reports
 htmlcov/
 .tox/
 .coverage
@@ -80,7 +80,7 @@ celerybeat-schedule
 *.sage.py
 
 # dotenv
-.env
+#.env
 
 # virtualenv
 .venv

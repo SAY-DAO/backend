@@ -1,14 +1,37 @@
 from datetime import datetime
 from hashlib import md5
 
+from flasgger import swag_from
+from flask import make_response, jsonify, request
 from flask_jwt_extended import create_refresh_token, \
     jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
+from flask_restful import Resource
 
-from . import *
-from say.models import session, obj_to_dict
 from say.models.revoked_token_model import RevokedToken
 from say.models.social_worker_model import SocialWorker
 
+from ..authorization import authorize
+from ..authorization import create_sw_access_token
+from ..orm import session
+from ..roles import ADMIN, SUPER_ADMIN, COORDINATOR, NGO_SUPERVISOR, \
+    SAY_SUPERVISOR
+from ..roles import SOCIAL_WORKER
+from hashlib import md5
+
+from flasgger import swag_from
+from flask import make_response, jsonify, request
+from flask_jwt_extended import create_refresh_token, \
+    jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
+from flask_restful import Resource
+
+from say.models.revoked_token_model import RevokedToken
+from say.models.social_worker_model import SocialWorker
+from ..authorization import authorize
+from ..authorization import create_sw_access_token
+from ..orm import session
+from ..roles import ADMIN, SUPER_ADMIN, COORDINATOR, NGO_SUPERVISOR, \
+    SAY_SUPERVISOR
+from ..roles import SOCIAL_WORKER
 
 """
 Panel Authentication APIs
@@ -41,6 +64,7 @@ class PanelLogin(Resource):
             social_worker = (
                 session.query(SocialWorker)
                 .filter_by(isDeleted=False)
+                .filter_by(isActive=True)
                 .filter_by(userName=username)
                 .first()
             )
@@ -131,12 +155,3 @@ class PanelLogoutRefresh(Resource):
 """
 API URLs
 """
-
-
-api.add_resource(PanelLogin, "/api/v2/panel/auth/login")
-api.add_resource(PanelTokenRefresh, "/api/v2/panel/auth/refresh")
-api.add_resource(PanelLogoutAccess, "/api/v2/panel/auth/logout/token")
-api.add_resource(PanelLogoutRefresh, "/api/v2/panel/auth/logout/refresh")
-#api.add_resource(Logout, "/api/v2/panel/auth/logout/userid=<user_id>")
-#api.add_resource(Verify, "/api/v2/panel/auth/verify/userid=<user_id>")
-#api.add_resource(VerifyResend, "/api/v2/panel/auth/verify/resend/userid=<user_id>")

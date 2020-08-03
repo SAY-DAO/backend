@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
 from sqlalchemy import and_, or_
 
-from say.api import celery
+import say.orm
+from say.app import celery
+
 
 # This task is a temporary social worker that deliver a product to child
 @celery.task(base=celery.DBTask, bind=True, max_retries=2)

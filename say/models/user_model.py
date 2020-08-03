@@ -8,7 +8,6 @@ from babel import Locale
 
 from say.validations import validate_password as _validate_password
 from say.gender import Gender
-from say.tasks import send_sms, send_embeded_subject_email
 from say.content import content
 from say.locale import ChangeLocaleTo
 from say.render_template_i18n import render_template_i18n
@@ -151,6 +150,8 @@ class User(base, Timestamp):
         session.add(payment)
 
     def send_installion_notif(self, notif_url):
+        from say.tasks import send_sms, send_embeded_subject_email
+
         with ChangeLocaleTo(self.locale):
             if self.is_phonenumber_verified:
                 send_sms.delay(

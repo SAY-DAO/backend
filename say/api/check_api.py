@@ -1,7 +1,11 @@
-from . import *
-from say.models import User, session
-from say.validations import validate_username, validate_email, validate_phone
+from flasgger import swag_from
+from flask_restful import Resource
 
+from ..schema.user import UserNameSchema
+from say.validations import validate_email, validate_phone
+from say.models import User
+from ..decorators import json
+from ..orm import session
 
 '''
 Check APIs
@@ -13,11 +17,13 @@ class CheckUsername(Resource):
     @json
     @swag_from('./docs/check/username.yml')
     def get(self, username):
-        if not validate_username(username):
-            return {'message': 'Invalid Username'}, 710
+        try:
+            data = UserNameSchema(username=username)
+        except ValueError as e:
+            return e.json(), 710
 
         user = session.query(User) \
-            .filter_by(formated_username=username.lower()) \
+            .filter_by(formated_username=data.username.lower()) \
             .one_or_none()
 
         if user:
@@ -61,8 +67,4 @@ class CheckPhone(Resource):
 
         return {'message': 'Phone is avaliable'}, 200
 
-
-api.add_resource(CheckUsername, '/api/v2/check/username/<username>')
-api.add_resource(CheckEmail, '/api/v2/check/email/<email>')
-api.add_resource(CheckPhone, '/api/v2/check/phone/<phone>')
 

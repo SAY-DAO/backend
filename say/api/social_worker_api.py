@@ -1,9 +1,23 @@
+import datetime
+import os
 from hashlib import md5
 
-from say.models import session, obj_to_dict
+from flasgger import swag_from
+from flask import make_response, jsonify, request
+from flask_restful import Resource
+
+from say.models import obj_to_dict, Child
 from say.models.ngo_model import Ngo
 from say.models.social_worker_model import SocialWorker
-from . import *
+from ..authorization import authorize, get_user_role, get_user_id
+from ..config import config
+from ..decorators import json
+from ..orm import session, commit
+from ..roles import ADMIN, SUPER_ADMIN, COORDINATOR, NGO_SUPERVISOR, \
+    SAY_SUPERVISOR
+from ..validations import allowed_image
+from ..schema.social_worker import MigrateSocialWorkerChildrenSchema
+
 """
 Social Worker APIs
 """
@@ -205,7 +219,7 @@ class AddSocialWorker(Resource):
                     ".")[-1]
 
                 temp_avatar_path = os.path.join(
-                    app.config["UPLOAD_FOLDER"],
+                    config["UPLOAD_FOLDER"],
                     str(current_id) + "-socialworker")
 
                 if not os.path.isdir(temp_avatar_path):
@@ -234,7 +248,7 @@ class AddSocialWorker(Resource):
                         ".")[-1]
 
                     temp_idcard_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"],
+                        config["UPLOAD_FOLDER"],
                         str(current_id) + "-socialworker")
 
                     if not os.path.isdir(temp_idcard_path):
@@ -268,7 +282,7 @@ class AddSocialWorker(Resource):
                         ".")[-1]
 
                     temp_passport_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"],
+                        config["UPLOAD_FOLDER"],
                         str(current_id) + "-socialworker")
 
                     if not os.path.isdir(temp_passport_path):
@@ -442,7 +456,7 @@ class UpdateSocialWorker(Resource):
                                  file1.filename.split(".")[-1])
 
                     temp_idcard_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"],
+                        config["UPLOAD_FOLDER"],
                         str(base_social_worker.id) + "-socialworker",
                     )
 
@@ -480,7 +494,7 @@ class UpdateSocialWorker(Resource):
                                  file2.filename.split(".")[-1])
 
                     temp_passport_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"],
+                        config["UPLOAD_FOLDER"],
                         str(base_social_worker.id) + "-socialworker",
                     )
 
@@ -517,7 +531,7 @@ class UpdateSocialWorker(Resource):
                                  file3.filename.split(".")[-1])
 
                     temp_avatar_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"],
+                        config["UPLOAD_FOLDER"],
                         str(base_social_worker.id) + "-socialworker",
                     )
 
@@ -684,34 +698,38 @@ class DeleteSocialWorker(Resource):
 class DeactivateSocialWorker(Resource):
 
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @json
+    @commit
     @swag_from("./docs/social_worker/deactivate.yml")
     def patch(self, social_worker_id):
-        resp = make_response(
-            jsonify({"message": "major error occurred!"}),
-            503,
-        )
 
-        try:
-            base_social_worker = session.query(SocialWorker) \
-                .filter_by(id=social_worker_id) \
-                .filter_by(isDeleted=False) \
-                .first()
+        sw = session.query(SocialWorker) \
+            .filter_by(id=social_worker_id) \
+            .filter_by(isDeleted=False) \
+            .filter_by(isActive=True) \
+            .with_for_update() \
+            .one_or_none()
 
-            base_social_worker.isActive = False
+        if not sw:
+            return {
+                'message': f'Social worker {social_worker_id} not found',
+            }, 404
 
-            session.commit()
-            resp = make_response(
-                jsonify({"message": "social worker deactivated successfully!"}),
-                200,
-            )
+        has_active_child = session.query(Child.id) \
+            .filter(Child.id_social_worker==social_worker_id) \
+            .filter(Child.isConfirmed.is_(True)) \
+            .filter(Child.isDeleted.is_(False)) \
+            .filter(Child.isMigrated.is_(False)) \
+            .count()
 
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "error"}), 500)
+        if has_active_child:
+            return {
+                'message': f'Social worker {social_worker_id} has active'
+                    ' children and can not deactivate',
+            }, 400
 
-        finally:
-            session.close()
-            return resp
+        sw.isActive = False
+        return sw
 
 
 class ActivateSocialWorker(Resource):
@@ -746,30 +764,54 @@ class ActivateSocialWorker(Resource):
             return resp
 
 
-"""
-API URLs
-"""
+class MigrateSocialWorkerChildren(Resource):
 
-api.add_resource(GetAllSocialWorkers, "/api/v2/socialWorker/all")
-api.add_resource(AddSocialWorker, "/api/v2/socialWorker/add")
-api.add_resource(
-    GetSocialWorkerById,
-    "/api/v2/socialWorker/socialWorkerId=<social_worker_id>",
-)
-api.add_resource(GetSocialWorkerByNgoId, "/api/v2/socialWorker/ngoId=<ngo_id>")
-api.add_resource(
-    UpdateSocialWorker,
-    "/api/v2/socialWorker/update/socialWorkerId=<social_worker_id>",
-)
-api.add_resource(
-    DeleteSocialWorker,
-    "/api/v2/socialWorker/delete/socialWorkerId=<social_worker_id>",
-)
-api.add_resource(
-    DeactivateSocialWorker,
-    "/api/v2/socialWorker/deactivate/socialWorkerId=<social_worker_id>",
-)
-api.add_resource(
-    ActivateSocialWorker,
-    "/api/v2/socialWorker/activate/socialWorkerId=<social_worker_id>",
-)
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @json
+    @commit
+    @swag_from("./docs/social_worker/migrate_children.yml")
+    def post(self, id):
+        try:
+            data = MigrateSocialWorkerChildrenSchema(
+                **request.form.to_dict(),
+            )
+        except ValueError as ex:
+            return ex.json(), 400
+
+        if data.destination_social_worker_id == id:
+            return {'message': 'Can not migrate to same sw'}, 400
+
+        sw = session.query(SocialWorker) \
+            .filter_by(id=id) \
+            .filter_by(isDeleted=False) \
+            .filter_by(isActive=True) \
+            .with_for_update(SocialWorker) \
+            .one_or_none()
+
+        if not sw:
+            return {
+                'message': f'Social worker {id} not found',
+            }, 404
+
+        destination_sw = session.query(SocialWorker) \
+            .filter_by(id=data.destination_social_worker_id) \
+            .filter_by(isDeleted=False) \
+            .filter_by(isActive=True) \
+            .with_for_update() \
+            .one_or_none()
+
+        if not destination_sw:
+            return {
+                'message': f'destination social worker not found',
+            }, 400
+
+        children = session.query(Child) \
+            .filter(Child.id_social_worker == id) \
+            .filter(Child.isDeleted.is_(False)) \
+            .with_for_update()
+
+        resp = []
+        for child in children:
+            migration = child.migrate(destination_sw)
+            resp.append(migration)
+        return resp
