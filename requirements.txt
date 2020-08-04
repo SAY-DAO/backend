@@ -16,7 +16,6 @@ requests
 flasgger
 pyotp
 gunicorn
-dictdifferment
 Flask-Caching
 beautifulsoup4
 requests

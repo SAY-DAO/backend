@@ -2,16 +2,12 @@ from collections import OrderedDict
 from uuid import uuid4
 
 import ujson
-from dictdiffer import diff
-from flask import json as json_
 from sqlalchemy import or_
 
 from . import *
 from say.models import session, obj_to_dict, commit
-from say.models.activity_model import Activity
 from say.models.child_model import Child
 from say.models.child_need_model import ChildNeed
-from say.models.need_family_model import NeedFamily
 from say.models.family_model import Family
 from say.models.need_model import Need
 from say.models.social_worker_model import SocialWorker
@@ -219,13 +215,6 @@ class UpdateNeedById(Resource):
             temp = obj_to_dict(need)
             child = need.child
 
-            activity = Activity(
-                id_social_worker=get_user_id(),
-                model=Need.__tablename__,
-                activityCode=11,  # TODO: wrong code
-            )
-            session.add(activity)
-
             new_cost = None
             if "cost" in request.form.keys():
                 new_cost = int(request.form['cost'].replace(',', ''))
@@ -406,8 +395,6 @@ class UpdateNeedById(Resource):
                     'bank_track_id',
                     None,
                 )
-
-            activity.diff = json_.dumps(list(diff(temp, obj_to_dict(need))))
 
             session.commit()
             secondary_need = obj_to_dict(need)
