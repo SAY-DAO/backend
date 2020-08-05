@@ -262,7 +262,9 @@ class AvailableRoles(Resource):
             return ex.json(), 400
 
         user_id = get_user_id()
-        if not crud.user_family.is_user_in_family(user_id=user_id):
+        if not crud.user_family.is_user_in_family(
+                family_id=family_id, user_id=user_id,
+        ):
             return HTTP_NOT_FOUND()
 
         roles = []
