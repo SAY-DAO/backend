@@ -122,5 +122,5 @@ class AcceptInvitationAPI(Resource):
         return invitation
 
 
-api.add_resource(AcceptInvitationAPI, '/api/v2/invitations/<token>/accept')
+api.add_resource(AcceptInvitationAPI, '/v2/invitations/<token>/accept')
 

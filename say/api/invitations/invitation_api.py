@@ -71,4 +71,4 @@ class InvitationAPI(Resource):
         return invitation
 
 
-api.add_resource(InvitationAPI, '/api/v2/invitations')
+api.add_resource(InvitationAPI, '/v2/invitations')

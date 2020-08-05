@@ -813,31 +813,31 @@ class MigrateSocialWorkerChildren(Resource):
 API URLs
 """
 
-api.add_resource(GetAllSocialWorkers, "/api/v2/socialWorker/all")
-api.add_resource(AddSocialWorker, "/api/v2/socialWorker/add")
+api.add_resource(GetAllSocialWorkers, "/v2/socialWorker/all")
+api.add_resource(AddSocialWorker, "/v2/socialWorker/add")
 api.add_resource(
     GetSocialWorkerById,
-    "/api/v2/socialWorker/socialWorkerId=<social_worker_id>",
+    "/v2/socialWorker/socialWorkerId=<social_worker_id>",
 )
-api.add_resource(GetSocialWorkerByNgoId, "/api/v2/socialWorker/ngoId=<ngo_id>")
+api.add_resource(GetSocialWorkerByNgoId, "/v2/socialWorker/ngoId=<ngo_id>")
 api.add_resource(
     UpdateSocialWorker,
-    "/api/v2/socialWorker/update/socialWorkerId=<social_worker_id>",
+    "/v2/socialWorker/update/socialWorkerId=<social_worker_id>",
 )
 api.add_resource(
     DeleteSocialWorker,
-    "/api/v2/socialWorker/delete/socialWorkerId=<social_worker_id>",
+    "/v2/socialWorker/delete/socialWorkerId=<social_worker_id>",
 )
 api.add_resource(
     DeactivateSocialWorker,
-    "/api/v2/socialWorker/deactivate/socialWorkerId=<social_worker_id>",
+    "/v2/socialWorker/deactivate/socialWorkerId=<social_worker_id>",
 )
 api.add_resource(
     ActivateSocialWorker,
-    "/api/v2/socialWorker/activate/socialWorkerId=<social_worker_id>",
+    "/v2/socialWorker/activate/socialWorkerId=<social_worker_id>",
 )
 
 api.add_resource(
     MigrateSocialWorkerChildren,
-    "/api/v2/socialWorker/<int:id>/children/migrate",
+    "/v2/socialWorker/<int:id>/children/migrate",
 )

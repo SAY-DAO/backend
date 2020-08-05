@@ -57,4 +57,4 @@ class DashboardDataFeed(Resource):
 API URLs
 """
 
-api.add_resource(DashboardDataFeed, "/api/v2/dashboard")
+api.add_resource(DashboardDataFeed, "/v2/dashboard")

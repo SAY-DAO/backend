@@ -43,5 +43,5 @@
 #
 # api.add_resource(
 #     UserInvitationAPI,
-#     '/api/v2/user_invitataion',
+#     '/v2/user_invitataion',
 # )

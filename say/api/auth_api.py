@@ -517,16 +517,16 @@ API URLs
 """
 
 
-api.add_resource(RegisterUser, "/api/v2/auth/register")
-api.add_resource(Login, "/api/v2/auth/login")
-api.add_resource(LogoutAccess, "/api/v2/auth/logout/token")
-api.add_resource(LogoutRefresh, "/api/v2/auth/logout/refresh")
-api.add_resource(TokenRefresh, "/api/v2/auth/refresh")
-api.add_resource(VerifyPhone, "/api/v2/auth/verify/phone")
-api.add_resource(VerifyEmail, "/api/v2/auth/verify/email")
-api.add_resource(ResetPasswordByEmailApi, "/api/v2/auth/password/reset/email")
-api.add_resource(ResetPasswordByPhoneApi, "/api/v2/auth/password/reset/phone")
+api.add_resource(RegisterUser, "/v2/auth/register")
+api.add_resource(Login, "/v2/auth/login")
+api.add_resource(LogoutAccess, "/v2/auth/logout/token")
+api.add_resource(LogoutRefresh, "/v2/auth/logout/refresh")
+api.add_resource(TokenRefresh, "/v2/auth/refresh")
+api.add_resource(VerifyPhone, "/v2/auth/verify/phone")
+api.add_resource(VerifyEmail, "/v2/auth/verify/email")
+api.add_resource(ResetPasswordByEmailApi, "/v2/auth/password/reset/email")
+api.add_resource(ResetPasswordByPhoneApi, "/v2/auth/password/reset/phone")
 api.add_resource(
     ConfirmResetPassword,
-    "/api/v2/auth/password/reset/confirm/token=<token>",
+    "/v2/auth/password/reset/confirm/token=<token>",
 )

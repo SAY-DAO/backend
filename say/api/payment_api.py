@@ -192,7 +192,7 @@ class AddPayment(Resource):
 
         desc = f'{need.name}-{need.child.sayName}'
         name = f'{user.firstName} {user.lastName}'
-        callback = urljoin(app.config['BASE_URL'], 'api/v2/payment/verify')
+        callback = urljoin(config['API_URL'], '/v2/payment/verify')
 
         credit = 0
         if use_credit:
@@ -323,8 +323,8 @@ class VerifyPayment(Resource):
         ))
 
 
-api.add_resource(AddPayment, "/api/v2/payment")
-api.add_resource(GetPayment, "/api/v2/payment/<int:id>")
-api.add_resource(GetAllPayment, "/api/v2/payment/all")
-api.add_resource(VerifyPayment, "/api/v2/payment/verify")
+api.add_resource(AddPayment, "/v2/payment")
+api.add_resource(GetPayment, "/v2/payment/<int:id>")
+api.add_resource(GetAllPayment, "/v2/payment/all")
+api.add_resource(VerifyPayment, "/v2/payment/verify")
 

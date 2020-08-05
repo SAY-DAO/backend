@@ -1268,29 +1268,29 @@ class GetActiveChildrenApi(Resource):
 """
 API URLs
 """
-api.add_resource(GetActiveChildrenApi, "/api/v2/child/actives")
-api.add_resource(GetChildById, "/api/v2/child/childId=<child_id>&confirm=<confirm>")
+api.add_resource(GetActiveChildrenApi, "/v2/child/actives")
+api.add_resource(GetChildById, "/v2/child/childId=<child_id>&confirm=<confirm>")
 api.add_resource(
     GetChildByInvitationToken,
-    "/api/v2/child/invitations/<token>",
+    "/v2/child/invitations/<token>",
 )
-api.add_resource(GetChildNeeds, "/api/v2/child/childId=<child_id>/needs")
-api.add_resource(GetAllChildren, "/api/v2/child/all/confirm=<confirm>")
+api.add_resource(GetChildNeeds, "/v2/child/childId=<child_id>/needs")
+api.add_resource(GetAllChildren, "/v2/child/all/confirm=<confirm>")
 api.add_resource(
     AddChild,
-    "/api/v2/child/add/",
+    "/v2/child/add/",
 )
-api.add_resource(UpdateChildById, "/api/v2/child/update/childId=<child_id>")
-api.add_resource(DeleteChildById, "/api/v2/child/delete/childId=<child_id>")
+api.add_resource(UpdateChildById, "/v2/child/update/childId=<child_id>")
+api.add_resource(DeleteChildById, "/v2/child/delete/childId=<child_id>")
 api.add_resource(
     ConfirmChild,
-    "/api/v2/child/confirm/childId=<child_id>",
+    "/v2/child/confirm/childId=<child_id>",
 )
 api.add_resource(
     MigrateChild,
-    "/api/v2/child/migrate/childId=<child_id>",
+    "/v2/child/migrate/childId=<child_id>",
 )
 api.add_resource(
     GoneChild,
-    "/api/v2/child/gone/childId=<child_id>&status=<new_status>",
+    "/v2/child/gone/childId=<child_id>&status=<new_status>",
 )

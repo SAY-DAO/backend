@@ -134,10 +134,10 @@ API URLs
 """
 
 
-api.add_resource(PanelLogin, "/api/v2/panel/auth/login")
-api.add_resource(PanelTokenRefresh, "/api/v2/panel/auth/refresh")
-api.add_resource(PanelLogoutAccess, "/api/v2/panel/auth/logout/token")
-api.add_resource(PanelLogoutRefresh, "/api/v2/panel/auth/logout/refresh")
-#api.add_resource(Logout, "/api/v2/panel/auth/logout/userid=<user_id>")
-#api.add_resource(Verify, "/api/v2/panel/auth/verify/userid=<user_id>")
-#api.add_resource(VerifyResend, "/api/v2/panel/auth/verify/resend/userid=<user_id>")
+api.add_resource(PanelLogin, "/v2/panel/auth/login")
+api.add_resource(PanelTokenRefresh, "/v2/panel/auth/refresh")
+api.add_resource(PanelLogoutAccess, "/v2/panel/auth/logout/token")
+api.add_resource(PanelLogoutRefresh, "/v2/panel/auth/logout/refresh")
+#api.add_resource(Logout, "/v2/panel/auth/logout/userid=<user_id>")
+#api.add_resource(Verify, "/v2/panel/auth/verify/userid=<user_id>")
+#api.add_resource(VerifyResend, "/v2/panel/auth/verify/resend/userid=<user_id>")

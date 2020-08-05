@@ -26,7 +26,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 ARG CI_COMMIT_REF_SLUG
 LABEL traefik.backend=${CI_COMMIT_REF_SLUG}_api
-LABEL traefik.frontend.rule=Host:${CI_COMMIT_REF_SLUG}.api.s.sayapp.company
+LABEL traefik.frontend.rule=Host:api.${CI_COMMIT_REF_SLUG}.s.sayapp.company
 LABEL traefik.docker.network=staging 
 LABEL traefik.enable=true 
 LABEL traefik.port=5000 

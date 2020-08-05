@@ -176,11 +176,11 @@ class UpdatePrivilege(Resource):
 API URLs
 """
 
-api.add_resource(GetAllPrivileges, "/api/v2/privilege/all")
-api.add_resource(AddPrivilege, "/api/v2/privilege/add")
-api.add_resource(GetPrivilegeByName, "/api/v2/privilege/name=<name>")
-api.add_resource(GetPrivilegeById, "/api/v2/privilege/privilegeId=<privilege_id>")
+api.add_resource(GetAllPrivileges, "/v2/privilege/all")
+api.add_resource(AddPrivilege, "/v2/privilege/add")
+api.add_resource(GetPrivilegeByName, "/v2/privilege/name=<name>")
+api.add_resource(GetPrivilegeById, "/v2/privilege/privilegeId=<privilege_id>")
 api.add_resource(
-    GetPrivilegeByPrivilege, "/api/v2/privilege/privilege=<privilege_type>"
+    GetPrivilegeByPrivilege, "/v2/privilege/privilege=<privilege_type>"
 )
-api.add_resource(UpdatePrivilege, "/api/v2/privilege/update/privilegeId=<privilege_id>")
+api.add_resource(UpdatePrivilege, "/v2/privilege/update/privilegeId=<privilege_id>")

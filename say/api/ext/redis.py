@@ -3,8 +3,8 @@ import redis
 from say.config import config
 
 revoked_store = redis.StrictRedis(
-    host=config['REVOKED_TOKEN_STORE']['host'],
-    port=config['REVOKED_TOKEN_STORE']['port'],
-    db=config['REVOKED_TOKEN_STORE']['db'],
+    host=config['REDIS_HOST'],
+    port=config['REDIS_PORT'],
+    db=config['REVOKED_TOKEN_STORE_DB'],
     decode_responses=True,
 )

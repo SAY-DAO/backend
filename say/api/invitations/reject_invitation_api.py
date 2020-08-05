@@ -41,5 +41,5 @@ class RejectInvitationAPI(Resource):
         return invitation
 
 
-api.add_resource(RejectInvitationAPI, '/api/v2/invitations/<token>/reject')
+api.add_resource(RejectInvitationAPI, '/v2/invitations/<token>/reject')
 

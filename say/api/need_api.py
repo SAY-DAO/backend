@@ -673,12 +673,12 @@ class AddNeed(Resource):
 API URLs
 """
 
-api.add_resource(GetNeedById, "/api/v2/need/needId=<need_id>")
-api.add_resource(GetAllNeeds, "/api/v2/need/all/confirm=<confirm>")
-api.add_resource(UpdateNeedById, "/api/v2/need/update/needId=<need_id>")
-api.add_resource(DeleteNeedById, "/api/v2/need/delete/needId=<need_id>")
+api.add_resource(GetNeedById, "/v2/need/needId=<need_id>")
+api.add_resource(GetAllNeeds, "/v2/need/all/confirm=<confirm>")
+api.add_resource(UpdateNeedById, "/v2/need/update/needId=<need_id>")
+api.add_resource(DeleteNeedById, "/v2/need/delete/needId=<need_id>")
 api.add_resource(
     ConfirmNeed,
-    "/api/v2/need/confirm/needId=<need_id>",
+    "/v2/need/confirm/needId=<need_id>",
 )
-api.add_resource(AddNeed, "/api/v2/need/")
+api.add_resource(AddNeed, "/v2/need/")

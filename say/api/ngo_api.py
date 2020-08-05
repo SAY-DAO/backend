@@ -369,10 +369,10 @@ class ActivateNgo(Resource):
 API URLs
 """
 
-api.add_resource(GetAllNgo, "/api/v2/ngo/all")
-api.add_resource(AddNgo, "/api/v2/ngo/add")
-api.add_resource(GetNgoById, "/api/v2/ngo/ngoId=<ngo_id>")
-api.add_resource(UpdateNgo, "/api/v2/ngo/update/ngoId=<ngo_id>")
-api.add_resource(DeleteNgo, "/api/v2/ngo/delete/ngoId=<ngo_id>")
-api.add_resource(DeactivateNgo, "/api/v2/ngo/deactivate/ngoId=<ngo_id>")
-api.add_resource(ActivateNgo, "/api/v2/ngo/activate/ngoId=<ngo_id>")
+api.add_resource(GetAllNgo, "/v2/ngo/all")
+api.add_resource(AddNgo, "/v2/ngo/add")
+api.add_resource(GetNgoById, "/v2/ngo/ngoId=<ngo_id>")
+api.add_resource(UpdateNgo, "/v2/ngo/update/ngoId=<ngo_id>")
+api.add_resource(DeleteNgo, "/v2/ngo/delete/ngoId=<ngo_id>")
+api.add_resource(DeactivateNgo, "/v2/ngo/deactivate/ngoId=<ngo_id>")
+api.add_resource(ActivateNgo, "/v2/ngo/activate/ngoId=<ngo_id>")

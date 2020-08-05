@@ -22,20 +22,19 @@ services:
   rabbitmq:
     image: rabbitmq:3-management-alpine
     restart: always
-    hostname: say-rabbit
+    hostname: $RABBITMQ_HOSTNAME
     volumes:
         - rabbitmq_data_volume:/var/lib/rabbitmq/
         - rabbitmq_log_volume:/var/log/rabbitmq/
     environment:
         RABBITMQ_DEFAULT_USER: $RABBITMQ_DEFAULT_USER
         RABBITMQ_DEFAULT_PASS: $RABBITMQ_DEFAULT_PASS
+        RABBITMQ_DEFAULT_VHOST: $RABBITMQ_HOSTNAME
 
   backend: &backend
 #    build:
 #      context: .
     image: $DOCKER_REGISTRY/say/api:${CI_COMMIT_REF_SLUG}
-    environment:
-      - DB=postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST/$POSTGRES_DB
     restart: always
     networks:
       - staging
@@ -43,7 +42,7 @@ services:
     expose:
       - 5000
     volumes:
-      - ./staging-config.env:/app/config.env
+      - ./.env:/app/.env
       - ./apimd-config.cfg:/app/apimd-config-prod.cfg
       - backend_volume:/app/data
     logging:

@@ -114,6 +114,6 @@ API URLs
 """
 
 api.add_resource(GetRandomSearchResult,
-                 "/api/v2/search/random")
+                 "/v2/search/random")
 api.add_resource(GetSayBrainSearchResult,
-                 "/api/v2/search/saybrain")
+                 "/v2/search/saybrain")

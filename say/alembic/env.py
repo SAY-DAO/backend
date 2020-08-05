@@ -29,13 +29,9 @@ target_metadata = base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-with open("./config.json") as config_file:
-    conf = json.load(config_file)
-    config.set_main_option('sqlalchemy.url', conf.get('dbUrl', ''))
-
-db_url = os.environ.get('DB')
-if db_url:
-    config.set_main_option('sqlalchemy.url', db_url)
+from say import config as say_config
+DB_URL = say_config['DB_URL']
+config.set_main_option('sqlalchemy.url', DB_URL)
 
 
 def run_migrations_offline():

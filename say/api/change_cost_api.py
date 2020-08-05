@@ -184,20 +184,20 @@ class ChangeCostAcceptApi(Resource):
 
 api.add_resource(
     ChangeCostAPi,
-    '/api/v2/need/<int:need_id>/change_cost',
+    '/v2/need/<int:need_id>/change_cost',
 )
 
 api.add_resource(
     ChangeCostRejectApi,
-    '/api/v2/need/<int:need_id>/change_cost/<id>/reject',
+    '/v2/need/<int:need_id>/change_cost/<id>/reject',
 )
 
 api.add_resource(
     ChangeCostAcceptApi,
-    '/api/v2/need/<int:need_id>/change_cost/<id>/accept',
+    '/v2/need/<int:need_id>/change_cost/<id>/accept',
 )
 
 api.add_resource(
     PendingChangeCostAPi,
-    '/api/v2/change_cost/pending',
+    '/v2/change_cost/pending',
 )

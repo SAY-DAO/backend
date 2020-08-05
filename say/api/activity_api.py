@@ -174,10 +174,10 @@ class AddActivity(Resource):
 API URLs
 """
 
-api.add_resource(GetActivityById, "/api/v2/activity/activityId=<activity_id>")
+api.add_resource(GetActivityById, "/v2/activity/activityId=<activity_id>")
 api.add_resource(GetActivityBySocialWorker,
-                 "/api/v2/activity/socialWorker=<social_worker_id>")
-api.add_resource(GetActivityByType, "/api/v2/activity/type=<activity_code>")
-api.add_resource(GetAllActivities, "/api/v2/activity/all")
+                 "/v2/activity/socialWorker=<social_worker_id>")
+api.add_resource(GetActivityByType, "/v2/activity/type=<activity_code>")
+api.add_resource(GetAllActivities, "/v2/activity/all")
 api.add_resource(AddActivity,
-                 "/api/v2/activity/add/socialWorker=<social_worker_id>")
+                 "/v2/activity/add/socialWorker=<social_worker_id>")

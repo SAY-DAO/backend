@@ -44,7 +44,6 @@ class Child(base, Timestamp):
 
     bio_summary_translations = Column(HSTORE)
     bioSummary = translation_hybrid(bio_summary_translations)
-    sayFamilyCount = Column(Integer, nullable=False, default=0)
     voiceUrl = Column(String, nullable=False)
     birthPlace = Column(Text, nullable=True)  # 1:tehran | 2:karaj / [must be change after using real country/city api]
     birthDate = Column(Date, nullable=True)

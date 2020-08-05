@@ -34,3 +34,4 @@ future
 flower
 humps
 itsdangerous
+python-dotenv

@@ -9,6 +9,7 @@ from say.locale import ChangeLocaleTo
 from say.content import content
 
 from . import *
+from ..config import config
 
 """
 Reset Password Model
@@ -16,7 +17,7 @@ Reset Password Model
 
 def expire_at():
     return datetime.utcnow() \
-        + timedelta(seconds=app.config['RESET_PASSSWORD_EXPIRE_TIME'])
+        + timedelta(seconds=app.config['RESET_PASSWORD_EXPIRE_TIME'])
 
 
 class ResetPassword(base):
@@ -41,8 +42,8 @@ class ResetPassword(base):
     @property
     def link(self):
         return urljoin(
-            app.config['BASE_URL'],
-            app.config['SET_PASSWORD_URL'] + f'?token={self.token}'
+            config['BASE_URL'],
+            config['SET_PASSWORD_URL'] + f'?token={self.token}'
         )
 
     def send_email(self, language):

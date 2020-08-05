@@ -64,7 +64,7 @@ class CheckPhone(Resource):
         return {'message': 'Phone is avaliable'}, 200
 
 
-api.add_resource(CheckUsername, '/api/v2/check/username/<username>')
-api.add_resource(CheckEmail, '/api/v2/check/email/<email>')
-api.add_resource(CheckPhone, '/api/v2/check/phone/<phone>')
+api.add_resource(CheckUsername, '/v2/check/username/<username>')
+api.add_resource(CheckEmail, '/v2/check/email/<email>')
+api.add_resource(CheckPhone, '/v2/check/phone/<phone>')
 

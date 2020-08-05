@@ -283,17 +283,17 @@ class AvailableRoles(Resource):
 API URLs
 """
 
-api.add_resource(GetFamilyById, "/api/v2/family/familyId=<family_id>")
+api.add_resource(GetFamilyById, "/v2/family/familyId=<family_id>")
 api.add_resource(
-    AddUserToFamily, "/api/v2/family/add"
+    AddUserToFamily, "/v2/family/add"
 )
-api.add_resource(GetAllFamilies, "/api/v2/family/all")
+api.add_resource(GetAllFamilies, "/v2/family/all")
 api.add_resource(
     LeaveFamily,
-    "/api/v2/family/<family_id>/leave",
+    "/v2/family/<family_id>/leave",
 )
 
 api.add_resource(
     AvailableRoles,
-    "/api/v2/family/<family_id>/available_roles",
+    "/v2/family/<family_id>/available_roles",
 )

@@ -2,7 +2,7 @@ from requests import request
 
 
 BASE_URL = 'https://sayapp.company'
-API_URL = f'{BASE_URL}/api/v2'
+API_URL = f'api.{BASE_URL}/v2'
 
 PANEL_LOGIN = f'{API_URL}/panel/auth/login'
 ACTIVE_CHILDREN_URL = f'{API_URL}/child/actives'

@@ -480,10 +480,10 @@ class SearchUserAPI(Resource):
 API URLs
 """
 
-api.add_resource(GetUserById, "/api/v2/user/userId=<user_id>")
-api.add_resource(GetUserChildren, "/api/v2/user/children/userId=<user_id>")
-api.add_resource(UpdateUserById, "/api/v2/user/update/userId=<user_id>")
-api.add_resource(DeleteUserById, "/api/v2/user/delete/userId=<user_id>")
-api.add_resource(AddUser, "/api/v2/user/add")
-api.add_resource(GetUserRole, "/api/v2/user/role/userId=<user_id>&childId=<child_id>")
-api.add_resource(SearchUserAPI, "/api/v2/user/search")
+api.add_resource(GetUserById, "/v2/user/userId=<user_id>")
+api.add_resource(GetUserChildren, "/v2/user/children/userId=<user_id>")
+api.add_resource(UpdateUserById, "/v2/user/update/userId=<user_id>")
+api.add_resource(DeleteUserById, "/v2/user/delete/userId=<user_id>")
+api.add_resource(AddUser, "/v2/user/add")
+api.add_resource(GetUserRole, "/v2/user/role/userId=<user_id>&childId=<child_id>")
+api.add_resource(SearchUserAPI, "/v2/user/search")
