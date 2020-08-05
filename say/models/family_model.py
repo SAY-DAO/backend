@@ -52,4 +52,3 @@ class Family(base, Timestamp):
                 return False
 
         return True
-

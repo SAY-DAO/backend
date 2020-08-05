@@ -5,7 +5,7 @@ import ujson
 from sqlalchemy.orm import selectinload
 
 from . import *
-from say.models import session, obj_to_dict, commit
+from say.models import session, obj_to_dict, commit, InvitationStatus
 from say.models import ChildMigration, Child, ChildNeed, Family, Need, Ngo,\
     SocialWorker, UserFamily, Invitation
 
@@ -1250,6 +1250,16 @@ class GoneChild(Resource):
 
         child.social_worker.currentChildCount -= 1
         child.ngo.currentChildrenCount -= 1
+
+        # TODO: content
+        session.query(Invitation) \
+            .filter(Invitation.family_id == child.family.id) \
+            .filter(Invitation.status == InvitationStatus.pending.value) \
+            .update(dict(
+                status=InvitationStatus.rejected.value,
+                reject_reason='madjeed, SAY!',
+                rejected_at=datetime.utcnow(),
+            ))
 
         return {"message": "child is gone :("}
 
