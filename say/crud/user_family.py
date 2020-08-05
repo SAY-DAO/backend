@@ -22,7 +22,7 @@ def is_user_in_family(family_id: int, user_id: int):
 def available_roles(family_id: int, username: str):
 
     user_roles = session.query(UserFamily.userRole, UserFamily.isDeleted) \
-        .filter(User.userName == username) \
+        .filter(User.formated_username == username.lower()) \
         .join(User, User.id == UserFamily.id_user) \
         .filter(UserFamily.id_family == family_id) \
         .all()
