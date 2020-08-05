@@ -94,11 +94,11 @@ def create_celery_app(app=None):
     """
     app = app or create_app()
 
-    celery = Celery(app.import_name, broker=app.config['BROKER_URL'],
+    celery = Celery(app.import_name, broker=config['broker_url'],
                     include=CELERY_TASK_LIST)
     celery.conf.timezone = 'UTC'
     celery.conf.beat_schedule = beat
-    celery.conf.update(app.config)
+    celery.conf.update(config)
     TaskBase = celery.Task
 
     class DBTask(TaskBase):

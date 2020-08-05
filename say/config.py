@@ -1,5 +1,4 @@
 from logging import DEBUG
-from pathlib import Path  # Python 3.6+ only
 import os
 
 from dotenv import load_dotenv, find_dotenv
@@ -7,7 +6,7 @@ from dotenv import load_dotenv, find_dotenv
 conf = {
     'PRODUCTION': False,
     'TESTING': False,
-    "DEBUG": True,
+    'DEBUG': True,
     'LOGLEVEL': DEBUG,
     'BASE_URL': '0.0.0.0:3100',
     'API_URL': '0.0.0.0:5000',
@@ -28,9 +27,9 @@ conf = {
     'SET_PASSWORD_URL': 'setpassword',
     'RESET_PASSWORD_EXPIRE_TIME': 2 * 3600,
     'RESET_PASSWORD_TOKEN_LENGTH': 8,
-    'IDPAY_API_KEY': "83bdbfa4-04e6-4593-ba07-3e0652ae726d",
-    "DELIVER_TO_CHILD_DELAY": 4 * 60 * 60,
-    "RATELIMIT_DEFAULT": "100 per minutes",
+    'IDPAY_API_KEY': 'change-this',
+    'DELIVER_TO_CHILD_DELAY': 4 * 60 * 60,
+    'RATELIMIT_DEFAULT': '100 per minutes',
     'PAYMENT_ORDER_ID_LENGTH': 8,
     'PRODUCT_UNPAYABLE_PERIOD': 7,
     'MELI_PAYAMAK_USERNAME': 'change-this',
@@ -41,11 +40,11 @@ conf = {
     'JWT_REFRESH_TOKEN_EXPIRES': 3 * 30 * 24 * 3600,  # 3 months
     'JWT_BLACKLIST_ENABLED': True,
     'JWT_BLACKLIST_TOKEN_CHECKS': ['access', 'refresh'],
-    'BROKER_URL': 'redis://localhost:6379/0',
-    'RESULT_BACKEND': 'redis://localhost:6379/0',
-    'REDBEAT_REDIS_URL': "redis://localhost:6379/0",
-    "CACHE_TYPE": "redis",  # Flask-Caching related configs
-    "CACHE_DEFAULT_TIMEOUT": 300,
+    'broker_url': 'redis://localhost:6379/0',
+    'result_backend': 'redis://localhost:6379/0',
+    'redbeat_redis_url': 'redis://localhost:6379/0',
+    'CACHE_TYPE': 'redis',  # Flask-Caching related configs
+    'CACHE_DEFAULT_TIMEOUT': 300,
 }
 
 
