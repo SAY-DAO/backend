@@ -24,5 +24,8 @@ responses:
   404:
     desciption: inviation not found
 
+  745:
+    description: only role {roles} is valid
+
   747:
     desciption: already in family

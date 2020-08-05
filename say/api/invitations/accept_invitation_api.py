@@ -80,8 +80,12 @@ class AcceptInvitationAPI(Resource):
             return {'message': 'already in family'}, 747
 
         else:
-            user_family.isDeleted = False
+            if user_family.userRole != invitation.role:
+                return {
+                    'message': f'only role {user_family.userRole} is valid'
+                }, 745
 
+            user_family.isDeleted = False
             participators = session.query(NeedFamily) \
                 .filter(NeedFamily.id_user == user_id) \
                 .filter(NeedFamily.id_family == invitation.family_id)
