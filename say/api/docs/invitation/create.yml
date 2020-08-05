@@ -42,11 +42,11 @@ responses:
   702:
     description: family not exists
 
-  745:
-    description: only role {roles} is valid
-
   744:
     description: no available role
+
+  745:
+    description: only role {roles} is valid
 
   747:
     description: user in family
