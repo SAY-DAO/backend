@@ -1,4 +1,5 @@
 import flask_jwt_extended
+from sqlalchemy import func
 
 from say import crud
 from say.api import *
@@ -35,7 +36,10 @@ class InvitationAPI(Resource):
         invitation = session.query(Invitation) \
             .filter(Invitation.family_id == data.family_id) \
             .filter(Invitation.inviter_id == inviter_id) \
-            .filter(Invitation.invitee_username == data.invitee_username) \
+            .filter(
+                func.lower(Invitation.invitee_username)
+                == data.invitee_username.lower()
+            ) \
             .filter(Invitation.role == data.role) \
             .filter(Invitation.status == InvitationStatus.pending.value) \
             .first()
