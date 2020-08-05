@@ -33,17 +33,19 @@ class InvitationAPI(Resource):
             return {'message': f'family {data.family_id} not exists'}, 702
 
         inviter_id = get_user_id()
-        invitation = session.query(Invitation) \
+        invitation_query = session.query(Invitation) \
             .filter(Invitation.family_id == data.family_id) \
             .filter(Invitation.inviter_id == inviter_id) \
-            .filter(
-                func.lower(Invitation.invitee_username)
-                == data.invitee_username.lower()
-            ) \
             .filter(Invitation.role == data.role) \
-            .filter(Invitation.status == InvitationStatus.pending.value) \
-            .first()
+            .filter(Invitation.status == InvitationStatus.pending.value)
 
+        if data.invitee_username:
+            lowercase_username = data.invitee_username.lower()
+            invitation_query = invitation_query.filter(
+                func.lower(Invitation.invitee_username) == lowercase_username,
+            )
+
+        invitation = invitation_query.first()
         if invitation:
             return invitation
 
