@@ -70,7 +70,7 @@ deploy-branches:
       "
   environment:
     name: $CI_COMMIT_REF_NAME
-    url: http://api.${CI_COMMIT_REF_NAME}.s.sayapp.company/apidocs
+    url: http://api.${CI_COMMIT_REF_SLUG}.s.sayapp.company/apidocs
     on_stop: stop_staging
 
   tags:
