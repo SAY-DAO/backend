@@ -34,7 +34,7 @@ def obj_to_dict(obj, relationships=False):
         return [obj_to_dict(x) for x in obj]
 
     elif isinstance(obj, pydantic.BaseModel):
-        return obj.dict()
+        return obj.dict(by_alias=True)
 
     if not isinstance(obj, base):
         return obj
