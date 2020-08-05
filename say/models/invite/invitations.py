@@ -83,7 +83,7 @@ class Invitation(base, Timestamp):
     )
 
     def accept(self):
-        assert self.status == InvitationStatus.pending
+        assert self.status == InvitationStatus.pending.value
 
         self.status = InvitationStatus.accepted.value
         self.accepted_at = datetime.utcnow()
@@ -91,7 +91,7 @@ class Invitation(base, Timestamp):
         self.rejected_at = None
 
     def reject(self, reason):
-        assert self.status == InvitationStatus.pending
+        assert self.status == InvitationStatus.pending.value
 
         self.status = InvitationStatus.rejected.value
         self.rejected_at = datetime.utcnow()
