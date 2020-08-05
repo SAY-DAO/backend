@@ -44,6 +44,10 @@ class InvitationAPI(Resource):
             invitation_query = invitation_query.filter(
                 func.lower(Invitation.invitee_username) == lowercase_username,
             )
+        else:
+            invitation_query = invitation_query.filter(
+                Invitation.invitee_id.is_(None),
+            )
 
         invitation = invitation_query.first()
         if invitation:
