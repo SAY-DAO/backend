@@ -71,7 +71,6 @@ class InvitationAPI(Resource):
                 inviter_id=inviter_id,
                 invitee_id=invitee_id,
                 role=data.role,
-                text=data.text,
             )
 
             session.add(invitation)
