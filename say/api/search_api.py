@@ -1,6 +1,8 @@
 import itertools
 from random import randrange
 
+from flask_jwt_extended.exceptions import NoAuthorizationError
+from flask_restful import abort
 from sqlalchemy import func
 
 from . import *
@@ -22,17 +24,22 @@ class GetRandomSearchResult(Resource):
 
     @swag_from("./docs/search/random.yml")
     def get(self):
-        authorized = False
         user_id = -1
-
-        try:
-            user_id = get_user_id()
-            authorized = True
-        except:
-            pass
 
         resp = make_response(jsonify({"message": "major error occurred!"}),
                              503)
+
+        try:
+            user_id = get_user_id()
+        except NoAuthorizationError:
+            logger.info('random search: public')
+            pass
+
+        # Any other error
+        except Exception as e:
+            logger.info('random search: bad jwt')
+            logger.info(str(e))
+            abort(403)
 
         try:
             user_children_ids_tuple = session.query(Child.id) \

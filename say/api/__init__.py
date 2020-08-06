@@ -1,4 +1,5 @@
 import os, shutil, copy
+from logging import getLogger
 
 from celery import Celery
 from flask import (
@@ -50,6 +51,7 @@ CELERY_TASK_LIST = [
 ]
 
 basicConfig(level=config['LOGLEVEL'])
+logger = getLogger('API')
 
 # using pool_pre_ping to test the connection
 # see https://docs.sqlalchemy.org/en/13/core/pooling.html#disconnect-handling-pessimistic

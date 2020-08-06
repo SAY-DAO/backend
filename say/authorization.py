@@ -82,11 +82,15 @@ def authorize(*roles):
         return decorator
 
 
+# Note: do not remove verify function, if u do, get_jwt_identity will return None!
 def get_user_id():
+    verify_jwt_in_request()
     return get_jwt_identity()
 
 
+# Note: do not remove verify function, if u do, get_jwt_identity will return None!
 def get_sw_ngo_id():
+    verify_jwt_in_request()
     return get_jwt_claims().get('ngoId', -1)
 
 
