@@ -40,8 +40,9 @@ class AcceptInvitationAPI(Resource):
             # create a direct invitation from indirect one
             indirect_invite = obj_to_dict(invitation)
 
-            # remove pk
+            # remove readonly attrs
             del indirect_invite['id']
+            del indirect_invite['link']
 
             indirect_invite.update(dict(
                 invitee_id=user_id,
