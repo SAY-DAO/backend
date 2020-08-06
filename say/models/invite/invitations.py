@@ -1,12 +1,15 @@
 import enum
 import secrets
 from datetime import datetime
+from urllib.parse import urljoin
 
 from sqlalchemy import Integer, Column, ForeignKey, Unicode, Enum, select, \
     DateTime
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, column_property
 from sqlalchemy_utils.models import Timestamp
 
+from say import config
 from say.constants import alphabet, INVITATION_REJECT_REASON_LENGTH
 from say.models import User
 from say.orm import base
@@ -62,6 +65,14 @@ class Invitation(base, Timestamp):
         nullable=False,
         index=True,
     )
+
+    @hybrid_property
+    def link(self):
+        return urljoin(config['BASE_URL'], f'search-result?token={self.token}')
+
+    @link.expression
+    def link_expr(self):
+        return None
 
     inviter = relationship(
         'User',
