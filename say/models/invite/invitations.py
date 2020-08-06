@@ -72,7 +72,7 @@ class Invitation(base, Timestamp):
         return urljoin(config['BASE_URL'], f'/search-result?token={self.token}')
 
     @link.expression
-    def link_expr(cls):
+    def link(cls):
         return None
 
     inviter = relationship(
