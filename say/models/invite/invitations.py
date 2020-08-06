@@ -69,10 +69,10 @@ class Invitation(base, Timestamp):
 
     @hybrid_property
     def link(self):
-        return urljoin(config['BASE_URL'], f'search-result?token={self.token}')
+        return urljoin(config['BASE_URL'], f'/search-result?token={self.token}')
 
     @link.expression
-    def link_expr(self):
+    def link_expr(cls):
         return None
 
     inviter = relationship(
