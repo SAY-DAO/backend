@@ -242,8 +242,8 @@ class GetChildByInvitationToken(Resource):
             pass
 
         invitation = session.query(Invitation) \
-            .filter_by(token=token) \
-            .with_for_update() \
+            .filter(Invitation.token == token) \
+            .filter(Invitation.status == InvitationStatus.pending.value) \
             .one_or_none()
 
         if not invitation:
@@ -257,8 +257,8 @@ class GetChildByInvitationToken(Resource):
             return {'message': f'family {invitation.family_id} not found'}, 743
 
         child = session.query(Child) \
-            .filter(Child.isDeleted==False) \
-            .filter(Child.id==family.id_child) \
+            .filter(Child.isDeleted == False) \
+            .filter(Child.id == family.id_child) \
             .options(selectinload('family.members.user'))\
             .one_or_none()
 
@@ -599,7 +599,6 @@ class AddChild(Resource):
         finally:
             session.close()
             return resp
-
 
 
 class UpdateChildById(Resource):
