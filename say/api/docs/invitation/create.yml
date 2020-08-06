@@ -26,6 +26,11 @@ parameters:
     name: inviteeUsername
     type: string
 
+  - in: formData
+    name: text
+    type: string
+
+
 responses:
   200:
     description: Response contains the token that needed in Add-to-family API

@@ -11,6 +11,7 @@ class NewInvitationSchema(CamelModel):
     invitee_username: Optional[constr(regex=USERNAME_PATTERN)]
     family_id: int
     role: Optional[int] = None
+    text: Optional[constr(max_length=128)]
 
 
 class InvitationSchema(NewInvitationSchema):

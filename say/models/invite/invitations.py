@@ -45,6 +45,7 @@ class Invitation(base, Timestamp):
         .correlate_except(User)
     )
     role = Column(Integer, nullable=True)
+    text = Column(Unicode(128), nullable=True)
     see_count = Column(Integer, default=0, nullable=False)
     status = Column(
         Enum(InvitationStatus),
