@@ -254,7 +254,6 @@ class GetChildByInvitationToken(Resource):
             return {'messasge': 'Invitation not found'}, 400
 
         invitation.see_count += 1
-
         family = session.query(Family).get(invitation.family_id)
 
         if not family or family.child.isDeleted:
@@ -295,7 +294,7 @@ class GetChildByInvitationToken(Resource):
 
         child_family_member = []
         for member in child.family.members:
-            member_id = member.id_user
+            member_id = member.id_user if user_id == member.id_user else None
             username = member.user.userName
 
             child_family_member.append(dict(
