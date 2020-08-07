@@ -36,3 +36,7 @@ responses:
   404:
     description: Family not found
 
+  700:
+    description: Child is gone
+
+

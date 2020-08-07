@@ -4,6 +4,7 @@ from flask_restful import abort
 from . import *
 from say.models import commit, session
 from say.models import Invitation, Family
+from .. import crud
 from ..crud.user import get_say_id
 from ..schema.invitation import NewInvitationSchema
 
@@ -33,13 +34,17 @@ class InvitationAPI(Resource):
             logger.info(str(e))
             abort(403)
 
-        family_id = session.query(Family.id).filter(
+        family_child_tuple = session.query(Family.id, Family.id_child).filter(
             Family.id == data.family_id,
             Family.isDeleted.is_(False),
         ).one_or_none()
 
-        if not family_id:
+        if not family_child_tuple:
             return {'message': 'Family not found'}, 404
+
+        family_id, child_id = family_child_tuple
+        if crud.child.is_gone(child_id):
+            return {'message': 'child is gone'}, 700
 
         role = data.role
         invitation = session.query(Invitation).filter(
