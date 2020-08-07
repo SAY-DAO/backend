@@ -30,6 +30,9 @@ responses:
   404:
     description: Child not found
 
+  700:
+    description: Child is gone
+
   743:
     description: family {invitation.family_id not found
 

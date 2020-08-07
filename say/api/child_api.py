@@ -257,14 +257,17 @@ class GetChildByInvitationToken(Resource):
             return {'message': f'family {invitation.family_id} not found'}, 743
 
         child = session.query(Child) \
-            .filter(Child.isDeleted==False) \
-            .filter(Child.isMigrated==False) \
-            .filter(Child.id==family.id_child) \
+            .filter(Child.isDeleted.is_(False)) \
+            .filter(Child.isMigrated.is_(False)) \
+            .filter(Child.id == family.id_child) \
             .options(selectinload('family.members.user'))\
             .one_or_none()
 
         if child is None:
             return HTTP_NOT_FOUND()
+
+        if child.existence_status != 1:
+            return {'message': 'child is gone'}, 700
 
         child_dict = obj_to_dict(child)
         child_dict['socialWorkerGeneratedCode'] = child.social_worker.generatedCode
