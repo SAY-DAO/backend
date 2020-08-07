@@ -1,8 +1,6 @@
 import secrets
 import uuid
 
-from wtforms_alchemy import ModelForm
-
 from . import *
 
 
@@ -13,6 +11,7 @@ class Invitation(base, Timestamp):
     family_id = Column(Integer, ForeignKey('family.id'), nullable=False)
     role = Column(Integer, nullable=True)
     see_count = Column(Integer, default=0, nullable=False)
+    text = Column(Unicode(128), nullable=True)
 
     token = Column(
         Unicode(128),
@@ -28,12 +27,3 @@ class Invitation(base, Timestamp):
         foreign_keys=family_id,
         uselist=False,
     )
-
-
-class InvitationForm(ModelForm):
-    class Meta:
-        model = Invitation
-
-        only = ['family_id', 'role']
-
-

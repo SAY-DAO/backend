@@ -1,6 +1,7 @@
 from . import *
 from say.models import commit, session
-from say.models import Invitation, InvitationForm, Family
+from say.models import Invitation, Family
+from ..schema.invitation import NewInvitationSchema
 
 
 class InvitationAPI(Resource):
@@ -9,29 +10,32 @@ class InvitationAPI(Resource):
     @commit
     @swag_from('./docs/invitation/create.yml')
     def post(self):
-        data = request.form
-        form = InvitationForm(data)
-        if not form.validate():
-            return form.errors, 400
+        try:
+            data = NewInvitationSchema(
+                **request.form.to_dict(),
+            )
+        except ValueError as ex:
+            return ex.json(), 400
 
         family_id = session.query(Family.id) \
-            .filter_by(id=form.data['family_id']) \
+            .filter_by(id=data.family_id) \
             .filter_by(isDeleted=False) \
             .one_or_none()
 
         if not family_id:
             return {'message': 'Family not found'}, 404
 
-        role = form.data.get('role', None)
+        role = data.role
         invitation = session.query(Invitation) \
             .filter_by(family_id=family_id) \
             .filter_by(role=role) \
             .one_or_none()
 
         if not invitation:
-            invitation = Invitation(**form.data)
+            invitation = Invitation(**data.dict())
             session.add(invitation)
 
+        invitation.text = data.text
         return invitation
 
 
