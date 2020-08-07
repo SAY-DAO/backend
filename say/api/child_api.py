@@ -258,7 +258,6 @@ class GetChildByInvitationToken(Resource):
 
         child = session.query(Child) \
             .filter(Child.isDeleted.is_(False)) \
-            .filter(Child.isMigrated.is_(False)) \
             .filter(Child.id == family.id_child) \
             .options(selectinload('family.members.user'))\
             .one_or_none()
