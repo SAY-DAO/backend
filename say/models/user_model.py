@@ -101,6 +101,10 @@ class User(base, Timestamp):
         'NeedFamily',
         back_populates='user',
     )
+    sent_invitations = relationship(
+        'Invitation',
+        back_populates='inviter',
+    )
 
     def _hash_password(cls, password):
         password = str(password)

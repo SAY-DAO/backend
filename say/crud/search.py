@@ -9,12 +9,12 @@ def create(family_id, type_):
     invitation = session.query(Invitation).filter(
         Invitation.family_id == family_id,
         Invitation.role.is_(None),
-        # Invitation.inviter_id == say_id,
+        Invitation.inviter_id == say_id,
     ).one_or_none()
 
     if not invitation:
         invitation = Invitation(
-            # inviter_id=say_id,
+            inviter_id=say_id,
             family_id=family_id,
         )
         session.add(invitation)

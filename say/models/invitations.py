@@ -15,11 +15,16 @@ class Invitation(base, Timestamp):
     __tablename__ = 'invitations'
 
     id = Column(Integer, nullable=False, primary_key=True)
-    family_id = Column(Integer, ForeignKey('family.id'), nullable=False)
+    inviter_id = Column(
+        Integer, ForeignKey('user.id'), nullable=True, index=True,
+    )
+    family_id = Column(
+        Integer, ForeignKey('family.id'), nullable=False, index=True,
+    )
+
     role = Column(Integer, nullable=True)
     see_count = Column(Integer, default=0, nullable=False)
     text = Column(Unicode(128), nullable=True)
-
     token = Column(
         Unicode(128),
         default=lambda: generate_token(),
@@ -32,6 +37,13 @@ class Invitation(base, Timestamp):
         'Family',
         back_populates='invitations',
         foreign_keys=family_id,
+        uselist=False,
+    )
+
+    inviter = relationship(
+        'User',
+        back_populates='sent_invitations',
+        foreign_keys=inviter_id,
         uselist=False,
     )
 
