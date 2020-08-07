@@ -1,13 +1,13 @@
 import secrets
 from urllib.parse import urljoin
 
-from . import *
-from ..api import app
+from say.models import *
+from say.api import app
 from say.constants import ALPHABET
 
 
 # FIXME: Collision
-from ..helpers import strip_scheme
+from say.helpers import strip_scheme
 
 
 def generate_token():
