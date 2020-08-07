@@ -7,6 +7,9 @@ from say.constants import ALPHABET
 
 
 # FIXME: Collision
+from ..helpers import strip_scheme
+
+
 def generate_token():
     return ''.join(secrets.choice(ALPHABET) for i in range(8))
 
@@ -49,9 +52,9 @@ class Invitation(base, Timestamp):
 
     @hybrid_property
     def link(self):
-        return urljoin(
+        return strip_scheme(urljoin(
             app.config['BASE_URL'], f'/search-result?token={self.token}',
-        )
+        ))
 
     @link.expression
     def link(cls):
