@@ -184,6 +184,7 @@ class AddUserToFamily(Resource):
         invitation_accept = InvitationAccept(
             invitation=invitation,
             invitee=user,
+            role=user_role,
         )
         invitation.accepts.append(invitation_accept)
         return family

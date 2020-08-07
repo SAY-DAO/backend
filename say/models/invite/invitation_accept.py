@@ -20,6 +20,7 @@ class InvitationAccept(base):
     )
 
     created = Column(DateTime, default=datetime.utcnow, nullable=False)
+    role = Column(Integer, nullable=False)
 
     invitee = relationship(
         'User',
