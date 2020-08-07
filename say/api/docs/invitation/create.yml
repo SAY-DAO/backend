@@ -8,6 +8,10 @@ tags:
 
 parameters:
 
+  - in: header
+    name: Authorization
+    type: string
+
   - in: formData
     name: family_id
     required: true

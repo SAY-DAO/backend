@@ -1,10 +1,9 @@
-from ..models import Invitation, session, User
+from .user import get_say_id
+from ..models import Invitation, session
 
 
 def create(family_id, type_):
-    say_id = session.query(User.id).filter(
-        User.formated_username == 'say',
-    ).one()
+    say_id = get_say_id()
 
     invitation = session.query(Invitation).filter(
         Invitation.family_id == family_id,
