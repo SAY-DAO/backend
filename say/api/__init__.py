@@ -22,7 +22,7 @@ from flask_mail import Mail
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_jwt_extended import JWTManager
-from logging import debug, basicConfig, DEBUG
+from logging import debug, basicConfig, DEBUG, getLogger
 from flask_caching import Cache
 from flask_cors import CORS
 import flask_monitoringdashboard as dashboard
@@ -50,6 +50,7 @@ CELERY_TASK_LIST = [
 ]
 
 basicConfig(level=DEBUG)
+logger = getLogger('main')
 
 conf = {
     'dbUrl': 'postgresql://postgres:postgres@localhost/say_en'

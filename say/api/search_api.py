@@ -1,17 +1,16 @@
 import itertools
-from random import randrange
 
+from flask_jwt_extended.exceptions import NoAuthorizationError
+from flask_restful import abort
 from sqlalchemy import func
 
-from . import *
-from say.models import session, obj_to_dict
+from say.models import session, commit
 from say.models.child_model import Child
-from say.models.child_need_model import ChildNeed
-from say.models.need_model import Need
 from say.models.family_model import Family
+from say.models.need_model import Need
 from say.models.user_family_model import UserFamily
-from say.models.user_model import User
-
+from . import *
+from .. import crud
 
 """
 Search APIs
@@ -20,86 +19,48 @@ Search APIs
 
 class GetRandomSearchResult(Resource):
 
+    @json
+    @commit
     @swag_from("./docs/search/random.yml")
-    def get(self):
-        authorized = False
-        user_id = -1
-
+    def post(self):
         try:
             user_id = get_user_id()
-            authorized = True
-        except:
-            pass
-
-        resp = make_response(jsonify({"message": "major error occurred!"}),
-                             503)
-
-        try:
-            user_children_ids_tuple = session.query(Child.id) \
-                .join(Family) \
-                .join(UserFamily) \
-                .filter(UserFamily.id_user==user_id) \
-                .filter(UserFamily.isDeleted==False) \
-
-            # Flating a nested list like [(1,), (2,)] to [1, 2]
-            user_children_ids = list(
-                itertools.chain.from_iterable(user_children_ids_tuple)
-            )
-
-            random_child = Child.get_actives() \
-                .filter(Child.id.notin_(user_children_ids)) \
-                .filter(Need.isDone==False) \
-                .order_by(func.random()) \
-                .limit(1) \
-                .first()
-
-            if random_child is None:
-                resp = make_response(
-                    dict(message='Unfortunately our database is not big as your heart T_T'),
-                    499,
-                )
-                return resp
-
-            child_dict = obj_to_dict(random_child)
-            del child_dict['phoneNumber']
-            del child_dict['firstName']
-            del child_dict['firstName_translations']
-            del child_dict['lastName']
-            del child_dict['lastName_translations']
-            del child_dict['nationality']
-            del child_dict['country']
-            del child_dict['city']
-            del child_dict['birthPlace']
-            del child_dict['address']
-            del child_dict['id_social_worker']
-            del child_dict['id_ngo']
-            del child_dict['id']
-
-            child_family_member = []
-            for member in random_child.family.members:
-                user_id=member.id_user
-                username=member.user.userName
-
-                child_family_member.append(dict(
-                    user_id=user_id,
-                    role=member.userRole,
-                    username=username,
-                    isDeleted=member.isDeleted,
-                ))
-
-            child_dict["childFamilyMembers"] = child_family_member
-            child_dict["familyId"] = random_child.family.id
-
-            resp = jsonify(child_dict)
-            return resp
+        except NoAuthorizationError:
+            logger.info('random search: public')
+            user_id = None
 
         except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
+            # Any other error
+            logger.info('random search: bad jwt')
+            logger.info(str(e))
+            abort(403)
 
-        finally:
-            session.close()
-            return resp
+        user_children_ids_tuple = session.query(Child.id) \
+            .join(Family) \
+            .join(UserFamily) \
+            .filter(UserFamily.id_user == user_id) \
+            .filter(UserFamily.isDeleted.is_(False))
+
+        # Flating a nested list like [(1,), (2,)] to [1, 2]
+        user_children_ids = list(
+            itertools.chain.from_iterable(user_children_ids_tuple)
+        )
+
+        random_child = Child.get_actives() \
+            .filter(Child.id.notin_(user_children_ids)) \
+            .filter(Need.isDone == False) \
+            .order_by(func.random()) \
+            .limit(1) \
+            .first()
+
+        if random_child is None:
+            return dict(
+                message='Unfortunately our database is not big as your heart T_T'
+            ), 499
+
+        return crud.search.create(
+            family_id=random_child.family.id, type_='random',
+        )
 
 
 class GetSayBrainSearchResult(Resource):
