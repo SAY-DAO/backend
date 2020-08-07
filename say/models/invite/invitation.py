@@ -50,6 +50,11 @@ class Invitation(base, Timestamp):
         uselist=False,
     )
 
+    accepts = relationship(
+        'InvitationAccept',
+        back_populates='invitation',
+    )
+
     @hybrid_property
     def link(self):
         return strip_scheme(urljoin(
