@@ -1,7 +1,9 @@
 import secrets
 import uuid
+from urllib.parse import urljoin
 
 from . import *
+from ..api import app
 
 
 class Invitation(base, Timestamp):
@@ -27,3 +29,13 @@ class Invitation(base, Timestamp):
         foreign_keys=family_id,
         uselist=False,
     )
+
+    @hybrid_property
+    def link(self):
+        return urljoin(
+            app.config['BASE_URL'], f'/search-result?token={self.token}',
+        )
+
+    @link.expression
+    def link(cls):
+        return None
