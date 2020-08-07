@@ -2,6 +2,8 @@ from collections import OrderedDict
 from uuid import uuid4
 
 import ujson
+from flask_jwt_extended.exceptions import NoAuthorizationError
+from flask_restful import abort
 from sqlalchemy.orm import selectinload
 
 from . import *
@@ -232,14 +234,16 @@ class GetChildByInvitationToken(Resource):
     @json
     @swag_from("./docs/child/get-by-token.yml")
     def get(self, token):
-        authorized = False
-        user_id = -1
-
         try:
             user_id = get_user_id()
-            authorized = True
-        except:
-            pass
+        except NoAuthorizationError:
+            logger.info('random search: public')
+            user_id = None
+        except Exception as e:
+            # Any other error
+            logger.info('random search: bad jwt')
+            logger.info(str(e))
+            abort(403)
 
         invitation = session.query(Invitation) \
             .filter_by(token=token) \
@@ -285,22 +289,23 @@ class GetChildByInvitationToken(Resource):
         del child_dict['address']
         del child_dict['id_social_worker']
         del child_dict['id_ngo']
-        del child_dict['id']
+
+        if not user_id:
+            child_dict['id'] = None
 
         child_family_member = []
         for member in child.family.members:
-            user_id=member.id_user
-            username=member.user.userName
+            member_id = member.id_user
+            username = member.user.userName
 
             child_family_member.append(dict(
-                user_id=user_id,
+                user_id=member_id,
                 role=member.userRole,
                 username=username,
                 isDeleted=member.isDeleted,
             ))
 
         child_dict["childFamilyMembers"] = child_family_member
-
         return child_dict
 
 
