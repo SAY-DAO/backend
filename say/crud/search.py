@@ -14,7 +14,7 @@ def create(family_id, type_):
 
     if not invitation:
         invitation = Invitation(
-            inviter_id=say_id,
+            # inviter_id=say_id,
             family_id=family_id,
         )
         session.add(invitation)

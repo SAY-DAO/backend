@@ -1,9 +1,14 @@
 import secrets
-import uuid
 from urllib.parse import urljoin
 
 from . import *
 from ..api import app
+from say.constants import ALPHABET
+
+
+# FIXME: Collision
+def generate_token():
+    return ''.join(secrets.choice(ALPHABET) for i in range(8))
 
 
 class Invitation(base, Timestamp):
@@ -17,7 +22,7 @@ class Invitation(base, Timestamp):
 
     token = Column(
         Unicode(128),
-        default=lambda: str(uuid.uuid4()) + secrets.token_urlsafe(),
+        default=lambda: generate_token(),
         nullable=False,
         unique=True,
         index=True,
