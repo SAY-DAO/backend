@@ -16,6 +16,9 @@ from say.orm import base
 
 
 # FIXME: Collision
+from say.orm.types import StrEnum
+
+
 def generate_token():
     return ''.join(secrets.choice(alphabet) for i in range(8))
 
@@ -48,7 +51,7 @@ class Invitation(base, Timestamp):
     text = Column(Unicode(128), nullable=True)
     see_count = Column(Integer, default=0, nullable=False)
     status = Column(
-        Enum(InvitationStatus),
+        StrEnum(InvitationStatus),
         nullable=False,
         default=InvitationStatus.pending,
         index=True,
@@ -95,7 +98,8 @@ class Invitation(base, Timestamp):
     )
 
     def accept(self):
-        assert self.status == InvitationStatus.pending.value
+        assert self.status == InvitationStatus.pending.value \
+            or self.status == InvitationStatus.pending
 
         self.status = InvitationStatus.accepted.value
         self.accepted_at = datetime.utcnow()
@@ -103,7 +107,8 @@ class Invitation(base, Timestamp):
         self.rejected_at = None
 
     def reject(self, reason):
-        assert self.status == InvitationStatus.pending.value
+        assert self.status == InvitationStatus.pending.value \
+            or self.status == InvitationStatus.pending
 
         self.status = InvitationStatus.rejected.value
         self.rejected_at = datetime.utcnow()

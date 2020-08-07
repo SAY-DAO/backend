@@ -23,7 +23,8 @@ class AcceptInvitationAPI(Resource):
         invitation = session.query(Invitation) \
             .filter(Invitation.token == token) \
             .filter(Invitation.invitee_id == user_id) \
-            .filter(Invitation.status == InvitationStatus.pending.value) \
+            .filter(Invitation.status == InvitationStatus.pending) \
+            .with_for_update() \
             .one_or_none()
 
         # Check for indirect invitation
@@ -31,7 +32,8 @@ class AcceptInvitationAPI(Resource):
             invitation = session.query(Invitation) \
                 .filter(Invitation.token == token) \
                 .filter(Invitation.invitee_id.is_(None)) \
-                .filter(Invitation.status == InvitationStatus.pending.value) \
+                .filter(Invitation.status == InvitationStatus.pending) \
+                .with_for_update() \
                 .one_or_none()
 
             if not invitation:
@@ -100,7 +102,7 @@ class AcceptInvitationAPI(Resource):
         session.query(Invitation) \
             .filter(Invitation.id != invitation.id) \
             .filter(Invitation.family_id == invitation.family_id) \
-            .filter(Invitation.status == InvitationStatus.pending.value) \
+            .filter(Invitation.status == InvitationStatus.pending) \
             .filter(Invitation.invitee_id == user_id) \
             .update({
                 'status': InvitationStatus.rejected.value,
@@ -113,7 +115,7 @@ class AcceptInvitationAPI(Resource):
             session.query(Invitation) \
                 .filter(Invitation.id != invitation.id) \
                 .filter(Invitation.family_id == invitation.family_id) \
-                .filter(Invitation.status == InvitationStatus.pending.value) \
+                .filter(Invitation.status == InvitationStatus.pending) \
                 .filter(Invitation.role == invitation.role) \
                 .update({
                     'status': InvitationStatus.rejected.value,
