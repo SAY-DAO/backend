@@ -1,5 +1,6 @@
 import os, shutil, copy
 
+import redis
 from celery import Celery
 from flask import (
     Flask,
@@ -28,6 +29,7 @@ from flask_cors import CORS
 import flask_monitoringdashboard as dashboard
 from mailerlite import MailerLiteApi
 
+from say.api.ext.jwt import jwt
 from say.payment import IDPay
 from say.celery import beat
 from say.date import *
@@ -122,6 +124,12 @@ app.config.update({
     'JWT_BLACKLIST_TOKEN_CHECKS': ['access', 'refresh'],
 })
 
+app.config.update({
+    'REDIS_HOST': 'localhost',
+    'REDIS_PORT': '6379',
+    'REVOKED_TOKEN_STORE_DB': 1,
+})
+
 app.config['VERIFICATION_MAXAGE'] = 5  # minutes
 
 app.config.update(
@@ -175,6 +183,7 @@ def create_celery_app(app):
     celery.Task = ContextTask
     return celery
 
+
 celery = create_celery_app(app)
 
 cache = Cache(app)
@@ -188,7 +197,7 @@ limiter = Limiter(
 
 mail = Mail(app)
 
-jwt = JWTManager(app)
+jwt.init_app(app)
 
 idpay = IDPay(app.config['IDPAY_API_KEY'], app.config['SANDBOX'])
 

@@ -97,7 +97,6 @@ from .need_model import Need
 from .ngo_model import Ngo
 from .payment_model import Payment
 from .privilege_model import Privilege
-from .revoked_token_model import RevokedToken
 from .social_worker_model import SocialWorker
 from .user_family_model import UserFamily
 from .user_model import User
