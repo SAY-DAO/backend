@@ -59,6 +59,7 @@ deploy-branches:
     - ssh $STAGING_USER@$STAGING -p $STAGING_PORT -o StrictHostKeyChecking=no "docker login $DOCKER_REGISTRY -u '$REGISTRY_USER' -p '$REGISTRY_PASSWORD'"
     - ssh $STAGING_USER@$STAGING -p $STAGING_PORT -o StrictHostKeyChecking=no "mkdir -p $TARGET_DIR"
     - scp -P $STAGING_PORT -o StrictHostKeyChecking=no /builds/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/docker-compose-staging.yml $STAGING_USER@$STAGING:$TARGET_DIR/docker-compose.yml
+    - scp -P $STAGING_PORT -o StrictHostKeyChecking=no /builds/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/.env_staging $STAGING_USER@$STAGING:$TARGET_DIR/.env
     - scp -P $STAGING_PORT -o StrictHostKeyChecking=no /builds/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/config-staging.json $STAGING_USER@$STAGING:$TARGET_DIR/config.json
   script:
     - ssh $STAGING_USER@$STAGING -p $STAGING_PORT -o StrictHostKeyChecking=no "
