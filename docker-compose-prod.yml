@@ -55,7 +55,7 @@ services:
     image: "${DOCKER_REGISTRY}/api:stable"
     environment:
       - PRODUCTION=true
-      - DB=postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST/$POSTGRES_DB
+      - DB_URL=postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST/$POSTGRES_DB
     restart: always
     ports:
       - 5000:5000
@@ -74,7 +74,6 @@ services:
     image: "${DOCKER_REGISTRY}/api:stable"
     environment:
       - PRODUCTION=true
-      - DB=postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST/$POSTGRES_DB
     restart: always
     volumes:
       - /etc/say/backend/config.json:/app/config.json
@@ -90,7 +89,6 @@ services:
     image: "${DOCKER_REGISTRY}/api:stable"
     environment:
       - PRODUCTION=true
-      - DB=postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST/$POSTGRES_DB
     restart: always
     volumes:
       - /etc/say/backend/config.json:/app/config.json
