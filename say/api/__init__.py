@@ -122,12 +122,12 @@ app.config.update({
     'JWT_BLACKLIST_TOKEN_CHECKS': ['access', 'refresh'],
 })
 
-app.config['VERIFICATION_MAXAGE'] = 5 # minutes
+app.config['VERIFICATION_MAXAGE'] = 5  # minutes
 
 app.config.update(
     broker_url='redis://localhost:6379/0',
     result_backend='redis://localhost:6379/0',
-    redbeat_redis_url = "redis://localhost:6379/0"
+    redbeat_redis_url='redis://localhost:6379/0',
 )
 
 app.config.update(conf)
