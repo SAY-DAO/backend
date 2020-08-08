@@ -133,15 +133,13 @@ app.config.update(
 app.config.update(conf)
 
 
-def create_celery_app(app=None):
+def create_celery_app(app):
     """
     Create a new Celery object and tie together the Celery config to the app's
     config. Wrap all tasks in the context of the application.
     :param app: Flask app
     :return: Celery app
     """
-    app = app or create_app()
-
     celery = Celery(app.import_name, broker=app.config['broker_url'],
                     include=CELERY_TASK_LIST)
     celery.conf.timezone = 'UTC'
