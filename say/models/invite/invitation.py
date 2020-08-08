@@ -7,7 +7,7 @@ from say.constants import ALPHABET
 
 
 # FIXME: Collision
-from say.helpers import strip_scheme
+TEXT_LENGHT = 512
 
 
 def generate_token():
@@ -29,7 +29,7 @@ class Invitation(base, Timestamp):
     see_count = Column(Integer, default=0, nullable=False)
     text = Column(Unicode(128), nullable=True)
     token = Column(
-        Unicode(128),
+        Unicode(TEXT_LENGHT),
         default=lambda: generate_token(),
         nullable=False,
         unique=True,
