@@ -243,31 +243,6 @@ class Login(Resource):
 
             if user is not None:
                 if user.validate_password(password):
-                    if not user.isVerified:
-                        verify = session.query(Verification) \
-                            .filter_by(user_id=user.id) \
-                            .first()
-
-                        if verify is None:
-                            verify = Verification(user=user)
-                            session.add(verify)
-
-                        verify.code = randint(100000, 999999)
-                        verify.expire_at = datetime.utcnow() + timedelta(
-                            minutes=app.config['VERIFICATION_EMAIL_MAXAGE']
-                        )
-
-                        session.commit()
-                        send_verify_email(user, verify.code)
-
-                        resp = make_response(
-                            jsonify({
-                                'user': obj_to_dict(user),
-                            }),
-                            302,
-                        )
-                        return
-
                     lang = get_locale()
                     user.locale = Locale(lang)
                     user.lastLogin = datetime.utcnow()
@@ -361,7 +336,7 @@ class VerifyPhone(Resource):
             return {"message": "phone_number is invalid"}, 400
 
         user = session.query(User) \
-            .filter(User.phone_number==phone_number) \
+            .filter(User.phone_number == phone_number) \
             .first()
 
         if user:
