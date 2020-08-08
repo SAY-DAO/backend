@@ -57,9 +57,9 @@ class Invitation(base, Timestamp):
 
     @hybrid_property
     def link(self):
-        return strip_scheme(urljoin(
+        return urljoin(
             app.config['BASE_URL'], f'/search-result?token={self.token}',
-        ))
+        )
 
     @link.expression
     def link(cls):
