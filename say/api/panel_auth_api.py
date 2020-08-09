@@ -111,7 +111,7 @@ class PanelLogoutAccess(Resource):
 
 class PanelLogoutRefresh(Resource):
     @authorize_refresh
-    @swag_from("./docs/panel-auth/logout-refresh.yml")
+    @swag_from("./docs/panel_auth/logout-refresh.yml")
     def post(self):
         jti = get_raw_jwt()['jti']
         revoke_jwt(jti, int(app.config['JWT_REFRESH_TOKEN_EXPIRES'] * 1.1))

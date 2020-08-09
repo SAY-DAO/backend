@@ -84,6 +84,14 @@ class Child(base, Timestamp):
     def avatarUrl(cls):
         return
 
+    @hybrid_property
+    def is_gone(self):
+        return self.existence_status != 1
+
+    @is_gone.expression
+    def is_gone(cls):
+        return cls.existence_status != 1
+
     @aggregated('needs', Column(Integer, default=0, nullable=False))
     def done_needs_count(cls):
         from . import Need

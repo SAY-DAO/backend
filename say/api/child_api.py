@@ -268,9 +268,6 @@ class GetChildByInvitationToken(Resource):
         if child is None:
             return HTTP_NOT_FOUND()
 
-        if child.existence_status != 1:
-            return {'message': 'child is gone'}, 700
-
         child_dict = obj_to_dict(child)
         child_dict['socialWorkerGeneratedCode'] = child.social_worker.generatedCode
         child_dict['familyId'] = family.id
