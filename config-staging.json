@@ -1,6 +1,6 @@
 {
     "dbUrl": "postgresql://postgres:postgres@db:5432/say",
-    "BASE_URL": "https://elham-invite.s.sayapp.company/",
+    "BASE_URL": "https://master.s.sayapp.company/",
     "IDPAY_API_KEY": "2b0c83ec812",
     "SANDBOX": true,
     "DELIVER_TO_CHILD_DELAY": 14400,
