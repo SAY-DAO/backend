@@ -52,7 +52,7 @@ services:
 
   worker:
     <<: *backend
-    command: celery -A say.app.celery worker --concurrency 2 --loglevel=WARNING -B -S redbeat.RedBeatScheduler
+    command: celery -A say.api.app.celery worker --concurrency 2 --loglevel=WARNING -B -S redbeat.RedBeatScheduler
 
 volumes:
   redis_volume:
