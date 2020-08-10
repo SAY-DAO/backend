@@ -1,3 +1,8 @@
+stages:
+  - build
+  - deploy
+  - cleanup
+
 build:
   image: docker:latest
   stage: build
@@ -16,8 +21,13 @@ build:
   script:
     - docker pull $COMPILE_IMAGE_TAG || true
     - docker pull $IMAGE_TAG || true
-    - docker build --target compile-image --tag $COMPILE_IMAGE_TAG . -f Dockerfile
-    - docker build --tag $IMAGE_TAG . -f Dockerfile
+    - docker build --build-arg CI_COMMIT_REF_SLUG=$CI_COMMIT_REF_SLUG
+      --target compile-image
+      --tag $COMPILE_IMAGE_TAG . -f Dockerfile
+
+    - docker build --build-arg CI_COMMIT_REF_SLUG=$CI_COMMIT_REF_SLUG
+      --tag $IMAGE_TAG . -f Dockerfile
+
     - docker images
     - docker push $COMPILE_IMAGE_TAG
     - docker push $IMAGE_TAG
@@ -40,50 +50,66 @@ deploy-branches:
     - export IMAGE_NAME=$(echo "$DOCKER_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
     - export IMAGE_TAG=$(echo "$IMAGE_NAME:$CI_COMMIT_REF_SLUG")
     - export TARGET_DIR=say/$CI_COMMIT_REF_SLUG/api
-    - export COMPOSE_PROJECT_NAME=$CI_PROJECT_NAMESPACE_$CI_PROJECT_NAME
+    - export COMPOSE_PROJECT_NAME=$(echo "$CI_PROJECT_NAMESPACE-$CI_COMMIT_REF_SLUG-$CI_PROJECT_NAME")
+
     - mkdir ~/.ssh
     - eval $(ssh-agent -s)
     - ssh-add <(echo "$STAGING_SSH_PRIVATE_KEY")
-    - alias ssh-staging='ssh $STAGING_USER@$STAGING -p $STAGING_PORT -o StrictHostKeyChecking=no'
-    - alias scp-staging='scp -P $STAGING_PORT -o StrictHostKeyChecking=no'
+
+    - ssh $STAGING_USER@$STAGING -p $STAGING_PORT -o StrictHostKeyChecking=no "docker login $DOCKER_REGISTRY -u '$REGISTRY_USER' -p '$REGISTRY_PASSWORD'"
+    - ssh $STAGING_USER@$STAGING -p $STAGING_PORT -o StrictHostKeyChecking=no "mkdir -p $TARGET_DIR"
+    - scp -P $STAGING_PORT -o StrictHostKeyChecking=no /builds/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/docker-compose-staging.yml $STAGING_USER@$STAGING:$TARGET_DIR/docker-compose.yml
+    - scp -P $STAGING_PORT -o StrictHostKeyChecking=no /builds/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/.env_staging $STAGING_USER@$STAGING:$TARGET_DIR/.env
+    - scp -P $STAGING_PORT -o StrictHostKeyChecking=no /builds/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/config-staging.json $STAGING_USER@$STAGING:$TARGET_DIR/config.json
   script:
-    - ssh-staging "docker login $DOCKER_REGISTRY -u '$REGISTRY_USER' -p '$REGISTRY_PASSWORD'"
-    - ssh-staging "mkdir -p $TARGET_DIR"
-    - scp-staging /builds/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/docker-compose-staging.yml $STAGING_USER@$STAGING:$TARGET_DIR/docker-compose.yml"
-    - ssh-staging "cd $TARGET_DIR && docker-compose pull && COMPOSE_PROJECT_NAME=$COMPOSE_PROJECT_NAME docker-compose up --remove-orphans -d"
+    - ssh $STAGING_USER@$STAGING -p $STAGING_PORT -o StrictHostKeyChecking=no "
+        export CI_COMMIT_REF_SLUG=$CI_COMMIT_REF_SLUG
+        && export COMPOSE_PROJECT_NAME=$COMPOSE_PROJECT_NAME
+        && cd $TARGET_DIR
+        && docker-compose pull
+        && docker-compose up --remove-orphans -d
+      "
   environment:
     name: $CI_COMMIT_REF_NAME
-    url: http://${CI_COMMIT_REF_NAME}.api.staging.sayapp.company
-#  only:
-#    - develop
-#   except:
-#    - master
+    url: http://api.${CI_COMMIT_REF_SLUG}.s.sayapp.company/apidocs
+    on_stop: stop_staging
+
   tags:
     - deploy
 
-# stop_staging:
-#   stage: deploy
-#   variables:
-#     GIT_STRATEGY: none
-#   script:
-#     # add the server as a known host
-#     - mkdir ~/.ssh
-#     - echo "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
-#     - chmod 644 ~/.ssh/known_hosts
-#     # add ssh key stored in SSH_PRIVATE_KEY variable to the agent store
-#     - eval $(ssh-agent -s)
-#     - ssh-add <(echo "$SSH_PRIVATE_KEY")
-#     # log into Docker registry
-#     - ssh deployer@thecodingmachine.io "docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.thecodingmachine.com"
-#     # stop container, remove image.
-#     - ssh deployer@thecodingmachine.io "docker stop thecodingmachine.io_${CI_COMMIT_REF_SLUG}" || true
-#     - ssh deployer@thecodingmachine.io "docker rm thecodingmachine.io_${CI_COMMIT_REF_SLUG}" || true
-#     - ssh deployer@thecodingmachine.io "docker rmi registry.thecodingmachine.com/tcm-projects/thecodingmachine.io:${CI_COMMIT_REF_SLUG}" || true
-#   when: manual
-#   environment:
-#     name: review/$CI_COMMIT_REF_NAME
-#     action: stop
-#   only:
-#     - branches
-#   except:
-#     - master
+stop_staging:
+  stage: cleanup
+  image: kroniak/ssh-client
+  services:
+   - name: docker:dind
+     alias: docker-service
+  variables:
+   GIT_STRATEGY: none
+   DOCKER_TLS_CERTDIR: ""
+   DOCKER_DRIVER: overlay2
+  before_script:
+   - export IMAGE_NAME=$(echo "$DOCKER_REGISTRY/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME" | tr '[:upper:]' '[:lower:]')
+   - export IMAGE_TAG=$(echo "$IMAGE_NAME:$CI_COMMIT_REF_SLUG")
+   - export TARGET_DIR=say/$CI_COMMIT_REF_SLUG/api
+   - export COMPOSE_PROJECT_NAME=$(echo "$CI_PROJECT_NAMESPACE-$CI_COMMIT_REF_SLUG-$CI_PROJECT_NAME")
+
+   - mkdir ~/.ssh
+   - eval $(ssh-agent -s)
+   - ssh-add <(echo "$STAGING_SSH_PRIVATE_KEY")
+
+   - ssh $STAGING_USER@$STAGING -p $STAGING_PORT -o StrictHostKeyChecking=no "docker login $DOCKER_REGISTRY -u '$REGISTRY_USER' -p '$REGISTRY_PASSWORD'"
+  script:
+   - ssh $STAGING_USER@$STAGING -p $STAGING_PORT -o StrictHostKeyChecking=no "
+       export CI_COMMIT_REF_SLUG=$CI_COMMIT_REF_SLUG
+       && export COMPOSE_PROJECT_NAME=$COMPOSE_PROJECT_NAME
+       && cd $TARGET_DIR
+       && docker-compose down -v
+       && docker rmi -f $IMAGE_TAG
+     "
+  allow_failure: false
+  when: manual
+  environment:
+   name: $CI_COMMIT_REF_NAME
+   action: stop
+  tags:
+    - cleaner

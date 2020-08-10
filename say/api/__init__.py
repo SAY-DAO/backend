@@ -1,5 +1,6 @@
 import os, shutil, copy
 
+import redis
 from celery import Celery
 from flask import (
     Flask,
@@ -22,12 +23,13 @@ from flask_mail import Mail
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_jwt_extended import JWTManager
-from logging import debug, basicConfig, DEBUG
+from logging import debug, basicConfig, DEBUG, getLogger
 from flask_caching import Cache
 from flask_cors import CORS
 import flask_monitoringdashboard as dashboard
 from mailerlite import MailerLiteApi
 
+from say.api.ext.jwt import jwt
 from say.payment import IDPay
 from say.celery import beat
 from say.date import *
@@ -50,6 +52,7 @@ CELERY_TASK_LIST = [
 ]
 
 basicConfig(level=DEBUG)
+logger = getLogger('main')
 
 conf = {
     'dbUrl': 'postgresql://postgres:postgres@localhost/say_en'
@@ -99,6 +102,10 @@ app.config["RATELIMIT_DEFAULT"] = "100 per minutes"
 app.config['PAYMENT_ORDER_ID_LENGTH'] = 8
 app.config['PRODUCT_UNPAYABLE_PERIOD'] = 3 # Days
 
+app.config["MELI_PAYAMAK_USERNAME"] = "change-this"
+app.config["MELI_PAYAMAK_PASSWORD"] = "change-this"
+app.config["MELI_PAYAMAK_FROM"] = "chage-this"
+
 app.config.update({
     "CACHE_TYPE": "redis", # Flask-Caching related configs
     "CACHE_DEFAULT_TIMEOUT": 300
@@ -117,26 +124,30 @@ app.config.update({
     'JWT_BLACKLIST_TOKEN_CHECKS': ['access', 'refresh'],
 })
 
-app.config['VERIFICATION_MAXAGE'] = 5 # minutes
+app.config.update({
+    'REDIS_HOST': 'localhost',
+    'REDIS_PORT': '6379',
+    'REVOKED_TOKEN_STORE_DB': 1,
+})
+
+app.config['VERIFICATION_MAXAGE'] = 5  # minutes
 
 app.config.update(
     broker_url='redis://localhost:6379/0',
     result_backend='redis://localhost:6379/0',
-    redbeat_redis_url = "redis://localhost:6379/0"
+    redbeat_redis_url='redis://localhost:6379/0',
 )
 
 app.config.update(conf)
 
 
-def create_celery_app(app=None):
+def create_celery_app(app):
     """
     Create a new Celery object and tie together the Celery config to the app's
     config. Wrap all tasks in the context of the application.
     :param app: Flask app
     :return: Celery app
     """
-    app = app or create_app()
-
     celery = Celery(app.import_name, broker=app.config['broker_url'],
                     include=CELERY_TASK_LIST)
     celery.conf.timezone = 'UTC'
@@ -172,6 +183,7 @@ def create_celery_app(app=None):
     celery.Task = ContextTask
     return celery
 
+
 celery = create_celery_app(app)
 
 cache = Cache(app)
@@ -185,7 +197,7 @@ limiter = Limiter(
 
 mail = Mail(app)
 
-jwt = JWTManager(app)
+jwt.init_app(app)
 
 idpay = IDPay(app.config['IDPAY_API_KEY'], app.config['SANDBOX'])
 

@@ -7,7 +7,6 @@ from say.gender import Gender
 from say.models import session, obj_to_dict
 from say.models.family_model import Family
 from say.models.need_family_model import NeedFamily
-from say.models.revoked_token_model import RevokedToken
 from say.models.user_family_model import UserFamily
 from say.models.user_model import User
 from ..schema.user import UserNameSchema
@@ -16,13 +15,6 @@ from ..schema.user import UserNameSchema
 """
 User APIs
 """
-
-
-@jwt.token_in_blacklist_loader
-def check_if_token_in_blacklist(decrypted_token):
-    jti = decrypted_token['jti']
-
-    return RevokedToken.is_jti_blacklisted(jti, session)
 
 
 def is_int(maybe_int):

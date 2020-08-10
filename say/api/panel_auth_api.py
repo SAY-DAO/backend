@@ -1,12 +1,10 @@
-from datetime import datetime
 from hashlib import md5
 
 from flask_jwt_extended import create_refresh_token, \
-    jwt_refresh_token_required, get_jwt_identity, get_raw_jwt
+    jwt_refresh_token_required, get_raw_jwt
 
 from . import *
-from say.models import session, obj_to_dict
-from say.models.revoked_token_model import RevokedToken
+from say.models import session
 from say.models.social_worker_model import SocialWorker
 
 
@@ -84,14 +82,21 @@ class PanelLogin(Resource):
 
 class PanelTokenRefresh(Resource):
 
-    @jwt_refresh_token_required
+    @authorize_refresh
     @swag_from("./docs/panel_auth/refresh.yml")
     def post(self):
         id = get_jwt_identity()
         social_worker = session.query(SocialWorker).get(id)
-        session.close()
         access_token = create_sw_access_token(social_worker, fresh=True)
-        return jsonify({'access_token': f'Bearer {access_token}'})
+        refresh_token = create_refresh_token(identity=social_worker.id)
+
+        jti = get_raw_jwt()['jti']
+        revoke_jwt(jti, int(app.config['JWT_REFRESH_TOKEN_EXPIRES'] * 1.1))
+
+        return jsonify({
+            'access_token': f'Bearer {access_token}',
+            "refresh_token": f"Bearer {refresh_token}",
+        })
 
 
 class PanelLogoutAccess(Resource):
@@ -100,34 +105,18 @@ class PanelLogoutAccess(Resource):
     @swag_from("./docs/panel_auth/logout-access.yml")
     def post(self):
         jti = get_raw_jwt()['jti']
-        msg = None
-        try:
-            revoked_token = RevokedToken(jti = jti)
-            session.add(revoked_token)
-            session.commit()
-            msg = {'message': 'Access token has been revoked'}
-        except:
-            msg = {'message': 'Something went wrong'}, 500
-        finally:
-            session.close()
-            return msg
+        revoke_jwt(jti, int(app.config['JWT_ACCESS_TOKEN_EXPIRES'] * 1.1))
+        return {}, 200
 
 
 class PanelLogoutRefresh(Resource):
-    @jwt_refresh_token_required
+    @authorize_refresh
     @swag_from("./docs/panel_auth/logout-refresh.yml")
     def post(self):
         jti = get_raw_jwt()['jti']
-        try:
-            revoked_token = RevokedToken(jti = jti)
-            session.add(revoked_token)
-            session.commit()
-            msg = {'message': 'Refresh token has been revoked'}
-        except:
-            msg = {'message': 'Something went wrong'}, 500
-        finally:
-            session.close()
-            return msg
+        revoke_jwt(jti, int(app.config['JWT_REFRESH_TOKEN_EXPIRES'] * 1.1))
+        return {}, 200
+
 
 """
 API URLs

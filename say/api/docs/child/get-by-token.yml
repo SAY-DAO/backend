@@ -31,5 +31,5 @@ responses:
     description: Child not found
 
   743:
-    description: family {invitation.family_id not found
+    description: family {family_id} not found
 

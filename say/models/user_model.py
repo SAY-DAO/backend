@@ -1,10 +1,6 @@
-import os
-import enum
 from hashlib import sha256
 
-from sqlalchemy.orm import composite
 from sqlalchemy_utils import LocaleType, CountryType, PhoneNumberType
-from babel import Locale
 
 from say.validations import validate_password as _validate_password
 from say.gender import Gender
@@ -100,6 +96,15 @@ class User(base, Timestamp):
     participations = relationship(
         'NeedFamily',
         back_populates='user',
+    )
+    sent_invitations = relationship(
+        'Invitation',
+        back_populates='inviter',
+    )
+
+    invitation_accepts = relationship(
+        'InvitationAccept',
+        back_populates='invitee',
     )
 
     def _hash_password(cls, password):

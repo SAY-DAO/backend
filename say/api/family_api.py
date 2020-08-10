@@ -3,6 +3,7 @@ from say.validations import VALID_ROLES
 from say.models import session, obj_to_dict, commit
 from say.models import User, Family, UserFamily, NeedFamily, Invitation
 from . import *
+from ..models.invite.invitation_accept import InvitationAccept
 
 """
 Family APIs
@@ -172,15 +173,20 @@ class AddUserToFamily(Resource):
 
             user_family.isDeleted = False
             participations = session.query(NeedFamily) \
-                .filter(NeedFamily.id_user==user.id) \
-                .filter(NeedFamily.id_family==family.id)
+                .filter(NeedFamily.id_user == user.id) \
+                .filter(NeedFamily.id_family == family.id)
 
             for p in participations:
                 p.isDeleted = False
 
         family.child.sayFamilyCount += 1
 
-
+        invitation_accept = InvitationAccept(
+            invitation=invitation,
+            invitee=user,
+            role=user_role,
+        )
+        invitation.accepts.append(invitation_accept)
         return family
 
 

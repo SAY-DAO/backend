@@ -8,6 +8,10 @@ tags:
 
 parameters:
 
+  - in: header
+    name: Authorization
+    type: string
+
   - in: formData
     name: family_id
     required: true
@@ -17,10 +21,20 @@ parameters:
     name: role
     type: integer
 
+  - in: formData
+    name: text
+    type: string
+
+
 responses:
   200:
     description: Response contains the token that needed in Add-to-family API
 
+  400:
+    description: Invalid data
+
   404:
     description: Family not found
 
+  700:
+    description: Child is gone

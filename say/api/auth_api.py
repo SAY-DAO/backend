@@ -1,14 +1,10 @@
-from random import randint
-
 import phonenumbers
 from babel import Locale
-from flask_jwt_extended import create_refresh_token, \
-    jwt_refresh_token_required, get_raw_jwt
+from flask_jwt_extended import create_refresh_token, get_raw_jwt
 from sqlalchemy_utils import PhoneNumber, Country, PhoneNumberParseException
 
-from say.models import session, obj_to_dict, or_, commit, ResetPassword, \
-    PhoneVerification, Verification, EmailVerification, User, RevokedToken, \
-    and_
+from say.models import session, or_, commit, ResetPassword, \
+    PhoneVerification, Verification, EmailVerification, User, and_
 from say.tasks import subscribe_email
 from say.validations import validate_username, validate_email, validate_phone, \
     validate_password
@@ -243,31 +239,6 @@ class Login(Resource):
 
             if user is not None:
                 if user.validate_password(password):
-                    if not user.isVerified:
-                        verify = session.query(Verification) \
-                            .filter_by(user_id=user.id) \
-                            .first()
-
-                        if verify is None:
-                            verify = Verification(user=user)
-                            session.add(verify)
-
-                        verify.code = randint(100000, 999999)
-                        verify.expire_at = datetime.utcnow() + timedelta(
-                            minutes=app.config['VERIFICATION_EMAIL_MAXAGE']
-                        )
-
-                        session.commit()
-                        send_verify_email(user, verify.code)
-
-                        resp = make_response(
-                            jsonify({
-                                'user': obj_to_dict(user),
-                            }),
-                            302,
-                        )
-                        return
-
                     lang = get_locale()
                     user.locale = Locale(lang)
                     user.lastLogin = datetime.utcnow()
@@ -313,34 +284,17 @@ class LogoutAccess(Resource):
     @swag_from("./docs/auth/logout-access.yml")
     def post(self):
         jti = get_raw_jwt()['jti']
-        msg = None
-        try:
-            revoked_token = RevokedToken(jti=jti)
-            session.add(revoked_token)
-            session.commit()
-            msg = {'message': 'Access token has been revoked'}
-        except:
-            msg = {'message': 'Something went wrong'}, 500
-        finally:
-            session.close()
-            return msg
+        revoke_jwt(jti, int(app.config['JWT_ACCESS_TOKEN_EXPIRES'] * 1.1))
+        return {}, 200
 
 
 class LogoutRefresh(Resource):
-    @jwt_refresh_token_required
+    @authorize_refresh
     @swag_from("./docs/auth/logout-refresh.yml")
     def post(self):
         jti = get_raw_jwt()['jti']
-        try:
-            revoked_token = RevokedToken(jti=jti)
-            session.add(revoked_token)
-            session.commit()
-            msg = {'message': 'Refresh token has been revoked'}
-        except:
-            msg = {'message': 'Something went wrong'}, 500
-        finally:
-            session.close()
-            return msg
+        revoke_jwt(jti, int(app.config['JWT_REFRESH_TOKEN_EXPIRES'] * 1.1))
+        return {}, 200
 
 
 class VerifyPhone(Resource):
@@ -361,7 +315,7 @@ class VerifyPhone(Resource):
             return {"message": "phone_number is invalid"}, 400
 
         user = session.query(User) \
-            .filter(User.phone_number==phone_number) \
+            .filter(User.phone_number == phone_number) \
             .first()
 
         if user:
@@ -416,7 +370,7 @@ class VerifyEmail(Resource):
 
 class TokenRefresh(Resource):
 
-    @jwt_refresh_token_required
+    @authorize_refresh
     @swag_from("./docs/auth/refresh.yml")
     def post(self):
         id = get_jwt_identity()
@@ -424,6 +378,9 @@ class TokenRefresh(Resource):
         session.close()
         access_token = create_user_access_token(user, fresh=True)
         refresh_token = create_refresh_token(identity=user.id)
+
+        jti = get_raw_jwt()['jti']
+        revoke_jwt(jti, int(app.config['JWT_REFRESH_TOKEN_EXPIRES'] * 1.1))
 
         return jsonify({
             'accessToken': f'Bearer {access_token}',
