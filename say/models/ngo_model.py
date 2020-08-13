@@ -11,7 +11,7 @@ class Ngo(base, Timestamp):
 
     id = Column(Integer, primary_key=True, nullable=False, unique=True)
 
-    coordinatorId = Column(Integer, ForeignKey('social_worker.id'), nullable=False)
+    coordinatorId = Column(Integer, ForeignKey('social_worker.id'), nullable=True)
 
     country = Column(Integer, nullable=False)
     city = Column(Integer, nullable=False)
