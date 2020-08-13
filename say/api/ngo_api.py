@@ -173,15 +173,20 @@ class GetNgoById(Resource):
                 return resp
 
             res = obj_to_dict(base_ngo)
-            coordinator = (
-                session.query(SocialWorker.firstName, SocialWorker.lastName)
-                .filter_by(id=base_ngo.coordinatorId)
-                .filter_by(isDeleted=False)
-                .first()
-            )
+            res['coordinatorFirstName'] = None
+            res['coordinatorLastName'] = None
 
-            res['coordinatorFirstName'] = coordinator[0]
-            res['coordinatorLastName'] = coordinator[1]
+            if base_ngo.coordinatorId:
+                coordinator = (
+                    session.query(SocialWorker.firstName, SocialWorker.lastName)
+                    .filter_by(id=base_ngo.coordinatorId)
+                    .filter_by(isDeleted=False)
+                    .first()
+                )
+
+                res['coordinatorFirstName'] = coordinator[0]
+                res['coordinatorLastName'] = coordinator[1]
+
             res['socialWorkers'] = sw_list(
                 session.query(SocialWorker)
                 .filter_by(id_ngo=base_ngo.id)
