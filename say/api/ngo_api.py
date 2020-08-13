@@ -92,7 +92,16 @@ class AddNgo(Resource):
             logo_url = path
             country = int(request.form["country"])
             city = int(request.form["city"])
-            coordinator_id = request.form.get("coordinatorId")
+            try:
+                coordinator_id = request.form.get("coordinatorId")
+                if coordinator_id != None:
+                    coordinator_id = int(coordinator_id)
+            except (ValueError, TypeError):
+                resp = make_response(
+                    jsonify({"message": "invalid coordinatorId"}), 400,
+                )
+                return resp
+
             name = request.form["name"]
             postal_address = request.form["postalAddress"]
             email_address = request.form["emailAddress"]
