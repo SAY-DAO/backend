@@ -92,7 +92,7 @@ class AddNgo(Resource):
             logo_url = path
             country = int(request.form["country"])
             city = int(request.form["city"])
-            coordinator_id = int(request.form["coordinatorId"])
+            coordinator_id = request.form.get("coordinatorId")
             name = request.form["name"]
             postal_address = request.form["postalAddress"]
             email_address = request.form["emailAddress"]
