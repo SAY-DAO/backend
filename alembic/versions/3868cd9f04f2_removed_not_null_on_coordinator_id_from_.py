@@ -1,7 +1,7 @@
 """Removed not null on coordinator id from ngo
 
 Revision ID: 3868cd9f04f2
-Revises: 1f016532ea43
+Revises: 04432c7759dd
 Create Date: 2020-08-13 16:00:12.508114
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '3868cd9f04f2'
-down_revision = '1f016532ea43'
+down_revision = '04432c7759dd'
 branch_labels = None
 depends_on = None
 
