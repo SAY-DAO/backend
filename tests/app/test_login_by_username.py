@@ -33,7 +33,6 @@ class TestLogin(BaseTestClass):
         assert res.status_code == 400
 
     def test_login_by_username_incomplete_parameter(self):
-        # when password is wrong
         res = self.client.post(
             LOGIN_URL,
             data={

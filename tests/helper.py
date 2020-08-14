@@ -12,6 +12,7 @@ LOGIN_URL = '/api/v2/auth/login'
 
 UNAUTHORIZED_ERROR_CODE = 401
 
+REFRESH_TOKEN_KEY = 'REFRESH_TOKEN'
 
 class BaseTestClass:
     _authorization__ = None
@@ -123,5 +124,7 @@ class BaseTestClass:
         )
         assert res.status_code == 200
         assert (token := res.json['accessToken']) is not None
+        assert (refreshToken := res.json['refreshToken']) is not None
         self._client.environ_base['HTTP_AUTHORIZATION'] = token
+        self._client.environ_base[REFRESH_TOKEN_KEY] = refreshToken
         return token
