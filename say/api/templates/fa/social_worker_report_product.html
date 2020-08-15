@@ -83,7 +83,7 @@
                         <span style="color: #f05a31; font-size: 20px;">* </span>
                         {% set ns.oncePurchased = true %}
                     {% endif %}
-                    {{need.title}}
+                    {{need.title or need.name}}
                 </td>
                 <td style="
                     font-family: iranyekan, Tahoma; 

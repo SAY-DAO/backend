@@ -214,7 +214,7 @@ class Need(base, Timestamp):
     @hybrid_property
     def clean_title(self):
         if self.title is None:
-            return None
+            return self.name
 
         for word in self.title.split(' '):
             if word in DIGIKALA_TITLE_SEP:
