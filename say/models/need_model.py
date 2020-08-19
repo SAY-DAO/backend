@@ -205,10 +205,13 @@ class Need(base, Timestamp):
             for payment in self.payments
         )
 
-        if paid < self.cost:
+        if paid == 0:
+            self.status = 0
+        elif paid < self.cost:
             self.status = 1
 
-        elif paid == self.cost:
+        #when paid == cost
+        else:
             self.done()
 
     @hybrid_property
