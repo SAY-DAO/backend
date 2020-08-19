@@ -74,7 +74,7 @@ def authorize_refresh(func):
         try:
             verify_jwt_refresh_token_in_request()
         except:
-            return make_response(jsonify(message='Unauthorized'), 401)
+            return make_response(jsonify(message='Unauthorized'), 400)
 
         return func(*args, **kwargs)
 
