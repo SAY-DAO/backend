@@ -621,6 +621,7 @@ class AddNeed(Resource):
                 os.makedirs(needs_path, exist_ok=True)
 
             need_dir = str(new_need.id) + "-need"
+            temp_need_path = os.path.join(needs_path, need_dir)
 
             if "imageUrl" in request.files:
                 file = request.files["imageUrl"]
@@ -629,7 +630,6 @@ class AddNeed(Resource):
                     return
 
                 filename = str(new_need.id) + "." + file.filename.split(".")[-1]
-                temp_need_path = os.path.join(needs_path, need_dir)
 
                 if not os.path.isdir(temp_need_path):
                     os.makedirs(temp_need_path, exist_ok=True)
