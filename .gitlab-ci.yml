@@ -8,7 +8,6 @@ stages:
   - deploy
 
 variables:
-  DOCKER_TLS_CERTDIR: "/certs"
   CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   LATEST_IMAGE: $CI_REGISTRY_IMAGE:latest
 
