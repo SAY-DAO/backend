@@ -28,6 +28,11 @@ from flask_caching import Cache
 from flask_cors import CORS
 import flask_monitoringdashboard as dashboard
 from mailerlite import MailerLiteApi
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.redis import RedisIntegration
 
 from say.api.ext.jwt import jwt
 from say.payment import IDPay
@@ -83,6 +88,18 @@ FLAGS = os.path.join(FLAGS, "flags")
 ALLOWED_VOICE_EXTENSIONS = {"wav", "m4a", "wma", "mp3", "aac", "ogg"}
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
 ALLOWED_RECEIPT_EXTENSIONS = ALLOWED_IMAGE_EXTENSIONS | {"pdf"}
+
+sentry_sdk.init(
+    dsn=conf.get('SENTRY_DSN'),
+    integrations=[
+        FlaskIntegration(),
+        SqlalchemyIntegration(),
+        CeleryIntegration(),
+        RedisIntegration(),
+    ],
+    traces_sample_rate = conf.get('SENTRY_SAMPLE_RATE', 0.5),
+    _experiments={"auto_enabling_integrations": True},
+)
 
 app = Flask(__name__)
 app.config['ADD_TO_HOME_URL'] = ADD_TO_HOME_URL
@@ -214,35 +231,6 @@ mailerlite = MailerLiteApi(app.config.get('MAILERLITE_API_KEY', 'not-entered'))
 #     basedata(db)
 # except:
 #     pass
-
-APIMD_CONFIG_FILE_PROD = 'apimd-config-prod.cfg'
-APIMD_CONFIG_FILE = 'apimd-config.cfg'
-if PRODUCTION:
-    if not os.path.isfile(APIMD_CONFIG_FILE_PROD):
-        raise Exception('''
-            Make sure apimd-config-prod.cfg exist
-            and admin PASSWORD, CUSTOM_LINK, SECURITY_TOKEN and DATABASE
-            are correctly set in apimd-config-prod.cfg
-        ''')
-
-    dashboard.config.init_from(file=APIMD_CONFIG_FILE_PROD)
-else:
-    dashboard.config.init_from(file=APIMD_CONFIG_FILE)
-    print(
-        'Open http://localhost/dashboard and use admin admin to see '
-        'API monitoring dashboard'
-    )
-
-try:
-    dashboard.bind(app)
-except Exception as e:
-    print('''
-        Make sure apimd-config-prod.cfg exist
-        and admin PASSWORD, CUSTOM_LINK, SECURITY_TOKEN and DATABASE
-        are correctly set in apimd-config-prod.cfg
-        '''
-    )
-    raise
 
 api = Api(app)
 
