@@ -10,6 +10,7 @@ stages:
 variables:
   CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   LATEST_IMAGE: $CI_REGISTRY_IMAGE:latest
+  BASE_IMAGE: $CI_REGISTRY_IMAGE:base
 
 before_script:
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
@@ -17,11 +18,10 @@ before_script:
 build:
   stage: build
   script:
-    - docker pull $LATEST_IMAGE|| true
-    - docker build --cache-from $LATEST_IMAGE -t $CONTAINER_IMAGE -t $LATEST_IMAGE .
-    - docker push $CONTAINER_IMAGE
-    - docker push $LATEST_IMAGE
-
+    - sh ./scripts/build-push.sh
+  only:
+    - master
+    - develop
 
 deploy:
   stage: deploy

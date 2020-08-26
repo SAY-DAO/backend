@@ -34,3 +34,4 @@ pydantic
 future
 flower
 humps
+sentry-sdk[flask]==0.16.2
