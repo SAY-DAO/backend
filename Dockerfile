@@ -15,7 +15,7 @@ RUN pip install -r requirements.txt
 FROM python:3.8-slim AS prod
 
 ENV VIRTUAL_ENV=/opt/venv
-COPY --from=compile-image $VIRTUAL_ENV $VIRTUAL_ENV
+COPY --from=base $VIRTUAL_ENV $VIRTUAL_ENV
 
 COPY . /app
 WORKDIR /app
