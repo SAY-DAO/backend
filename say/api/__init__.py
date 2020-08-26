@@ -48,7 +48,7 @@ from say.decorators import json
 from say.orm import obj_to_dict
 
 
-PRODUCTION = os.environ.get('PRODUCTION')
+ENVIRONMENT = os.environ.get('ENVIRONMENT', 'development')
 ADD_TO_HOME_URL = 'https://sayapp.company/add'
 DEFAULT_CHILD_ID = 104  # TODO: Remove this after implementing pre needs
 
@@ -91,6 +91,7 @@ ALLOWED_RECEIPT_EXTENSIONS = ALLOWED_IMAGE_EXTENSIONS | {"pdf"}
 
 sentry_sdk.init(
     dsn=conf.get('SENTRY_DSN'),
+    environment=ENVIRONMENT,
     integrations=[
         FlaskIntegration(),
         SqlalchemyIntegration(),
