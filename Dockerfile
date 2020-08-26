@@ -1,4 +1,4 @@
-FROM python:3.8 AS compile-image
+FROM python:3.8 AS base
 
 ENV VIRTUAL_ENV=/opt/venv
 
@@ -12,7 +12,7 @@ COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
-FROM python:3.8-slim AS runtime-image
+FROM python:3.8-slim AS prod
 
 ENV VIRTUAL_ENV=/opt/venv
 COPY --from=compile-image $VIRTUAL_ENV $VIRTUAL_ENV
