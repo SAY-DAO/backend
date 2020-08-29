@@ -1,6 +1,8 @@
 import os
 from random import randint
 
+from sqlalchemy import func, text
+
 from . import *
 from say.api import jwt
 from say.gender import Gender
@@ -9,7 +11,8 @@ from say.models.family_model import Family
 from say.models.need_family_model import NeedFamily
 from say.models.user_family_model import UserFamily
 from say.models.user_model import User
-from ..schema.user import UserNameSchema
+from ..schema.user import UserNameSchema, UserSearchSchema
+
 
 """
 User APIs
@@ -456,6 +459,23 @@ class AddUser(Resource):
             return resp
 
 
+class SearchUserAPI(Resource):
+    @authorize
+    @json
+    @swag_from('./docs/user/search.yml')
+    def get(self):
+        query = request.args.get('q')
+        result = session.query(User.userName, User.avatarUrl) \
+                .filter(func.similarity(User.userName, query) > 0.05) \
+                .order_by(func.similarity(User.userName, query).desc()) \
+                .limit(5) \
+                .all()
+       
+        return [
+                UserSearchSchema(user_name=r.userName, avatar_url=r.avatarUrl)
+            for r in result
+        ]
+
 
 
 """
@@ -468,3 +488,4 @@ api.add_resource(UpdateUserById, "/api/v2/user/update/userId=<user_id>")
 api.add_resource(DeleteUserById, "/api/v2/user/delete/userId=<user_id>")
 api.add_resource(AddUser, "/api/v2/user/add")
 api.add_resource(GetUserRole, "/api/v2/user/role/userId=<user_id>&childId=<child_id>")
+api.add_resource(SearchUserAPI, "/api/v2/user/search")

@@ -1,5 +1,6 @@
 import enum
 
+import pydantic
 from babel import Locale
 from sqlalchemy import inspect
 from sqlalchemy.ext.associationproxy import ASSOCIATION_PROXY
@@ -31,6 +32,9 @@ def obj_to_dict(obj, relationships=False):
 
     if isinstance(obj, tuple) or isinstance(obj, list):
         return [obj_to_dict(x) for x in obj]
+
+    elif isinstance(obj, pydantic.BaseModel):
+        return obj.dict(by_alias=True)
 
     if not isinstance(obj, base):
         return obj
