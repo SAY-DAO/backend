@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from sqlalchemy import and_, or_
 
 import say.orm
-from say.api import celery
+from say.app import celery
 
 
 # This task is a temporary social worker that deliver a product to child

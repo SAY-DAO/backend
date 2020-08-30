@@ -8,7 +8,7 @@ from say.langs import LANGS
 from say.locale import ChangeLocaleTo
 from .send_email import send_embeded_subject_email
 from say.render_template_i18n import render_template_i18n
-from ..app import celery
+from say.app import celery
 
 
 @celery.task(base=celery.DBTask, bind=True)
