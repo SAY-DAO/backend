@@ -6,6 +6,7 @@ api = Api()
 
 
 api.add_resource(Login, "/api/v2/auth/login")
+api.add_resource(RegisterUser, "/api/v2/auth/register")
 api.add_resource(LogoutAccess, "/api/v2/auth/logout/token")
 api.add_resource(LogoutRefresh, "/api/v2/auth/logout/refresh")
 api.add_resource(TokenRefresh, "/api/v2/auth/refresh")
