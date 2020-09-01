@@ -1,0 +1,24 @@
+Search in users
+---
+
+tags:
+  - User API
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - in: query
+    name: q
+    required: true
+    type: string
+
+responses:
+  200:
+    description: Ok
+
+    schema:
+      id: user_model

@@ -1,5 +1,6 @@
 from hashlib import sha256
 
+from sqlalchemy.orm import column_property
 from sqlalchemy_utils import LocaleType, CountryType, PhoneNumberType
 
 from say.validations import validate_password as _validate_password
@@ -10,7 +11,8 @@ from say.locale import ChangeLocaleTo
 from say.render_template_i18n import render_template_i18n
 
 from . import *
-
+from .payment_model import Payment
+from .need_model import Need, NeedFamily
 
 """
 User Model
@@ -59,28 +61,42 @@ class User(base, Timestamp):
     def isVerified(cls):
         return or_(cls.is_phonenumber_verified, cls.is_email_verified)
 
-    @aggregated('participations.need', Column(Integer, default=0, nullable=False))
-    def done_needs_count(cls):
-        from . import Need
-        # passing a dummy '1' to count
-        return func.count('1') \
-            .filter(Need.status > 1)
-
-    @aggregated('payments', Column(Integer, default=0, nullable=False))
-    def spent(cls):
-        from . import Payment
-        return coalesce(
+    spent = column_property(
+        select([coalesce(
             func.sum(Payment.need_amount),
             0,
+        )]).where(
+            and_(
+                Payment.verified.isnot(None),
+                Payment.id_user == id,
+            )
         )
+    )
 
-    @aggregated('payments', Column(Integer, default=0, nullable=False))
-    def credit(cls):
-        from . import Payment
-        return coalesce(
+    credit = column_property(
+        select([coalesce(
             func.sum(-Payment.credit_amount),
             0,
+        )]).where(
+            and_(
+                Payment.verified.isnot(None),
+                Payment.id_user == id,
+            )
         )
+    )
+
+    done_needs_count = column_property(
+        select([coalesce(
+            func.count(Need.id),
+            0,
+        )])
+        .where(and_(
+            NeedFamily.id_user == id,
+            NeedFamily.id_need == Need.id,
+            Need.status >= 2,
+            Need.isDeleted.is_(False),
+        ))
+    )
 
     payments = relationship(
         'Payment',
