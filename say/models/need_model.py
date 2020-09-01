@@ -258,8 +258,6 @@ class Need(base, Timestamp):
     payments = relationship(
         'Payment',
         back_populates='need',
-        primaryjoin=
-            'and_(Need.id==Payment.id_need, Payment.verified.isnot(None))',
     )
 
     participants = relationship(
