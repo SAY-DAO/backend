@@ -44,7 +44,6 @@ class BaseTestClass:
         seed = randint(10 ** 3, 10 ** 4)
         ngo = Ngo(
             id=seed,
-            coordinatorId=0,
             country=1,
             city=1,
             name=f'test{seed}',
@@ -80,12 +79,12 @@ class BaseTestClass:
             phoneNumber='09121111111',
             gender=1,
             idNumber=f'{seed}',
-            id_ngo=seed,
+            id_ngo=ngo.id,
             emergencyPhoneNumber='09124548745',
             telegramId='fuck',
             registerDate=datetime.utcnow(),
             lastLoginDate=datetime.utcnow(),
-            id_type=seed
+            id_type=privilege.id
         )
         self.session.save(social_worker)
         return social_worker
