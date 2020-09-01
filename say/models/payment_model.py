@@ -52,8 +52,6 @@ class Payment(base, Timestamp):
         foreign_keys=id_need,
         uselist=False,
         back_populates='payments',
-        primaryjoin=
-            'and_(Need.id==Payment.id_need, Payment.verified.isnot(None))',
     )
 
     user = relationship(
@@ -69,7 +67,7 @@ class Payment(base, Timestamp):
 
         from .need_family_model import NeedFamily
         session = object_session(self)
-
+        
         if self.need_amount + self.need.paid == self.need.cost:
             self.need.done()
         else:
