@@ -67,6 +67,7 @@ class Payment(base, Timestamp):
                verify_date=datetime.utcnow(), card_no=None,
                hashed_card_no=None, is_say=False):
 
+        from .need_family_model import NeedFamily
         session = object_session(self)
 
         self.transaction_date = transaction_date
@@ -79,6 +80,11 @@ class Payment(base, Timestamp):
 
         if self.id_need is None:
             return
+
+        if self.need.cost == self.need.paid:
+            self.need.done()
+        else:
+            self.need.status = 1
 
         family = self.need.child.family
 

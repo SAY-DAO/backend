@@ -2,8 +2,10 @@ from datetime import time
 
 import pytz
 from sqlalchemy.dialects.postgresql import HSTORE
+from sqlalchemy.orm import column_property
 
 from . import *
+from .need_model import Need
 
 """
 Child Model
@@ -92,20 +94,29 @@ class Child(base, Timestamp):
     def is_gone(cls):
         return cls.existence_status != 1
 
-    @aggregated('needs', Column(Integer, default=0, nullable=False))
-    def done_needs_count(cls):
-        from . import Need
-        # passing a dummy '1' to count
-        return func.count('1') \
-            .filter(Need.status > 1)
-
-    @aggregated('needs.payments', Column(Integer, default=0, nullable=False))
-    def spent_credit(cls):
-        from . import Payment
-        return coalesce(
-            func.sum(Payment.need_amount),
+    done_needs_count = column_property(
+        select([coalesce(
+            func.count(Need.id),
             0,
-        )
+        )])
+        .where(and_(
+            Need.status >= 2,
+            Need.isDeleted.is_(False),
+            Need.child_id == id,
+        ))
+        .correlate_except(Need),
+    )
+
+    spent_credit = column_property(
+        select([coalesce(
+            func.sum(Need.paid),
+            0,
+        )]).where(and_(
+            Need.child_id == id,
+            Need.isDeleted.is_(False)
+        ))
+        .correlate_except(Need),
+    )
 
     needs = relationship(
         'Need',

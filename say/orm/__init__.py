@@ -1,4 +1,5 @@
 import enum
+from decimal import Decimal
 
 import pydantic
 from babel import Locale
@@ -63,6 +64,9 @@ def obj_to_dict(obj, relationships=False):
 
         elif isinstance(value, enum.Enum):
             result[key] = value.name
+
+        elif isinstance(value, Decimal):
+            result[key] = int(value)
 
         else:
             result[key] = value

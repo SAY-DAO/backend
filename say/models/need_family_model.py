@@ -1,6 +1,7 @@
-from khayyam import JalaliDate
+from sqlalchemy.orm import column_property
 
 from . import *
+from .payment_model import Payment
 
 """
 Need-Family Model
@@ -20,14 +21,18 @@ class NeedFamily(base, Timestamp):
     user_avatar = Column(Text, nullable=True)
     user_role = Column(Integer, nullable=True)
 
-    @aggregated('need.payments', Column(Integer, default=0, nullable=False))
-    def paid(cls):
-        from . import Payment
-        return coalesce(
-            func.sum(Payment.need_amount) \
-                .filter(Payment.id_user==cls.id_user),
+    paid = column_property(
+        select([coalesce(
+            func.sum(Payment.need_amount),
             0,
+        )]).where(
+            and_(
+                Payment.verified.isnot(None),
+                Payment.id_user == id_user,
+                Payment.id_need == id_need,
+            )
         )
+    )
 
     @observes('user.avatarUrl')
     def user_avatar_observer(self, avatar):

@@ -2,12 +2,11 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from sqlalchemy.dialects.postgresql import HSTORE
-from sqlalchemy.orm import object_session
+from sqlalchemy.orm import object_session, column_property
 
 from . import *
 from .need_family_model import NeedFamily
 from .payment_model import Payment
-from .user_model import User
 from say.api import app
 from say.statuses import NeedStatuses
 from say.constants import DIGIKALA_TITLE_SEP
@@ -37,8 +36,6 @@ class Need(base, Timestamp):
     details = Column(Text, nullable=True)
     _cost = Column(Integer, nullable=False)
     purchase_cost = Column(Integer, nullable=False, default=0)
-    paid = Column(Integer, nullable=False, default=0)
-    donated = Column(Integer, nullable=False, default=0)
     link = Column(String, nullable=True)
     affiliateLinkUrl = Column(String, nullable=True)
     isDone = Column(Boolean, nullable=False, default=False)
@@ -55,10 +52,8 @@ class Need(base, Timestamp):
     title = Column(Text, nullable=True)
     oncePurchased = Column(Boolean, nullable=False, default=False)
     bank_track_id = Column(Unicode(30), nullable=True) # Only for services
-
     # product
     unavailable_from = Column(DateTime, nullable=True)
-
     # Dates:
     doneAt = Column(DateTime, nullable=True)
     purchase_date = Column(DateTime)
@@ -68,6 +63,30 @@ class Need(base, Timestamp):
     ngo_delivery_date = Column(DateTime)
     child_delivery_date = Column(DateTime)
     confirmDate = Column(DateTime, nullable=True)
+
+    paid = column_property(
+        select([coalesce(
+            func.sum(Payment.need_amount),
+            0,
+        )]).where(
+            and_(
+                Payment.verified.isnot(None),
+                Payment.id_need == id,
+            )
+        )
+    )
+
+    donated = column_property(
+        select([coalesce(
+            func.sum(Payment.donation_amount),
+            0,
+        )]).where(
+            and_(
+                Payment.verified.isnot(None),
+                Payment.id_need == id,
+            )
+        )
+    )
 
     # TODO: Change this to @observers
     @hybrid_property
@@ -114,7 +133,7 @@ class Need(base, Timestamp):
 
     # TODO: proper expression
     @pretty_paid.expression
-    def pretty_donated(self):
+    def pretty_donated(cls):
         pass
 
     @hybrid_property
@@ -166,53 +185,6 @@ class Need(base, Timestamp):
     @hybrid_property
     def isDone(self):
         return self.status >= 2
-
-    '''
-    aggregated generates query like this:
-    UPDATE need SET paid=(
-        SELECT coalesce(
-            sum(payment.need_amount),
-            , 0
-        ) AS coalesce_1
-        FROM payment
-        WHERE need.id = payment.id_need AND payment.verified IS NOT NULL)
-    WHERE need.id IN (502);
-    '''
-    @aggregated('payments', Column(Integer, nullable=False, default=0))
-    def paid(cls):
-        from . import Payment
-        return coalesce(
-            func.sum(Payment.need_amount),
-            0,
-        )
-
-    @aggregated('payments', Column(Integer, nullable=False, default=0))
-    def donated(cls):
-        from . import Payment
-        return coalesce(
-            func.sum(Payment.donation_amount),
-            0,
-        )
-
-    @observes('payments.verified')
-    def payments_observer(self, verification_dates):
-        session = object_session(self)
-        if len(verification_dates) == 0 or self.status is None or self.status >= 2:
-            return
-
-        paid = sum(
-            payment.need_amount if payment.verified else 0
-            for payment in self.payments
-        )
-
-        if paid == 0:
-            self.status = 0
-        elif paid < self.cost:
-            self.status = 1
-
-        #when paid == cost
-        else:
-            self.done()
 
     @hybrid_property
     def clean_title(self):
@@ -354,6 +326,8 @@ class Need(base, Timestamp):
         return
 
     def say_extra_payment(self):
+        from .user_model import User
+
         extra_cost = self.purchase_cost - self.paid
 
         session = object_session(self)
