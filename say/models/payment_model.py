@@ -70,6 +70,11 @@ class Payment(base, Timestamp):
         from .need_family_model import NeedFamily
         session = object_session(self)
 
+        if self.need_amount + self.need.paid == self.need.cost:
+            self.need.done()
+        else:
+            self.need.status = 1
+
         self.transaction_date = transaction_date
         self.gateway_track_id = track_id or self.order_id
         self.verified = verify_date
@@ -80,11 +85,6 @@ class Payment(base, Timestamp):
 
         if self.id_need is None:
             return
-
-        if self.need.cost == self.need.paid:
-            self.need.done()
-        else:
-            self.need.status = 1
 
         family = self.need.child.family
 
