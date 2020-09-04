@@ -9,7 +9,7 @@ class TestResetPass(BaseTestClass):
         self.password = '123456'
         self.user = self.create_user(self.password)
 
-    def test_verify_phone(self):
+    def test_reset_pass_phone(self):
         res = self.client.post(
             RESET_PASS_PHONE_URL,
             data={
@@ -19,7 +19,7 @@ class TestResetPass(BaseTestClass):
         print(res.json['message'])
         assert res.status_code == 200
 
-    def test_verify_wrong_phone(self):
+    def test_reset_pass_wrong_phone(self):
         res = self.client.post(
             RESET_PASS_PHONE_URL,
             data={
