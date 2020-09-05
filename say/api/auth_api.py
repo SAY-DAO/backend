@@ -406,6 +406,10 @@ class ResetPasswordByEmailApi(Resource):
             .first()
 
         if user:
+            session.query(ResetPassword) \
+                .filter(ResetPassword.user_id == user.id) \
+                .update({'is_used': True})
+
             reset_password = ResetPassword(user=user)
             session.add(reset_password)
             session.flush()
@@ -429,9 +433,13 @@ class ResetPasswordByPhoneApi(Resource):
 
         user = session.query(User) \
             .filter_by(phone_number=phone_number) \
-                .first()
+            .first()
 
         if user:
+            session.query(ResetPassword) \
+                .filter(ResetPassword.user_id == user.id) \
+                .update({'is_used': True})
+
             reset_password = ResetPassword(user=user)
             session.add(reset_password)
             session.flush()
