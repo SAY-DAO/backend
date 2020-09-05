@@ -27,7 +27,9 @@ class ResetPassword(base):
     token = Column(
         String,
         nullable=False,
-        default=secrets.token_urlsafe(app.config['RESET_PASSWORD_TOKEN_LENGTH']),
+        default=lambda: secrets.token_urlsafe(
+            app.config['RESET_PASSWORD_TOKEN_LENGTH']
+        ),
     )
     expire_at = Column(DateTime, default=expire_at, nullable=False)
     is_used = Column(Boolean, default=False, nullable=False)

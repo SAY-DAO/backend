@@ -429,7 +429,7 @@ class ResetPasswordByPhoneApi(Resource):
 
         user = session.query(User) \
             .filter_by(phone_number=phone_number) \
-            .first()
+                .first()
 
         if user:
             reset_password = ResetPassword(user=user)
