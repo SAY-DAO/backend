@@ -403,7 +403,6 @@ class ResetPasswordByEmailApi(Resource):
 
         user = session.query(User) \
             .filter_by(emailAddress=email) \
-            .filter_by(is_email_verified=True) \
             .first()
 
         if user:
@@ -430,7 +429,6 @@ class ResetPasswordByPhoneApi(Resource):
 
         user = session.query(User) \
             .filter_by(phone_number=phone_number) \
-            .filter_by(is_phonenumber_verified=True) \
             .first()
 
         if user:
