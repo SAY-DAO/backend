@@ -8,7 +8,9 @@ from say.models import session, or_, commit, ResetPassword, \
 from say.tasks import subscribe_email
 from say.validations import validate_username, validate_email, validate_phone, \
     validate_password
+from ..i18n import t
 from . import *
+from .exception import HTTPException
 from ..schema.user import NewUserSchema
 
 """
@@ -458,12 +460,14 @@ class ConfirmResetPassword(Resource):
 
         reset_password = session.query(ResetPassword) \
             .filter_by(token=token) \
-            .filter(ResetPassword.is_used==False) \
-            .filter(ResetPassword.is_expired==False) \
             .first()
 
         if reset_password is None:
-            return make_response({'message': 'Bad request'}, 400)
+            raise HTTPException(404, t('reset_password.4o4'))
+        elif reset_password.is_used:
+            raise HTTPException(400, t('reset_password.used'))
+        elif reset_password.is_expired:
+            raise HTTPException(400, t('reset_password.expired'))
 
         new_password = request.form['password']
         confirm_new_password = request.form['confirm_password']

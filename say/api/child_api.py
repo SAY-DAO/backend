@@ -331,7 +331,8 @@ class GetChildNeeds(Resource):
             needs_query = session.query(Need) \
                 .filter(Need.child_id==child_id) \
                 .filter(Need.isDeleted==False) \
-                .order_by(Need.name)
+                .order_by(Need.name) \
+                .all()
 
             needs = []
             for need in needs_query:

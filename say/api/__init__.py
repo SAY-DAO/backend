@@ -46,6 +46,7 @@ from say.locale import ChangeLocaleTo, get_locale
 from say.sms import MeliPayamak
 from say.decorators import json
 from say.orm import obj_to_dict
+from .exception import HTTPException
 
 
 ENVIRONMENT = os.environ.get('ENVIRONMENT', 'development')
@@ -103,6 +104,8 @@ sentry_sdk.init(
 )
 
 app = Flask(__name__)
+app.config['PROPAGATE_EXCEPTIONS'] = True
+
 app.config['ADD_TO_HOME_URL'] = ADD_TO_HOME_URL
 app.config['JSON_SORT_KEYS'] = False
 app.config['SET_PASSWORD_URL'] = 'setpassword'
@@ -234,6 +237,19 @@ mailerlite = MailerLiteApi(app.config.get('MAILERLITE_API_KEY', 'not-entered'))
 #     pass
 
 api = Api(app)
+
+
+@app.before_first_request
+def setup_i18n():
+    from say.i18n import setup
+    setup()
+
+
+@app.errorhandler(HTTPException)
+def handle_http_exception(error):
+    response = jsonify(error.to_dict())
+    response.status_code = error.status_code
+    return response
 
 
 def allowed_voice(filename):
