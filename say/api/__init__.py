@@ -99,7 +99,7 @@ sentry_sdk.init(
         CeleryIntegration(),
         RedisIntegration(),
     ],
-    traces_sample_rate = conf.get('SENTRY_SAMPLE_RATE', 0.5),
+    traces_sample_rate=conf.get('SENTRY_SAMPLE_RATE', 0.5),
     _experiments={"auto_enabling_integrations": True},
 )
 

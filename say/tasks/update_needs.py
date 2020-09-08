@@ -1,5 +1,4 @@
-from datetime import datetime, timedelta
-from sqlalchemy import and_, or_
+from sqlalchemy import or_
 
 from say.api import celery
 
@@ -15,7 +14,6 @@ def update_needs(self):
                 Need.title.is_(None),
             ),
             Need.isDeleted==False,
-#            Need.isConfirmed==True,
             Need.link.isnot(None),
         )
 
@@ -27,18 +25,20 @@ def update_needs(self):
     return t
 
 
-@celery.task(base=celery.DBTask, bind=True, max_retries=2)
+@celery.task(
+    base=celery.DBTask,
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={'max_retries': 1}
+)
 def update_need(self, need_id, force=False):
     from say.models.need_model import Need
-    try:
-        need = self.session.query(Need) \
-            .with_for_update() \
-            .get(need_id)
+    need = self.session.query(Need) \
+        .with_for_update() \
+        .get(need_id)
 
-        data = need.update()
-        self.session.commit()
-    except:
-        self.session.rollback()
-        self.retry(countdown=3**self.request.retries)
+    data = need.update()
+    self.session.commit()
 
     return data

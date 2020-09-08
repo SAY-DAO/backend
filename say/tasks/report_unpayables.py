@@ -29,7 +29,7 @@ def report_unpayables(self):
     say_coordinator = say.coordinator.emailAddress
 
     with app.app_context():
-        send_embeded_subject_email(
+        send_embeded_subject_email.delay(
             to=say_coordinator,
             html=render_template_i18n(
                 'report_unpayables.html',

@@ -76,7 +76,7 @@ def report_to_family(self, family_id):
         base_url = app.config['BASE_URL']
         child_page = os.path.join(base_url, 'childPage', str(child_id), '0')
 
-        send_embeded_subject_email(
+        send_embeded_subject_email.delay(
             to=to_members_email,
             html=render_template_i18n(
                 'status_update_to_family.html',

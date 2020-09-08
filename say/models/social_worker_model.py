@@ -1,4 +1,5 @@
 from babel import Locale
+from celery import exceptions
 from sqlalchemy.orm import object_session
 from sqlalchemy_utils import LocaleType
 
@@ -93,7 +94,6 @@ class SocialWorker(base, Timestamp):
                 else:
                     continue
 
-
             # This date show when the needs status updated to 3
             date = datetime.utcnow() - timedelta(days=1)
             say = session.query(Ngo).filter_by(name='SAY').first()
@@ -118,10 +118,11 @@ class SocialWorker(base, Timestamp):
 
                 for need in services:
                     need.isReported = True
+                session.commit()
 
             if len(products) != 0:
                 use_plural = False if len(products) == 1 else True
-                send_embeded_subject_email(
+                send_embeded_subject_email.delay(
                     to=self.emailAddress,
                     cc=coordinator_email,
                     bcc=bcc,
@@ -140,7 +141,7 @@ class SocialWorker(base, Timestamp):
 
                 for need in products:
                     need.isReported = True
+                session.commit()
 
-            session.commit()
             return [need.id for need in needs]
 

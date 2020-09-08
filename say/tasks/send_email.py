@@ -5,19 +5,24 @@ from . import celery
 from say.api import mail
 
 
-'''
-Extract subject (title) from rendered html of email
-
-<title ...> some title </title>
-'''
 def get_subject_from_html(html):
+    """
+    Extract subject (title) from rendered html of email
+
+    <title ...> some title </title>
+    """
     soup = bs.BeautifulSoup(html)
     subject_element = soup.find('title')
     return subject_element.text
 
 
-@celery.task(bind=True, max_retries=12)
-def send_email(self, subject, to, html, cc=[], bcc=[]):
+@celery.task(
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=600,
+    retry_kwargs={'max_retries': 80}
+)
+def send_email(subject, to, html, cc=[], bcc=[]):
     if isinstance(to, str):
         to = [to]
 
@@ -31,31 +36,10 @@ def send_email(self, subject, to, html, cc=[], bcc=[]):
         cc=cc,
         bcc=bcc,
     )
-    try:
-        mail.send(email)
-    except:
-        self.retry(countdown=2**self.request.retries)
+    mail.send(email)
 
 
-@celery.task(bind=True, max_retries=12)
-def send_embeded_subject_email(self, to, html, cc=[], bcc=[]):
+@celery.task
+def send_embeded_subject_email(to, html, cc=[], bcc=[]):
     subject = get_subject_from_html(html).strip()
-
-    if isinstance(to, str):
-        to = [to]
-
-    if isinstance(cc, str):
-        cc = [cc]
-
-    email = Message(
-        subject=subject,
-        recipients=to,
-        html=html,
-        cc=cc,
-        bcc=bcc,
-    )
-    try:
-        mail.send(email)
-    except:
-        self.retry(countdown=2**self.request.retries)
-
+    return send_email.delay(subject, to, html, cc, bcc)
