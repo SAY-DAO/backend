@@ -394,7 +394,6 @@ class AddUser(Resource):
             last_login = datetime.utcnow()
 
             avatar_url = "wrong url"
-            flag_url = os.path.join(FLAGS, country_code + ".png")
 
             new_user = User(
                 firstName=first_name,
@@ -410,7 +409,6 @@ class AddUser(Resource):
                 birthPlace=birth_place,
                 lastLogin=last_login,
                 password=password,
-                flagUrl=flag_url,
             )
 
             session.add(new_user)

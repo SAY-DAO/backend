@@ -2,7 +2,12 @@ from say.api import mailerlite, app
 from . import celery
 
 
-@celery.task()
+@celery.task(
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=600,
+    retry_kwargs={'max_retries': 20}
+)
 def subscribe_email(group_id, data):
     with app.app_context():
         return mailerlite.groups.add_subscribers(
@@ -10,4 +15,3 @@ def subscribe_email(group_id, data):
             [data],
             as_json=True,
         )
-

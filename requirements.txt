@@ -35,3 +35,5 @@ future
 flower
 humps
 sentry-sdk[flask]==0.16.2
+python-i18n==0.3.9
+python-dotenv==0.14.0
