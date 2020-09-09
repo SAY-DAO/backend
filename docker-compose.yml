@@ -5,6 +5,10 @@ services:
     image: redis:6
     volumes:
       - redis_volume:/data
+    deploy:
+      placement:
+        constraints:
+          - node.labels.${ENVIRONMENT} == true
   db:
     image: postgres:12
     environment:
@@ -15,6 +19,10 @@ services:
       - postgres-password
     volumes:
       - postgres_volume:/var/lib/postgresql/data
+    deploy:
+      placement:
+        constraints:
+          - node.labels.${ENVIRONMENT} == true
   rabbitmq:
     image: rabbitmq:3-management-alpine
     volumes:
@@ -26,6 +34,10 @@ services:
       RABBITMQ_DEFAULT_VHOST: say
     secrets:
       - rabbitmq-password
+    deploy:
+      placement:
+        constraints:
+          - node.labels.${ENVIRONMENT} == true
   backend: &backend
     image: $CONTAINER_IMAGE
     configs:
@@ -88,7 +100,7 @@ services:
     volumes:
       - media_volume:/static
     configs:
-      - source: nginx-config
+      - source: nginx-media-config
         target: /etc/nginx/conf.d/default.conf
     deploy:
       placement:
@@ -120,7 +132,7 @@ services:
     volumes:
       - static_volume:/static
     configs:
-      - source: nginx-config
+      - source: nginx-static-config
         target: /etc/nginx/conf.d/default.conf
     deploy:
       placement:
@@ -156,8 +168,11 @@ configs:
   backned-config:
     name: ${STACK_NAME}.env
     external: true
-  nginx-config:
-    name: ${STACK_NAME}-nginx.conf
+  nginx-media-config:
+    name: ${STACK_NAME}-nginx-media.conf
+    external: true
+  nginx-static-config:
+    name: ${STACK_NAME}-nginx-static.conf
     external: true
 secrets:
   postgres-password:
