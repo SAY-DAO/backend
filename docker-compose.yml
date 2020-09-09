@@ -72,12 +72,67 @@ services:
   worker:
     <<: *backend
     command: celery -A say.api.app.celery worker --concurrency 2 --loglevel=WARNING -B -S redbeat.RedBeatScheduler
+  media:
+    image: flashspys/nginx-static
+    container_name: media.server
+    expose:
+      - 80
+    volumes:
+      - backend_volume/files:/static
+    deploy:
+      placement:
+        constraints:
+          - node.labels.${ENVIRONMENT} == true
+      mode: replicated
+      replicas: 1
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.constraint-label=traefik-public
+        - traefik.http.routers.${STACK_NAME}-media-http.entrypoints=http
+        - traefik.http.routers.${STACK_NAME}-media-http.rule=Host(`${DOMAIN?Variable not set}`) && PathPrefix(`/files`)
+        - traefik.http.routers.${STACK_NAME}-media-http.service=${STACK_NAME}-media
+        - traefik.http.routers.${STACK_NAME}-media-http.middlewares=https-redirect
+        - traefik.http.routers.${STACK_NAME}-media.entrypoints=https
+        - traefik.http.routers.${STACK_NAME}-media.rule=Host(`${DOMAIN?Variable not set}`) && PathPrefix(`/files`)
+        - traefik.http.routers.${STACK_NAME}-media.service=${STACK_NAME}-media
+        - traefik.http.routers.${STACK_NAME}-media.tls=true
+        - traefik.http.routers.${STACK_NAME}-media.tls.certresolver=le
+        - traefik.http.services.${STACK_NAME}-media.loadbalancer.server.port=80
+  static:
+    image: flashspys/nginx-static
+    container_name: static.server
+    expose:
+      - 80
+    volumes:
+      - static_volume:/static
+    deploy:
+      placement:
+        constraints:
+          - node.labels.${ENVIRONMENT} == true
+      mode: replicated
+      replicas: 1
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.constraint-label=traefik-public
+        - traefik.http.routers.${STACK_NAME}-static-http.entrypoints=http
+        - traefik.http.routers.${STACK_NAME}-static-http.rule=Host(`${DOMAIN?Variable not set}`) && PathPrefix(`/public`)
+        - traefik.http.routers.${STACK_NAME}-static-http.service=${STACK_NAME}-static
+        - traefik.http.routers.${STACK_NAME}-static-http.middlewares=https-redirect
+        - traefik.http.routers.${STACK_NAME}-static.entrypoints=https
+        - traefik.http.routers.${STACK_NAME}-static.rule=Host(`${DOMAIN?Variable ot set}`) && PathPrefix(`/public`)
+        - traefik.http.routers.${STACK_NAME}-static.service=${STACK_NAME}-static
+        - traefik.http.routers.${STACK_NAME}-static.tls=true
+        - traefik.http.routers.${STACK_NAME}-static.tls.certresolver=le
+        - traefik.http.services.${STACK_NAME}-static.loadbalancer.server.port=80
 volumes:
   redis_volume:
   postgres_volume:
   rabbitmq_data_volume:
   rabbitmq_log_volume:
   backend_volume:
+  static_volume:
 networks:
   traefik-public:
     external: true
