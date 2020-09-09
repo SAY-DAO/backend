@@ -60,11 +60,11 @@ services:
         - traefik.docker.network=traefik-public
         - traefik.constraint-label=traefik-public
         - traefik.http.routers.${STACK_NAME}-backend-http.entrypoints=http
-        - traefik.http.routers.${STACK_NAME}-backend-http.rule=Host(`${DOMAIN?Variable not set}`) && Path(`/api`))
+        - traefik.http.routers.${STACK_NAME}-backend-http.rule=Host(`${DOMAIN?Variable not set}`) && Path(`/api`)
         - traefik.http.routers.${STACK_NAME}-backend-http.service=${STACK_NAME}-backend
         - traefik.http.routers.${STACK_NAME}-backend-http.middlewares=https-redirect
         - traefik.http.routers.${STACK_NAME}-backend.entrypoints=https
-        - traefik.http.routers.${STACK_NAME}-backend.rule=Host(`${DOMAIN?Variable not set}`) && Path(`/api`))
+        - traefik.http.routers.${STACK_NAME}-backend.rule=Host(`${DOMAIN?Variable not set}`) && Path(`/api`)
         - traefik.http.routers.${STACK_NAME}-backend.service=${STACK_NAME}-backend
         - traefik.http.routers.${STACK_NAME}-backend.tls=true
         - traefik.http.routers.${STACK_NAME}-backend.tls.certresolver=le
