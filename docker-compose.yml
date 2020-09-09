@@ -119,10 +119,8 @@ services:
   flower:
     <<: *worker
     image: mher/flower
-    user: root
-    command: celery -A say.api.celery flower
+    command: celery -A say.api.celery flower --conf=say/flowerconfig.py
     environment:
-      - FLOWER_BASIC_AUTH=$FLOWER_USERNAME:$FLOWER_PASSWORD
       - FLOWER_PERSISTENT=true
       - FLOWER_DB=/flower/db
     depends_on:
