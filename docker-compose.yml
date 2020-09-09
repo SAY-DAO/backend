@@ -10,7 +10,7 @@ services:
     environment:
       POSTGRES_DB: say
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD_FILE: /run/secrets/${STACK_NAME}-postgres-password
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
     secrets:
       - postgres-password
     volumes:
@@ -21,8 +21,8 @@ services:
       - rabbitmq_data_volume:/var/lib/rabbitmq/
       - rabbitmq_log_volume:/var/log/rabbitmq/
     environment:
-      RABBITMQ_DEFAULT_USER:  say
-      RABBITMQ_DEFAULT_PASS:  /run/secrets/${STACK_NAME}-rabbitmq-password
+      RABBITMQ_DEFAULT_USER: say
+      RABBITMQ_DEFAULT_PASS: /run/secrets/rabbitmq-password
       RABBITMQ_DEFAULT_VHOST: say
     secrets:
       - rabbitmq-password
