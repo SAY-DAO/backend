@@ -73,7 +73,7 @@ services:
       - rabbitmq-password
       - flower-password
     environment:
-      ENVIRONMENT: ${ENVIRONMENT}
+      SAY_ENVIRONMENT: ${ENVIRONMENT}
     networks:
       - traefik-public
       - default
