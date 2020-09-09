@@ -174,7 +174,6 @@ services:
         - traefik.http.routers.${STACK_NAME}-media.service=${STACK_NAME}-media
         - traefik.http.middlewares.${STACK_NAME}-media-strip.stripprefix.prefixes=/files
         - traefik.http.routers.${STACK_NAME}-media.middlewares=${STACK_NAME}-media-strip
-        - traefik.http.middlewares.${STACK_NAME}-media.addprefix.prefix=/static
         - traefik.http.routers.${STACK_NAME}-media.tls=true
         - traefik.http.routers.${STACK_NAME}-media.tls.certresolver=le
         - traefik.http.services.${STACK_NAME}-media.loadbalancer.server.port=80
@@ -204,7 +203,6 @@ services:
         - traefik.http.routers.${STACK_NAME}-static.rule=Host(`${DOMAIN?Variable ot set}`) && PathPrefix(`/public`)
         - traefik.http.middlewares.${STACK_NAME}-static-strip.stripprefix.prefixes=/public
         - traefik.http.routers.${STACK_NAME}-static.middlewares=${STACK_NAME}-static-strip
-        - traefik.http.middlewares.${STACK_NAME}-static.addprefix.prefix=/static
         - traefik.http.routers.${STACK_NAME}-static.service=${STACK_NAME}-static
         - traefik.http.routers.${STACK_NAME}-static.tls=true
         - traefik.http.routers.${STACK_NAME}-static.tls.certresolver=le
