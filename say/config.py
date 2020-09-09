@@ -3,6 +3,8 @@ import os
 
 from dotenv import load_dotenv, find_dotenv
 
+from say.helpers import get_secret
+
 
 class Config(object):
     ENVIRONMENT = 'local'
@@ -61,6 +63,9 @@ class Config(object):
                 continue
             key = k.replace('SAY_', '')
             setattr(self, key, v)
+
+        self.POSTGRES_PASSWORD = get_secret('postgres-password')
+        self.RABBITMQ_DEFAULT_PASS = get_secret('rabbitmq-password')
 
     @property
     def postgres_url(self):
