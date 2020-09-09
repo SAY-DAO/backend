@@ -75,6 +75,8 @@ services:
   media:
     image: flashspys/nginx-static
     container_name: media.server
+    networks:
+      - traefik-public
     expose:
       - 80
     volumes:
@@ -82,7 +84,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.${ENVIRONMENT} == true  
+          - node.labels.${ENVIRONMENT} == true
       mode: replicated
       replicas: 1
       labels:
@@ -102,6 +104,8 @@ services:
   static:
     image: flashspys/nginx-static
     container_name: static.server
+    networks:
+      - traefik-public
     expose:
       - 80
     volumes:
