@@ -24,18 +24,14 @@ fileConfig(config.config_file_name)
 # target_metadata = mymodel.Base.metadata
 from say.models import base
 target_metadata = base.metadata
+
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-with open("./config.json") as config_file:
-    conf = json.load(config_file)
-    config.set_main_option('sqlalchemy.url', conf.get('dbUrl', ''))
-
-db_url = os.environ.get('DB')
-if db_url:
-    config.set_main_option('sqlalchemy.url', db_url)
+from say.config import configs
+config.set_main_option('sqlalchemy.url', configs.postgres_url)
 
 
 def run_migrations_offline():

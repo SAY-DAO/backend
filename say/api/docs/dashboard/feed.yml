@@ -62,10 +62,6 @@ responses:
           type: string
           description: the user's avatar image path
 
-        flagUrl:
-          type: string
-          description: the user's country's flag
-
         gender:
           type: boolean
           description: the user's gender, true for male and false for female

@@ -156,7 +156,6 @@ class RegisterUser(Resource):
             birthPlace=None,
             lastLogin=last_login,
             password=password,
-            flagUrl="",
             locale=locale,
             phone_number=phone_number,
             country=country,
