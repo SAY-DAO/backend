@@ -15,6 +15,7 @@ before_script:
 
 build-dev:
   stage: build
+  retry: 2
   script:
     - ENVIRONMENT=dev sh ./scripts/build-push.sh
   only:
@@ -22,6 +23,7 @@ build-dev:
 
 build-stag:
   stage: build
+  retry: 2
   script:
     - ENVIRONMENT=stag sh ./scripts/build-push.sh
   only:
@@ -29,6 +31,7 @@ build-stag:
 
 build-prod:
   stage: build
+  retry: 2
   script:
     - ENVIRONMENT=prod sh ./scripts/build-push.sh
   only:
@@ -36,6 +39,7 @@ build-prod:
 
 deploy-dev:
   stage: deploy
+  retry: 2
   script:
     - >
       ENVIRONMENT=dev
@@ -49,6 +53,7 @@ deploy-dev:
 
 deploy-stag:
   stage: deploy
+  retry: 2
   script:
     - >
       ENVIRONMENT=stag 
@@ -62,6 +67,7 @@ deploy-stag:
 
 deploy-prod:
   stage: deploy
+  retry: 2
   script:
     - >
       ENVIRONMENT=prod
