@@ -44,7 +44,7 @@ services:
     expose:
       - 5000
     volumes:
-      - media_volume:/app/files
+      - media_volume/:/app/files
     depends_on:
       - redis
       - db
