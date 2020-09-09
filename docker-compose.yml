@@ -69,10 +69,9 @@ services:
       - source: backned-config
         target: .env
     secrets:
-      - source: postgres-password
-        target: postgres-password
-      - source: rabbitmq-password
-        target: rabbitmq-password
+      - postgres-password
+      - rabbitmq-password
+      - flower-password
     environment:
       ENVIRONMENT: ${ENVIRONMENT}
     networks:
@@ -106,7 +105,7 @@ services:
         - traefik.http.routers.${STACK_NAME}-backend.tls=true
         - traefik.http.routers.${STACK_NAME}-backend.tls.certresolver=le
         - traefik.http.services.${STACK_NAME}-backend.loadbalancer.server.port=5000
-  worker:
+  worker: &worker
     <<: *backend
     command: celery -A say.api.celery worker --autoscale=16,2 --loglevel=WARNING -B -S redbeat.RedBeatScheduler
     deploy:
@@ -117,6 +116,18 @@ services:
       replicas: 1
       labels:
         - traefik.enable=false
+  flower:
+    <<: *worker
+    image: mher/flower
+    user: root
+    environment:
+      - FLOWER_BASIC_AUTH=$FLOWER_USERNAME:$FLOWER_PASSWORD
+      - FLOWER_PERSISTENT=true
+      - FLOWER_DB=/flower/db
+    depends_on:
+      - worker
+    volumes:
+      - flower_volume:/flower
   media:
     image: flashspys/nginx-static
     networks:
@@ -185,6 +196,7 @@ volumes:
   rabbitmq_log_volume:
   media_volume:
   static_volume:
+  flower_volume:
 networks:
   traefik-public:
     external: true
@@ -204,4 +216,7 @@ secrets:
     external: true
   rabbitmq-password:
     name: ${STACK_NAME}-rabbitmq-password
+    external: true
+  flower-password:
+    name: ${STACK_NAME}-flower-password
     external: true
