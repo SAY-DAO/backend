@@ -52,8 +52,8 @@ class Config(object):
     RABBITMQ_VHOST = 'say'
     RABBITMQ_HOST = 'localhost'
     RABBITMQ_PORT = '5672'
-    SENTRY_DSN = 'set-me'
-    SENTRY_SAMPLE_RATE = 0.5
+    SENTRY_DSN = 'https://e7665a883afe47d082b3fa4e0b956c07@sentry.say.company/4'
+    SENTRY_SAMPLE_RATE = 0.2
     BROKER = 'redis'
 
     def __init__(self):
