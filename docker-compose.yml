@@ -29,7 +29,7 @@ services:
   backend: &backend
     image: $CONTAINER_IMAGE
     configs:
-      - source: ${STACK_NAME}.env
+      - source: backend-config
         target: .env
     secrets:
       - source: postgres-password
@@ -62,7 +62,7 @@ networks:
   traefik-public:
     external: true
 configs:
-  backned-configs:
+  backned-config:
     name: ${STACK_NAME}.env
     external: true
 secrets:
