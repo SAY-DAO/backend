@@ -23,6 +23,31 @@ services:
       placement:
         constraints:
           - node.labels.${ENVIRONMENT} == true
+  pgbackups:
+    image: prodrigestivill/postgres-backup-local:12-alpine
+    secrets:
+      - postgres-password
+    volumes:
+      - postgres_backup_volume:/backups
+    links:
+      - db
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=say
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres-password
+      - POSTGRES_EXTRA_OPTS=-Z9 --schema=public --blobs
+      - SCHEDULE=@daily
+      - BACKUP_KEEP_DAYS=30
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=6
+      - HEALTHCHECK_PORT=80
+    deploy:
+      placement:
+        constraints:
+          - node.labels.${ENVIRONMENT} == true
   rabbitmq:
     image: rabbitmq:3-management-alpine
     volumes:
@@ -155,6 +180,7 @@ services:
 volumes:
   redis_volume:
   postgres_volume:
+  postgres_backup_volume:
   rabbitmq_data_volume:
   rabbitmq_log_volume:
   media_volume:
