@@ -49,6 +49,26 @@ services:
       - redis
       - db
       - rabbitmq
+    deploy:
+      placement:
+        constraints:
+          - node.labels.${ENVIRONMENT} == true
+      mode: replicated
+      replicas: 1
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.constraint-label=traefik-public
+        - traefik.http.routers.${STACK_NAME}-backend-http.entrypoints=http
+        - traefik.http.routers.${STACK_NAME}-backend-http.rule=Host(`${DOMAIN?Variable not set}`)
+        - traefik.http.routers.${STACK_NAME}-backend-http.service=${STACK_NAME}-backend
+        - traefik.http.routers.${STACK_NAME}-backend-http.middlewares=https-redirect
+        - traefik.http.routers.${STACK_NAME}-backend.entrypoints=https
+        - traefik.http.routers.${STACK_NAME}-backend.rule=Host(`${DOMAIN?Variable not set}`)
+        - traefik.http.routers.${STACK_NAME}-backend.service=${STACK_NAME}-backend
+        - traefik.http.routers.${STACK_NAME}-backend.tls=true
+        - traefik.http.routers.${STACK_NAME}-backend.tls.certresolver=le
+        - traefik.http.services.${STACK_NAME}-backend.loadbalancer.server.port=5000
   worker:
     <<: *backend
     command: celery -A say.api.app.celery worker --concurrency 2 --loglevel=WARNING -B -S redbeat.RedBeatScheduler
