@@ -120,6 +120,7 @@ services:
     <<: *worker
     image: mher/flower
     user: root
+    command: celery -A say.api.celery flower
     environment:
       - FLOWER_BASIC_AUTH=$FLOWER_USERNAME:$FLOWER_PASSWORD
       - FLOWER_PERSISTENT=true
