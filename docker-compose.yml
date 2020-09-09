@@ -94,7 +94,6 @@ services:
         - traefik.enable=false
   media:
     image: flashspys/nginx-static
-    container_name: media.server
     networks:
       - traefik-public
     volumes:
@@ -117,13 +116,12 @@ services:
         - traefik.http.routers.${STACK_NAME}-media.rule=Host(`${DOMAIN?Variable not set}`) && PathPrefix(`/files`)
         - traefik.http.routers.${STACK_NAME}-media.service=${STACK_NAME}-media
         - traefik.http.middlewares.${STACK_NAME}-media.stripprefix.prefixes=/files
-        - traefik.http.middlewares.${STACK_NAME}-media.addprefix.prefixes=/static
+        - traefik.http.middlewares.${STACK_NAME}-media.addprefix.prefix=/static
         - traefik.http.routers.${STACK_NAME}-media.tls=true
         - traefik.http.routers.${STACK_NAME}-media.tls.certresolver=le
         - traefik.http.services.${STACK_NAME}-media.loadbalancer.server.port=80
   static:
     image: flashspys/nginx-static
-    container_name: static.server
     networks:
       - traefik-public
     expose:
@@ -147,7 +145,7 @@ services:
         - traefik.http.routers.${STACK_NAME}-static.entrypoints=https
         - traefik.http.routers.${STACK_NAME}-static.rule=Host(`${DOMAIN?Variable ot set}`) && PathPrefix(`/public`)
         - traefik.http.middlewares.${STACK_NAME}-static.stripprefix.prefixes=/public
-        - traefik.http.middlewares.${STACK_NAME}-static.addprefix.prefixes=/static
+        - traefik.http.middlewares.${STACK_NAME}-static.addprefix.prefix=/static
         - traefik.http.routers.${STACK_NAME}-static.service=${STACK_NAME}-static
         - traefik.http.routers.${STACK_NAME}-static.tls=true
         - traefik.http.routers.${STACK_NAME}-static.tls.certresolver=le
