@@ -71,7 +71,7 @@ services:
         - traefik.http.services.${STACK_NAME}-backend.loadbalancer.server.port=5000
   worker:
     <<: *backend
-    command: celery -A say.api.app.celery worker --concurrency 2 --loglevel=WARNING -B -S redbeat.RedBeatScheduler
+    command: celery -A say.api.celery worker --concurrency 2 --loglevel=WARNING -B -S redbeat.RedBeatScheduler
   media:
     image: flashspys/nginx-static
     container_name: media.server
@@ -82,7 +82,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.labels.${ENVIRONMENT} == true
+          - node.labels.${ENVIRONMENT} == true  
       mode: replicated
       replicas: 1
       labels:
