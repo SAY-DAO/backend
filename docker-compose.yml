@@ -128,6 +128,26 @@ services:
       - worker
     volumes:
       - flower_volume:/flower
+    deploy:
+      placement:
+        constraints:
+          - node.labels.${ENVIRONMENT} == true
+      mode: replicated
+      replicas: 1
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.constraint-label=traefik-public
+        - traefik.http.routers.${STACK_NAME}-flower-http.entrypoints=http
+        - traefik.http.routers.${STACK_NAME}-flower-http.rule=Host(`flower.${DOMAIN?Variable not set}`)
+        - traefik.http.routers.${STACK_NAME}-flower-http.service=${STACK_NAME}-flower
+        - traefik.http.routers.${STACK_NAME}-flower-http.middlewares=https-redirect
+        - traefik.http.routers.${STACK_NAME}-flower.entrypoints=https
+        - traefik.http.routers.${STACK_NAME}-flower.rule=Host(`flower.${DOMAIN?Variable not set}`)
+        - traefik.http.routers.${STACK_NAME}-flower.service=${STACK_NAME}-flower
+        - traefik.http.routers.${STACK_NAME}-flower.tls=true
+        - traefik.http.routers.${STACK_NAME}-flower.tls.certresolver=le
+        - traefik.http.services.${STACK_NAME}-flower.loadbalancer.server.port=5555
   media:
     image: flashspys/nginx-static
     networks:
