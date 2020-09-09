@@ -21,9 +21,9 @@ services:
       - rabbitmq_data_volume:/var/lib/rabbitmq/
       - rabbitmq_log_volume:/var/log/rabbitmq/
     environment:
-      RABBITMQ_DEFAULT_USER:  $SAY_RABBITMQ_DEFAULT_USER
+      RABBITMQ_DEFAULT_USER:  say
       RABBITMQ_DEFAULT_PASS:  /run/secrets/${STACK_NAME}-rabbitmq-password
-      RABBITMQ_DEFAULT_VHOST: $SAY_RABBITMQ_VHOST
+      RABBITMQ_DEFAULT_VHOST: say
     secrets:
       - rabbitmq-password
   backend: &backend
@@ -32,9 +32,9 @@ services:
       - source: ${STACK_NAME}.env
         target: .env
     secrets:
-      - source: ${STACK_NAME}-postgres-password
+      - source: postgres-password
         target: postgres-password
-      - source: ${STACK_NAME}-rabbitmq-password
+      - source: rabbitmq-password
         target: rabbitmq-password
     environment:
       ENVIRONMENT: ${ENVIRONMENT}
