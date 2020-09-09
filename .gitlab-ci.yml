@@ -1,31 +1,74 @@
-image: docker:19.03.12
+image: tiangolo/docker-with-compose
 services:
   - docker:19.03.12-dind
 
 stages:
   - build
-  - release
   - deploy
 
 variables:
   CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  LATEST_IMAGE: $CI_REGISTRY_IMAGE:latest
   BASE_IMAGE: $CI_REGISTRY_IMAGE:base
 
 before_script:
-  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  - docker login -u $USER -p $TOKEN $CI_REGISTRY
 
-build:
+build-dev:
   stage: build
   script:
-    - sh ./scripts/build-push.sh
+    - ENVIRONMENT=dev sh ./scripts/build-push.sh
   only:
-    - master
     - develop
 
-deploy:
-  stage: deploy
+build-stag:
+  stage: build
   script:
-    - ./deploy.sh
+    - ENVIRONMENT=stag sh ./scripts/build-push.sh
   only:
     - master
+
+build-prod:
+  stage: build
+  script:
+    - ENVIRONMENT=prod sh ./scripts/build-push.sh
+  only:
+    - release
+
+deploy-dev:
+  stage: deploy
+  script:
+    - >
+      ENVIRONMENT=dev
+      DOMAIN=d.sayapp.company
+      STACK_NAME=say-dev-backend
+      sh ./scripts/deploy.sh
+  only:
+    - develop
+  tags:
+    - deploy
+
+deploy-stag:
+  stage: deploy
+  script:
+    - >
+      ENVIRONMENT=stag 
+      DOMAIN=s.sayapp.company
+      STACK_NAME=say-stag-backend
+      sh ./scripts/deploy.sh
+  only:
+    - master
+  tags:
+    - deploy
+
+deploy-prod:
+  stage: deploy
+  script:
+    - >
+      ENVIRONMENT=prod
+      DOMAIN=sayapp.company
+      STACK_NAME=say-prod-backend
+      sh ./scripts/deploy.sh
+  only:
+    - release
+  tags:
+    - deploy
