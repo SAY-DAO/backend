@@ -36,3 +36,4 @@ flower
 humps
 sentry-sdk[flask]==0.16.2
 i18n
+dotenv
