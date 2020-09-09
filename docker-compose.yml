@@ -44,7 +44,7 @@ services:
     expose:
       - 5000
     volumes:
-      - backend_volume:/app/data
+      - media_volume:/app/files
     depends_on:
       - redis
       - db
@@ -78,7 +78,7 @@ services:
     expose:
       - 80
     volumes:
-      - backend_volume/files:/static
+      - media_volume:/static
     deploy:
       placement:
         constraints:
@@ -131,7 +131,7 @@ volumes:
   postgres_volume:
   rabbitmq_data_volume:
   rabbitmq_log_volume:
-  backend_volume:
+  media_volume:
   static_volume:
 networks:
   traefik-public:
