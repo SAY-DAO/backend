@@ -31,7 +31,7 @@ services:
     configs:
       - source: ${STACK_NAME}.env
         target: .env
-    secrects:
+    secrets:
       - source: ${STACK_NAME}-postgres-password
         target: postgres-password
       - source: ${STACK_NAME}-rabbitmq-password
