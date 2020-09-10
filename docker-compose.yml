@@ -118,8 +118,7 @@ services:
         - traefik.enable=false
   flower:
     <<: *worker
-    image: mher/flower
-    command: celery -A say.api.celery flower --conf=say/flowerconfig.py
+    command: celery -A say.api.celery flower
     environment:
       - FLOWER_PERSISTENT=true
       - FLOWER_DB=/flower/db
@@ -220,12 +219,6 @@ networks:
 configs:
   backned-config:
     name: ${STACK_NAME}.env
-    external: true
-  nginx-media-config:
-    name: ${STACK_NAME}-nginx-media.conf
-    external: true
-  nginx-static-config:
-    name: ${STACK_NAME}-nginx-static.conf
     external: true
 secrets:
   postgres-password:
