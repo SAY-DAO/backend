@@ -72,7 +72,7 @@ deploy-prod:
     - >
       ENVIRONMENT=prod
       DOMAIN=sayapp.company
-      STACK_NAME=say-prod-backend
+      STACK_NAME=say-backend
       sh ./scripts/deploy.sh
   only:
     - release
