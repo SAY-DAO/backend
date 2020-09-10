@@ -118,7 +118,6 @@ services:
         - traefik.enable=false
   flower:
     <<: *worker
-    image: mher/flower
     command: celery -A say.api.celery flower --conf=say/flowerconfig.py
     environment:
       - FLOWER_PERSISTENT=true
