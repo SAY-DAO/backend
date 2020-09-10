@@ -221,12 +221,6 @@ configs:
   backned-config:
     name: ${STACK_NAME}.env
     external: true
-  nginx-media-config:
-    name: ${STACK_NAME}-nginx-media.conf
-    external: true
-  nginx-static-config:
-    name: ${STACK_NAME}-nginx-static.conf
-    external: true
 secrets:
   postgres-password:
     name: ${STACK_NAME}-postgres-password
