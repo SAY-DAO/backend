@@ -27,7 +27,7 @@ class Config(object):
     REVOKED_TOKEN_STORE_HOST = 'localhost'
     REVOKED_TOKEN_STORE_PORT = '6379'
     REVOKED_TOKEN_STORE_DB = 1
-    SANDBOX = True
+    SANDBOX = False
     JSON_SORT_KEYS = False
     SET_PASSWORD_URL = 'setpassword'
     RESET_PASSWORD_EXPIRE_TIME = 2 * 3600
