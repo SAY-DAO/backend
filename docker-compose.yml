@@ -109,7 +109,8 @@ services:
     <<: *backend
     command: celery -A say.api.celery worker --autoscale=16,2 --loglevel=WARNING -B -S redbeat.RedBeatScheduler
     healthcheck:
-      test: celery -A say.api.celery inspect ping
+      test: echo
+      #test: celery -A say.api.celery inspect ping
     deploy:
       placement:
         constraints:
