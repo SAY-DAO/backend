@@ -75,8 +75,10 @@ class Config(object):
             if v.is_integer():
                 v = int(v)
         except ValueError:
-            if v == 'false' or v == 'true':
-                v = bool(v)
+            if v == 'false':
+                v = False
+            elif v == 'true':
+                v = True
             elif v == 'null' or v == 'None':
                 v = None
             else:
