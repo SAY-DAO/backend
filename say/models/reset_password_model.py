@@ -17,7 +17,7 @@ Reset Password Model
 
 def expire_at():
     return datetime.utcnow() \
-        + timedelta(seconds=app.config['RESET_PASSSWORD_EXPIRE_TIME'])
+        + timedelta(seconds=app.config['RESET_PASSWORD_EXPIRE_TIME'])
 
 
 class ResetPassword(base):
