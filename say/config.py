@@ -62,11 +62,21 @@ class Config(object):
             if not k.startswith('SAY_'):
                 continue
             key = k.replace('SAY_', '')
-            print(k, key, v)
+            v = self._cast(v)
+
             setattr(self, key, v)
 
         self.POSTGRES_PASSWORD = get_secret('postgres-password')
         self.RABBITMQ_DEFAULT_PASS = get_secret('rabbitmq-password')
+
+    def _cast(self, v):
+        try:
+            v = float(v)
+            if v.is_integer():
+                v = int(v)
+        except ValueError:
+            pass
+        return v
 
     @property
     def postgres_url(self):
