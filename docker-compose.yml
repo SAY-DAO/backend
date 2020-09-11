@@ -31,10 +31,6 @@ services:
       - postgres-password
     volumes:
       - postgres_backup_volume:/backups
-    links:
-      - db
-    depends_on:
-      - db
     environment:
       - POSTGRES_HOST=db
       - POSTGRES_DB=say
@@ -83,10 +79,6 @@ services:
       - 5000
     volumes:
       - media_volume/:/app/files
-    depends_on:
-      - redis
-      - db
-      - rabbitmq
     deploy:
       placement:
         constraints:
@@ -127,8 +119,6 @@ services:
     environment:
       - FLOWER_PERSISTENT=true
       - FLOWER_DB=/flower/db
-    depends_on:
-      - worker
     volumes:
       - flower_volume:/flower
     deploy:
