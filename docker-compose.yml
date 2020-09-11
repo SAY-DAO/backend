@@ -6,6 +6,10 @@ services:
     volumes:
       - redis_volume:/data
     deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: start-first
       placement:
         constraints:
           - node.labels.${ENVIRONMENT} == true
@@ -19,9 +23,11 @@ services:
       - postgres-password
     volumes:
       - postgres_volume:/var/lib/postgresql/data
-    ports:
-      - 35432:5432
     deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: start-first
       placement:
         constraints:
           - node.labels.${ENVIRONMENT} == true
@@ -43,6 +49,10 @@ services:
       - BACKUP_KEEP_MONTHS=6
       - HEALTHCHECK_PORT=80
     deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: start-first
       placement:
         constraints:
           - node.labels.${ENVIRONMENT} == true
@@ -58,6 +68,10 @@ services:
     secrets:
       - rabbitmq-password
     deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: start-first
       placement:
         constraints:
           - node.labels.${ENVIRONMENT} == true
@@ -85,6 +99,9 @@ services:
           - node.labels.${ENVIRONMENT} == true
       mode: replicated
       replicas: 1
+      update_config:
+        parallelism: 1
+        order: start-first
       labels:
         - traefik.enable=true
         - traefik.docker.network=traefik-public
@@ -153,6 +170,9 @@ services:
           - node.labels.${ENVIRONMENT} == true
       mode: replicated
       replicas: 1
+      update_config:
+        parallelism: 1
+        order: start-first
       labels:
         - traefik.enable=true
         - traefik.docker.network=traefik-public
@@ -183,6 +203,9 @@ services:
           - node.labels.${ENVIRONMENT} == true
       mode: replicated
       replicas: 1
+      update_config:
+        parallelism: 1
+        order: start-first
       labels:
         - traefik.enable=true
         - traefik.docker.network=traefik-public
