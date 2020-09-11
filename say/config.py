@@ -75,7 +75,13 @@ class Config(object):
             if v.is_integer():
                 v = int(v)
         except ValueError:
-            pass
+            if v == 'false' or v == 'true':
+                v = bool(v)
+            elif v == 'null' or v == 'None':
+                v = None
+            else:
+                pass
+
         return v
 
     @property
