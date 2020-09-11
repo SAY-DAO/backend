@@ -77,4 +77,4 @@ deploy-prod:
   only:
     - release
   tags:
-    - deploy
+    - deploy-prod
