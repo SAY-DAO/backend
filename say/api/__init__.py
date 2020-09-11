@@ -168,7 +168,7 @@ sms_provider = MeliPayamak(
 )
 
 mailerlite = MailerLiteApi(app.config.get('MAILERLITE_API_KEY', 'not-entered'))
-
+redis_client = redis.Redis(configs.REDIS_HOST, configs.REDIS_PORT)
 api = Api(app)
 
 

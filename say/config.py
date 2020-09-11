@@ -66,8 +66,12 @@ class Config(object):
 
             setattr(self, key, v)
 
-        self.POSTGRES_PASSWORD = get_secret('postgres-password')
-        self.RABBITMQ_DEFAULT_PASS = get_secret('rabbitmq-password')
+        self.POSTGRES_PASSWORD = get_secret(
+            'postgres-password', self.POSTGRES_PASSWORD,
+        )
+        self.RABBITMQ_DEFAULT_PASS = get_secret(
+            'rabbitmq-password', self.RABBITMQ_DEFAULT_PASS,
+        )
 
     def _cast(self, v):
         try:

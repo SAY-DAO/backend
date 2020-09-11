@@ -14,6 +14,8 @@ RUN pip install -r requirements.txt
 
 FROM python:3.8-slim AS prod
 
+RUN apt install --no-cache httpie
+
 ENV VIRTUAL_ENV=/opt/venv
 COPY --from=base $VIRTUAL_ENV $VIRTUAL_ENV
 
@@ -24,13 +26,9 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-ARG CI_COMMIT_REF_SLUG
-LABEL traefik.backend=${CI_COMMIT_REF_SLUG}_api
-LABEL traefik.frontend.rule=Host:api.${CI_COMMIT_REF_SLUG}.s.sayapp.company
-LABEL traefik.docker.network=staging 
-LABEL traefik.enable=true 
-LABEL traefik.port=5000 
-LABEL traefik.default.protocol=http
+# check every 5s to ensure this service returns HTTP 200
+HEALTHCHECK --interval=5s --timeout=3s --start-period=30s --retries=3 \ 
+    CMD http http://localhost:5000/api/healthz || exit 1
 
 CMD ["./scripts/run.sh"]
 
