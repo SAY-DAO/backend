@@ -121,8 +121,6 @@ services:
   flower:
     <<: *worker
     command: celery -A say.api.celery flower
-    healthcheck:
-      test: curl -fs http://localhost:5555 || exit 1
     environment:
       - FLOWER_PERSISTENT=true
       - FLOWER_DB=/flower/db

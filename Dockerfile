@@ -28,7 +28,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # check every 5s to ensure this service returns HTTP 200
 HEALTHCHECK --interval=5s --timeout=3s --start-period=30s --retries=3 \ 
-    CMD curl -fs http://localhost:5000/healthz || exit 1
+    CMD curl -fs http://localhost:5000/api/healthz || exit 1
 
 CMD ["./scripts/run.sh"]
 
