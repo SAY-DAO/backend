@@ -14,7 +14,7 @@ RUN pip install -r requirements.txt
 
 FROM python:3.8-slim AS prod
 
-RUN apt update && apt install httpie
+RUN apt update && apt install httpie -y
 
 ENV VIRTUAL_ENV=/opt/venv
 COPY --from=base $VIRTUAL_ENV $VIRTUAL_ENV
