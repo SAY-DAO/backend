@@ -14,7 +14,7 @@ RUN pip install -r requirements.txt
 
 FROM python:3.8-slim AS prod
 
-RUN apt install httpie
+RUN apt install curl
 
 ENV VIRTUAL_ENV=/opt/venv
 COPY --from=base $VIRTUAL_ENV $VIRTUAL_ENV
@@ -28,7 +28,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # check every 5s to ensure this service returns HTTP 200
 HEALTHCHECK --interval=5s --timeout=3s --start-period=30s --retries=3 \ 
-    CMD http http://localhost:5000/api/healthz || exit 1
+    CMD curl -fs http://localhost:$PORT/healthz || exit 1
 
 CMD ["./scripts/run.sh"]
 
