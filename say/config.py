@@ -62,6 +62,7 @@ class Config(object):
             if not k.startswith('SAY_'):
                 continue
             key = k.replace('SAY_', '')
+            print(k, key, v)
             setattr(self, key, v)
 
         self.POSTGRES_PASSWORD = get_secret('postgres-password')
