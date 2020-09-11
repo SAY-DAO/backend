@@ -55,7 +55,7 @@ services:
       - rabbitmq_log_volume:/var/log/rabbitmq/
     environment:
       RABBITMQ_DEFAULT_USER: say
-      RABBITMQ_DEFAULT_PASS: /run/secrets/rabbitmq-password
+      RABBITMQ_DEFAULT_PASS_FILE: /run/secrets/rabbitmq-password
       RABBITMQ_DEFAULT_VHOST: say
     secrets:
       - rabbitmq-password

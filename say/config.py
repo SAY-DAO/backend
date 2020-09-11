@@ -112,14 +112,14 @@ class Config(object):
     def broker_url(self):
         if self.BROKER == 'redis':
             return f'{self.redis_url}/0'
-        elif self.BROKER == 'rabbit':
+        elif self.BROKER == 'rabbitmq':
             return self.rabbitmq_url
 
     @property
     def result_backend(self):
         if self.BROKER == 'redis':
             return f'{self.redis_url}/0'
-        elif self.BROKER == 'rabbit':
+        elif self.BROKER == 'rabbitmq':
             return 'rpc://'
 
     @property
