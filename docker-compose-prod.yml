@@ -1,4 +1,5 @@
 version: '3.6'
+services:
   db:
     ports:
       - 35432:5432

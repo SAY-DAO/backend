@@ -1,5 +1,0 @@
-services:
-  db:
-    image: postgres:12
-version: '3.6'
-
