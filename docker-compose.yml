@@ -19,6 +19,8 @@ services:
       - postgres-password
     volumes:
       - postgres_volume:/var/lib/postgresql/data
+    ports:
+      - 35432:5432
     deploy:
       placement:
         constraints:
