@@ -211,13 +211,45 @@ class UpdateNeedById(Resource):
                 resp = HTTP_NOT_FOUND()
                 return
 
+            child = need.child
+            temp_need_path = os.path.join(
+                app.config["UPLOAD_FOLDER"], str(child.id) + "-child"
+            )
+            temp_need_path = os.path.join(temp_need_path, "needs")
+            temp_need_path = os.path.join(
+                temp_need_path, str(need.id) + "-need"
+            )
+
+            if not os.path.isdir(temp_need_path):
+                os.makedirs(temp_need_path, exist_ok=True)
+
+            if "receipts" in request.files.keys():
+                file2 = request.files["receipts"]
+                if file2.filename == "":
+                    resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY FILE!"}), 500)
+                    session.close()
+                    return resp
+
+                if file2 and allowed_receipt(file2.filename):
+                    filename = secure_filename(uuid4().hex + '-' + file2.filename)
+                    if not os.path.isdir(temp_need_path):
+                        os.makedirs(temp_need_path, exist_ok=True)
+
+                    receipt_path = os.path.join(
+                        temp_need_path, str(need.id) + "-receipt_" + filename
+                    )
+
+                    file2.save(receipt_path)
+                    need.receipts += '/' + receipt_path
+
             # FIXME: receipts are allowed
             if need.isConfirmed and sw_role not in (ADMIN, SUPER_ADMIN):
-                resp = dict(message='Permission denied'), 403
-                return
+                session.commit()
+                need_dict = obj_to_dict(need)
+                resp = make_response(jsonify(need_dict), 200)
+                return resp
 
             temp = obj_to_dict(need)
-            child = need.child
 
             activity = Activity(
                 id_social_worker=get_user_id(),
@@ -255,18 +287,6 @@ class UpdateNeedById(Resource):
                 if file and allowed_image(file.filename):
                     # filename = secure_filename(file.filename)
                     filename = str(need.id) + "." + file.filename.split(".")[-1]
-
-                    temp_need_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(child.id) + "-child"
-                    )
-                    temp_need_path = os.path.join(temp_need_path, "needs")
-                    temp_need_path = os.path.join(
-                        temp_need_path, str(need.id) + "-need"
-                    )
-
-                    if not os.path.isdir(temp_need_path):
-                        os.makedirs(temp_need_path, exist_ok=True)
-
                     for obj in os.listdir(temp_need_path):
                         check = str(need.id) + "-image"
 
@@ -278,46 +298,6 @@ class UpdateNeedById(Resource):
                     )
                     file.save(need.imageUrl)
                     need.imageUrl = '/' + need.imageUrl
-
-            if "receipts" in request.files.keys():
-                file2 = request.files["receipts"]
-
-                if file2.filename == "":
-                    resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY FILE!"}), 500)
-                    session.close()
-                    return resp
-
-                if file2 and allowed_receipt(file2.filename):
-                    # filename = secure_filename(file2.filename)
-                    if need.receipts is not None:
-                        filename = (
-                                str(len(need.receipts.split(",")))
-                                + "."
-                                + file2.filename.split(".")[-1]
-                        )
-                    else:
-                        filename = str(0) + "." + file2.filename.split(".")[-1]
-
-                    temp_need_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(child.id) + "-child"
-                    )
-                    temp_need_path = os.path.join(temp_need_path, "needs")
-                    temp_need_path = os.path.join(
-                        temp_need_path, str(need.id) + "-need"
-                    )
-                    if not os.path.isdir(temp_need_path):
-                        os.makedirs(temp_need_path, exist_ok=True)
-
-                    receipt_path = os.path.join(
-                        temp_need_path, str(need.id) + "-receipt_" + filename
-                    )
-                    file2.save(receipt_path)
-
-                    receipt_path = '/' + receipt_path
-                    if need.receipts is None:
-                        need.receipts = str(receipt_path)
-                    else:
-                        need.receipts += "," + str(receipt_path)
 
             if "category" in request.form.keys():
                 need.category = int(request.form["category"])
