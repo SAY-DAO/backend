@@ -240,7 +240,11 @@ class UpdateNeedById(Resource):
                     )
 
                     file2.save(receipt_path)
-                    need.receipts += '/' + receipt_path
+                    receipt_url = '/' + receipt_path
+                    if need.receipts is None:
+                        need.receipts = receipt_url
+                    else
+                        need.receipts += receipt_url
 
             # FIXME: receipts are allowed
             if need.isConfirmed and sw_role not in (ADMIN, SUPER_ADMIN):
