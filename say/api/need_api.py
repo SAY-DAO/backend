@@ -244,7 +244,7 @@ class UpdateNeedById(Resource):
                     if need.receipts is None:
                         need.receipts = receipt_url
                     else
-                        need.receipts += receipt_url
+                        need.receipts += f',{receipt_url}'
 
             # FIXME: receipts are allowed
             if need.isConfirmed and sw_role not in (ADMIN, SUPER_ADMIN):
