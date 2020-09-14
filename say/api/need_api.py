@@ -243,7 +243,7 @@ class UpdateNeedById(Resource):
                     receipt_url = '/' + receipt_path
                     if need.receipts is None:
                         need.receipts = receipt_url
-                    else
+                    else:
                         need.receipts += f',{receipt_url}'
 
             # FIXME: receipts are allowed
