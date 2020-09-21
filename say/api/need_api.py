@@ -362,6 +362,7 @@ class UpdateNeedById(Resource):
                     SUPER_ADMIN, SAY_SUPERVISOR, ADMIN,
                 ] and new_status == 3 and need.type == 1:
 
+                    purchase_cost = purchase_cost.replace(',', '')
                     need.purchase_cost = purchase_cost
                     if need.purchase_date is not None:
                         need.oncePurchased = True
