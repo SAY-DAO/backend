@@ -70,5 +70,3 @@ class IDPay:
     def inquiry(self, id, order_id):
         return self.request("/inquiry", id=id, order_id=order_id)
 
-a = IDPay('asd')
-a.verify(1,1)
