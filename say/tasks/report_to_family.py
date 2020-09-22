@@ -55,6 +55,7 @@ def report_to_family(self, family_id):
         to_members_email = [
             u.emailAddress for u in session.query(User.emailAddress) \
             .filter(User.id==NeedFamily.id_user) \
+            .filter(User.emailAddress.isnot(None)) \
             .filter(NeedFamily.id_family==family_id) \
             .filter(NeedFamily.id_need.in_([need.id for need in needs])) \
             .distinct()
@@ -64,6 +65,7 @@ def report_to_family(self, family_id):
         all_members_email = [
             u.emailAddress for u in session.query(User.emailAddress) \
                 .filter(User.id==UserFamily.id_user) \
+                .filter(User.emailAddress.isnot(None)) \
                 .filter(UserFamily.id_family==family_id) \
                 .filter(UserFamily.isDeleted==False) \
                 .distinct()
