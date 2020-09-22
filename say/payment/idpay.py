@@ -7,8 +7,8 @@ import json
 class IDPay:
 
     API_URL = "https://api.idpay.ir/v1.1/payment"
-
     MIN_AMOUNT = 100 # TOMAN
+    TRY_COUNT = 3
 
     RESPONSES = {
         1: "پرداخت انجام نشده است",
@@ -51,11 +51,14 @@ class IDPay:
             self.headers["X-SANDBOX"] = '1'
 
     def request(self, route, **kwargs):
-        try:
-            return requests.post(f"{self.API_URL}{route}", data=json.dumps(kwargs), headers=self.headers).json()
-        except Exception as e:
-            print(e)
-            return None
+        # Retry for 5xx response
+        for i in range(self.TRY_COUNT):
+            response = requests.post(f"{self.API_URL}{route}", data=json.dumps(kwargs), headers=self.headers)
+            if response.status_code < 500:
+                break
+
+        result = response.json()
+        return result
 
     def new_transaction(self, order_id: str, amount: int, callback: str, name: str = None, phone: str = None, mail: str = None, desc: str = None, reseller: int = None):
         amount *= 10 # RIAL to TOMAN
@@ -67,3 +70,5 @@ class IDPay:
     def inquiry(self, id, order_id):
         return self.request("/inquiry", id=id, order_id=order_id)
 
+a = IDPay('asd')
+a.verify(1,1)
