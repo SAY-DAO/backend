@@ -375,10 +375,7 @@ class UpdateNeedById(Resource):
 
                     # FIXME: Is bank_track_id is nullable?
                     if need.type == 0 and new_status == 3 and prev_status == 2:
-                        need.bank_track_id = request.form.get(
-                            'bankTrackId',
-                            None,
-                        )
+                        need.bank_track_id = request.form['bankTrackId']
 
                 elif new_status != prev_status:
                     raise ValueError(
@@ -387,10 +384,8 @@ class UpdateNeedById(Resource):
                     )
 
             if need.type == 0 and need.status == 3:
-                need.bank_track_id = request.form.get(
-                    'bank_track_id',
-                    None,
-                )
+                if bank_track_id := request.form.get('bank_track_id')
+                need.bank_track_id = bank_track_id
 
             activity.diff = json_.dumps(list(diff(temp, obj_to_dict(need))))
 
