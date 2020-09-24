@@ -384,8 +384,8 @@ class UpdateNeedById(Resource):
                     )
 
             if need.type == 0 and need.status == 3:
-                if bank_track_id := request.form.get('bank_track_id')
-                need.bank_track_id = bank_track_id
+                if bank_track_id := request.form.get('bank_track_id'):
+                    need.bank_track_id = bank_track_id
 
             activity.diff = json_.dumps(list(diff(temp, obj_to_dict(need))))
 
