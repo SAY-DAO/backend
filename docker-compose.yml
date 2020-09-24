@@ -99,8 +99,7 @@ services:
       update_config:
         parallelism: 1
         order: start-first
-        failure-action: rollback
-        max-failure-ratio: 10
+        failure_action: rollback
       labels:
         - traefik.enable=true
         - traefik.docker.network=traefik-public
@@ -132,8 +131,7 @@ services:
       update_config:
         parallelism: 1
         order: start-first
-        failure-action: rollback
-        max-failure-ratio: 10
+        failure_action: rollback
   flower:
     <<: *worker
     command: celery -A say.api.celery flower
@@ -151,8 +149,7 @@ services:
       update_config:
         parallelism: 1
         order: start-first
-        failure-action: rollback
-        max-failure-ratio: 10
+        failure_action: rollback
       labels:
         - traefik.enable=true
         - traefik.docker.network=traefik-public
