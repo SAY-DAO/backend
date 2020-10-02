@@ -124,13 +124,13 @@ def create_celery_app(app):
             'celery',
             exchange,
             routing_key='celery',
-            queue_arguments={'x-max-priority': 1}
+            queue_arguments={'x-max-priority': 10}
         ),
         Queue(
-            'fast', 
+            'slow', 
             exchange,
-            routing_key='fast',
-            queue_arguments={'x-max-priority': 10}
+            routing_key='slow',
+            queue_arguments={'x-max-priority': 1}
         ),
     ]
     

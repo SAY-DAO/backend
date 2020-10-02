@@ -3,7 +3,7 @@ from sqlalchemy import or_
 from say.api import celery
 
 
-@celery.task(base=celery.DBTask, bind=True)
+@celery.task(base=celery.DBTask, bind=True, queue='slow')
 def update_needs(self):
     from say.models.need_model import Need
     needs = self.session.query(Need) \
@@ -31,6 +31,7 @@ def update_needs(self):
     autoretry_for=(Exception,),
     retry_backoff=True,
     retry_kwargs={'max_retries': 1},
+    queue='slow',
 )
 def update_need(self, need_id, force=False):
     from say.models.need_model import Need

@@ -17,7 +17,6 @@ def get_subject_from_html(html):
 
 
 @celery.task(
-    queue='fast',
     autoretry_for=(Exception,),
     retry_backoff=True,
     retry_backoff_max=600,
