@@ -12,6 +12,7 @@ from say.models.need_family_model import NeedFamily
 from say.models.user_family_model import UserFamily
 from say.models.user_model import User
 from ..schema.user import UserNameSchema, UserSearchSchema
+from say.validations import validate_email, validate_phone
 
 
 
@@ -167,22 +168,45 @@ class UpdateUserById(Resource):
                     resp = ex.json(), 400
                     return resp
 
-                if session.query(User) \
+                username_exist = session.query(User.id) \
                     .filter(User.formated_username==username.lower()) \
                     .filter(User.id!=primary_user.id) \
                     .filter(User.isDeleted==False) \
-                    .one_or_none() \
-                :
+                    .scalar()
+
+                if username_exist:
                     resp = make_response(
                         jsonify({"message": "Username exists"}),
-                        499,
+                        400,
                     )
                     return resp
 
                 primary_user.userName = username
 
-            if "emailAddress" in request.form.keys():
-                primary_user.emailAddress = request.form["emailAddress"]
+            if (email := request.form.get("emailAddress")) and \
+                    not primary_user.is_email_verified:
+
+                if not validate_email(email):
+                    resp = make_response(
+                        jsonify({"message": "Invalid email"}),
+                        400,
+                    )
+                    return resp
+
+                email_exist = session.query(User.id) \
+                    .filter(func.lower(User.emailAddress)==email.lower()) \
+                    .filter(User.id!=primary_user.id) \
+                    .filter(User.isDeleted==False) \
+                    .scalar()
+
+                if email_exist:
+                    resp = make_response(
+                        jsonify({"message": "Email exists"}),
+                        400,
+                    )
+                    return resp
+
+                primary_user.emailAddress = email
 
             if "password" in request.form.keys():
                 primary_user.password = request.form["password"]
@@ -221,9 +245,30 @@ class UpdateUserById(Resource):
             if "locale" in request.form.keys():
                 primary_user.locale = request.form["locale"].lower()
 
-            if "phoneNumber" in request.form.keys() and \
+            if (phone := request.form.get("phoneNumber")) and \
                     not primary_user.is_phonenumber_verified:
-                primary_user.phone_number = request.form["phoneNumber"]
+
+                if not validate_phone(phone):
+                    resp = make_response(
+                        jsonify({"message": "Invalid phone"}),
+                        400,
+                    )
+                    return resp
+
+                phone_exist = session.query(User.id) \
+                    .filter(User.phone_number==phone) \
+                    .filter(User.id!=primary_user.id) \
+                    .filter(User.isDeleted==False) \
+                    .scalar()
+                    
+                if phone_exist:
+                    resp = make_response(
+                        jsonify({"message": "Phone exists"}),
+                        400,
+                    )
+                    return resp
+
+                primary_user.phone_number = phone
 
             if "birthDate" in request.form.keys():
                 primary_user.birthDate = datetime.strptime(
