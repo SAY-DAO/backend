@@ -8,7 +8,7 @@ beat = {
     },
     'update-needs': {
         'task': 'say.tasks.update_needs.update_needs',
-        'schedule': crontab(minute=30, hour='4,16,0,8,12'),
+        'schedule': 60#scrontab(minute=30, hour='4,16,0,8,12'),
     },
     'report_to_family': {
         'task': 'say.tasks.report_to_family.report_to_families',

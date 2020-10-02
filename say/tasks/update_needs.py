@@ -30,7 +30,7 @@ def update_needs(self):
     bind=True,
     autoretry_for=(Exception,),
     retry_backoff=True,
-    retry_kwargs={'max_retries': 1}
+    retry_kwargs={'max_retries': 1},
 )
 def update_need(self, need_id, force=False):
     from say.models.need_model import Need

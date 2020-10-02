@@ -33,6 +33,7 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
+from kombu import Exchange, Queue
 
 from say.api.ext.jwt import jwt
 from say.payment import IDPay
@@ -113,6 +114,26 @@ def create_celery_app(app):
     celery.conf.timezone = 'UTC'
     celery.conf.beat_schedule = beat
     celery.conf.update(app.config)
+    
+    celery.conf.task_default_priority = 5
+
+    exchange = Exchange('celery')
+
+    celery.conf.task_queues = [
+        Queue(
+            'celery',
+            exchange,
+            routing_key='celery',
+            queue_arguments={'x-max-priority': 1}
+        ),
+        Queue(
+            'fast', 
+            exchange,
+            routing_key='fast',
+            queue_arguments={'x-max-priority': 10}
+        ),
+    ]
+    
     TaskBase = celery.Task
 
     class DBTask(TaskBase):
