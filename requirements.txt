@@ -20,7 +20,7 @@ dictdiffer
 Flask-Caching
 beautifulsoup4
 requests
-celery
+celery==4.4.7
 redis
 khayyam
 celery-redbeat
