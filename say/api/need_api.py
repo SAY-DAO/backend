@@ -8,7 +8,6 @@ from sqlalchemy import or_
 
 from . import *
 from say.models import session, obj_to_dict, commit
-from say.models.activity_model import Activity
 from say.models.child_model import Child
 from say.models.child_need_model import ChildNeed
 from say.models.need_family_model import NeedFamily
@@ -199,7 +198,6 @@ class UpdateNeedById(Resource):
     def patch(self, need_id):
         sw_role = get_user_role()
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
-
         try:
             need_query = session.query(Need) \
                 .filter_by(id=need_id) \
@@ -254,13 +252,6 @@ class UpdateNeedById(Resource):
                 return resp
 
             temp = obj_to_dict(need)
-
-            activity = Activity(
-                id_social_worker=get_user_id(),
-                model=Need.__tablename__,
-                activityCode=11,  # TODO: wrong code
-            )
-            session.add(activity)
 
             new_cost = None
             if "cost" in request.form.keys():
@@ -352,10 +343,11 @@ class UpdateNeedById(Resource):
                 need.expected_delivery_date = parse_datetime(
                     request.form["expected_delivery_date"]
                 )
+            
+            prev_status = need.status
 
             if "status" in request.form.keys():
                 new_status = int(request.form["status"])
-                prev_status = need.status
 
                 purchase_cost = request.form.get('purchase_cost', None)
                 if purchase_cost and sw_role in [
@@ -373,10 +365,6 @@ class UpdateNeedById(Resource):
 
                     need.status = new_status
 
-                    # FIXME: Is bank_track_id is nullable?
-                    if need.type == 0 and new_status == 3 and prev_status == 2:
-                        need.bank_track_id = request.form['bankTrackId']
-
                 elif new_status != prev_status:
                     raise ValueError(
                         f'Can not change status from '
@@ -384,10 +372,13 @@ class UpdateNeedById(Resource):
                     )
 
             if need.type == 0 and need.status == 3:
-                if bank_track_id := request.form.get('bank_track_id'):
+                bank_track_id = request.form.get('bank_track_id')
+                
+                if not bank_track_id and prev_status == 2:
+                    raise ValueError(f'bank_track_id is required')
+                
+                if bank_track_id:
                     need.bank_track_id = bank_track_id
-
-            activity.diff = json_.dumps(list(diff(temp, obj_to_dict(need))))
 
             session.commit()
             secondary_need = obj_to_dict(need)
