@@ -69,8 +69,9 @@ def commit(func):
             result = func(*args, **kwargs)
 
             if isinstance(result, tuple):
-                session.rollback()
-                return result
+                if result[1] >= 300:
+                    session.rollback()
+                    return result
 
             session.commit()
             return result

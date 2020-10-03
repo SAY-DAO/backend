@@ -9,7 +9,12 @@ class Family(base, Timestamp):
     __tablename__ = "family"
 
     id = Column(Integer, nullable=False, primary_key=True)
-    id_child = Column(Integer, ForeignKey('child.id'), nullable=False)
+    id_child = Column(
+        Integer, 
+        ForeignKey('child.id'), 
+        nullable=False, 
+        unique=True,
+    )
     isDeleted = Column(Boolean, nullable=False, default=False)
 
     child = relationship(

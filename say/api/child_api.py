@@ -953,163 +953,39 @@ class DeleteChildById(Resource):
 
 
 class ConfirmChild(Resource):
+
+    
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @json
+    @commit
     @swag_from("./docs/child/confirm.yml")
     def patch(self, child_id):
         social_worker_id = get_user_id()
 
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+        child = (
+            session.query(Child)
+            .filter_by(id=child_id)
+            .filter_by(isDeleted=False)
+            .filter_by(isMigrated=False)
+            .one_or_none()
+        )
 
-        try:
-            child = (
-                session.query(Child)
-                .filter_by(id=child_id)
-                .filter_by(isDeleted=False)
-                .filter_by(isMigrated=False)
-                .first()
-            )
+        if not child:
+            return {'message': 'not found'}, 404
 
-            if child.migratedId is None:
-                primary_child = child
+        if child.isConfirmed:
+            return {"message": "child has already confirmed!"}, 400
 
-                if primary_child.isConfirmed:
-                    resp = make_response(jsonify({"message": "child has already been confirmed!"}), 500)
-                    session.close()
-                    return resp
+        child.isConfirmed = True
+        child.confirmUser = social_worker_id
+        child.confirmDate = datetime.utcnow()
+        child.ngo.currentChildrenCount += 1
+        child.social_worker.currentChildCount += 1
 
-                primary_child.isConfirmed = True
-                primary_child.confirmUser = social_worker_id
-                primary_child.confirmDate = datetime.utcnow()
+        new_family = Family(id_child=child.id)
+        session.add(new_family)
 
-                primary_child.ngo.currentChildrenCount += 1
-
-                primary_child.social_worker.currentChildCount += 1
-
-                new_family = Family(id_child=primary_child.id)
-
-                session.add(new_family)
-                session.commit()
-
-            else:
-                secondary_child = child
-
-                if secondary_child.isConfirmed:
-                    resp = make_response(jsonify({"message": "child has already been confirmed!"}), 500)
-                    session.close()
-                    return resp
-
-                secondary_child.isConfirmed = True
-                secondary_child.confirmUser = social_worker_id
-                secondary_child.confirmDate = datetime.utcnow()
-
-                primary_child = (
-                    session.query(Child)
-                    .filter_by(id=secondary_child.migratedId)
-                    .filter_by(isDeleted=False)
-                    .first()
-                )
-                needs = (
-                    session.query(ChildNeed)
-                    .filter_by(id_child=secondary_child.migratedId)
-                    .filter_by(isDeleted=False)
-                    .all()
-                )
-                family = (
-                    session.query(Family)
-                    .filter_by(id_child=secondary_child.migratedId)
-                    .filter_by(isDeleted=False)
-                    .first()
-                )
-
-                if (
-                    secondary_child.social_worker.ngo.id
-                    != primary_child.id_ngo
-                ):
-                    previous_ngo = (
-                        session.query(Ngo)
-                        .filter_by(id=primary_child.id_ngo)
-                        .filter_by(isDeleted=False)
-                        .first()
-                    )
-
-                    secondary_child.social_worker.ngo.childrenCount += 1
-                    secondary_child.social_worker.ngo.currentChildrenCount += 1
-                    previous_ngo.currentChildrenCount -= 1
-
-                secondary_child.social_worker.childCount += 1
-                secondary_child.social_worker.currentChildCount += 1
-                secondary_child.social_worker.needCount += len(needs)
-                secondary_child.social_worker.currentNeedCount += len(needs)
-
-                primary_child.social_worker.currentChildCount -= 1
-                primary_child.social_worker.currentNeedCount -= len(needs)
-
-                family.id_child = secondary_child.id
-
-                old_path = os.path.join(
-                    app.config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
-                )
-                new_path = os.path.join(
-                    app.config["UPLOAD_FOLDER"], str(secondary_child.id) + "-child"
-                )
-
-                shutil.copytree(old_path, new_path)
-                shutil.rmtree(old_path)
-
-                need_dump = {}
-                for f in os.listdir(new_path):
-                    if not os.path.isdir(os.path.join(new_path, f)):
-                        if str(primary_child.id) + "-avatar_" in f:
-                            avatar_new_path = os.path.join(
-                                new_path,
-                                str(secondary_child.id)
-                                + "-voice_"
-                                + secondary_child.generatedCode
-                                + "."
-                                + str(f.rsplit(".", 1)[1].lower()),
-                            )
-                            os.rename(os.path.join(new_path, f), avatar_new_path)
-                            secondary_child.awakeAvatarUrl = avatar_new_path
-
-                        if str(primary_child.id) + "-voice_" in f:
-                            voice_new_path = os.path.join(
-                                new_path,
-                                str(secondary_child.id)
-                                + "-voice_"
-                                + secondary_child.generatedCode
-                                + "."
-                                + str(f.rsplit(".", 1)[1].lower()),
-                            )
-                            os.rename(os.path.join(new_path, f), voice_new_path)
-                            secondary_child.voiceUrl = voice_new_path
-
-                    else:
-                        need_path = os.path.join(new_path, "needs")
-                        for nf in os.listdir(need_path):
-                            for n in os.listdir(os.path.join(need_path, nf)):
-                                n.replace(
-                                    str(primary_child.id) + "-child",
-                                    str(secondary_child.id) + "-child",
-                                )
-                                temp_need_path = os.path.join(need_path, nf)
-                                temp_need_path = os.path.join(temp_need_path, n)
-                                need_dump[str(nf.split("-")[0])] = temp_need_path
-
-                for need in needs:
-                    need.id_child = secondary_child.id
-                    need.need.imageUrl = need_dump[str(need.id_need)]
-
-                session.commit()
-
-            resp = make_response(jsonify({"message": "child confirmed successfully!"}), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
+        return {"message": "child confirmed successfully!"}
 
 
 class MigrateChild(Resource):
