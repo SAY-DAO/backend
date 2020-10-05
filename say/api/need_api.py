@@ -16,6 +16,7 @@ from say.models.need_model import Need
 from say.models.social_worker_model import SocialWorker
 from say.models.user_family_model import UserFamily
 from say.tasks import update_need
+from say.orm import safe_commit
 
 """
 Need APIs
@@ -253,7 +254,7 @@ class UpdateNeedById(Resource):
 
             # FIXME: receipts are allowed
             if need.isConfirmed and sw_role not in (ADMIN, SUPER_ADMIN):
-                session.commit()
+                safe_commit(session)
                 need_dict = obj_to_dict(need)
                 resp = make_response(jsonify(need_dict), 200)
                 return resp
@@ -387,7 +388,7 @@ class UpdateNeedById(Resource):
                 if bank_track_id:
                     need.bank_track_id = bank_track_id
 
-            session.commit()
+            safe_commit(session)
             secondary_need = obj_to_dict(need)
             resp = make_response(jsonify(secondary_need), 200)
 
@@ -472,7 +473,7 @@ class ConfirmNeed(Resource):
             child.social_worker.currentNeedCount += 1
 
             session.add(new_child_need)
-            session.commit()
+            safe_commit(session)
 
             resp = make_response(jsonify({"message": "need confirmed successfully!"}), 200)
 
@@ -648,7 +649,7 @@ class AddNeed(Resource):
                     file2.save(receipt_path)
                     new_need.receipts = '/' + receipt_path
 
-            session.commit()
+            safe_commit(session)
 
             if new_need.link:
                 update_need.delay(new_need.id)

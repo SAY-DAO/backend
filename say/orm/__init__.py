@@ -94,3 +94,9 @@ def columns(obj, relationships=False, synonyms=True, composites=False,
         yield k, getattr(cls, k)
 
 
+def safe_commit(session):
+    try:
+        session.commit()
+    except:
+        session.rollback()
+        raise

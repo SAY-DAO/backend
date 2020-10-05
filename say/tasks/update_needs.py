@@ -1,6 +1,7 @@
 from sqlalchemy import or_
 
 from say.api import celery
+from say.orm import safe_commit
 
 
 @celery.task(base=celery.DBTask, bind=True, queue='slow')
@@ -40,6 +41,6 @@ def update_need(self, need_id, force=False):
         .get(need_id)
 
     data = need.update()
-    self.session.commit()
+    safe_commit(self.session)
 
     return data
