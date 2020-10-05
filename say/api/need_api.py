@@ -22,27 +22,34 @@ Need APIs
 """
 
 
-def filter_by_privilege(query):  # TODO: priv
+def filter_by_privilege(query, get=False):  # TODO: priv
     user_role = get_user_role()
     user_id = get_user_id()
     ngo_id = get_sw_ngo_id()
 
     if user_role in [SOCIAL_WORKER, COORDINATOR]:
-        query = query \
-            .join(Child) \
-            .filter(or_(
-                Child.id_social_worker == user_id,
-                Child.id == DEFAULT_CHILD_ID,
+        if get:
+            query = query.join(Child).filter(or_(
+                    Child.id_social_worker == user_id,
+                    Child.id == DEFAULT_CHILD_ID,
             ))
+        else:
+            query = query.join(Child).filter(Child.id_social_worker == user_id)
 
     elif user_role in [NGO_SUPERVISOR]:
-        query = query \
-            .join(Child) \
-            .join(SocialWorker) \
-            .filter(or_(
-                SocialWorker.id_ngo == ngo_id,
-                Child.id == DEFAULT_CHILD_ID,
-            ))
+        if get:
+            query = query \
+                .join(Child) \
+                .join(SocialWorker) \
+                .filter(or_(
+                    SocialWorker.id_ngo == ngo_id,
+                    Child.id == DEFAULT_CHILD_ID,
+                ))
+        else:
+            query = query \
+                .join(Child) \
+                .join(SocialWorker) \
+                .filter(SocialWorker.id_ngo == ngo_id)
 
     elif user_role in [USER]:
         query = query \
@@ -119,7 +126,7 @@ class GetAllNeeds(Resource):
                     .join(SocialWorker) \
                     .filter(SocialWorker.id_ngo == ngo_id)
 
-            needs = filter_by_privilege(needs)
+            needs = filter_by_privilege(needs, get=True)
 
             result = OrderedDict(
                 totalCount=needs.count(),
@@ -165,7 +172,7 @@ class GetNeedById(Resource):
                 .filter_by(isDeleted=False) \
                 .filter_by(id=need_id)
 
-            need = filter_by_privilege(need_query).first()
+            need = filter_by_privilege(need_query, get=True).one_or_none()
 
             if need is None:
                 resp = HTTP_NOT_FOUND()
@@ -203,7 +210,7 @@ class UpdateNeedById(Resource):
                 .filter_by(id=need_id) \
                 .filter_by(isDeleted=False)
 
-            need = filter_by_privilege(need_query).first()
+            need = filter_by_privilege(need_query).one_or_none()
 
             if need is None:
                 resp = HTTP_NOT_FOUND()
@@ -401,12 +408,18 @@ class DeleteNeedById(Resource):
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @swag_from('./docs/need/delete.yml')
     def patch(self, need_id):
-        need = (
-            session.query(Need)
-                .filter_by(isDeleted=False)
-                .filter_by(id=need_id)
-                .first()
-        )
+        need = session.query(Need) \
+            .filter_by(isDeleted=False) \
+            .filter_by(id=need_id)
+        
+        need = filter_by_privilege(need).one_or_none()
+
+        if not need:
+            return {'message': 'need not found'}, 404
+
+        if get_user_role in (SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR) \
+                and need.isConfirmed:
+            return {'message': 'permision denied'}, 403
 
         if (need.type == 0 and need.status < 4) or (need.type == 1 and need.status < 5):
             need.status = 0
@@ -417,11 +430,9 @@ class DeleteNeedById(Resource):
                 participant.isDeleted = True
 
             need.isDeleted = True
-
-            return {"message": "need deleted"}
-
+            return {'message': 'need deleted'}
         else:
-            return {"message": "need has arrived to the child so can not be deleted"}, 422
+            return {'message': 'need has arrived to the child so can not be deleted'}, 422
 
 
 class ConfirmNeed(Resource):
@@ -438,7 +449,7 @@ class ConfirmNeed(Resource):
                 session.query(Need)
                     .filter_by(id=need_id)
                     .filter_by(isDeleted=False)
-                    .first()
+                    .one_or_none()
             )
 
             if primary_need.isConfirmed:
@@ -503,7 +514,7 @@ class AddNeed(Resource):
                     .filter_by(isDeleted=False)
                     .filter_by(isMigrated=False)
                     .filter_by(isConfirmed=True)
-                    .first()
+                    .one_or_none()
             )
 
             sw_id = int(request.form.get("sw_id", get_user_id()))
