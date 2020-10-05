@@ -4,6 +4,8 @@ from say.models import session, obj_to_dict, commit
 from say.models import User, Family, UserFamily, NeedFamily, Invitation
 from . import *
 from ..models.invite.invitation_accept import InvitationAccept
+from say.orm import safe_commit
+
 
 """
 Family APIs
@@ -227,7 +229,7 @@ class LeaveFamily(Resource):
 
             family.child.sayFamilyCount -= 1
 
-            session.commit()
+            safe_commit(session)
 
             resp = make_response(jsonify({"message": "DELETED SUCCESSFULLY!"}), 200)
 

@@ -6,6 +6,7 @@ from flask_jwt_extended import create_refresh_token, \
 from . import *
 from say.models import session
 from say.models.social_worker_model import SocialWorker
+from say.orm import safe_commit
 
 
 """
@@ -46,7 +47,7 @@ class PanelLogin(Resource):
             if social_worker is not None:
                 if social_worker.password == password:
                     social_worker.lastLogin = datetime.utcnow()
-                    session.commit()
+                    safe_commit(session)
 
                     access_token = create_sw_access_token(social_worker)
 

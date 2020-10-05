@@ -13,7 +13,7 @@ from say.models.user_family_model import UserFamily
 from say.models.user_model import User
 from ..schema.user import UserNameSchema, UserSearchSchema
 from say.validations import validate_email, validate_phone
-
+from say.orm import safe_commit
 
 
 """
@@ -291,7 +291,7 @@ class UpdateUserById(Resource):
 
             secondary_user = obj_to_dict(primary_user)
 
-            session.commit()
+            safe_commit(session)
             resp = make_response(jsonify(secondary_user), 200)
 
         except Exception as e:
@@ -338,7 +338,7 @@ class DeleteUserById(Resource):
 
             user.isDeleted = True
 
-            session.commit()
+            safe_commit(session)
 
             resp = make_response(jsonify({"message": "user deleted successfully!"}), 200)
 
@@ -490,7 +490,7 @@ class AddUser(Resource):
 
             new_user.avatarUrl = avatar_url
 
-            session.commit()
+            safe_commit(session)
 
             resp = make_response(jsonify({"message": "USER ADDED SUCCESSFULLY!"}), 200)
 

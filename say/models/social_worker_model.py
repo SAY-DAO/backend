@@ -68,6 +68,7 @@ class SocialWorker(base, Timestamp):
         from .child_model import Child
         from .child_need_model import ChildNeed
         from .ngo_model import Ngo
+        from say.orm import safe_commit
 
         session = object_session(self)
         needs = None
@@ -118,7 +119,8 @@ class SocialWorker(base, Timestamp):
 
                 for need in services:
                     need.isReported = True
-                session.commit()
+
+                safe_commit(session)
 
             if len(products) != 0:
                 use_plural = False if len(products) == 1 else True
@@ -141,7 +143,8 @@ class SocialWorker(base, Timestamp):
 
                 for need in products:
                     need.isReported = True
-                session.commit()
+
+                safe_commit(session)
 
             return [need.id for need in needs]
 

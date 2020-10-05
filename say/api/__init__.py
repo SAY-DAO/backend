@@ -51,6 +51,7 @@ from .exception import HTTPException
 from ..config import configs
 from ..helpers import get_secret
 
+
 DEFAULT_CHILD_ID = 104  # TODO: Remove this after implementing pre needs
 
 CELERY_TASK_LIST = [

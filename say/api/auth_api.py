@@ -8,6 +8,7 @@ from say.models import session, or_, commit, ResetPassword, \
 from say.tasks import subscribe_email
 from say.validations import validate_username, validate_email, validate_phone, \
     validate_password
+from say.orm import safe_commit
 from ..i18n import t
 from . import *
 from .exception import HTTPException
@@ -244,7 +245,7 @@ class Login(Resource):
                     user.locale = Locale(lang)
                     user.lastLogin = datetime.utcnow()
                     user.is_installed = is_installed
-                    session.commit()
+                    safe_commit(session)
 
                     access_token = create_user_access_token(user)
                     refresh_token = create_refresh_token(identity=user.id)

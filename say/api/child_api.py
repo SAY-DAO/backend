@@ -4,12 +4,14 @@ from uuid import uuid4
 import ujson
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_restful import abort
+from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 
 from . import *
 from say.models import session, obj_to_dict, commit
 from say.models import ChildMigration, Child, ChildNeed, Family, Need, Ngo,\
     SocialWorker, UserFamily, Invitation
+from say.orm import safe_commit
 
 
 # api_bp = Blueprint('api', __name__)
@@ -29,17 +31,29 @@ def filter_by_confirm(child_query, confirm):
     return child_query
 
 
-def filter_by_privilege(query):  # TODO: priv
+def filter_by_privilege(query, get=False):  # TODO: priv
     user_role = get_user_role()
     sw_id = get_user_id()
     ngo_id = get_sw_ngo_id()
 
+
     if user_role in [SOCIAL_WORKER, COORDINATOR]:
-        query = query \
-            .filter_by(id_social_worker=sw_id)
+        if get:
+            query = query.filter(or_(
+                Child.id_social_worker==sw_id,
+                Child.id==DEFAULT_CHILD_ID,
+            ))
+        else:
+            query = query.filter_by(id_social_worker=sw_id)
 
     elif user_role in [NGO_SUPERVISOR]:
-        query = query.filter_by(id_ngo=ngo_id)
+        if get:
+            query = query.filter(or_(
+                Child.id_ngo==ngo_id,
+                Child.id==DEFAULT_CHILD_ID,
+            ))
+        else:
+            query = query.filter(Child.id_ngo==ngo_id)
 
     elif user_role in [USER]:
         query = filter_by_user(query)
@@ -103,6 +117,7 @@ class GetAllChildren(Resource):
     @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @check_privileges
+    @json
     @swag_from("./docs/child/all.yml")
     def get(self, confirm):
         query = request.args.copy()
@@ -111,122 +126,100 @@ class GetAllChildren(Resource):
         ngo_id = query.get('ngo_id', None)
         sw_id = query.get('sw_id', None)
 
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+        confirm = int(confirm)
+        children_query = (
+            session.query(Child)
+            .filter_by(isDeleted=False)
+            .filter_by(isMigrated=False)
+            .filter_by(existence_status=1)
+        )
 
-        try:
-            confirm = int(confirm)
-            children_query = (
-                session.query(Child)
-                .filter_by(isDeleted=False)
-                .filter_by(isMigrated=False)
-                .filter_by(existence_status=1)
-            )
+        children_query = filter_by_privilege(children_query, get=True)
+        children_query = filter_by_query(children_query)
 
-            children_query = filter_by_privilege(children_query)
-            children_query = filter_by_query(children_query)
+        if int(confirm) == 0:
+            children_query = children_query.filter_by(isConfirmed=False)
+        elif int(confirm) == 1:
+            children_query = children_query.filter_by(isConfirmed=True)
 
-            if int(confirm) == 0:
-                children_query = children_query.filter_by(isConfirmed=False)
-            elif int(confirm) == 1:
-                children_query = children_query.filter_by(isConfirmed=True)
+        children_query = children_query \
+            .order_by(Child.generatedCode.asc())
 
-            children_query = children_query \
-                .order_by(Child.generatedCode.asc())
+        children = children_query.offset(skip).limit(take)
 
-            children = children_query.offset(skip).limit(take)
+        result = OrderedDict(
+            totalCount=children_query.count(),
+            children=[],
+        )
+        for child in children:
+            result['children'].append(obj_to_dict(child))
 
-            result = OrderedDict(
-                totalCount=children_query.count(),
-                children=[],
-            )
-            for child in children:
-                result['children'].append(obj_to_dict(child))
-
-            resp = make_response(jsonify(result), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
+        return result
 
 
 class GetChildById(Resource):
 
     @authorize(USER, SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @json
     @swag_from("./docs/child/id.yml")
     def get(self, child_id, confirm):
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
-        try:
-            child_id = int(child_id)
-            child_query = session.query(Child) \
-                .filter(Child.isDeleted==False) \
-                .filter(Child.isMigrated==False) \
-                .filter(Child.id==child_id)
-                # .filter(Child.existence_status==1)
+        child_id = int(child_id)
+        child_query = session.query(Child) \
+            .filter(Child.isDeleted==False) \
+            .filter(Child.isMigrated==False) \
+            .filter(Child.id==child_id)
+            # .filter(Child.existence_status==1)
 
-            if child_id != DEFAULT_CHILD_ID:  # TODO: need needs
-                child_query = filter_by_privilege(child_query)
+        if child_id != DEFAULT_CHILD_ID:  # TODO: need needs
+            child_query = filter_by_privilege(child_query, get=True)
 
-            child_query = filter_by_confirm(child_query, confirm)
+        child_query = filter_by_confirm(child_query, confirm)
 
-            child = child_query.one_or_none()
-            if child is None:
-                resp = HTTP_NOT_FOUND()
-                return
+        child = child_query.one_or_none()
+        if child is None:
+            resp = HTTP_NOT_FOUND()
+            return
 
-            child_dict = obj_to_dict(child)
-            child_dict['socialWorkerGeneratedCode'] = child.social_worker.generatedCode
+        child_dict = obj_to_dict(child)
+        child_dict['socialWorkerGeneratedCode'] = child.social_worker.generatedCode
 
-            if get_user_role() in [USER]:  # TODO: priv
-                user_id = get_user_id()
-                family_id = child.family.id
-                child_family_member = []
+        if get_user_role() in [USER]:  # TODO: priv
+            user_id = get_user_id()
+            family_id = child.family.id
+            child_family_member = []
 
-                user_family = session.query(UserFamily) \
-                    .filter_by(isDeleted=False) \
-                    .filter_by(id_user=user_id) \
-                    .filter_by(id_family=family_id) \
-                    .first()
+            user_family = session.query(UserFamily) \
+                .filter_by(isDeleted=False) \
+                .filter_by(id_user=user_id) \
+                .filter_by(id_family=family_id) \
+                .first()
 
-                child_dict['familyId'] = family_id
-                child_dict['userRole'] = user_family.userRole
-                del child_dict['phoneNumber']
-                del child_dict['firstName']
-                del child_dict['firstName_translations']
-                del child_dict['lastName']
-                del child_dict['lastName_translations']
-                del child_dict['nationality']
-                del child_dict['country']
-                del child_dict['city']
-                del child_dict['birthPlace']
-                del child_dict['address']
-                del child_dict['id_social_worker']
-                del child_dict['id_ngo']
+            child_dict['familyId'] = family_id
+            child_dict['userRole'] = user_family.userRole
+            del child_dict['phoneNumber']
+            del child_dict['firstName']
+            del child_dict['firstName_translations']
+            del child_dict['lastName']
+            del child_dict['lastName_translations']
+            del child_dict['nationality']
+            del child_dict['country']
+            del child_dict['city']
+            del child_dict['birthPlace']
+            del child_dict['address']
+            del child_dict['id_social_worker']
+            del child_dict['id_ngo']
 
-                for member in child.family.current_members():
-                    child_family_member.append(dict(
-                        role=member.userRole,
-                        username=member.user.userName,
-                    ))
+            for member in child.family.current_members():
+                child_family_member.append(dict(
+                    role=member.userRole,
+                    username=member.user.userName,
+                ))
 
-                child_dict["childFamilyMembers"] = child_family_member
+            child_dict["childFamilyMembers"] = child_family_member
 
-            resp = make_response(jsonify(child_dict), 200)
-
-        except Exception as e:
-            print(e)
-
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
-
+        return child_dict
 
 class GetChildByInvitationToken(Resource):
 
@@ -309,58 +302,47 @@ class GetChildNeeds(Resource):
 
     @authorize(USER, SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @json
     @swag_from("./docs/child/needs.yml")
     def get(self, child_id):
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+        child_id = int(child_id)
+        child_query = session.query(Child) \
+            .filter(Child.isDeleted==False) \
+            .filter(Child.isMigrated==False) \
+            .filter(Child.id==child_id) \
 
-        try:
-            child_id = int(child_id)
-            child_query = session.query(Child) \
-                .filter(Child.isDeleted==False) \
-                .filter(Child.isMigrated==False) \
-                .filter(Child.id==child_id) \
+        if child_id != DEFAULT_CHILD_ID:  # TODO: need needs
+            child_query = filter_by_privilege(child_query, get=True)
 
-            if child_id != DEFAULT_CHILD_ID:  # TODO: need needs
-                child_query = filter_by_privilege(child_query)
+        child = child_query.one_or_none()
+        if child is None:
+            resp = HTTP_NOT_FOUND()
+            return
 
-            child = child_query.one_or_none()
-            if child is None:
-                resp = HTTP_NOT_FOUND()
-                return
+        needs_query = session.query(Need) \
+            .filter(Need.child_id==child_id) \
+            .filter(Need.isDeleted==False) \
+            .order_by(Need.name) \
+            .all()
 
-            needs_query = session.query(Need) \
-                .filter(Need.child_id==child_id) \
-                .filter(Need.isDeleted==False) \
-                .order_by(Need.name) \
-                .all()
+        needs = []
+        for need in needs_query:
+            if not need.isConfirmed \
+                    and get_user_role() in [USER]:
+                continue
 
-            needs = []
-            for need in needs_query:
-                if not need.isConfirmed \
-                        and get_user_role() in [USER]:
-                    continue
+            need_dict = obj_to_dict(need)
+            need_dict['participants'] = [
+                {'user_avatar': p.user_avatar}
+                for p in need.current_participants
+            ]
+            needs.append(need_dict)
 
-                need_dict = obj_to_dict(need)
-                need_dict['participants'] = [
-                    {'user_avatar': p.user_avatar}
-                    for p in need.current_participants
-                ]
-                needs.append(need_dict)
-
-            result = dict(
-                total_count=len(needs),
-                needs=needs,
-            )
-            resp = make_response(jsonify(result), 200)
-
-        except Exception as e:
-            print(e)
-
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
+        result = dict(
+            total_count=len(needs),
+            needs=needs,
+        )
+        return result
 
 
 # TODO: ngo_id is needed?
@@ -593,7 +575,7 @@ class AddChild(Resource):
             new_child.ngo.childrenCount += 1
             new_child.social_worker.childCount += 1
 
-            session.commit()
+            safe_commit(session)
 
             resp = make_response(jsonify(obj_to_dict(new_child)), 200)
 
@@ -848,7 +830,7 @@ class UpdateChildById(Resource):
                     primary_child.social_worker.currentChildCount -= 1
                     primary_child.ngo.currentChildrenCount -= 1
 
-            session.commit()
+            safe_commit(session)
 
             child_dict = obj_to_dict(primary_child)
             resp = make_response(jsonify(child_dict), 200)
@@ -937,7 +919,7 @@ class DeleteChildById(Resource):
                 child.social_worker.currentChildCount -= 1
                 child.ngo.currentChildrenCount -= 1
 
-                session.commit()
+                safe_commit(session)
 
                 resp = make_response(jsonify({"message": "child deleted successfully!"}), 200)
             else:
@@ -954,7 +936,6 @@ class DeleteChildById(Resource):
 
 class ConfirmChild(Resource):
 
-    
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @json
     @commit
@@ -1043,7 +1024,7 @@ class MigrateChild(Resource):
             )
 
         child.migrate(new_sw)
-        session.commit()
+        safe_commit(session)
 
         return make_response(
             jsonify({'message': 'child migrated successfully!'}),
