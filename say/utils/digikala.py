@@ -71,7 +71,7 @@ def parse_img(c):
     return img
 
 
-@cache.memoize(timeout=1 * 3600)
+# @cache.memoize(timeout=1 * 3600)
 def get_data(url):
     dkp = parse_dkp(url)
     try:
