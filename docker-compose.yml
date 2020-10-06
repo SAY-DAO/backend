@@ -134,7 +134,7 @@ services:
         failure_action: rollback
   slow-worker:
     <<: *worker
-    command: celery -A say.api.celery worker --autoscale=4,1 --loglevel=WARNING -B -S redbeat.RedBeatScheduler -Q celery,slow
+    command: celery -A say.api.celery worker --autoscale=4,1 --loglevel=WARNING -B -S redbeat.RedBeatScheduler -Q slow
   flower:
     <<: *worker
     command: celery -A say.api.celery flower
