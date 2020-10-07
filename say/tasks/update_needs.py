@@ -1,6 +1,6 @@
 from sqlalchemy import or_
 
-from say.api import celery
+from say.celery import celery
 from say.orm import safe_commit
 
 

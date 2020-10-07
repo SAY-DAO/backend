@@ -1,5 +1,5 @@
 from say.api import sms_provider
-from . import celery
+from say.celery import celery
 
 
 @celery.task(

@@ -1,7 +1,6 @@
 import os, shutil, copy
 
 import redis
-from celery import Celery
 from flask import (
     Flask,
     jsonify,
@@ -33,11 +32,9 @@ from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
-from kombu import Exchange, Queue
 
 from say.api.ext.jwt import jwt
 from say.payment import IDPay
-from say.celery import beat
 from say.date import *
 from say.authorization import *
 from say.roles import *
@@ -53,10 +50,6 @@ from ..helpers import get_secret
 
 
 DEFAULT_CHILD_ID = 104  # TODO: Remove this after implementing pre needs
-
-CELERY_TASK_LIST = [
-    'say.tasks',
-]
 
 basicConfig(level=configs.LOGLEVEL)
 logger = getLogger('main')
@@ -101,72 +94,6 @@ app.config["SWAGGER"] = {
         {"version": "2.0", "title": "SAY API", "endpoint": "api_v2", "route": "/api/v2"}
     ]
 }
-
-
-def create_celery_app(app):
-    """
-    Create a new Celery object and tie together the Celery config to the app's
-    config. Wrap all tasks in the context of the application.
-    :param app: Flask app
-    :return: Celery app
-    """
-    celery = Celery(app.import_name, broker=app.config['broker_url'],
-                    include=CELERY_TASK_LIST)
-    celery.conf.timezone = 'UTC'
-    celery.conf.beat_schedule = beat
-    celery.conf.update(app.config)
-    
-    celery.conf.task_default_priority = 5
-
-    exchange = Exchange('celery')
-
-    celery.conf.task_queues = [
-        Queue(
-            'celery',
-            exchange,
-            routing_key='celery',
-            queue_arguments={'x-max-priority': 10}
-        ),
-        Queue(
-            'slow', 
-            exchange,
-            routing_key='slow',
-            queue_arguments={'x-max-priority': 1}
-        ),
-    ]
-    
-    TaskBase = celery.Task
-
-    class DBTask(TaskBase):
-        _session = None
-
-        def after_return(self, *args, **kwargs):
-            if self._session is not None:
-                self._session.close()
-                self._session.remove()
-
-        @property
-        def session(self):
-            if self._session is None:
-                from say.models import session
-                self._session = session
-
-            return self._session
-
-    celery.DBTask = DBTask
-
-    class ContextTask(TaskBase):
-        abstract = True
-
-        def __call__(self, *args, **kwargs):
-            with app.app_context():
-                return TaskBase.__call__(self, *args, **kwargs)
-
-    celery.Task = ContextTask
-    return celery
-
-
-celery = create_celery_app(app)
 
 cache = Cache(app)
 

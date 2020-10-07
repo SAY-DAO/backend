@@ -1,7 +1,7 @@
 from flask_mail import Message
 import bs4 as bs
 
-from . import celery
+from say.celery import celery
 from say.api import mail
 
 

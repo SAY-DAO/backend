@@ -1,4 +1,3 @@
-from say.api import celery
 
 from .sms import send_sms
 from .send_email import send_email,  send_embeded_subject_email

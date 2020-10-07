@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from say.api import celery
+from say.celery import celery
 
 
 # This task is a temporary social worker that deliver a product to child
