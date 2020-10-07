@@ -1,5 +1,5 @@
 from say.api import mailerlite, app
-from . import celery
+from say.celery import celery
 
 
 @celery.task(

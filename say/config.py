@@ -54,7 +54,12 @@ class Config(object):
     RABBITMQ_PORT = '5672'
     SENTRY_DSN = 'https://e7665a883afe47d082b3fa4e0b956c07@sentry.say.company/4'
     SENTRY_SAMPLE_RATE = 0.2
+
+    # Celery
     BROKER = 'redis'
+    task_soft_time_limit = 60
+    task_acks_late = True
+    worker_prefetch_multiplier = 1
 
     def __init__(self):
         load_dotenv(find_dotenv())

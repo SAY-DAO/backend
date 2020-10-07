@@ -5,7 +5,8 @@ from sqlalchemy import or_
 
 from say.langs import LANGS
 from say.locale import ChangeLocaleTo
-from say.api import celery, app
+from say.api import app
+from say.celery import celery
 from .send_email import send_embeded_subject_email
 from say.render_template_i18n import render_template_i18n
 

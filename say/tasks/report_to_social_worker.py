@@ -1,4 +1,4 @@
-from say.api import celery
+from say.celery import celery
 from say.models.social_worker_model import SocialWorker
 
 
