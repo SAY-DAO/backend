@@ -5,6 +5,7 @@ services:
 stages:
   - build
   - deploy
+  - loadtest
 
 variables:
   CONTAINER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
@@ -78,3 +79,14 @@ deploy-prod:
     - release
   tags:
     - deploy-prod
+
+smock-test:
+  image:
+    name: loadimpact/k6:latest
+    entrypoint: [""]
+  stage: loadtest
+  script:
+    - BASE_URL=s.sayapp.company k6 run ./tests/loadtest/smock-test.js
+  only:
+      - release
+  

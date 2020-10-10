@@ -134,6 +134,13 @@ def handle_http_exception(error):
     return response
 
 
+@app.teardown_appcontext
+def shutdown_session(response_or_exc):
+    from say.models import session
+    session.remove()
+    return response_or_exc
+
+
 def allowed_voice(filename):
     if (
         "." in filename
