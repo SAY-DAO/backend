@@ -85,7 +85,8 @@ smock-test:
     name: loadimpact/k6:latest
     entrypoint: [""]
   stage: loadtest
-  before_script: # Only to override default before_script
+  before_script: 
+    - '' # Only to override default before_script
   script:
     - BASE_URL=s.sayapp.company k6 run ./tests/loadtest/smock-test.js
   only:
