@@ -4,7 +4,7 @@ import { Trend, Rate } from "k6/metrics";
 
 export let options = {
   vus: 3,
-  duration: "1m",
+  duration: "1h",
 
   thresholds: {
     http_req_duration: ["p(95)<1000"],
