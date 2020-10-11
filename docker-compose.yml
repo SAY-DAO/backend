@@ -116,10 +116,9 @@ services:
         - traefik.http.services.${STACK_NAME}-backend.loadbalancer.server.port=5000
   worker: &worker
     <<: *backend
-    command: celery -A say.api.celery worker --autoscale=8,1 --loglevel=WARNING -B -S redbeat.RedBeatScheduler -Q celery -Ofair
+    command: celery -A say.celery worker --autoscale=8,1 --loglevel=WARNING -B -S redbeat.RedBeatScheduler -Q celery -Ofair
     healthcheck:
       test: echo
-      #test: celery -A say.api.celery inspect ping
     deploy:
       placement:
         constraints:
@@ -134,10 +133,10 @@ services:
         failure_action: rollback
   slow-worker:
     <<: *worker
-    command: celery -A say.api.celery worker --autoscale=4,1 --loglevel=WARNING -S redbeat.RedBeatScheduler -Q slow -Ofair
+    command: celery -A say.celery worker --autoscale=4,1 --loglevel=WARNING -S redbeat.RedBeatScheduler -Q slow -Ofair
   flower:
     <<: *worker
-    command: celery -A say.api.celery flower
+    command: celery -A say.celery flower
     environment:
       - FLOWER_PERSISTENT=true
       - FLOWER_DB=/flower/db
