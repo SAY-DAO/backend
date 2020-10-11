@@ -2,17 +2,18 @@ import http from "k6/http";
 import { check, sleep } from "k6";
 import { Trend, Rate } from "k6/metrics";
 
-let dashboardErrorRate = new Rate("Dashboard errors");
-let DashboardTrend = new Trend("dashboard");
+let childErrorRate = new Rate("Child errors");
+let ChildTrend = new Trend("Child");
 
 export let options = {
   thresholds: {
-    "Dashboard Users": ["p(95)<500"],
-  }
+    "Child Users": ["p(95)<500"],
+  },
 };
 
-export default function() {
-  let urlDashboard = "http://0.0.0.0:5000/api/v2/dashboard";
+export default function () {
+  let urlChild =
+    "http://0.0.0.0:5000/api/v2/child/childId=70&confirm=1?_lang=fa";
   let params = {
     headers: {
       Authorization:
@@ -21,21 +22,21 @@ export default function() {
   };
 
   let requests = {
-    "Get Dashboard": {
+    "Get Child": {
       method: "GET",
-      url: urlDashboard,
+      url: urlChild,
       params: params,
     },
   };
 
   let responses = http.batch(requests);
-  let dashboardResp = responses["Get Dashboard"];
+  let childResp = responses["Get Child"];
 
-  check(dashboardResp, {
-    "status is 200": (r) => r.status === 200
-  }) || dashboardErrorRate.add(1);
+  check(childResp, {
+    "status is 200": (r) => r.status === 200,
+  }) || childErrorRate.add(1);
 
-  DashboardTrend.add(dashboardResp.timings.duration);
+  ChildTrend.add(childResp.timings.duration);
 
   sleep(1);
-};
+}

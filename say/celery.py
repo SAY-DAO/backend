@@ -1,13 +1,16 @@
+from kombu import Exchange, Queue
+from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
+
 from celery import Celery
 from celery.schedules import crontab
-from kombu import Exchange, Queue
-
+from say.api import app as flask_app
 from say.config import configs
-
 
 CELERY_TASK_LIST = [
     'say.tasks',
 ]
+
 
 beat = {
     'report-to-social-workers': {
@@ -45,7 +48,6 @@ def create_celery_app(beat):
         broker=configs.broker_url,
         include=CELERY_TASK_LIST,
     )
-    celery.conf.timezone = 'UTC'
     celery.conf.beat_schedule = beat
     celery.conf.update(configs.to_dict())
     celery.conf.acksa_late = True
@@ -71,21 +73,27 @@ def create_celery_app(beat):
     
     TaskBase = celery.Task
 
+    db = create_engine(configs.postgres_url, pool_pre_ping=True)
+    session_factory = sessionmaker(
+        db,
+        autoflush=False,
+        autocommit=False,
+        expire_on_commit=True,
+        twophase=False,
+    )
+    session = scoped_session(session_factory)
+    
     class DBTask(TaskBase):
-        _session = None
+        def __init__(self, *args, **kwargs) -> None:
+            self.session = session
+            super().__init__(*args, **kwargs)
 
         def after_return(self, *args, **kwargs):
-            if self._session is not None:
-                self._session.close()
-                self._session.remove()
-
-        @property
-        def session(self):
-            if self._session is None:
-                from say.models import session
-                self._session = session
-
-            return self._session
+            if self.session:
+                self.session.remove()
+                
+            super().after_return(*args, **kwargs)
+            
 
     celery.DBTask = DBTask
 
@@ -93,7 +101,7 @@ def create_celery_app(beat):
         abstract = True
 
         def __call__(self, *args, **kwargs):
-            with app.app_context():
+            with flask_app.app_context():
                 return TaskBase.__call__(self, *args, **kwargs)
 
     celery.Task = ContextTask

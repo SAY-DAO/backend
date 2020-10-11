@@ -3,15 +3,15 @@ import { check, sleep } from "k6";
 import { Trend, Rate } from "k6/metrics";
 
 export let options = {
-  vus: 1, // 1 user looping for 1 minute
+  vus: 3,
   duration: "1m",
 
   thresholds: {
-    http_req_duration: ["p(99)<1500"], // 99% of requests must complete below 1.5s
+    http_req_duration: ["p(95)<1000"],
   },
 };
 
-const BASE_URL = "http://0.0.0.0:5000";
+const BASE_URL = __ENV.BASE_URL || "http://0.0.0.0:5000";
 const SLEEP_DURATION = 0.1;
 
 const APIS = {
@@ -58,7 +58,7 @@ export default function () {
     if (APIS[api].params.headers) {
       APIS[api].params.headers.Authorization = token;
     } else {
-      APIS[api].params.headers = {  Authorization: token  };
+      APIS[api].params.headers = { Authorization: token };
     }
   });
 
@@ -73,4 +73,4 @@ export default function () {
   });
 
   sleep(SLEEP_DURATION);
-};
+}

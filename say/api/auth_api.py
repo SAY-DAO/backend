@@ -194,7 +194,6 @@ class Login(Resource):
     @swag_from("./docs/auth/login.yml")
     def post(self):
         resp = {"message": "Something is Wrong!"}
-
         try:
 
             if "username" in request.form.keys():
