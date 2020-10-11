@@ -3,7 +3,7 @@ import { check, sleep } from "k6";
 import { Trend, Rate } from "k6/metrics";
 
 export let options = {
-  vus: 1, // 1 user looping for 1 minute
+  vus: , // 1 user looping for 1 minute
   duration: "1m",
 
   thresholds: {
