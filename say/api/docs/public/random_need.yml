@@ -1,0 +1,31 @@
+Random Need
+---
+
+tags:
+  - Public API
+
+parameters:
+  - name: _lang
+    in: query
+    description: fa,en
+    required: false
+    type: string
+    
+responses:
+  200:
+    description: Ok
+    schema:
+      id: random_need
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        cost:
+          type: integer
+        childAvatarUrl:
+          type: string
+        childSayName:
+          type: string
