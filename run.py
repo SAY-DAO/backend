@@ -17,6 +17,7 @@ from say.api.check_api import *
 from say.api.invitation_api import *
 from say.api.change_cost_api import *
 from say.api.healthz import *
+from say.api.public import *
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
