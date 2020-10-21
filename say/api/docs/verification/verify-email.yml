@@ -2,7 +2,7 @@ Verify Email API
 ---
 
 tags:
-  - Auth API
+  - Verification API
 
 parameters:
   - in: formData

@@ -70,16 +70,6 @@ class RegisterUser(Resource):
         if not email and not phoneNumber:
             return {'message': 'Email or Phone Number is required'}, 400
 
-        if "firstName" in request.form.keys():
-            first_name = request.form["firstName"]
-        else:
-            return {"message": "firstName is needed"}, 400
-
-        if "lastName" in request.form.keys():
-            last_name = request.form["lastName"]
-        else:
-            return {"message": "lastName is needed"}, 400
-
         if "verifyCode" in request.form.keys():
             code = request.form["verifyCode"]
         else:
@@ -132,6 +122,7 @@ class RegisterUser(Resource):
 
         verification = session.query(Verification) \
             .filter(Verification._code==code) \
+            .filter(Verification.verified.is_(True)) \
             .filter(or_(
                 EmailVerification.email==email,
                 PhoneVerification.phone_number==phone_number,
@@ -141,13 +132,10 @@ class RegisterUser(Resource):
         if not verification:
             return {"message": "Invalid verifyCode"}, 400
 
-        if verification.expire_at <= datetime.utcnow():
-            return {"message": "verifyCode Expired"}, 499
-
         last_login = datetime.utcnow()
         new_user = User(
-            firstName=first_name,
-            lastName=last_name,
+            firstName='',
+            lastName='',
             userName=username,
             avatarUrl=None,
             emailAddress=email,
@@ -238,38 +226,39 @@ class Login(Resource):
                         User.formated_username==username,
                     )).first()
 
-            if user is not None:
-                if user.validate_password(password):
-                    lang = get_locale()
-                    user.locale = Locale(lang)
-                    user.lastLogin = datetime.utcnow()
-                    user.is_installed = is_installed
-                    safe_commit(session)
-
-                    access_token = create_user_access_token(user)
-                    refresh_token = create_refresh_token(identity=user.id)
-
-                    resp = make_response(
-                        jsonify(
-                            {
-                                "message": "Login Successful",
-                                "accessToken": f"Bearer {access_token}",
-                                "refreshToken": f"Bearer {refresh_token}",
-                                "user": obj_to_dict(user),
-                            },
-                        ),
-                        200,
-                    )
-                else:
-                    resp = make_response(
-                        jsonify({"message": "Username or Password is Wrong"}),
-                        400,
-                    )
-
-            else:
+            if user is None:
                 resp = make_response(
                     jsonify({"message": "Please Register First"}), 400
                 )
+                return
+
+            if not user.validate_password(password):
+                resp = make_response(
+                    jsonify({"message": "Username or Password is Wrong"}),
+                    400,
+                )
+                return
+            
+            lang = get_locale()
+            user.locale = Locale(lang)
+            user.lastLogin = datetime.utcnow()
+            user.is_installed = is_installed
+            safe_commit(session)
+
+            access_token = create_user_access_token(user)
+            refresh_token = create_refresh_token(identity=user.id)
+
+            resp = make_response(
+                jsonify(
+                    {
+                        "message": "Login Successful",
+                        "accessToken": f"Bearer {access_token}",
+                        "refreshToken": f"Bearer {refresh_token}",
+                        "user": obj_to_dict(user),
+                    },
+                ),
+                200,
+            )
 
         except Exception as e:
             print(e)
@@ -303,7 +292,7 @@ class VerifyPhone(Resource):
 
     @json
     @commit
-    @swag_from("./docs/auth/verify-phone.yml")
+    @swag_from("./docs/verification/verify-phone.yml")
     def post(self):
         phone_number = request.form.get('phone_number', None)
 
@@ -334,13 +323,36 @@ class VerifyPhone(Resource):
 
         return verification
 
+    
+class VerificationAPI(Resource):
+    decorators = [limiter.limit("5/minute", error_message=t('verification.too_many'))]
+
+    @json
+    @commit
+    @swag_from("./docs/verification/verify.yml")
+    def patch(self, id):
+        code = request.form.get('code')
+        verification = session.query(Verification).get(id)
+
+        if not verification:
+            raise HTTPException(404, t('verification.4o4'))
+
+        if verification._code != code:
+            raise HTTPException(400, t('verification.invalid'))
+
+        if verification.is_expired:
+            raise HTTPException(400, t('verification.expired'))
+
+        verification.verified = True
+        return {'message': 'ok'}
+
 
 class VerifyEmail(Resource):
     decorators = [limiter.limit("5/minute")]
 
     @json
     @commit
-    @swag_from("./docs/auth/verify-email.yml")
+    @swag_from("./docs/verification/verify-email.yml")
     def post(self):
         email = request.form.get('email', None)
 
@@ -504,6 +516,7 @@ api.add_resource(LogoutRefresh, "/api/v2/auth/logout/refresh")
 api.add_resource(TokenRefresh, "/api/v2/auth/refresh")
 api.add_resource(VerifyPhone, "/api/v2/auth/verify/phone")
 api.add_resource(VerifyEmail, "/api/v2/auth/verify/email")
+api.add_resource(VerificationAPI, "/api/v2/auth/verify/<int:id>")
 api.add_resource(ResetPasswordByEmailApi, "/api/v2/auth/password/reset/email")
 api.add_resource(ResetPasswordByPhoneApi, "/api/v2/auth/password/reset/phone")
 api.add_resource(

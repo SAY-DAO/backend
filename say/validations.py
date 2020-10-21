@@ -1,6 +1,11 @@
 import re
+
 import phonenumbers
+from flask import Response
+from flask.globals import request
 from sqlalchemy_utils import PhoneNumber
+
+from say.schema.base import BaseModel
 
 
 VALID_ROLES = [*range(-1, 6)]
@@ -22,3 +27,17 @@ def validate_phone(phone):
     except phonenumbers.phonenumberutil.NumberParseException:
         return False
 
+
+def validate(model: BaseModel):
+    def wrapper(func):
+        def inner(*_args, **_kwargs):
+            try:
+                request.model = model(**dict(request.form))
+            except ValueError as e:
+                return Response(
+                    e.json(),
+                    status=400,
+                )
+            return func(*_args, **_kwargs)
+        return inner
+    return wrapper

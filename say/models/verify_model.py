@@ -1,4 +1,5 @@
 import secrets
+from babel.core import default_locale
 
 from sqlalchemy import DateTime
 from sqlalchemy_utils import PhoneNumberType, EmailType
@@ -25,10 +26,15 @@ class Verification(base, Timestamp):
     _code = Column(Unicode(6), nullable=False, default=generate_6_digit_secret)
     expire_at = Column(DateTime, nullable=False)
     type = Column(Unicode(10), nullable=False)
+    verified = Column(Boolean, default=False, nullable=False)
 
     __mapper_args__ = {
         'polymorphic_on': type,
     }
+
+    @property
+    def is_expired(self):
+        return datetime.utcnow() > self.expire_at 
 
 
 class PhoneVerification(Verification):

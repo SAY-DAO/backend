@@ -2,7 +2,7 @@ Verify Phone API
 ---
 
 tags:
-  - Auth API
+  - Verification API
 
 parameters:
   - in: formData
