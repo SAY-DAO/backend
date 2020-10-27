@@ -1,5 +1,7 @@
 import os
 from datetime import datetime, timedelta
+from functools import partial
+from flask import config
 
 from sqlalchemy import or_
 
@@ -9,6 +11,7 @@ from say.api import app
 from say.celery import celery
 from .send_email import send_embeded_subject_email
 from say.render_template_i18n import render_template_i18n
+from say.config import configs
 
 
 @celery.task(base=celery.DBTask, bind=True)
@@ -76,11 +79,11 @@ def report_to_family(self, family_id):
         to_members_email = list(
             set(to_members_email).intersection(set(all_members_email))
         )
-        base_url = app.config['BASE_URL']
+        base_url = configs.BASE_URL
         child_page = os.path.join(base_url, 'childPage', str(child_id), '0')
 
-        send_embeded_subject_email.delay(
-            to=to_members_email,
+        report_email = partial(
+            send_embeded_subject_email.delay,             
             html=render_template_i18n(
                 'status_update_to_family.html',
                 child_sayName=child_sayName,
@@ -90,8 +93,16 @@ def report_to_family(self, family_id):
                 locale=LANGS.fa,
                 date_with_year=False,
             ),
-            cc=cc_members_email,
         )
+
+        for email in to_members_email:
+            report_email(to=email)
+        
+        for email in cc_members_email:
+            report_email(
+                to=configs.FAMILY_REPORT_EMAIL,
+                cc=email,
+            )
 
     return [to_members_email, cc_members_email]
 
