@@ -64,6 +64,8 @@ class Config(object):
     task_acks_late = True
     worker_prefetch_multiplier = 1
 
+    FAMILY_REPORT_EMAIL = 'info@say.company'
+
     def __init__(self):
         load_dotenv(find_dotenv())
         for k, v in os.environ.items():
