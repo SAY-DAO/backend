@@ -14,16 +14,23 @@ class RandomNeed(Resource):
     def get(self):
         need = session.query(
             Need.id, 
-            Need.name.label('as'), 
+            Need.name, 
             Need.imageUrl,
             Need.cost, 
             Child.awakeAvatarUrl, 
             Child.sayName,
+            Need.type,
+            Need.link,
+            Need.img,
         ).filter(
             Need.status.in_([0, 1]),
             Need.name.isnot(None),
             Need.isConfirmed.is_(True),
-        ).join(Child, Child.id == Need.child_id) \
+            Child.isConfirmed.is_(True),
+        ).join(
+            Child, 
+            Child.id == Need.child_id,
+        ) \
             .order_by(func.random()) \
             .limit(1) \
             .first()
@@ -34,7 +41,10 @@ class RandomNeed(Resource):
             imageUrl=need[2],
             cost=need[3],
             childAvatarUrl=need[4],
-            childSayName=need[5]
+            childSayName=need[5],
+            type=need[6],
+            retailerLink=need[7],
+            retailerImage=need[8],
         )
 
 

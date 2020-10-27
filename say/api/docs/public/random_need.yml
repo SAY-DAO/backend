@@ -29,3 +29,10 @@ responses:
           type: string
         childSayName:
           type: string
+        type:
+          type: integer
+          description: 0=service, 1=product
+        retailerLink:
+          type: string
+        retailerImage:
+          type: string
