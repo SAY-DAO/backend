@@ -698,6 +698,8 @@ class NeedReceipts(Resource):
             .join(SocialWorker, SocialWorker.id == Child.id_social_worker)
             .filter(
                 Need.isDeleted == False,
+                Receipt.deleted.is_(None),
+                NeedReceipt.deleted.is_(None),
                 Need.id == id,
                 or_(
                     True if user_role in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR] else False,
@@ -763,6 +765,30 @@ class NeedReceipts(Resource):
         return ReceiptSchema.from_orm(receipt)
 
 
+class NeedReceiptAPI(Resource):
+
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
+    @json
+    @swag_from('./docs/need/delete_receipt.yml')
+    def delete(self, id, receiptId):
+        receipt_id = receiptId
+        need_receipt = session.query(NeedReceipt).filter(
+            NeedReceipt.need_id == id,
+            NeedReceipt.receipt_id == receipt_id,
+        ).one_or_none()
+
+        if need_receipt is None:
+            return HTTP_NOT_FOUND()
+
+        if need_receipt.deleted:
+            return {'message': 'Already deleted'}
+
+        need_receipt.deleted = datetime.utcnow()
+        safe_commit(session)
+        return ReceiptSchema.from_orm(need_receipt.receipt)
+        
+        
+
 """
 API URLs
 """
@@ -779,4 +805,8 @@ api.add_resource(AddNeed, "/api/v2/need/")
 api.add_resource(
     NeedReceipts,
     "/api/v2/needs/<int:id>/receipts",
+)
+api.add_resource(
+    NeedReceiptAPI,
+    "/api/v2/needs/<int:id>/receipts/<int:receiptId>",
 )
