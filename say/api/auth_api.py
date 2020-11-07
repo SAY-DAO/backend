@@ -178,6 +178,7 @@ class RegisterUser(Resource):
 
 
 class Login(Resource):
+    decorators = [limiter.limit("10/minute")]
 
     @swag_from("./docs/auth/login.yml")
     def post(self):

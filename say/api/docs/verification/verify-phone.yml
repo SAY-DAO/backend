@@ -15,6 +15,8 @@ responses:
     description: Missing phone_number, Invalid phone_number
   422:
     description: phone_number Exists
-
+  429:
+    description: Too many request
+    
   200:
     description: Ok, A code will send to the phone_number
