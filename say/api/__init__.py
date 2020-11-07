@@ -42,6 +42,7 @@ from .exception import HTTPException
 from ..config import configs
 from ..helpers import get_secret
 from say.sentry import setup_sentry
+from ..validations import *
 
 
 DEFAULT_CHILD_ID = 104  # TODO: Remove this after implementing pre needs
@@ -122,34 +123,3 @@ def shutdown_session(response_or_exc):
     from say.models import session
     session.remove()
     return response_or_exc
-
-
-def allowed_voice(filename):
-    if (
-        "." in filename
-        and filename.rsplit(".", 1)[1].lower() in ALLOWED_VOICE_EXTENSIONS
-    ):
-        return True
-
-    raise TypeError('Wrong voice format')
-
-
-def allowed_image(filename):
-    if (
-        "." in filename
-        and filename.rsplit(".", 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
-    ):
-        return True
-
-    raise TypeError('Wrong image format')
-
-
-def allowed_receipt(filename):
-    if (
-        "." in filename
-        and filename.rsplit(".", 1)[1].lower() in ALLOWED_RECEIPT_EXTENSIONS
-    ):
-        return True
-
-    raise TypeError('Wrong receipt format')
-

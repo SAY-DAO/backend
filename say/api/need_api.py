@@ -4,19 +4,22 @@ from uuid import uuid4
 import ujson
 from dictdiffer import diff
 from flask import json as json_
+
+from say.models import commit, obj_to_dict, session
+from say.models.child_model import Child
+from say.models.child_need_model import ChildNeed
+from say.models.family_model import Family
+from say.models.need_family_model import NeedFamily
+from say.models.need_model import Need
+from say.models.receipt import NeedReceipt, Receipt
+from say.models.social_worker_model import SocialWorker
+from say.models.user_family_model import UserFamily
+from say.orm import safe_commit
+from say.schema import NewReceiptSchema, ReceiptSchema
+from say.tasks import update_need
 from sqlalchemy import or_
 
 from . import *
-from say.models import session, obj_to_dict, commit
-from say.models.child_model import Child
-from say.models.child_need_model import ChildNeed
-from say.models.need_family_model import NeedFamily
-from say.models.family_model import Family
-from say.models.need_model import Need
-from say.models.social_worker_model import SocialWorker
-from say.models.user_family_model import UserFamily
-from say.tasks import update_need
-from say.orm import safe_commit
 
 """
 Need APIs
@@ -230,27 +233,32 @@ class UpdateNeedById(Resource):
                 os.makedirs(temp_need_path, exist_ok=True)
 
             if "receipts" in request.files.keys():
+                import pudb; pudb.set_trace()
                 file2 = request.files["receipts"]
                 if file2.filename == "":
                     resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY FILE!"}), 500)
                     session.close()
                     return resp
 
-                if file2 and allowed_receipt(file2.filename):
-                    filename = secure_filename(uuid4().hex + '-' + file2.filename)
-                    if not os.path.isdir(temp_need_path):
-                        os.makedirs(temp_need_path, exist_ok=True)
+                if not allowed_receipt(file2.filename):
+                    resp = make_response(jsonify({"message": f"Only {ALLOWED_RECEIPT_EXTENSIONS} allowed"}), 400)
+                    session.close()
+                    return resp
 
-                    receipt_path = os.path.join(
-                        temp_need_path, str(need.id) + "-receipt_" + filename
-                    )
+                filename = secure_filename(uuid4().hex + '-' + file2.filename)
+                if not os.path.isdir(temp_need_path):
+                    os.makedirs(temp_need_path, exist_ok=True)
 
-                    file2.save(receipt_path)
-                    receipt_url = '/' + receipt_path
-                    if need.receipts is None:
-                        need.receipts = receipt_url
-                    else:
-                        need.receipts += f',{receipt_url}'
+                receipt_path = os.path.join(
+                    temp_need_path, str(need.id) + "-receipt_" + filename
+                )
+
+                file2.save(receipt_path)
+                receipt_url = '/' + receipt_path
+                if need.receipts is None:
+                    need.receipts = receipt_url
+                else:
+                    need.receipts += f',{receipt_url}'
 
             # FIXME: receipts are allowed
             if need.isConfirmed and sw_role not in (ADMIN, SUPER_ADMIN):
@@ -631,23 +639,27 @@ class AddNeed(Resource):
                     session.close()
                     return resp
 
-                if file2 and allowed_receipt(file2.filename):
-                    filename = secure_filename(file2.filename)
-                    # filename = str(0) + "." + file2.filename.split(".")[-1]
 
-                    temp_need_path = os.path.join(
-                        temp_need_path, str(new_need.id) + "-need"
-                    )
+                if not allowed_receipt(file2.filename):
+                    resp = make_response(jsonify({"message": f"Only {ALLOWED_RECEIPT_EXTENSIONS} allowed"}), 400)
+                    session.close()
+                    return resp
 
-                    if not os.path.isdir(temp_need_path):
-                        os.makedirs(temp_need_path, exist_ok=True)
+                filename = secure_filename(file2.filename)
 
-                    receipt_path = os.path.join(
-                        temp_need_path, str(new_need.id) + "-receipt_" + filename
-                    )
+                temp_need_path = os.path.join(
+                    temp_need_path, str(new_need.id) + "-need"
+                )
 
-                    file2.save(receipt_path)
-                    new_need.receipts = '/' + receipt_path
+                if not os.path.isdir(temp_need_path):
+                    os.makedirs(temp_need_path, exist_ok=True)
+
+                receipt_path = os.path.join(
+                    temp_need_path, str(new_need.id) + "-receipt_" + filename
+                )
+
+                file2.save(receipt_path)
+                new_need.receipts = '/' + receipt_path
 
             safe_commit(session)
 
@@ -665,6 +677,50 @@ class AddNeed(Resource):
             return resp
 
 
+class NeedReceipts(Resource):
+
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
+    @json
+    @swag_from('./docs/need/new_receipt.yml')
+    def post(self, id):
+        sw_id = get_user_id()
+        try:
+            data = NewReceiptSchema(**request.form.to_dict(), **request.files, owner_id=sw_id)
+        except ValueError as e:
+            return e.json(), 400
+
+        need = session.query(Need).filter(
+            Need.id == id,
+            Need.isDeleted == False,
+        ).one_or_none()
+
+        if need is None:
+            return HTTP_NOT_FOUND()
+        
+        receipt = session.query(Receipt).filter(
+            Receipt.code == data.code,
+            Receipt.deleted == None,
+        ).one_or_none()
+
+        if receipt is not None:
+            return {'message': 'Code already exists'}, 400
+
+        receipt = Receipt(**data.dict())
+
+        need_receipt = NeedReceipt(
+            need=need,
+            receipt=receipt,
+            sw_id=sw_id,
+        )
+        session.add(need_receipt)
+
+        data.attachment.save(data.attachment.filepath)
+        receipt.attachment = data.attachment.filepath
+
+        safe_commit(session)
+        return ReceiptSchema.from_orm(receipt)
+
+
 """
 API URLs
 """
@@ -678,3 +734,7 @@ api.add_resource(
     "/api/v2/need/confirm/needId=<need_id>",
 )
 api.add_resource(AddNeed, "/api/v2/need/")
+api.add_resource(
+    NeedReceipts,
+    "/api/v2/needs/<int:id>/receipts/",
+)

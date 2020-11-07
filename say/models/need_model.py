@@ -264,6 +264,12 @@ class Need(base, Timestamp):
         back_populates='need',
     )
 
+    receipts_ = relationship(
+        'Receipt',
+        secondary='need_receipt',
+        back_populates='needs',
+    )
+
     def done(self):
         self.status = 2
         self.doneAt = datetime.utcnow()
