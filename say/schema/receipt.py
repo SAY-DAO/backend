@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from say.authorization import get_user_role
 from typing import Any
 from urllib.parse import urljoin
 from uuid import uuid4
@@ -12,6 +13,7 @@ from say.schema.base import CamelModel
 from say.validations import ALLOWED_RECEIPT_EXTENSIONS, allowed_receipt
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
+from say.roles import *
 
 
 class NewReceiptSchema(CamelModel):
@@ -42,6 +44,15 @@ class NewReceiptSchema(CamelModel):
         v.filepath = f'{receipt_path}/{uuid4().hex}-{v.filename}'
 
         return v
+    
+    @validator('is_public')
+    def is_public_validator(cls, v):
+        role = get_user_role()
+
+        if not role in [SUPER_ADMIN, SAY_SUPERVISOR, ADMIN] and v == True:
+            raise ValueError(f'can not create public receipt with role {role}')
+        
+        return v
 
 
 class ReceiptSchema(NewReceiptSchema):
@@ -54,8 +65,19 @@ class ReceiptSchema(NewReceiptSchema):
         orm_mode=True 
     
     @validator('attachment')
-    def attachment_exporter(cls, v):
+    def attachment_validator(cls, v):
         return urljoin(
             configs.BASE_URL,
             v,
         )
+
+    @validator('is_public')
+    def is_public_validator(cls, v):
+        return v
+
+    @validator('owner_id')
+    def owner_id_validator(cls, v):
+        role = get_user_role()
+        if not role in [SUPER_ADMIN, SAY_SUPERVISOR, ADMIN] and v == True:
+            return None
+        return v

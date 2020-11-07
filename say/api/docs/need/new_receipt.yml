@@ -44,6 +44,7 @@ parameters:
     in: formData
     type: boolean
     default: false
+    description: default=false, only SUPER_ADMIN, SAY_SUPERVISOR, ADMIN can set to true
 
 responses:
   400:

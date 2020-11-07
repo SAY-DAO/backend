@@ -4,6 +4,7 @@ from uuid import uuid4
 import ujson
 from dictdiffer import diff
 from flask import json as json_
+from flask_jwt_extended.exceptions import NoAuthorizationError
 
 from say.models import commit, obj_to_dict, session
 from say.models.child_model import Child
@@ -34,8 +35,8 @@ def filter_by_privilege(query, get=False):  # TODO: priv
     if user_role in [SOCIAL_WORKER, COORDINATOR]:
         if get:
             query = query.join(Child).filter(or_(
-                    Child.id_social_worker == user_id,
-                    Child.id == DEFAULT_CHILD_ID,
+                Child.id_social_worker == user_id,
+                Child.id == DEFAULT_CHILD_ID,
             ))
         else:
             query = query.join(Child).filter(Child.id_social_worker == user_id)
@@ -233,7 +234,6 @@ class UpdateNeedById(Resource):
                 os.makedirs(temp_need_path, exist_ok=True)
 
             if "receipts" in request.files.keys():
-                import pudb; pudb.set_trace()
                 file2 = request.files["receipts"]
                 if file2.filename == "":
                     resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY FILE!"}), 500)
@@ -679,20 +679,62 @@ class AddNeed(Resource):
 
 class NeedReceipts(Resource):
 
-    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
+    @json
+    @swag_from('./docs/need/list_receipts.yml')
+    def get(self, id):
+        try:
+            user_role = get_user_role()
+            user_id = get_user_id()
+            ngo_id = get_sw_ngo_id()
+        except NoAuthorizationError:
+            user_role = None
+            user_id = None
+            ngo_id = None
+
+        base_query = (session.query(Receipt) \
+            .join(NeedReceipt, NeedReceipt.receipt_id == Receipt.id)
+            .join(Need, NeedReceipt.need_id == Need.id)
+            .join(Child, Child.id == Need.child_id)
+            .join(SocialWorker, SocialWorker.id == Child.id_social_worker)
+            .filter(
+                Need.isDeleted == False,
+                Need.id == id,
+                or_(
+                    True if user_role in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR] else False,
+                    Receipt.is_public == True,
+                    Receipt.owner_id == user_id if not user_role in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR] else False,
+                    SocialWorker.id_ngo == ngo_id if user_role in [NGO_SUPERVISOR] else False,
+                ),
+            )
+        )
+
+        res = []
+        for r in base_query:
+            res.append(ReceiptSchema.from_orm(r))
+
+        return res
+        
+
+    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
+               SAY_SUPERVISOR, ADMIN)
     @json
     @swag_from('./docs/need/new_receipt.yml')
     def post(self, id):
         sw_id = get_user_id()
+
         try:
             data = NewReceiptSchema(**request.form.to_dict(), **request.files, owner_id=sw_id)
         except ValueError as e:
             return e.json(), 400
 
-        need = session.query(Need).filter(
-            Need.id == id,
-            Need.isDeleted == False,
+
+        need = filter_by_privilege(
+            session.query(Need).filter(
+                Need.id == id,
+                Need.isDeleted == False,
+            )
         ).one_or_none()
+
 
         if need is None:
             return HTTP_NOT_FOUND()
@@ -736,5 +778,5 @@ api.add_resource(
 api.add_resource(AddNeed, "/api/v2/need/")
 api.add_resource(
     NeedReceipts,
-    "/api/v2/needs/<int:id>/receipts/",
+    "/api/v2/needs/<int:id>/receipts",
 )

@@ -1,0 +1,20 @@
+List receipts for a need
+
+---
+
+tags:
+  - Need API
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    type: string
+
+  - name: id
+    in: path
+    required: true
+
+responses:
+  200:
+    description: list of receipts

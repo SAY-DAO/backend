@@ -5,4 +5,3 @@ NGO_SUPERVISOR = 'NGO supervisor'
 SAY_SUPERVISOR = 'SAY supervisor'
 ADMIN = 'admin'
 USER = 'user'
-
