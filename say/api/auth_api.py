@@ -332,6 +332,8 @@ class VerificationAPI(Resource):
     @swag_from("./docs/verification/verify.yml")
     def patch(self, id):
         code = request.form.get('code')
+        code = code.replace('-', '')
+
         verification = session.query(Verification).get(id)
 
         if not verification:
