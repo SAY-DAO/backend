@@ -26,6 +26,7 @@ class RandomNeed(Resource):
             Need.status.in_([0, 1]),
             Need.name.isnot(None),
             Need.isConfirmed.is_(True),
+            Need.isDeleted.is_(False),
             Child.isConfirmed.is_(True),
         ).join(
             Child, 
