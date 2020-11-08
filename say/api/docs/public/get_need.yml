@@ -1,0 +1,47 @@
+Get Public Need
+---
+
+tags:
+  - Public API
+
+parameters:
+  - name: id
+    in: path
+    required: true
+    type: string
+  
+  - name: _lang
+    in: query
+    description: fa,en
+    required: false
+    type: string
+    
+  
+responses:
+  404:
+    description: Not Found
+
+  200:
+    description: Ok
+    schema:
+      id: public_need
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        cost:
+          type: integer
+        childAvatarUrl:
+          type: string
+        childSayName:
+          type: string
+        type:
+          type: integer
+          description: 0=service, 1=product
+        retailerLink:
+          type: string
+        retailerImage:
+          type: string

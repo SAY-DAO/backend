@@ -10,6 +10,7 @@ docker build \
     -t $BASE_IMAGE \
     .
 
+docker pull $CONTAINER_IMAGE || true
 docker build \
     --build-arg ENVIRONMENT=$ENVIRONMENT \
     --cache-from $BASE_IMAGE \
