@@ -84,8 +84,18 @@ class Child(base, Timestamp):
 
     @avatarUrl.expression
     def avatarUrl(cls):
-        return
+        # TODO: Use right timezone
+        now_time = datetime.utcnow().time()
 
+        if cls.country == 98 or cls.country == 93:
+            tz = pytz.timezone('Asia/Tehran')
+            now_time = datetime.now(tz).time()
+
+        if now_time >= time(21, 00) or now_time <= time(8, 00):
+            return cls.sleptAvatarUrl
+        else:
+            return cls.awakeAvatarUrl
+    
     @hybrid_property
     def is_gone(self):
         return self.existence_status != 1

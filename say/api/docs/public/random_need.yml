@@ -15,24 +15,4 @@ responses:
   200:
     description: Ok
     schema:
-      id: random_need
-      properties:
-        id:
-          type: integer
-        name:
-          type: string
-        category:
-          type: string
-        cost:
-          type: integer
-        childAvatarUrl:
-          type: string
-        childSayName:
-          type: string
-        type:
-          type: integer
-          description: 0=service, 1=product
-        retailerLink:
-          type: string
-        retailerImage:
-          type: string
+      id: public_need
