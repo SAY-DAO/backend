@@ -84,12 +84,9 @@ class Child(base, Timestamp):
 
     @avatarUrl.expression
     def avatarUrl(cls):
-        # TODO: Use right timezone
-        now_time = datetime.utcnow().time()
-
-        if cls.country == 98 or cls.country == 93:
-            tz = pytz.timezone('Asia/Tehran')
-            now_time = datetime.now(tz).time()
+        # FIXME: Use right timezone
+        tz = pytz.timezone('Asia/Tehran')
+        now_time = datetime.now(tz).time()
 
         if now_time >= time(21, 00) or now_time <= time(8, 00):
             return cls.sleptAvatarUrl
