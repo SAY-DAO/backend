@@ -37,10 +37,10 @@ class RegisterUser(Resource):
 
         username = data.username
 
-        phoneNumber = None
+        phone_number = None
         if "phoneNumber" in request.form.keys():
-            phoneNumber = request.form["phoneNumber"]
-            phone_number = phoneNumber.replace(' ', '')
+            phone_number = request.form["phoneNumber"]
+            phone_number = phone_number.replace(' ', '')
             if phone_number == '':
                 phone_number = None
 
@@ -67,7 +67,7 @@ class RegisterUser(Resource):
             if bool(email) == False:
                 email = None
 
-        if not email and not phoneNumber:
+        if not email and not phone_number:
             return {'message': 'Email or Phone Number is required'}, 400
 
         if "verifyCode" in request.form.keys():
@@ -85,7 +85,7 @@ class RegisterUser(Resource):
         lang = get_locale()
         locale = Locale(lang)
 
-        if phoneNumber and not validate_phone(phone_number):
+        if phone_number and not validate_phone(phone_number):
             return {"message": "Invalid phoneNumber"}, 400
 
         if not validate_username(username):
