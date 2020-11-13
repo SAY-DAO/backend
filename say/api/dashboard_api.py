@@ -20,8 +20,8 @@ class DashboardDataFeed(Resource):
             user = session.query(User).get(user_id)
 
             children = session.query(Child)\
-                .join(Family) \
-                .join(UserFamily) \
+                .join(Family, Family.id_child == Child.id) \
+                .join(UserFamily, UserFamily.id_family == Family.id) \
                 .filter(UserFamily.id_user == user_id) \
                 .order_by(UserFamily.created)
             
