@@ -1,6 +1,6 @@
 from sqlalchemy.orm import joinedload
 
-from say.models import session, obj_to_dict
+from say.models import session, obj_to_dict, Child, Family, UserFamily
 from say.models.user_model import User
 from . import *
 
@@ -17,13 +17,17 @@ class DashboardDataFeed(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            user = session.query(User).options(
-                joinedload('user_families').joinedload('family').joinedload('child')
-            ).get(user_id)
+            user = session.query(User).get(user_id)
 
-            children = []
-            for family_member in user.user_families:
-                child = family_member.family.child
+            children = session.query(Child)\
+                .join(Family) \
+                .join(UserFamily) \
+                .filter(UserFamily.id_user == user_id) \
+                .order_by(UserFamily.created)
+            
+            children_dict = []
+            
+            for child in children:
                 if not child.isConfirmed and get_user_role() in [USER]:
                     continue
 
@@ -41,11 +45,11 @@ class DashboardDataFeed(Resource):
                 del child_dict['id_social_worker']
                 del child_dict['id_ngo']
 
-                children.append(child_dict)
+                children_dict.append(child_dict)
 
             result = dict(
                 user=obj_to_dict(user),
-                children=children,
+                children=children_dict,
             )
             resp = make_response(jsonify(result), 200)
 
