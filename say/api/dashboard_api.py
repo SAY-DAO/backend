@@ -22,7 +22,10 @@ class DashboardDataFeed(Resource):
             children = session.query(Child)\
                 .join(Family, Family.id_child == Child.id) \
                 .join(UserFamily, UserFamily.id_family == Family.id) \
-                .filter(UserFamily.id_user == user_id) \
+                .filter(
+                    UserFamily.id_user == user_id,
+                    UserFamily.isDeleted == False,    
+                ) \
                 .order_by(UserFamily.created)
             
             children_dict = []
