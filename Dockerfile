@@ -1,4 +1,4 @@
-FROM python:3.8 AS base
+FROM registry.say.company/core/python:3.8 AS base
 
 ENV VIRTUAL_ENV=/opt/venv
 
@@ -12,7 +12,7 @@ COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
-FROM python:3.8-slim AS prod
+FROM registry.say.company/core/python:3.8-slim AS prod
 
 RUN apt update && apt install curl -y
 

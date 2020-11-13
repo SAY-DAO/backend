@@ -1,0 +1,25 @@
+Verify API
+---
+
+tags:
+  - Verification API
+
+parameters:
+  - in: path
+    name: id
+    type: int
+    
+  - in: formData
+    name: code
+    required: true
+    type: string
+
+responses:
+  400:
+    description: Missing code, Invalid code
+  404:
+    description: Verification not found
+  429:
+    description: Too many request
+  200:
+    description: Phone or Email verified

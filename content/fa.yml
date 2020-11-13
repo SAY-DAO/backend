@@ -2,3 +2,9 @@ reset_password:
   4o4: as 5
   used: as 3
   expired: s 4
+
+verification:
+  4o4: کد پیدا نشد
+  expired: کد منقضی شده است
+  invalid: کد غلط است
+  too_many: لطفا یک دقیقه صبر کنید و مجدد تلاش کنید

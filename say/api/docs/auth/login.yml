@@ -32,7 +32,8 @@ responses:
     description: Username or Password is Wrong 
   401:
     description: Please Register First
-
+  429:
+    description: Too many request
   200:
     description: Ok
 
