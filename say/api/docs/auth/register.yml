@@ -17,7 +17,7 @@ parameters:
 
   - in: formData
     name: countryCode
-    required: true
+    required: false
     type: string
     default: ir
 
@@ -29,16 +29,6 @@ parameters:
   - in: formData
     name: email
     required: false
-    type: string
-
-  - in: formData
-    name: firstName
-    required: true
-    type: string
-
-  - in: formData
-    name: lastName
-    required: true
     type: string
 
   - in: formData

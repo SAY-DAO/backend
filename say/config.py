@@ -40,7 +40,7 @@ class Config(object):
     MELI_PAYAMAK_USERNAME = 'change-this'
     MELI_PAYAMAK_PASSWORD = 'change-this'
     MELI_PAYAMAK_FROM = 'change-this'
-    VERIFICATION_MAXAGE = 5
+    VERIFICATION_MAXAGE = 30
     JWT_ACCESS_TOKEN_EXPIRES = 24 * 3600  # 1 day
     JWT_REFRESH_TOKEN_EXPIRES = 3 * 30 * 24 * 3600  # 3 months
     JWT_BLACKLIST_ENABLED = True
