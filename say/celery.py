@@ -33,6 +33,10 @@ beat = {
         'task': 'say.tasks.delivere_to_child.delivere_to_child',
         'schedule': crontab(minute=0),
     },
+    'update_nakama_txs': {
+        'task': 'say.tasks.nakama.update_nakama_txs',
+        'schedule': 10 * 60,
+    },
 }
 
 

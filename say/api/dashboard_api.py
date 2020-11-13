@@ -1,3 +1,5 @@
+from sqlalchemy.orm import joinedload
+
 from say.models import session, obj_to_dict
 from say.models.user_model import User
 from . import *
@@ -15,7 +17,10 @@ class DashboardDataFeed(Resource):
         resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
         try:
-            user = session.query(User).get(user_id)
+            user = session.query(User).options(
+                joinedload('user_families').joinedload('family').joinedload('child')
+            ).get(user_id)
+
             children = []
             for family_member in user.user_families:
                 child = family_member.family.child

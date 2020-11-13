@@ -106,6 +106,7 @@ from .reset_password_model import ResetPassword
 from .child_migration_model import ChildMigration
 from .invite import Invitation, InvitationAccept
 from .change_cost import *
+from .nakama import *
 
 
 # Handling mutliprocess engine

@@ -34,6 +34,7 @@ class Payment(base, Timestamp):
     transaction_date = Column(DateTime, nullable=True)
     verified = Column(DateTime, nullable=True)
     use_credit = Column(Boolean, default=False, nullable=False)
+    is_nakama = Column(Boolean, default=False, nullable=False)
 
     need_amount = Column(Integer, default=0)
     credit_amount = Column(Integer, default=0)

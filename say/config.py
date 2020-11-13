@@ -54,6 +54,9 @@ class Config(object):
     RABBITMQ_PORT = '5672'
     SENTRY_DSN = 'https://e7665a883afe47d082b3fa4e0b956c07@sentry.say.company/4'
     SENTRY_SAMPLE_RATE = 0.2
+    INFURA_URL = 'https://mainnet.infura.io/v3/0be880209fd94507a2b7b340f638f8a0'
+    NAKAMA_ADDRESS =  '0x052e909bd1a6b20d35c850d2a188fd515a738953'
+    ORPHAN_NAKAMA_TX_RANGE = 2 # Days
 
     # Celery
     BROKER = 'redis'
