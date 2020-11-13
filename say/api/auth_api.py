@@ -161,6 +161,7 @@ class RegisterUser(Resource):
             phone_number=phone_number,
             country=country,
             is_installed=is_installed,
+            is_nakama=False,
         )
         session.add(new_user)
 

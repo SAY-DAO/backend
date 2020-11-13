@@ -68,19 +68,19 @@ ALLOWED_VOICE_EXTENSIONS = {"wav", "m4a", "wma", "mp3", "aac", "ogg"}
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
 ALLOWED_RECEIPT_EXTENSIONS = ALLOWED_IMAGE_EXTENSIONS | {"pdf"}
 
-if configs.ENVIRONMENT != 'local':
-    sentry_sdk.init(
-        dsn=configs.SENTRY_DSN,
-        environment=configs.ENVIRONMENT,
-        integrations=[
-            FlaskIntegration(),
-            SqlalchemyIntegration(),
-            CeleryIntegration(),
-            RedisIntegration(),
-        ],
-        traces_sample_rate=configs.SENTRY_SAMPLE_RATE,
-        _experiments={"auto_enabling_integrations": True},
-    )
+# if configs.ENVIRONMENT != 'local':
+sentry_sdk.init(
+    dsn=configs.SENTRY_DSN,
+    environment=configs.ENVIRONMENT,
+    integrations=[
+        FlaskIntegration(),
+        SqlalchemyIntegration(),
+        CeleryIntegration(),
+        RedisIntegration(),
+    ],
+    traces_sample_rate=configs.SENTRY_SAMPLE_RATE,
+    _experiments={"auto_enabling_integrations": True},
+)
 
 app = Flask(__name__)
 # To disable flask_restful exception handler

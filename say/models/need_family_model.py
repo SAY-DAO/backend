@@ -18,6 +18,7 @@ class NeedFamily(base, Timestamp):
     id_need = Column(Integer, ForeignKey('need.id'), nullable=False)
     isDeleted = Column(Boolean, nullable=False, default=False)
     username = Column(Text, nullable=False, default='')
+    type = Column(Text, nullable=False)
     user_avatar = Column(Text, nullable=True)
     user_role = Column(Integer, nullable=True)
 
@@ -59,3 +60,8 @@ class NeedFamily(base, Timestamp):
         back_populates='participants',
         lazy='selectin',
     )
+
+    __mapper_args__ = {
+        'polymorphic_on': type,
+        'polymorphic_identity': 'app',
+    }

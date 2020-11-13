@@ -1,18 +1,18 @@
 from hashlib import sha256
 
 from sqlalchemy.orm import column_property
-from sqlalchemy_utils import LocaleType, CountryType, PhoneNumberType
+from sqlalchemy_utils import CountryType, LocaleType, PhoneNumberType
 
-from say.validations import validate_password as _validate_password
-from say.gender import Gender
-from say.tasks import send_sms, send_embeded_subject_email
+from say.config import configs
 from say.content import content
+from say.gender import Gender
 from say.locale import ChangeLocaleTo
 from say.render_template_i18n import render_template_i18n
-
+from say.tasks import send_embeded_subject_email, send_sms
+from say.validations import validate_password as _validate_password
 from . import *
-from .payment_model import Payment
 from .need_model import Need, NeedFamily
+from .payment_model import Payment
 
 """
 User Model
@@ -44,6 +44,7 @@ class User(base, Timestamp):
     _password = Column(String, nullable=False)
     locale = Column(LocaleType, default=Locale('fa'), nullable=False)
     is_installed = Column(Boolean, default=False, nullable=False)
+    is_nakama = Column(Boolean, default=False, nullable=False)
 
     @hybrid_property
     def formated_username(self):

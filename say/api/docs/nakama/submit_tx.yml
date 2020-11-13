@@ -1,0 +1,19 @@
+Submit eth transaction for a need (Nakama)
+
+---
+
+tags:
+  - Nakama API
+
+parameters:
+  - name: tx_hash
+    in: path
+    required: true
+    type: string
+  
+responses:
+  400:
+    description: Invalid Tx hash
+
+  200:
+    description: Ok
