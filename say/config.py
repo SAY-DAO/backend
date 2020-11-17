@@ -17,8 +17,8 @@ class Config(object):
     POSTGRES_DB = 'say'
     POSTGRES_USER = 'postgres'
     POSTGRES_PASSWORD = 'postgres'
-    BASE_URL = '0.0.0.0:3100'
-    API_URL = '0.0.0.0:5000'
+    BASE_URL = 'http://0.0.0.0:3100'
+    API_URL = 'http://0.0.0.0:5000'
     REDIS_HOST = 'localhost'
     ADD_TO_HOME_URL = 'https://sayapp.company/add'
     UPLOAD_FOLDER = 'files'
@@ -63,6 +63,8 @@ class Config(object):
     task_soft_time_limit = 60
     task_acks_late = True
     worker_prefetch_multiplier = 1
+
+    FAMILY_REPORT_EMAIL = 'vfamily@say.company'
 
     def __init__(self):
         load_dotenv(find_dotenv())
