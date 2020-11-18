@@ -5,7 +5,7 @@ import ujson
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_restful import abort
 from sqlalchemy import or_
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload,joinedload
 
 from . import *
 from say.models import session, obj_to_dict, commit
@@ -320,6 +320,7 @@ class GetChildNeeds(Resource):
             return
 
         needs_query = session.query(Need) \
+            .options(joinedload('participants')) \
             .filter(Need.child_id==child_id) \
             .filter(Need.isDeleted==False) \
             .order_by(Need.name) \
