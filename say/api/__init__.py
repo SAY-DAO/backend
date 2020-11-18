@@ -25,13 +25,7 @@ from flask_jwt_extended import JWTManager
 from logging import debug, basicConfig, DEBUG, getLogger
 from flask_caching import Cache
 from flask_cors import CORS
-import flask_monitoringdashboard as dashboard
 from mailerlite import MailerLiteApi
-import sentry_sdk
-from sentry_sdk.integrations.flask import FlaskIntegration
-from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
-from sentry_sdk.integrations.celery import CeleryIntegration
-from sentry_sdk.integrations.redis import RedisIntegration
 
 from say.api.ext.jwt import jwt
 from say.payment import IDPay
@@ -47,6 +41,7 @@ from say.orm import obj_to_dict
 from .exception import HTTPException
 from ..config import configs
 from ..helpers import get_secret
+from say.sentry import setup_sentry
 
 
 DEFAULT_CHILD_ID = 104  # TODO: Remove this after implementing pre needs
@@ -68,19 +63,7 @@ ALLOWED_VOICE_EXTENSIONS = {"wav", "m4a", "wma", "mp3", "aac", "ogg"}
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
 ALLOWED_RECEIPT_EXTENSIONS = ALLOWED_IMAGE_EXTENSIONS | {"pdf"}
 
-# if configs.ENVIRONMENT != 'local':
-sentry_sdk.init(
-    dsn=configs.SENTRY_DSN,
-    environment=configs.ENVIRONMENT,
-    integrations=[
-        FlaskIntegration(),
-        SqlalchemyIntegration(),
-        CeleryIntegration(),
-        RedisIntegration(),
-    ],
-    traces_sample_rate=configs.SENTRY_SAMPLE_RATE,
-    _experiments={"auto_enabling_integrations": True},
-)
+setup_sentry()
 
 app = Flask(__name__)
 # To disable flask_restful exception handler

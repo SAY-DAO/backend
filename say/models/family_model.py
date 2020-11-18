@@ -26,7 +26,6 @@ class Family(base, Timestamp):
     members = relationship(
         'UserFamily',
         back_populates='family',
-        lazy='selectin',
     )
 
     invitations = relationship(

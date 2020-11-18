@@ -252,7 +252,6 @@ class Need(base, Timestamp):
         foreign_keys=child_id,
         uselist=False,
         back_populates='needs',
-        lazy='selectin',
     )
 
     payments = relationship(
@@ -263,7 +262,6 @@ class Need(base, Timestamp):
     participants = relationship(
         'NeedFamily',
         back_populates='need',
-        lazy='selectin',
     )
 
     def done(self):
