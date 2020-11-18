@@ -6,6 +6,7 @@ import redis
 from flask import jsonify, make_response
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_claims, \
     get_jwt_identity, create_access_token, verify_jwt_refresh_token_in_request
+from sentry_sdk import set_user
 
 from say.api.ext.jwt import jwt
 from say.roles import *
@@ -88,8 +89,11 @@ def authorize(*roles):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             try:
-
                 verify_jwt_in_request()
+                set_user(dict(
+                    id=get_jwt_identity(),
+                    role=get_user_role(),
+                ))
             except Exception as ex:
                 getLogger().info(ex)
                 return make_response(jsonify(message='Unauthorized'), 401)
