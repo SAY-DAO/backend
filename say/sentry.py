@@ -14,15 +14,15 @@ def traces_sampler(sampling_context):
     if op == 'celery.task':
         task = sampling_context['celery_job']['task']
         if task == 'say.tasks.update_needs.update_need':
-            return 0.02
+            return 0.05
         else:
             return 1
     elif op == 'http.server':
         path = sampling_context['wsgi_environ']['PATH_INFO']
         if path == '/api/healthz':
-            return 0.01
+            return 0.1
         else:
-            return 0.5
+            return 0.7
     else:
         return 0.5
 
