@@ -345,20 +345,19 @@ class Need(base, Timestamp):
 
     @property
     def current_participants(self):
+        past_participation = NeedFamily(
+                user_role=-1,
+                paid=0,
+            )
+
         for p in self.participants:
             if p.isDeleted:
+                past_participation.paid += p.paid
                 continue
 
             yield p
 
-        past_participation, = session.query(
-            func.sum(NeedFamily.paid)
-        ) \
-            .filter(NeedFamily.id_need==self.id) \
-            .filter(NeedFamily.isDeleted==True) \
-            .first()
-
-        if past_participation:
+        if past_participation.paid != 0:
             yield NeedFamily(
                 user_role=-1,
                 paid=past_participation,

@@ -46,16 +46,19 @@ class NeedFamily(base, Timestamp):
     family = relationship(
         "Family",
         foreign_keys="NeedFamily.id_family",
+        uselist=False,
     )
     user = relationship(
         'User',
         foreign_keys=id_user,
         back_populates='participations',
+        uselist=False,
     )
     need = relationship(
         "Need",
         foreign_keys=id_need,
         back_populates='participants',
+        uselist=False,
     )
 
     __mapper_args__ = {
