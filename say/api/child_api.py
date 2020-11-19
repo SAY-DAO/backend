@@ -320,7 +320,7 @@ class GetChildNeeds(Resource):
             return
 
         needs_query = session.query(Need) \
-            .options(joinedload('participants')) \
+            .options(selectinload('participants')) \
             .filter(Need.child_id==child_id) \
             .filter(Need.isDeleted==False) \
             .order_by(Need.name) \
