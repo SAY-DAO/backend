@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from say.authorization import get_user_role
-from typing import Any
+from typing import Any, Optional
 from urllib.parse import urljoin
 from uuid import uuid4
 
@@ -16,14 +16,11 @@ from werkzeug.utils import secure_filename
 from say.roles import *
 
 
-class NewReceiptSchema(CamelModel):
-
-    attachment: Any
-    code: constr(max_length=64)
-    description: constr(max_length=1024) = ''
-    title: constr(max_length=128) = ''
-    is_public: bool = False
-    owner_id: int
+class UpdateReceiptSchema(CamelModel):
+    attachment: Optional[Any]
+    description: Optional[constr(max_length=1024)]
+    title: Optional[constr(max_length=128)]
+    is_public: Optional[bool]
 
     @validator('attachment')
     def attachment_validator(cls, v):
@@ -53,6 +50,15 @@ class NewReceiptSchema(CamelModel):
             raise ValueError(f'can not create public receipt with role {role}')
         
         return v
+
+class NewReceiptSchema(UpdateReceiptSchema):
+
+    attachment: Any
+    code: constr(max_length=64)
+    description: constr(max_length=1024) = ''
+    title: constr(max_length=128) = ''
+    is_public: bool = False
+    owner_id: int
 
 
 class ReceiptSchema(NewReceiptSchema):

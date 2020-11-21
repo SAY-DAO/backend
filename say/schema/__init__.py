@@ -1,1 +1,1 @@
-from .receipt import NewReceiptSchema, ReceiptSchema
+from .receipt import NewReceiptSchema, ReceiptSchema, UpdateReceiptSchema
