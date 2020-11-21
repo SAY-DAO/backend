@@ -19,6 +19,7 @@ from say.api.change_cost_api import *
 from say.api.healthz import *
 from say.api.public import *
 from say.api.nakama import *
+from say.api.receipts import *
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
-import os, shutil, copy
+
+import os
 
 import redis
 from flask import (
@@ -60,9 +61,6 @@ BASE_FOLDER = os.getcwd()
 if not os.path.isdir(configs.UPLOAD_FOLDER):
     os.makedirs(configs.UPLOAD_FOLDER)
 
-ALLOWED_VOICE_EXTENSIONS = {"wav", "m4a", "wma", "mp3", "aac", "ogg"}
-ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
-ALLOWED_RECEIPT_EXTENSIONS = ALLOWED_IMAGE_EXTENSIONS | {"pdf"}
 
 setup_sentry()
 

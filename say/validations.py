@@ -5,8 +5,6 @@ from flask import Response
 from flask.globals import request
 from sqlalchemy_utils import PhoneNumber
 
-from say.schema.base import BaseModel
-
 
 VALID_ROLES = [*range(-1, 6)]
 
@@ -31,7 +29,7 @@ def validate_phone(phone):
         return False
 
 
-def validate(model: BaseModel):
+def validate(model):
     def wrapper(func):
         def inner(*_args, **_kwargs):
             try:
