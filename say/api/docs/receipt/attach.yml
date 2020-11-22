@@ -1,0 +1,37 @@
+Attach a receipt to a need
+
+---
+
+tags:
+  - Receipt API
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - name: id
+    in: path
+    required: true
+
+  - name: need_id
+    in: path
+    required: true
+
+responses:
+  400:
+    description: already attached
+  
+  401:
+    description: unauthorized
+    
+  403:
+    description: permission denied
+
+  404:
+    description: need  or receipt not found
+  
+  200:
+    description: Ok

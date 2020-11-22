@@ -1,9 +1,10 @@
-from sqlalchemy import Column, Integer, Unicode, Boolean, DateTime, ForeignKey
+from logging import fatal
+from sqlalchemy import Column, Integer, Unicode, Boolean, DateTime, ForeignKey, or_
 from sqlalchemy.orm import relationship
-from sqlalchemy.orm.relationships import foreign
 from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import Timestamp
 
+from ..roles import *
 from ..orm import base
 
 
@@ -31,7 +32,32 @@ class Receipt(base, Timestamp):
         UniqueConstraint('code', 'deleted'),
     )
 
+    @classmethod
+    def _query(cls, session, role, user_id, ngo_id=-1, for_update=False, fields=None):
+        from . import Need, Child
 
+        query = session.query(cls).filter(cls.deleted.is_(None))
+        if for_update:
+            query = query.with_for_update()
+
+        if fields:
+            query = query.with_entities(*fields)
+
+        if role in [SUPER_ADMIN, SAY_SUPERVISOR, ADMIN]:
+            return query
+        
+        return query \
+            .join(NeedReceipt) \
+            .join(Need) \
+            .join(Child) \
+            .filter(
+                or_(
+                    Child.id_social_worker == user_id,
+                    Receipt.is_public == True if not for_update else False,
+                    Child.id_ngo == ngo_id if role == NGO_SUPERVISOR else False,
+                ),
+                cls.is_public == False if for_update else True,
+            )
 
 class NeedReceipt(base, Timestamp):
     __tablename__ = 'need_receipt'
