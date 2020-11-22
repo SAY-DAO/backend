@@ -1,9 +1,9 @@
-List receipts for a need
+Get a receipt
 
 ---
 
 tags:
-  - Need API
+  - Receipt API
 
 parameters:
   - name: Authorization
@@ -17,4 +17,4 @@ parameters:
 
 responses:
   200:
-    description: list of receipts
+    description: receipt

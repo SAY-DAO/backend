@@ -46,6 +46,9 @@ class Receipt(base, Timestamp):
         if role in [SUPER_ADMIN, SAY_SUPERVISOR, ADMIN]:
             return query
         
+        if role in [USER, None]:
+            return query.filter(Receipt.is_public == True)
+
         return query \
             .join(NeedReceipt) \
             .join(Need) \
