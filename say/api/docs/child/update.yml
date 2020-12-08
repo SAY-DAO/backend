@@ -111,6 +111,7 @@ parameters:
   - name: existence_status
     in: formData
     type: integer
+    description: 0 dead :( | 1 alive and present | 2 alive but gone | 3 Temporarry gone
 
   - name: child_id
     in: path
