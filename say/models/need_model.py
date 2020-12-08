@@ -419,6 +419,14 @@ class Need(base, Timestamp):
             if not self.unavailable_from:
                 self.unavailable_from = datetime.utcnow()
 
+    def unconfirm(self):
+        self.refund_extra_credit(0)
+        self.purchase_cost = 0
+        self.confirmDate = None
+        self.confirmUser = None
+        self.isConfirmed = False
+        self.status = 0
+
 
 @event.listens_for(Need.status, "set")
 def status_event(need, new_status, old_status, initiator):
