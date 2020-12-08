@@ -125,7 +125,7 @@ class GetAllChildren(Resource):
         skip = query.get('skip', 0)
         ngo_id = query.get('ngo_id', None)
         sw_id = query.get('sw_id', None)
-        ex_status = int(query.get('sw_id', 1))
+        ex_status = int(query.get('existence_status', 1))
 
         confirm = int(confirm)
         children_query = (
