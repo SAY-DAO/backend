@@ -125,13 +125,14 @@ class GetAllChildren(Resource):
         skip = query.get('skip', 0)
         ngo_id = query.get('ngo_id', None)
         sw_id = query.get('sw_id', None)
+        ex_status = int(query.get('sw_id', 1))
 
         confirm = int(confirm)
         children_query = (
             session.query(Child)
             .filter_by(isDeleted=False)
             .filter_by(isMigrated=False)
-            .filter_by(existence_status=1)
+            .filter_by(existence_status=ex_status)
         )
 
         children_query = filter_by_privilege(children_query, get=True)
@@ -220,6 +221,7 @@ class GetChildById(Resource):
             child_dict["childFamilyMembers"] = child_family_member
 
         return child_dict
+
 
 class GetChildByInvitationToken(Resource):
 

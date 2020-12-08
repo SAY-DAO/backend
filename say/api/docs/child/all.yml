@@ -41,6 +41,12 @@ parameters:
     schema:
       type: integer
 
+  - in: query
+    name: existence_status
+    default: 1
+    schema:
+      type: integer
+
 responses:
   500:
     description: Error occurred somewhere!
