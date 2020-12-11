@@ -125,15 +125,20 @@ class GetAllChildren(Resource):
         skip = query.get('skip', 0)
         ngo_id = query.get('ngo_id', None)
         sw_id = query.get('sw_id', None)
-        ex_status = int(query.get('existence_status', 1))
-
+        
+        ex_status = query.get('existence_status', '1')
+ 
         confirm = int(confirm)
         children_query = (
             session.query(Child)
             .filter_by(isDeleted=False)
             .filter_by(isMigrated=False)
-            .filter_by(existence_status=ex_status)
         )
+
+        if ex_status.startswith('!'):
+            children_query = children_query.filter(Child.existence_status != int(ex_status[1:]))
+        else:
+            children_query = children_query.filter(Child.existence_status == int(ex_status))
 
         children_query = filter_by_privilege(children_query, get=True)
         children_query = filter_by_query(children_query)
