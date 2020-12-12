@@ -360,7 +360,7 @@ class Need(base, Timestamp):
         if past_participation.paid != 0:
             yield NeedFamily(
                 user_role=-1,
-                paid=past_participation,
+                paid=past_participation.paid,
             )
 
     def update(self):
