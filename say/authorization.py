@@ -6,6 +6,8 @@ import redis
 from flask import jsonify, make_response
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_claims, \
     get_jwt_identity, create_access_token, verify_jwt_refresh_token_in_request
+from flask_jwt_extended.exceptions import JWTExtendedException
+    
 from sentry_sdk import set_user
 
 from say.api.ext.jwt import jwt
@@ -94,9 +96,9 @@ def authorize(*roles):
                     id=get_jwt_identity(),
                     role=get_user_role(),
                 ))
-            except Exception as ex:
+            except JWTExtendedException as ex:
                 getLogger().info(ex)
-                return make_response(jsonify(message='Unauthorized'), 401)
+                return make_response(jsonify(message=f'Unauthorized, {ex}'), 401)
 
             if get_user_role() not in roles:
                 return make_response(jsonify(message='Permission Denied'), 403)
