@@ -1,6 +1,7 @@
 import os
 from datetime import datetime, timedelta
 
+import say.orm
 from say.celery import celery
 from say.config import configs
 from say.orm import obj_to_dict, safe_commit
@@ -10,7 +11,7 @@ from say.orm import obj_to_dict, safe_commit
 def update_nakama_txs(self):
     from say.models.nakama import NakamaTx
 
-    tx_ids = self.session.query(NakamaTx.id).filter(
+    tx_ids = say.orm.session.query(NakamaTx.id).filter(
         NakamaTx.is_confirmed == False,
         NakamaTx.created > datetime.utcnow() - timedelta(days=configs.ORPHAN_NAKAMA_TX_RANGE)
     )
@@ -24,7 +25,7 @@ def update_nakama_txs(self):
 def update_nakama_tx(self, tx_id):
     from say.models.nakama import NakamaTx
 
-    tx = self.session.query(NakamaTx).get(tx_id)
+    tx = say.orm.session.query(NakamaTx).get(tx_id)
     tx.update()
-    safe_commit(self.session)
+    safe_commit(say.orm.session)
     return obj_to_dict(tx)

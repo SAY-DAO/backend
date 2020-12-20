@@ -1,187 +1,132 @@
-from say.models import session, obj_to_dict
-from say.models.privilege_model import Privilege
-from . import *
-from say.orm import safe_commit
+from flasgger import swag_from
+from flask import request
+from flask_restful import Resource
 
-"""
+from say.api.ext import api
+from say.authorization import authorize
+from say.decorators import json
+from say.exceptions import HTTP_NOT_FOUND
+from say.models import obj_to_dict
+from say.models.privilege_model import Privilege
+from say.orm import safe_commit, session
+from say.roles import *
+
+'''
 Privilege APIs
-"""
+'''
 
 
 class GetAllPrivileges(Resource):
 
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
-    @swag_from("./docs/privilege/all.yml")
+    @json
+    @swag_from('./docs/privilege/all.yml')
     def get(self):
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+        privileges = session.query(Privilege).all()
 
-        try:
-            privileges = session.query(Privilege).all()
+        result = {}
+        for privilege in privileges:
+            res = obj_to_dict(privilege)
+            result[str(privilege.id)] = res
 
-            result = {}
-            for privilege in privileges:
-                res =  obj_to_dict(privilege)
-                result[str(privilege.id)] = res
-
-            resp = make_response(jsonify(result), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "Something is Wrong !!!"}), 500)
-
-        finally:
-            session.close()
-            return resp
+        return result
 
 
 class AddPrivilege(Resource):
 
-    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
-    @swag_from("./docs/privilege/add.yml")
+    @authorize(SUPER_ADMIN)  # TODO: priv
+    @json
+    @swag_from('./docs/privilege/add.yml')
     def post(self):
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+        name = request.form['name']
+        privilege = request.form['privilege']
+        new_privilege = Privilege(name=name, privilege=privilege)
 
-        try:
-            name = request.form["name"]
-            privilege = request.form["privilege"]
-            new_privilege = Privilege(name=name, privilege=privilege)
+        session.add(new_privilege)
+        safe_commit(session)
 
-            session.add(new_privilege)
-            safe_commit(session)
-
-            resp = make_response(jsonify({"message": "new Privilege is added"}), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "something is wrong"}), 500)
-
-        finally:
-            session.close()
-            return resp
+        return new_privilege
 
 
 class GetPrivilegeByName(Resource):
 
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
-    @swag_from("./docs/privilege/name.yml")
+    @json
+    @swag_from('./docs/privilege/name.yml')
     def get(self, name):
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+        privilege_list = session.query(Privilege).filter_by(name=name).all()
 
-        try:
-            privilege_list = session.query(Privilege).filter_by(name=name).all()
+        result = {}
+        for privilege in privilege_list:
+            res = {'Id': privilege.id, 'Privilege': privilege.privilege}
+            result[str(privilege.id)] = res
 
-            result = {}
-            for privilege in privilege_list:
-                res = {"Id": privilege.id, "Privilege": privilege.privilege}
-                result[str(privilege.id)] = res
-
-            resp = make_response(jsonify(result), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "something is Wrong !!"}), 500)
-
-        finally:
-            session.close()
-            return resp
+        return result
 
 
 class GetPrivilegeById(Resource):
 
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
-    @swag_from("./docs/privilege/id.yml")
+    @json
+    @swag_from('./docs/privilege/id.yml')
     def get(self, privilege_id):
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+        privilege = session.query(Privilege) \
+            .filter_by(id=privilege_id) \
+            .one_or_none()
 
-        try:
-            privilege = session.query(Privilege).filter_by(id=privilege_id).first()
+        if not privilege:
+            raise HTTP_NOT_FOUND()
 
-            if not privilege:
-                resp = make_response(jsonify({"message": "something is Wrong !!"}), 500)
-                session.close()
-                return resp
-
-            result = obj_to_dict(privilege)
-            resp = make_response(jsonify(result), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "something is Wrong !!"}), 500)
-
-        finally:
-            session.close()
-            return resp
+        return privilege
 
 
 class GetPrivilegeByPrivilege(Resource):
 
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
-    @swag_from("./docs/privilege/privilege.yml")
+    @json
+    @swag_from('./docs/privilege/privilege.yml')
     def get(self, privilege_type):
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
 
-        try:
-            privilege_list = (
-                session.query(Privilege).filter_by(privilege=privilege_type).all()
-            )
+        privilege_list = session.query(Privilege) \
+            .filter_by(privilege=privilege_type) \
+            .all()
 
-            result = {}
-            for privilege in privilege_list:
-                res = obj_to_dict(privilege)
-                result[str(privilege.id)] = res
+        result = {}
+        for privilege in privilege_list:
+            res = obj_to_dict(privilege)
+            result[str(privilege.id)] = res
 
-            resp = make_response(jsonify(result), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "something is Wrong !!"}), 500)
-
-        finally:
-            session.close()
-            return resp
+        return result
 
 
 class UpdatePrivilege(Resource):
 
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
-    @swag_from("./docs/privilege/update.yml")
+    @json
+    @swag_from('./docs/privilege/update.yml')
     def patch(self, privilege_id):
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+        privilege = session.query(Privilege) \
+            .filter_by(id=privilege_id)\
+            .one_or_none()
 
-        try:
-            base_privilege = (
-                session.query(Privilege).filter_by(id=privilege_id).first()
-            )
+        if not privilege:
+            raise HTTP_NOT_FOUND()
 
-            if "name" in request.form.keys():
-                base_privilege.name = request.form["name"]
+        if 'name' in request.form.keys():
+            privilege.name = request.form['name']
 
-            if "privilege" in request.form.keys():
-                base_privilege.privilege = int(request.form["privilege"])
+        if 'privilege' in request.form.keys():
+            privilege.privilege = int(request.form['privilege'])
 
-            res = obj_to_dict(base_privilege)
-            safe_commit(session)
-
-            resp = make_response(jsonify(res), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "something is Wrong !!"}), 500)
-
-        finally:
-            session.close()
-            return resp
+        safe_commit(session)
+        return privilege
 
 
-"""
-API URLs
-"""
-
-api.add_resource(GetAllPrivileges, "/api/v2/privilege/all")
-api.add_resource(AddPrivilege, "/api/v2/privilege/add")
-api.add_resource(GetPrivilegeByName, "/api/v2/privilege/name=<name>")
-api.add_resource(GetPrivilegeById, "/api/v2/privilege/privilegeId=<privilege_id>")
+api.add_resource(GetAllPrivileges, '/api/v2/privilege/all')
+api.add_resource(AddPrivilege, '/api/v2/privilege/add')
+api.add_resource(GetPrivilegeByName, '/api/v2/privilege/name=<name>')
+api.add_resource(GetPrivilegeById, '/api/v2/privilege/privilegeId=<privilege_id>')
 api.add_resource(
-    GetPrivilegeByPrivilege, "/api/v2/privilege/privilege=<privilege_type>"
+    GetPrivilegeByPrivilege, '/api/v2/privilege/privilege=<privilege_type>'
 )
-api.add_resource(UpdatePrivilege, "/api/v2/privilege/update/privilegeId=<privilege_id>")
+api.add_resource(UpdatePrivilege, '/api/v2/privilege/update/privilegeId=<privilege_id>')

@@ -56,6 +56,7 @@ class Config(object):
     INFURA_URL = 'https://mainnet.infura.io/v3/0be880209fd94507a2b7b340f638f8a0'
     NAKAMA_ADDRESS =  '0x052e909bd1a6b20d35c850d2a188fd515a738953'
     ORPHAN_NAKAMA_TX_RANGE = 2 # Days
+    MAILERLITE_API_KEY = 'abcd'
 
     # Celery
     BROKER = 'redis'

@@ -1,11 +1,10 @@
 import web3
 from eth_utils import is_hexstr
 from flask_restful import Resource
-from say.decorators import json
-from say.models import session
-from say.models.nakama.nakama_tx import NakamaTx
-from say.orm import safe_commit
 
+from say.decorators import json
+from say.models.nakama.nakama_tx import NakamaTx
+from say.orm import safe_commit, session
 from .. import api, swag_from
 
 

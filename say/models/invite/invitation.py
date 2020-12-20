@@ -2,7 +2,6 @@ import secrets
 from urllib.parse import urljoin
 
 from say.models import *
-from say.api import app
 from say.constants import ALPHABET
 
 
@@ -58,7 +57,7 @@ class Invitation(base, Timestamp):
     @hybrid_property
     def link(self):
         return urljoin(
-            app.config['BASE_URL'], f'/search-result?token={self.token}',
+            configs.BASE_URL, f'/search-result?token={self.token}',
         )
 
     @link.expression

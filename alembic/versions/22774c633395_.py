@@ -25,7 +25,8 @@ def upgrade():
     op.execute('ALTER TABLE "user" ALTER COLUMN is_nakama SET DEFAULT false;')
     op.execute('COMMIT;')
     
-    from say.models import User, session
+    from say.models import User
+    from say.orm import session
 
     nakama = User(
         firstName='SAY',
@@ -53,7 +54,8 @@ def upgrade():
 
 
 def downgrade():
-    from say.models import User, session
+    from say.models import User
+    from say.orm import session
 
     session.query(User).filter(
         User.is_nakama == True,

@@ -1,10 +1,11 @@
+import say.orm
 from say.celery import celery
 from say.models.social_worker_model import SocialWorker
 
 
 @celery.task(base=celery.DBTask, bind=True)
 def report_to_social_workers(self):
-    social_workers_id = self.session.query(SocialWorker.id) \
+    social_workers_id = say.orm.session.query(SocialWorker.id) \
         .filter(SocialWorker.isDeleted.is_(False)) \
         .filter(SocialWorker.isActive.is_(True))
 
@@ -17,5 +18,5 @@ def report_to_social_workers(self):
     bind=True,
 )
 def report_to_social_worker(self, social_worker_id):
-    social_worker = self.session.query(SocialWorker).get(social_worker_id)
+    social_worker = say.orm.session.query(SocialWorker).get(social_worker_id)
     social_worker.send_report()

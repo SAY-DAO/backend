@@ -1,27 +1,32 @@
 import itertools
 
+from flasgger import swag_from
 from flask_jwt_extended.exceptions import NoAuthorizationError
-from flask_restful import abort
+from flask_restful import abort, Resource
 from sqlalchemy import func
 
-from say.models import session, commit
+from say.models import commit
 from say.models.child_model import Child
 from say.models.family_model import Family
 from say.models.need_model import Need
 from say.models.user_family_model import UserFamily
-from . import *
+from .ext import api
 from .. import crud
+from .ext import logger
+from ..authorization import get_user_id, authorize
+from ..decorators import json
+from ..orm import session
 
-"""
+'''
 Search APIs
-"""
+'''
 
 
 class GetRandomSearchResult(Resource):
 
     @json
     @commit
-    @swag_from("./docs/search/random.yml")
+    @swag_from('./docs/search/random.yml')
     def post(self):
         try:
             user_id = get_user_id()
@@ -65,16 +70,12 @@ class GetRandomSearchResult(Resource):
 
 class GetSayBrainSearchResult(Resource):
     @authorize
-    @swag_from("./docs/search/brain.yml")
+    @swag_from('./docs/search/brain.yml')
     def get(self):
-        return make_response(jsonify({"message": "not implemented yet!"}), 501)
+        raise NotImplementedError
 
-
-"""
-API URLs
-"""
 
 api.add_resource(GetRandomSearchResult,
-                 "/api/v2/search/random")
+                 '/api/v2/search/random')
 api.add_resource(GetSayBrainSearchResult,
-                 "/api/v2/search/saybrain")
+                 '/api/v2/search/saybrain')

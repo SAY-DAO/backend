@@ -1,25 +1,35 @@
+'''
+Child APIs
+'''
+
+
+import functools
+import os
 from collections import OrderedDict
+from datetime import datetime
 from uuid import uuid4
 
 import ujson
+from flasgger import swag_from
+from flask import request
 from flask_jwt_extended.exceptions import NoAuthorizationError
-from flask_restful import abort
+from flask_restful import abort, Resource
 from sqlalchemy import or_
-from sqlalchemy.orm import selectinload,joinedload
+from sqlalchemy.orm import selectinload
 
-from . import *
-from say.models import session, obj_to_dict, commit
-from say.models import ChildMigration, Child, ChildNeed, Family, Need, Ngo,\
-    SocialWorker, UserFamily, Invitation
-from say.orm import safe_commit
-
-
-# api_bp = Blueprint('api', __name__)
-# api = Api(api_bp)
-
-"""
-Child APIs
-"""
+from say.api.ext import api, logger
+from say.constants import DEFAULT_CHILD_ID
+from say.validations import allowed_voice, allowed_image
+from say.authorization import get_user_role, get_user_id, get_sw_ngo_id, \
+    authorize
+from say.config import configs
+from say.decorators import json
+from say.exceptions import HTTP_PERMISION_DENIED, HTTP_NOT_FOUND
+from say.models import Child, ChildNeed, Family, Need, SocialWorker, UserFamily, \
+    Invitation
+from say.models import obj_to_dict, commit
+from say.orm import safe_commit, session
+from say.roles import *
 
 
 def filter_by_confirm(child_query, confirm):
@@ -35,7 +45,6 @@ def filter_by_privilege(query, get=False):  # TODO: priv
     user_role = get_user_role()
     sw_id = get_user_id()
     ngo_id = get_sw_ngo_id()
-
 
     if user_role in [SOCIAL_WORKER, COORDINATOR]:
         if get:
@@ -104,11 +113,11 @@ class GetAllChildren(Resource):
 
             if sw_role in [SOCIAL_WORKER, COORDINATOR]:
                 if sw_id or ngo_id:
-                    return HTTP_PERMISION_DENIED()
+                    raise HTTP_PERMISION_DENIED()
 
             if sw_role in [NGO_SUPERVISOR]:
                 if ngo_id:
-                    return HTTP_PERMISION_DENIED()
+                    raise HTTP_PERMISION_DENIED()
 
             return func(*args, **kwargs)
 
@@ -118,14 +127,12 @@ class GetAllChildren(Resource):
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @check_privileges
     @json
-    @swag_from("./docs/child/all.yml")
+    @swag_from('./docs/child/all.yml')
     def get(self, confirm):
         query = request.args.copy()
         take = query.get('take', 100)
         skip = query.get('skip', 0)
-        ngo_id = query.get('ngo_id', None)
-        sw_id = query.get('sw_id', None)
-        
+
         ex_status = query.get('existence_status', '1')
  
         confirm = int(confirm)
@@ -168,7 +175,7 @@ class GetChildById(Resource):
     @authorize(USER, SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @json
-    @swag_from("./docs/child/id.yml")
+    @swag_from('./docs/child/id.yml')
     def get(self, child_id, confirm):
 
         child_id = int(child_id)
@@ -176,7 +183,6 @@ class GetChildById(Resource):
             .filter(Child.isDeleted==False) \
             .filter(Child.isMigrated==False) \
             .filter(Child.id==child_id)
-            # .filter(Child.existence_status==1)
 
         if child_id != DEFAULT_CHILD_ID:  # TODO: need needs
             child_query = filter_by_privilege(child_query, get=True)
@@ -185,8 +191,7 @@ class GetChildById(Resource):
 
         child = child_query.one_or_none()
         if child is None:
-            resp = HTTP_NOT_FOUND()
-            return
+            raise HTTP_NOT_FOUND()
 
         child_dict = obj_to_dict(child)
         child_dict['socialWorkerGeneratedCode'] = child.social_worker.generatedCode
@@ -223,7 +228,7 @@ class GetChildById(Resource):
                     username=member.user.userName,
                 ))
 
-            child_dict["childFamilyMembers"] = child_family_member
+            child_dict['childFamilyMembers'] = child_family_member
 
         return child_dict
 
@@ -232,7 +237,7 @@ class GetChildByInvitationToken(Resource):
 
     @commit
     @json
-    @swag_from("./docs/child/get-by-token.yml")
+    @swag_from('./docs/child/get-by-token.yml')
     def get(self, token):
         try:
             user_id = get_user_id()
@@ -266,7 +271,7 @@ class GetChildByInvitationToken(Resource):
             .one_or_none()
 
         if child is None:
-            return HTTP_NOT_FOUND()
+            raise HTTP_NOT_FOUND()
 
         child_dict = obj_to_dict(child)
         child_dict['socialWorkerGeneratedCode'] = child.social_worker.generatedCode
@@ -301,7 +306,7 @@ class GetChildByInvitationToken(Resource):
                 isDeleted=member.isDeleted,
             ))
 
-        child_dict["childFamilyMembers"] = child_family_member
+        child_dict['childFamilyMembers'] = child_family_member
         return child_dict
 
 
@@ -310,7 +315,7 @@ class GetChildNeeds(Resource):
     @authorize(USER, SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @json
-    @swag_from("./docs/child/needs.yml")
+    @swag_from('./docs/child/needs.yml')
     def get(self, child_id):
         child_id = int(child_id)
         child_query = session.query(Child) \
@@ -323,8 +328,7 @@ class GetChildNeeds(Resource):
 
         child = child_query.one_or_none()
         if child is None:
-            resp = HTTP_NOT_FOUND()
-            return
+            raise HTTP_NOT_FOUND()
 
         needs_query = session.query(Need) \
             .options(selectinload('participants')) \
@@ -361,239 +365,203 @@ class AddChild(Resource):
 
         if sw_role in [SOCIAL_WORKER, COORDINATOR]:
             if sw_id != get_user_id() or ngo_id != get_sw_ngo_id():
-                return HTTP_PERMISION_DENIED()
+                raise HTTP_PERMISION_DENIED()
 
         elif sw_role in [NGO_SUPERVISOR]:
             if sw_id not in allowed_sw_ids or ngo_id != get_sw_ngo_id():
-                return HTTP_PERMISION_DENIED()
+                raise HTTP_PERMISION_DENIED()
 
         elif sw_role in [SUPER_ADMIN, SAY_SUPERVISOR, ADMIN]:
             if sw_id not in allowed_sw_ids:
-                return HTTP_PERMISION_DENIED()
+                raise HTTP_PERMISION_DENIED()
 
-        return None
+        return
 
     @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
-    @swag_from("./docs/child/add.yml")
+    @json
+    @swag_from('./docs/child/add.yml')
     def post(self):
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+        ngo_id = int(request.form.get('ngo_id', get_sw_ngo_id()))
+        sw_id = int(request.form.get('sw_id', get_user_id()))
+        sw_role = get_user_role()
 
-        try:
-            ngo_id = int(request.form.get("ngo_id", get_sw_ngo_id()))
-            sw_id = int(request.form.get("sw_id", get_user_id()))
-            sw_role = get_user_role()
-
-            allowed_sw_ids = []
-            if sw_role in [NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN]:
-                allowed_sw_ids_tuple = session.query(SocialWorker.id) \
-                    .filter_by(isDeleted=False) \
-                    .filter_by(id_ngo=ngo_id) \
-                    .distinct() \
-                    .all()
-
-                allowed_sw_ids = [item[0] for item in allowed_sw_ids_tuple]
-
-            error = self.check_privilege(sw_id, ngo_id, allowed_sw_ids)
-            if error:
-                resp = error
-                return
-
-            sw = session.query(SocialWorker) \
-                .filter_by(id=sw_id) \
+        allowed_sw_ids = []
+        if sw_role in [NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN]:
+            allowed_sw_ids_tuple = session.query(SocialWorker.id) \
                 .filter_by(isDeleted=False) \
-                .first()
+                .filter_by(id_ngo=ngo_id) \
+                .distinct() \
+                .all()
 
-            code = sw.generatedCode + format(sw.childCount + 1, "04d")
+            allowed_sw_ids = [item[0] for item in allowed_sw_ids_tuple]
 
-            avatar_path, slept_avatar_path, voice_path = \
-                "wrong avatar", "wrong avatar", "wrong voice"
+        # May throw 403
+        self.check_privilege(sw_id, ngo_id, allowed_sw_ids)
 
-            if "nationality" in request.form.keys():
-                nationality = int(request.form["nationality"])
-            else:
-                nationality = None
+        sw = session.query(SocialWorker) \
+            .filter_by(id=sw_id) \
+            .filter_by(isDeleted=False) \
+            .first()
 
-            if "housingStatus" in request.form.keys():
-                housing_status = int(request.form["housingStatus"])
-            else:
-                housing_status = None
+        code = sw.generatedCode + format(sw.childCount + 1, '04d')
 
-            if "firstName_translations" in request.form.keys():
-                first_name_translations = ujson.loads(
-                    request.form["firstName_translations"],
-                )
-            else:
-                first_name_translations = None
+        avatar_path, slept_avatar_path, voice_path = \
+            'wrong avatar', 'wrong avatar', 'wrong voice'
 
-            if "lastName_translations" in request.form.keys():
-                last_name_translations = ujson.loads(
-                    request.form["lastName_translations"],
-                )
-            else:
-                last_name_translations = None
+        if 'nationality' in request.form.keys():
+            nationality = int(request.form['nationality'])
+        else:
+            nationality = None
 
-            if "birthPlace" in request.form.keys():
-                birth_place = request.form["birthPlace"]
-            else:
-                birth_place = None
+        if 'housingStatus' in request.form.keys():
+            housing_status = int(request.form['housingStatus'])
+        else:
+            housing_status = None
 
-
-            if "address" in request.form.keys():
-                address = request.form["address"]
-            else:
-                address = None
-
-            if "status" in request.form.keys():
-                status = int(request.form["status"])
-            else:
-                status = None
-
-            if "education" in request.form.keys():
-                education = int(request.form["education"])
-            else:
-                education = None
-
-            if "familyCount" in request.form.keys():
-                family_count = int(request.form["familyCount"])
-            else:
-                family_count = None
-
-            birth_date = datetime.strptime(request.form["birthDate"], "%Y-%m-%d")
-            phone_number = request.form["phoneNumber"]
-            country = int(request.form["country"])
-            city = int(request.form["city"])
-            sayname_translations = ujson.loads(
-                request.form["sayname_translations"]
+        if 'firstName_translations' in request.form.keys():
+            first_name_translations = ujson.loads(
+                request.form['firstName_translations'],
             )
-            bio_translations = ujson.loads(request.form["bio_translations"])
-            bio_summary_translations = ujson.loads(request.form["bio_summary_translations"])
-            gender = True if request.form["gender"] == "true" else False
+        else:
+            first_name_translations = None
 
-            avatar_url = avatar_path
-            slept_avatar_url = slept_avatar_path
-            voice_url = voice_path
-
-            new_child = Child(
-                phoneNumber=phone_number,
-                nationality=nationality,
-                awakeAvatarUrl=avatar_url,
-                sleptAvatarUrl=avatar_url,
-                housingStatus=housing_status,
-                firstName_translations=first_name_translations,
-                lastName_translations=last_name_translations,
-                familyCount=family_count,
-                education=education,
-                birthPlace=birth_place,
-                birthDate=birth_date,
-                address=address,
-                voiceUrl=voice_url,
-                id_ngo=ngo_id,
-                id_social_worker=sw_id,
-                sayname_translations=sayname_translations,
-                bio_translations=bio_translations,
-                bio_summary_translations=bio_summary_translations,
-                country=country,
-                city=city,
-                gender=gender,
-                status=status,
-                generatedCode=code,
+        if 'lastName_translations' in request.form.keys():
+            last_name_translations = ujson.loads(
+                request.form['lastName_translations'],
             )
+        else:
+            last_name_translations = None
 
-            session.add(new_child)
-            session.flush()
+        if 'birthPlace' in request.form.keys():
+            birth_place = request.form['birthPlace']
+        else:
+            birth_place = None
 
-            if "voiceUrl" not in request.files or "awakeAvatarUrl" not in request.files:
-                resp = make_response(jsonify({"message": "error occured in file uploading!"}), 500)
-                session.close()
-                return resp
+        if 'address' in request.form.keys():
+            address = request.form['address']
+        else:
+            address = None
 
-            file1 = request.files["voiceUrl"]
-            file2 = request.files["awakeAvatarUrl"]
-            file3 = request.files["sleptAvatarUrl"]
+        if 'status' in request.form.keys():
+            status = int(request.form['status'])
+        else:
+            status = None
 
-            if file1.filename == "":
-                resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY VOICE!"}), 500)
+        if 'education' in request.form.keys():
+            education = int(request.form['education'])
+        else:
+            education = None
 
-                session.close()
-                return resp
+        if 'familyCount' in request.form.keys():
+            family_count = int(request.form['familyCount'])
+        else:
+            family_count = None
 
-            if file2.filename == "":
-                resp = make_response(jsonify({"message": "error occurred --> empty avatar!"}), 500)
+        birth_date = datetime.strptime(request.form['birthDate'], '%Y-%m-%d')
+        phone_number = request.form['phoneNumber']
+        country = int(request.form['country'])
+        city = int(request.form['city'])
+        sayname_translations = ujson.loads(
+            request.form['sayname_translations']
+        )
+        bio_translations = ujson.loads(request.form['bio_translations'])
+        bio_summary_translations = ujson.loads(request.form['bio_summary_translations'])
+        gender = True if request.form['gender'] == 'true' else False
 
-                session.close()
-                return resp
+        new_child = Child(
+            phoneNumber=phone_number,
+            nationality=nationality,
+            awakeAvatarUrl=avatar_path,
+            sleptAvatarUrl=slept_avatar_path,
+            housingStatus=housing_status,
+            firstName_translations=first_name_translations,
+            lastName_translations=last_name_translations,
+            familyCount=family_count,
+            education=education,
+            birthPlace=birth_place,
+            birthDate=birth_date,
+            address=address,
+            voiceUrl=voice_path,
+            id_ngo=ngo_id,
+            id_social_worker=sw_id,
+            sayname_translations=sayname_translations,
+            bio_translations=bio_translations,
+            bio_summary_translations=bio_summary_translations,
+            country=country,
+            city=city,
+            gender=gender,
+            status=status,
+            generatedCode=code,
+        )
 
-            if file3.filename == "":
-                resp = make_response(
-                    jsonify(
-                        {"message": "error occurred --> empty slept avatar!"}
-                    ),
-                    500,
-                )
+        session.add(new_child)
+        session.flush()
 
-                session.close()
-                return resp
+        if 'voiceUrl' not in request.files or 'awakeAvatarUrl' not in request.files:
+            return {'message': 'error occured in file uploading!'}, 400
 
-            child_path = os.path.join(
-                app.config["UPLOAD_FOLDER"],
-                str(new_child.id) + "-child",
+        file1 = request.files['voiceUrl']
+        file2 = request.files['awakeAvatarUrl']
+        file3 = request.files['sleptAvatarUrl']
+
+        if file1.filename == '':
+            return {'message': 'ERROR OCCURRED --> EMPTY VOICE!'}, 400
+
+        if file2.filename == '':
+            return {'message': 'error occurred --> empty avatar!'}, 500
+
+        if file3.filename == '':
+            return {'message': 'error occurred --> empty slept avatar!'}, 500
+
+        child_path = os.path.join(
+            configs.UPLOAD_FOLDER,
+            str(new_child.id) + '-child',
+        )
+
+        if not os.path.isdir(child_path):
+            os.makedirs(child_path, exist_ok=True)
+
+        need_path = os.path.join(child_path, 'needs')
+        if not os.path.isdir(need_path):
+            os.makedirs(need_path, exist_ok=True)
+
+        if file1 and allowed_voice(file1.filename):
+            filename1 = code + '.' + file1.filename.split('.')[-1]
+
+            voice_path = os.path.join(
+                child_path,
+                str(new_child.id) + '-voice_' + filename1,
             )
+            file1.save(voice_path)
+            new_child.voiceUrl = '/' + voice_path
 
-            if not os.path.isdir(child_path):
-                os.makedirs(child_path, exist_ok=True)
+        if file2 and allowed_image(file2.filename):
+            filename2 = code + '.' + file2.filename.split('.')[-1]
 
-            need_path = os.path.join(child_path, "needs")
-            if not os.path.isdir(need_path):
-                os.makedirs(need_path, exist_ok=True)
+            avatar_path = os.path.join(
+                child_path,
+                str(new_child.id) + '-avatar_' + filename2,
+            )
+            file2.save(avatar_path)
+            new_child.awakeAvatarUrl = '/' + avatar_path
 
-            if file1 and allowed_voice(file1.filename):
-                # filename1 = secure_filename(file1.filename)
-                filename1 = code + "." + file1.filename.split(".")[-1]
+        if file3 and allowed_image(file3.filename):
+            filename3 = code + '.' + file3.filename.split('.')[-1]
 
-                voice_path = os.path.join(
-                    child_path,
-                    str(new_child.id) + "-voice_" + filename1,
-                )
-                file1.save(voice_path)
-                new_child.voiceUrl = '/' + voice_path
+            slept_avatar_path = os.path.join(
+                child_path,
+                str(new_child.id) + '-slept-avatar_' + filename3,
+            )
+            file3.save(slept_avatar_path)
+            new_child.sleptAvatarUrl = '/' + slept_avatar_path
 
-            if file2 and allowed_image(file2.filename):
-                # filename2 = secure_filename(file2.filename)
-                filename2 = code + "." + file2.filename.split(".")[-1]
+        new_child.ngo.childrenCount += 1
+        new_child.social_worker.childCount += 1
 
-                avatar_path = os.path.join(
-                    child_path,
-                    str(new_child.id) + "-avatar_" + filename2,
-                )
-                file2.save(avatar_path)
-                new_child.awakeAvatarUrl = '/' + avatar_path
+        safe_commit(session)
 
-            if file3 and allowed_image(file3.filename):
-                # filename3 = secure_filename(file3.filename)
-                filename3 = code + "." + file3.filename.split(".")[-1]
-
-                slept_avatar_path = os.path.join(
-                    child_path,
-                    str(new_child.id) + "-slept-avatar_" + filename3,
-                )
-                file3.save(slept_avatar_path)
-                new_child.sleptAvatarUrl = '/' + slept_avatar_path
-
-            new_child.ngo.childrenCount += 1
-            new_child.social_worker.childCount += 1
-
-            safe_commit(session)
-
-            resp = make_response(jsonify(obj_to_dict(new_child)), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": str(e)}), 500)
-
-        finally:
-            session.close()
-            return resp
+        return new_child
 
 
 class UpdateChildById(Resource):
@@ -603,262 +571,240 @@ class UpdateChildById(Resource):
 
         if sw_role in [SOCIAL_WORKER, COORDINATOR]:
             if sw_id != get_user_id() or ngo_id != get_sw_ngo_id():
-                return HTTP_PERMISION_DENIED()
+                raise HTTP_PERMISION_DENIED()
 
         elif sw_role in [NGO_SUPERVISOR]:
             if sw_id not in allowed_sw_ids or ngo_id != get_sw_ngo_id():
-                return HTTP_PERMISION_DENIED()
+                raise HTTP_PERMISION_DENIED()
 
         return
 
     @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
-    @swag_from("./docs/child/update.yml")
+    @json
+    @swag_from('./docs/child/update.yml')
     def patch(self, child_id):
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
         sw_role = get_user_role()
 
-        try:
-            primary_child = (
-                session.query(Child)
-                .filter_by(id=child_id)
-                .filter_by(isDeleted=False)
-                .filter_by(isMigrated=False)
-                .first()
+        primary_child = (
+            session.query(Child)
+            .filter_by(id=child_id)
+            .filter_by(isDeleted=False)
+            .filter_by(isMigrated=False)
+            .first()
+        )
+
+        allowed_sw_ids = []
+        if sw_role in [NGO_SUPERVISOR]:
+            allowed_sw_ids_tuple = session.query(SocialWorker.id) \
+                .filter_by(isDeleted=False) \
+                .filter_by(id_ngo=primary_child.id_ngo) \
+                .distinct() \
+                .all()
+
+            allowed_sw_ids = [item[0] for item in allowed_sw_ids_tuple]
+
+        # May throw error
+        self.check_privilege(
+            primary_child.id_social_worker,
+            primary_child.id_ngo,
+            allowed_sw_ids,
+        )
+
+        child_path = os.path.join(
+            configs.UPLOAD_FOLDER,
+            str(primary_child.id) + '-child',
+        )
+
+        if not os.path.isdir(child_path):
+            os.makedirs(child_path, exist_ok=True)
+
+        need_path = os.path.join(child_path, 'needs')
+        if not os.path.isdir(need_path):
+            os.makedirs(need_path, exist_ok=True)
+
+        if 'awakeAvatarUrl' in request.files.keys():
+            file2 = request.files['awakeAvatarUrl']
+
+            if file2.filename == '':
+                return {'message': 'ERROR OCCURRED --> EMPTY AVATAR!'}, 500
+
+            if file2 and allowed_image(file2.filename):
+                filename2 = (
+                    primary_child.generatedCode
+                    + '.'
+                    + file2.filename.split('.')[-1]
+                )
+
+                temp_avatar_path = os.path.join(
+                    configs.UPLOAD_FOLDER, str(primary_child.id) + '-child'
+                )
+
+                for obj in os.listdir(temp_avatar_path):
+                    check = str(primary_child.id) + '-avatar'
+
+                    if obj.split('_')[0] == check:
+                        os.remove(os.path.join(temp_avatar_path, obj))
+
+                primary_child.awakeAvatarUrl = os.path.join(
+                    temp_avatar_path,
+                    str(primary_child.id) + '-avatar_' + uuid4().hex + filename2,
+                )
+
+                file2.save(primary_child.awakeAvatarUrl)
+                primary_child.awakeAvatarUrl = '/' + primary_child.awakeAvatarUrl
+
+        if 'sleptAvatarUrl' in request.files.keys():
+            file3 = request.files['sleptAvatarUrl']
+
+            if file3.filename == '':
+                return {'message': 'ERROR OCCURRED --> EMPTY SLEPT AVATAR!'}, 500
+
+            if file3 and allowed_image(file3.filename):
+                filename2 = (
+                    primary_child.generatedCode
+                    + '.'
+                    + file3.filename.split('.')[-1]
+                )
+
+                temp_sleptAvatar_path = os.path.join(
+                    configs.UPLOAD_FOLDER, str(primary_child.id) + '-child'
+                )
+
+                for obj in os.listdir(temp_sleptAvatar_path):
+                    check = str(primary_child.id) + '-sleptAvatar'
+
+                    if obj.split('_')[0] == check:
+                        os.remove(os.path.join(temp_sleptAvatar_path, obj))
+
+                primary_child.sleptAvatarUrl = os.path.join(
+                    temp_sleptAvatar_path, str(primary_child.id) + '-sleptAvatar_' + uuid4().hex + filename2
+                )
+
+                file3.save(primary_child.sleptAvatarUrl)
+                primary_child.sleptAvatarUrl = '/' + primary_child.sleptAvatarUrl
+
+        if 'voiceUrl' in request.files.keys():
+            file1 = request.files['voiceUrl']
+
+            if file1.filename == '':
+                return {'message': 'ERROR OCCURRED --> EMPTY VOICE!'}, 500
+
+            if file1 and allowed_voice(file1.filename):
+                filename1 = (
+                    primary_child.generatedCode
+                    + '.'
+                    + file1.filename.split('.')[-1]
+                )
+
+                temp_voice_path = os.path.join(
+                    configs.UPLOAD_FOLDER,
+                    str(primary_child.id) + '-child',
+                )
+
+                for obj in os.listdir(temp_voice_path):
+                    check = str(primary_child.id) + '-voice'
+
+                    if obj.split('_')[0] == check:
+                        os.remove(os.path.join(temp_voice_path, obj))
+
+                primary_child.voiceUrl = os.path.join(
+                    temp_voice_path,
+                    str(primary_child.id) + '-voice_' + uuid4().hex + filename1,
+                )
+
+                file1.save(primary_child.voiceUrl)
+                primary_child.voiceUrl = '/' + primary_child.voiceUrl
+
+        if 'phoneNumber' in request.form.keys():
+            primary_child.phoneNumber = request.form['phoneNumber']
+
+        if 'nationality' in request.form.keys():
+            primary_child.nationality = int(request.form['nationality'])
+
+        if 'housingStatus' in request.form.keys():
+            primary_child.housingStatus = int(request.form['housingStatus'])
+
+        if 'firstName_translations' in request.form.keys():
+            primary_child.firstName_translations = \
+                ujson.loads(request.form['firstName_translations'])
+
+        if 'lastName_translations' in request.form.keys():
+            primary_child.lastName_translations = \
+                ujson.loads(request.form['lastName_translations'])
+
+        if 'gender' in request.form.keys():
+            primary_child.gender = (
+                True if request.form['gender'] == 'true' else False
             )
 
-            allowed_sw_ids = []
-            if sw_role in [NGO_SUPERVISOR]:
-                allowed_sw_ids_tuple = session.query(SocialWorker.id) \
-                    .filter_by(isDeleted=False) \
-                    .filter_by(id_ngo=primary_child.id_ngo) \
-                    .distinct() \
-                    .all()
+        if 'familyCount' in request.form.keys():
+            primary_child.familyCount = int(request.form['familyCount'])
 
-                allowed_sw_ids = [item[0] for item in allowed_sw_ids_tuple]
+        if 'country' in request.form.keys():
+            primary_child.country = int(request.form['country'])
 
-            error = self.check_privilege(
-                primary_child.id_social_worker,
-                primary_child.id_ngo,
-                allowed_sw_ids,
+        if 'city' in request.form.keys():
+            primary_child.city = int(request.form['city'])
+
+        if 'status' in request.form.keys():
+            primary_child.status = int(request.form['status'])
+
+        if 'education' in request.form.keys():
+            primary_child.education = int(request.form['education'])
+
+        if 'birthPlace' in request.form.keys():
+            primary_child.birthPlace = request.form['birthPlace']
+
+        if 'birthDate' in request.form.keys():
+            primary_child.birthDate = datetime.strptime(
+                request.form['birthDate'], '%Y-%m-%d'
             )
 
-            if error:
-                resp = error
-                return
+        if 'address' in request.form.keys():
+            primary_child.address = request.form['address']
 
-            child_path = os.path.join(
-                app.config["UPLOAD_FOLDER"],
-                str(primary_child.id) + "-child",
+        if 'bio' in request.form.keys():
+            primary_child.bio = request.form['bio']
+
+        if 'bio_summary' in request.form.keys():
+            primary_child.bio_summary = request.form['bio_summary']
+
+        if 'sayname_translations' in request.form.keys():
+            primary_child.sayname_translations = ujson.loads(
+                request.form['sayname_translations'],
             )
 
-            if not os.path.isdir(child_path):
-                os.makedirs(child_path, exist_ok=True)
+        if 'bio_translations' in request.form.keys():
+            primary_child.bio_translations = ujson.loads(
+                request.form['bio_translations'],
+            )
 
-            need_path = os.path.join(child_path, "needs")
-            if not os.path.isdir(need_path):
-                os.makedirs(need_path, exist_ok=True)
+        if 'bio_summary_translations' in request.form.keys():
+            primary_child.bio_summary_translations = ujson.loads(
+                request.form['bio_summary_translations'],
+            )
 
-            if "awakeAvatarUrl" in request.files.keys():
-                file2 = request.files["awakeAvatarUrl"]
+        if 'existence_status' in request.form.keys():
+            primary_child.existence_status = int(request.form['existence_status'])
 
-                if file2.filename == "":
-                    resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY AVATAR!"}), 500)
-
-                    session.close()
-                    return resp
-
-                if file2 and allowed_image(file2.filename):
-                    # filename2 = secure_filename(file2.filename)
-                    filename2 = (
-                        primary_child.generatedCode
-                        + "."
-                        + file2.filename.split(".")[-1]
-                    )
-
-                    temp_avatar_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
-                    )
-
-                    for obj in os.listdir(temp_avatar_path):
-                        check = str(primary_child.id) + "-avatar"
-
-                        if obj.split("_")[0] == check:
-                            os.remove(os.path.join(temp_avatar_path, obj))
-
-                    primary_child.awakeAvatarUrl = os.path.join(
-                        temp_avatar_path, str(primary_child.id) + "-avatar_" + uuid4().hex + filename2
-                    )
-
-                    file2.save(primary_child.awakeAvatarUrl)
-                    primary_child.awakeAvatarUrl = '/' + primary_child.awakeAvatarUrl
-
-            if "sleptAvatarUrl" in request.files.keys():
-                file3 = request.files["sleptAvatarUrl"]
-
-                if file3.filename == "":
-                    resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY SLEPT AVATAR!"}), 500)
-
-                    session.close()
-                    return resp
-
-                if file3 and allowed_image(file3.filename):
-                    # filename2 = secure_filename(file3.filename)
-                    filename2 = (
-                        primary_child.generatedCode
-                        + "."
-                        + file3.filename.split(".")[-1]
-                    )
-
-                    temp_sleptAvatar_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
-                    )
-
-                    for obj in os.listdir(temp_sleptAvatar_path):
-                        check = str(primary_child.id) + "-sleptAvatar"
-
-                        if obj.split("_")[0] == check:
-                            os.remove(os.path.join(temp_sleptAvatar_path, obj))
-
-                    primary_child.sleptAvatarUrl = os.path.join(
-                        temp_sleptAvatar_path, str(primary_child.id) + "-sleptAvatar_" + uuid4().hex + filename2
-                    )
-
-                    file3.save(primary_child.sleptAvatarUrl)
-                    primary_child.sleptAvatarUrl = '/' + primary_child.sleptAvatarUrl
-
-            if "voiceUrl" in request.files.keys():
-                file1 = request.files["voiceUrl"]
-
-                if file1.filename == "":
-                    resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY VOICE!"}), 500)
-
-                    session.close()
-                    return resp
-
-                if file1 and allowed_voice(file1.filename):
-                    # filename1 = secure_filename(file1.filename)
-                    filename1 = (
-                        primary_child.generatedCode
-                        + "."
-                        + file1.filename.split(".")[-1]
-                    )
-
-                    temp_voice_path = os.path.join(
-                        app.config["UPLOAD_FOLDER"], str(primary_child.id) + "-child"
-                    )
-
-                    for obj in os.listdir(temp_voice_path):
-                        check = str(primary_child.id) + "-voice"
-
-                        if obj.split("_")[0] == check:
-                            os.remove(os.path.join(temp_voice_path, obj))
-
-                    primary_child.voiceUrl = os.path.join(
-                        temp_voice_path, str(primary_child.id) + "-voice_" + uuid4().hex + filename1
-                    )
-
-                    file1.save(primary_child.voiceUrl)
-                    primary_child.voiceUrl = '/' + primary_child.voiceUrl
-
-            if "phoneNumber" in request.form.keys():
-                primary_child.phoneNumber = request.form["phoneNumber"]
-
-            if "nationality" in request.form.keys():
-                primary_child.nationality = int(request.form["nationality"])
-
-            if "housingStatus" in request.form.keys():
-                primary_child.housingStatus = int(request.form["housingStatus"])
-
-            if "firstName_translations" in request.form.keys():
-                primary_child.firstName_translations = \
-                    ujson.loads(request.form["firstName_translations"])
-
-            if "lastName_translations" in request.form.keys():
-                primary_child.lastName_translations = \
-                    ujson.loads(request.form["lastName_translations"])
-
-            if "gender" in request.form.keys():
-                primary_child.gender = (
-                    True if request.form["gender"] == "true" else False
+            if primary_child.existence_status != 1:
+                needs = session.query(Need).filter(
+                    Need.isDeleted == False,
+                    Need.isConfirmed == True,
+                    Need.child_id == child_id,
+                    Need.status <= 3,
                 )
 
-            if "familyCount" in request.form.keys():
-                primary_child.familyCount = int(request.form["familyCount"])
+                for need in needs:
+                    need.unconfirm()
 
-            if "country" in request.form.keys():
-                primary_child.country = int(request.form["country"])
+                primary_child.social_worker.currentChildCount -= 1
+                primary_child.ngo.currentChildrenCount -= 1
 
-            if "city" in request.form.keys():
-                primary_child.city = int(request.form["city"])
+        safe_commit(session)
 
-            if "status" in request.form.keys():
-                primary_child.status = int(request.form["status"])
-
-            if "education" in request.form.keys():
-                primary_child.education = int(request.form["education"])
-
-            if "birthPlace" in request.form.keys():
-                primary_child.birthPlace = request.form["birthPlace"]
-
-            if "birthDate" in request.form.keys():
-                primary_child.birthDate = datetime.strptime(
-                    request.form["birthDate"], "%Y-%m-%d"
-                )
-
-            if "address" in request.form.keys():
-                primary_child.address = request.form["address"]
-
-            if "bio" in request.form.keys():
-                primary_child.bio = request.form["bio"]
-
-            if "bio_summary" in request.form.keys():
-                primary_child.bio_summary = request.form["bio_summary"]
-
-            if "sayname_translations" in request.form.keys():
-                primary_child.sayname_translations = ujson.loads(
-                    request.form["sayname_translations"],
-                )
-
-            if "bio_translations" in request.form.keys():
-                primary_child.bio_translations = ujson.loads(
-                    request.form["bio_translations"],
-                )
-
-            if "bio_summary_translations" in request.form.keys():
-                primary_child.bio_summary_translations = ujson.loads(
-                    request.form["bio_summary_translations"],
-                )
-
-            if "existence_status" in request.form.keys():
-                primary_child.existence_status = int(request.form["existence_status"])
-
-                if primary_child.existence_status != 1:
-                    needs = session.query(Need).filter(
-                        Need.isDeleted == False,
-                        Need.isConfirmed == True,
-                        Need.child_id == child_id,
-                        Need.status <= 3,
-                    )
-
-                    for need in needs:
-                        need.unconfirm()
-
-                    primary_child.social_worker.currentChildCount -= 1
-                    primary_child.ngo.currentChildrenCount -= 1
-
-            safe_commit(session)
-
-            child_dict = obj_to_dict(primary_child)
-            resp = make_response(jsonify(child_dict), 200)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
+        return primary_child
 
 
 class DeleteChildById(Resource):
@@ -868,87 +814,74 @@ class DeleteChildById(Resource):
 
         if sw_role in [SOCIAL_WORKER, COORDINATOR]:
             if sw_id != get_user_id() or ngo_id != get_sw_ngo_id():
-                return HTTP_PERMISION_DENIED()
+                raise HTTP_PERMISION_DENIED()
 
         if sw_role in [NGO_SUPERVISOR]:
             if sw_id not in allowed_sw_ids or ngo_id != get_sw_ngo_id():
-                return HTTP_PERMISION_DENIED()
+                raise  HTTP_PERMISION_DENIED()
         return
 
     @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
                SAY_SUPERVISOR, ADMIN)  # TODO: priv
-    @swag_from("./docs/child/delete.yml")
+    @json
+    @swag_from('./docs/child/delete.yml')
     def patch(self, child_id):
         sw_role = get_user_role()
 
-        resp = make_response(jsonify({"message": "major error occurred!"}), 503)
+        child = (
+            session.query(Child)
+            .filter_by(id=child_id)
+            .filter_by(isDeleted=False)
+            .filter_by(isMigrated=False)
+            .first()
+        )
 
-        try:
-            child = (
-                session.query(Child)
-                .filter_by(id=child_id)
-                .filter_by(isDeleted=False)
-                .filter_by(isMigrated=False)
-                .first()
-            )
+        allowed_sw_ids = []
+        if sw_role in [NGO_SUPERVISOR]:
+            allowed_sw_ids_tuple = session.query(SocialWorker.id) \
+                .filter_by(isDeleted=False) \
+                .filter_by(id_ngo=child.id_ngo) \
+                .distinct() \
+                .all()
 
-            allowed_sw_ids = []
-            if sw_role in [NGO_SUPERVISOR]:
-                allowed_sw_ids_tuple = session.query(SocialWorker.id) \
-                    .filter_by(isDeleted=False) \
-                    .filter_by(id_ngo=child.id_ngo) \
-                    .distinct() \
-                    .all()
+            allowed_sw_ids = [item[0] for item in allowed_sw_ids_tuple]
 
-                allowed_sw_ids = [item[0] for item in allowed_sw_ids_tuple]
+        # May throw error
+        self.check_privilege(
+            child.id_social_worker,
+            child.id_ngo,
+            allowed_sw_ids,
+        )
 
-            error = self.check_privilege(
-                child.id_social_worker,
-                child.id_ngo,
-                allowed_sw_ids,
-            )
+        if child.isConfirmed:
+            return {'message': 'error: confirmed child cannot be deleted!'}, 400
 
-            if error:
-                resp = error
-                return
+        family = (
+            session.query(Family)
+            .filter_by(isDeleted=False)
+            .filter_by(id_child=child_id)
+            .first()
+        )
+        needs = (
+            session.query(ChildNeed)
+            .filter_by(isDeleted=False)
+            .filter_by(id_child=child_id)
+        )
 
-            if not child.isConfirmed:
-                family = (
-                    session.query(Family)
-                    .filter_by(isDeleted=False)
-                    .filter_by(id_child=child_id)
-                    .first()
-                )
-                needs = (
-                    session.query(ChildNeed)
-                    .filter_by(isDeleted=False)
-                    .filter_by(id_child=child_id)
-                )
+        for need in needs:
+            need.isDeleted = True
 
-                for need in needs:
-                    need.isDeleted = True
+        child.isDeleted = True
 
-                child.isDeleted = True
+        if family:
+            family.isDeleted = True
 
-                if family:
-                    family.isDeleted = True
+        child.social_worker.currentChildCount -= 1
+        child.ngo.currentChildrenCount -= 1
 
-                child.social_worker.currentChildCount -= 1
-                child.ngo.currentChildrenCount -= 1
+        safe_commit(session)
 
-                safe_commit(session)
-
-                resp = make_response(jsonify({"message": "child deleted successfully!"}), 200)
-            else:
-                resp = make_response(jsonify({"message": "error: confirmed child cannot be deleted!"}), 500)
-
-        except Exception as e:
-            print(e)
-            resp = make_response(jsonify({"message": "ERROR OCCURRED"}), 500)
-
-        finally:
-            session.close()
-            return resp
+        return {'message': 'child deleted successfully!'}
 
 
 class ConfirmChild(Resource):
@@ -956,7 +889,7 @@ class ConfirmChild(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @json
     @commit
-    @swag_from("./docs/child/confirm.yml")
+    @swag_from('./docs/child/confirm.yml')
     def patch(self, child_id):
         social_worker_id = get_user_id()
 
@@ -972,7 +905,7 @@ class ConfirmChild(Resource):
             return {'message': 'not found'}, 404
 
         if child.isConfirmed:
-            return {"message": "child has already confirmed!"}, 400
+            return {'message': 'child has already confirmed!'}, 400
 
         child.isConfirmed = True
         child.confirmUser = social_worker_id
@@ -983,105 +916,83 @@ class ConfirmChild(Resource):
         new_family = Family(id_child=child.id)
         session.add(new_family)
 
-        return {"message": "child confirmed successfully!"}
+        return {'message': 'child confirmed successfully!'}
 
 
 class MigrateChild(Resource):
+
     @authorize(SUPER_ADMIN, ADMIN)  # TODO: priv
+    @json
     @swag_from('./docs/child/migrate.yml')
     def patch(self, child_id):
-        resp = make_response(jsonify({'message': 'major error occurred!'}), 503)
-
         new_sw_id = request.form.get('new_sw_id', None)
-        new_sw = None
 
         if not new_sw_id:
-            return make_response(
-                jsonify({'message': 'new_sw_id can not be null'}),
-                422,
-            )
+            return {'message': 'new_sw_id can not be null'}, 422
 
         try:
             new_sw_id = int(new_sw_id)
-        except:
-            return make_response(
-                jsonify({'message': 'Invalid new_sw_id'}),
-                422,
-            )
+        except (ValueError, TypeError):
+            return {'message': 'Invalid new_sw_id'}, 422
 
         new_sw = session.query(SocialWorker) \
             .filter_by(isDeleted=False) \
             .filter_by(id=new_sw_id) \
             .with_for_update() \
-            .first()
+            .one_or_none()
 
         if not new_sw:
-            return make_response(
-                jsonify({'message': 'social_worker not found'}),
-                422,
-            )
+            return {'message': 'social_worker not found'}, 422
 
         child = session.query(Child) \
             .filter_by(id=child_id) \
             .filter_by(isDeleted=False) \
             .with_for_update() \
-            .first()
+            .one_or_none()
 
         if not child:
-            return make_response(
-                jsonify({'message': 'Child not found'}),
-                404,
-            )
+            return {'message': 'Child not found'}, 404
 
         old_sw = child.social_worker
         if old_sw.id == new_sw_id:
-            return make_response(
-                jsonify({'message': 'Can not migrate to same sw'}),
-                422,
-            )
+            return {'message': 'Can not migrate to same sw'}, 422
 
         child.migrate(new_sw)
         safe_commit(session)
 
-        return make_response(
-            jsonify({'message': 'child migrated successfully!'}),
-            200,
-        )
+        return {'message': 'child migrated successfully!'}
 
 
 class GetActiveChildrenApi(Resource):
 
-     @authorize(SUPER_ADMIN, ADMIN)  # TODO: priv
-     @json
-     @commit
-     @swag_from('./docs/child/active-children.yml')
-     def get(self):
+    @authorize(SUPER_ADMIN, ADMIN)  # TODO: priv
+    @json
+    @commit
+    @swag_from('./docs/child/active-children.yml')
+    def get(self):
         return Child.get_actives() \
             .order_by(Child.created)
 
 
-"""
-API URLs
-"""
-api.add_resource(GetActiveChildrenApi, "/api/v2/child/actives")
-api.add_resource(GetChildById, "/api/v2/child/childId=<child_id>&confirm=<confirm>")
+api.add_resource(GetActiveChildrenApi, '/api/v2/child/actives')
+api.add_resource(GetChildById, '/api/v2/child/childId=<child_id>&confirm=<confirm>')
 api.add_resource(
     GetChildByInvitationToken,
-    "/api/v2/child/invitations/<token>",
+    '/api/v2/child/invitations/<token>',
 )
-api.add_resource(GetChildNeeds, "/api/v2/child/childId=<child_id>/needs")
-api.add_resource(GetAllChildren, "/api/v2/child/all/confirm=<confirm>")
+api.add_resource(GetChildNeeds, '/api/v2/child/childId=<child_id>/needs')
+api.add_resource(GetAllChildren, '/api/v2/child/all/confirm=<confirm>')
 api.add_resource(
     AddChild,
-    "/api/v2/child/add/",
+    '/api/v2/child/add/',
 )
-api.add_resource(UpdateChildById, "/api/v2/child/update/childId=<child_id>")
-api.add_resource(DeleteChildById, "/api/v2/child/delete/childId=<child_id>")
+api.add_resource(UpdateChildById, '/api/v2/child/update/childId=<child_id>')
+api.add_resource(DeleteChildById, '/api/v2/child/delete/childId=<child_id>')
 api.add_resource(
     ConfirmChild,
-    "/api/v2/child/confirm/childId=<child_id>",
+    '/api/v2/child/confirm/childId=<child_id>',
 )
 api.add_resource(
     MigrateChild,
-    "/api/v2/child/migrate/childId=<child_id>",
+    '/api/v2/child/migrate/childId=<child_id>',
 )

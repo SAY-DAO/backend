@@ -63,7 +63,6 @@ class SocialWorker(base, Timestamp):
 
     def send_report(self):
         from say.tasks import send_embeded_subject_email
-        from say.api import app
         from .need_model import Need
         from .child_model import Child
         from .child_need_model import ChildNeed

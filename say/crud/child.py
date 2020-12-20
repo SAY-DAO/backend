@@ -1,4 +1,5 @@
-from say.models import session, Child
+from say.models import Child
+from say.orm import session
 
 
 def is_gone(id_):

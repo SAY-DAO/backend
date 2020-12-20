@@ -2,7 +2,7 @@ from flask_mail import Message
 import bs4 as bs
 
 from say.celery import celery
-from say.api import mail
+from say.api.ext import mail
 
 
 def get_subject_from_html(html):

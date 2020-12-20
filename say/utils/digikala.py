@@ -1,6 +1,5 @@
 import re
 import requests
-from ..api import cache
 
 
 COST_PATTERN = r's-rrp-price ">(.*?)<|js-price-value">(.*?)<'
@@ -24,7 +23,7 @@ def parse_cost(c):
             COST_PATTERN,
             c,
             re.DOTALL
-        ).group(1,2)
+        ).group(1, 2)
         cost_text = cost_text[0] if cost_text[0] else cost_text[1]
         cost_text = cost_text.strip().replace(',', '')
     except:
@@ -71,13 +70,9 @@ def parse_img(c):
     return img
 
 
-# @cache.memoize(timeout=1 * 3600)
 def get_data(url):
     dkp = parse_dkp(url)
-    try:
-       c = requests.get(url).text
-    except:
-        raise
+    c = requests.get(url).text
 
     cost = parse_cost(c)
     title = parse_title(c)

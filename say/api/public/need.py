@@ -1,9 +1,10 @@
-from say.exceptions import HTTP_NOT_FOUND
 from flask_restful import Resource
 
-from .. import swag_from, api
-from say.models import Need, Child, session
 from say.decorators import json
+from say.exceptions import HTTP_NOT_FOUND
+from say.models import Need, Child
+from .. import swag_from, api
+from ...orm import session
 
 
 class PublicNeed(Resource):
@@ -30,7 +31,7 @@ class PublicNeed(Resource):
         ).one_or_none()
 
         if not need:
-            return HTTP_NOT_FOUND()
+            raise HTTP_NOT_FOUND()
 
         return dict(
             id=need[0],

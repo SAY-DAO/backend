@@ -6,9 +6,11 @@ from babel import Locale
 from sqlalchemy import inspect
 from sqlalchemy.ext.associationproxy import ASSOCIATION_PROXY
 from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
+from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy_utils import PhoneNumber, Country
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql.schema import MetaData
+from sqlalchemy import create_engine as sa_create_engine
 
 from .base import BaseModel
 
@@ -24,6 +26,34 @@ metadata = MetaData(
 )
 
 base = declarative_base(cls=BaseModel, metadata=metadata)
+
+session_factory = sessionmaker(
+    autoflush=False,
+    autocommit=False,
+    expire_on_commit=True,
+    twophase=False,
+)
+session = scoped_session(session_factory)
+
+
+def create_engine(url, *args, **kwargs):
+    return sa_create_engine(url, pool_pre_ping=True, *args, **kwargs)
+
+
+def setup_schema(session_):
+    engine = session_.bind
+    engine.execute('CREATE EXTENSION IF NOT EXISTS HSTORE;')
+    metadata.create_all(bind=engine)
+
+
+def init_model(engine):
+    """
+    Call me before using any of the tables or classes in the model.
+    :param engine: SqlAlchemy engine to bind the session
+    :return:
+    """
+    session.remove()
+    session.configure(bind=engine)
 
 
 # this function converts an object to a python dictionary

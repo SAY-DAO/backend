@@ -1,22 +1,19 @@
 import secrets
-from babel.core import default_locale
 
-from sqlalchemy import DateTime
 from sqlalchemy_utils import PhoneNumberType, EmailType
 
 from . import *
 from say.content import content
-from say.tasks import send_embeded_subject_email, send_sms
 from say.render_template_i18n import render_template_i18n
-
-
-def generate_6_digit_secret():
-    return secrets.SystemRandom().randint(1000 * 100, 1000 * 1000 -1)
 
 
 """
 Verify Model
 """
+
+
+def generate_6_digit_secret():
+    return secrets.SystemRandom().randint(1000 * 100, 1000 * 1000 -1)
 
 
 class Verification(base, Timestamp):
@@ -45,6 +42,8 @@ class PhoneVerification(Verification):
     }
 
     def send(self):
+        from say.tasks import send_sms
+
         send_sms.delay(
             self.phone_number.e164,
             content['CONFIRM_PHONE'] % self._code,
@@ -52,6 +51,7 @@ class PhoneVerification(Verification):
 
 
 class EmailVerification(Verification):
+
     email = Column(EmailType, nullable=True)
 
     __mapper_args__ = {
@@ -59,6 +59,8 @@ class EmailVerification(Verification):
     }
 
     def send(self):
+        from say.tasks import send_embeded_subject_email
+
         send_embeded_subject_email.delay(
             to=self.email,
             html=render_template_i18n(

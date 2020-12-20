@@ -1,4 +1,4 @@
-from say.api import sms_provider
+from say.api.ext import sms_provider
 from say.celery import celery
 
 

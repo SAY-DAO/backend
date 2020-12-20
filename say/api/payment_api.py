@@ -3,30 +3,38 @@ import string
 from datetime import datetime
 from urllib.parse import urljoin
 
+from flasgger import swag_from
+from flask import request, make_response
+from flask_restful import Resource
 from werkzeug.exceptions import abort
 
-from . import *
-from say.models import session, obj_to_dict, commit
-from say.models.child_need_model import ChildNeed
+from say.models import obj_to_dict, commit
 from say.models.family_model import Family
 from say.models.need_model import Need
 from say.models.payment_model import Payment
 from say.models.user_family_model import UserFamily
 from say.models.user_model import User
 from say.render_template_i18n import render_template_i18n
+from .ext import api, idpay
+from ..authorization import authorize, get_user_id
+from ..config import configs
+from ..decorators import json
+from ..exceptions import HTTP_NOT_FOUND
+from ..orm import session
+from ..roles import *
 
 
 def validate_amount(need, amount):
     amount = int(amount)
     need_unpaid = need.cost - need.paid
     if int(amount) > need_unpaid:
-        raise ValueError(f"Amount can not be greater that {need_unpaid}")
+        raise ValueError(f'Amount can not be greater that {need_unpaid}')
     if int(amount) < idpay.MIN_AMOUNT:
-        raise ValueError("Amount can not be smaller than 100")
+        raise ValueError('Amount can not be smaller than 100')
     return amount
 
 
-def generate_order_id(N=app.config['PAYMENT_ORDER_ID_LENGTH']):
+def generate_order_id(N=configs.PAYMENT_ORDER_ID_LENGTH):
     '''
         Generate a random string containing lowercase, uppercase and digits
     '''
@@ -54,7 +62,8 @@ class GetAllPayment(Resource):
     model = Payment
 
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
-    @swag_from("./docs/payment/all.yml")
+    @json
+    @swag_from('./docs/payment/all.yml')
     def get(self):
         args = request.args
         take = args.get('take', 10)
@@ -69,10 +78,10 @@ class GetAllPayment(Resource):
             if take < 1 or skip < 0:
                 raise ValueError()
         except (ValueError, TypeError):
-            return Response(status=400)
+            return {'message': 'Invalid skip or take'}, 400
 
-        payments = session.query(self.model) \
-            .filter_by(verified.isnot(None))
+        payments = session.query(Payment) \
+            .filter(Payment.verified.isnot(None))
 
         if need_id:
             payments = payments.filter_by(id_need=need_id)
@@ -90,44 +99,36 @@ class GetAllPayment(Resource):
         for payment in payments:
             result['payments'].append(obj_to_dict(payment))
         session.close()
-        return make_response(
-            jsonify(result),
-            200,
-        )
+        return result
 
 
 class GetPayment(Resource):
-    model = Payment
-
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
-    @swag_from("./docs/payment/id.yml")
+    @json
+    @swag_from('./docs/payment/id.yml')
     def get(self, id):
-        payment = session.query(self.model).get(id)
+        payment = session.query(Payment).get(id)
         session.close()
         if payment is None:
-            return Response(status=404)
+            raise HTTP_NOT_FOUND()
 
-        return make_response(
-            jsonify(obj_to_dict(payment)),
-            200,
-        )
+        return payment
 
 
 class AddPayment(Resource):
 
     @authorize
+    @json
     @commit
-    @swag_from("./docs/payment/new_payment.yml")
+    @swag_from('./docs/payment/new_payment.yml')
     def post(self):
         user_id = get_user_id()
 
-        resp = {"message": "Something is Wrong!"}
-
         if 'needId' not in request.json:
-            return jsonify({"message": "needId is required"})
+            return {'message': 'needId is required'}, 400
 
         if 'amount' not in request.json:
-            return jsonify({"message": "amount is required"})
+            return {'message': 'amount is required'}, 400
 
         need_amount = request.json['amount']
         need_id = request.json['needId']
@@ -139,41 +140,29 @@ class AddPayment(Resource):
             donation = int(request.json['donate'])
 
         if donation < 0:
-            return {"message": "Donation Can Not Be Negetive"}
+            return {'message': 'Donation Can Not Be Negetive'}
 
         need = session.query(Need) \
             .with_for_update() \
             .get(need_id)
 
         if need is None or need.isDeleted:
-            return {"message": "Need Not Found"}
+            return {'message': 'Need Not Found'}
 
         if need.isDone:
-            return {"message": "Need is already done"}
+            return {'message': 'Need is already done'}
 
         if not need.isConfirmed:
-            return make_response(
-                jsonify({"message": "error: need is not confirmed yet!"}),
-                422,
-            )
-            return resp
+            return {'message': 'error: need is not confirmed yet!'}, 422
 
         user = session.query(User).get(user_id)
         if user is None:
-            return {"message": "User Not Found"}
+            return {'message': 'User Not Found'}
 
-        child_need = (
-            session.query(ChildNeed)
-            .filter_by(id_need=need_id)
-            .first()
-        )
-
-        family = (
-            session.query(Family)
-            .filter_by(id_child=child_need.id_child)
-            .filter_by(isDeleted=False)
-            .first()
-        )
+        family = session.query(Family) \
+            .filter_by(id_child=need.child_id) \
+            .filter_by(isDeleted=False) \
+            .one()
 
         if (
             session.query(UserFamily)
@@ -183,20 +172,20 @@ class AddPayment(Resource):
             .first()
             is None
         ):
-            return make_response(jsonify({"message": "payment must be added by the child's family!"}), 422)
+            return {'message': 'payment must be added by the child\'s family!'}, 422
 
         try:
             need_amount = validate_amount(need, need_amount)
         except ValueError as e:
-            return make_response(jsonify({"message": str(e)}), 422)
+            return {'message': str(e)}, 422
 
         desc = f'{need.name}-{need.child.sayName}'
         name = f'{user.firstName} {user.lastName}'
-        callback = urljoin(app.config['BASE_URL'], 'api/v2/payment/verify')
+        callback = urljoin(configs.BASE_URL, 'api/v2/payment/verify')
 
         credit = 0
         if use_credit:
-            credit = min(user.credit, need_amount +  donation)
+            credit = min(user.credit, need_amount + donation)
 
         payment = Payment(
             user=user,
@@ -220,47 +209,45 @@ class AddPayment(Resource):
                 user=user,
                 locale=user.locale,
             )
-            return make_response({'response': success_payment}, 299)
+            return {'response': success_payment}, 299
 
         # Save some credit for the user
         if payment.bank_amount < idpay.MIN_AMOUNT:
             payment.credit_amount -= idpay.MIN_AMOUNT - payment.bank_amount
 
         api_data = {
-            "order_id": payment.order_id,
-            "amount": payment.bank_amount,
-            "name": name,
-            "desc": desc,
-            "callback": callback,
+            'order_id': payment.order_id,
+            'amount': payment.bank_amount,
+            'name': name,
+            'desc': desc,
+            'callback': callback,
         }
 
         transaction = idpay.new_transaction(**api_data)
         if 'error_code' in transaction:
             raise Exception(idpay.ERRORS[transaction['error_code']])
 
-        payment.gateway_payment_id=transaction['id']
-        payment.link=transaction['link']
+        payment.gateway_payment_id = transaction['id']
+        payment.link = transaction['link']
 
-        resp = jsonify(obj_to_dict(payment))
+        return payment
 
-        resp.headers.add("Access-Control-Allow-Origin", "*")
-        resp.headers.add(
-            "Access-Control-Allow-Headers",
-            "Origin, X-Requested-With, Content-Type, Accept",
-        )
-
-        return resp
 
 class VerifyPayment(Resource):
+    @json
     @commit
     def post(self):
         paymentId = request.form['id']
         order_id = request.form['order_id']
 
         pending_payment = session.query(Payment) \
-            .filter_by(gateway_payment_id=paymentId) \
+            .filter(
+                Payment.gateway_payment_id == paymentId,
+                Payment.order_id == order_id,
+                Payment.verified is None,
+            ) \
             .with_for_update() \
-            .first()
+            .one_or_none()
 
         if pending_payment is None:
             abort(404)
@@ -288,7 +275,7 @@ class VerifyPayment(Resource):
                 pending_payment.gateway_payment_id,
                 pending_payment.order_id,
             )
-        except:
+        except: # bare except intentianly
             return make_response(unsuccessful_response)
 
         if not response or 'error_code' in response or response['status'] != 100:
@@ -322,8 +309,8 @@ class VerifyPayment(Resource):
         ))
 
 
-api.add_resource(AddPayment, "/api/v2/payment")
-api.add_resource(GetPayment, "/api/v2/payment/<int:id>")
-api.add_resource(GetAllPayment, "/api/v2/payment/all")
-api.add_resource(VerifyPayment, "/api/v2/payment/verify")
+api.add_resource(AddPayment, '/api/v2/payment')
+api.add_resource(GetPayment, '/api/v2/payment/<int:id>')
+api.add_resource(GetAllPayment, '/api/v2/payment/all')
+api.add_resource(VerifyPayment, '/api/v2/payment/verify')
 

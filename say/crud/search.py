@@ -1,5 +1,6 @@
 from .user import get_say_id
-from ..models import Invitation, session
+from ..models import Invitation
+from ..orm import session
 
 
 def create(family_id, type_):
