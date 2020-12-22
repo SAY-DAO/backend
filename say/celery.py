@@ -4,8 +4,8 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 
 from celery import Celery
 from celery.schedules import crontab
-from say.api import app as flask_app
 from say.config import configs
+from say.orm import init_model
 
 CELERY_TASK_LIST = [
     'say.tasks',
@@ -44,7 +44,7 @@ def create_celery_app(beat):
     """
     Create a new Celery object and tie together the Celery config to the app's
     config. Wrap all tasks in the context of the application.
-    :param app: Flask app
+    :param beat: celery beat object
     :return: Celery app
     """
     celery = Celery(
@@ -88,8 +88,9 @@ def create_celery_app(beat):
     session = scoped_session(session_factory)
     
     class DBTask(TaskBase):
+        _session = None
+
         def __init__(self, *args, **kwargs) -> None:
-            self.session = session
             super().__init__(*args, **kwargs)
 
         def after_return(self, *args, **kwargs):
@@ -97,7 +98,17 @@ def create_celery_app(beat):
                 self.session.remove()
                 
             super().after_return(*args, **kwargs)
-            
+
+        @property
+        def session(self):
+            if self._session is None:
+                self._session = session
+
+            if not self._session.bind:
+                engine = create_engine(url=configs.postgres_url)
+                init_model(engine)
+
+            return self._session
 
     celery.DBTask = DBTask
 
@@ -105,6 +116,8 @@ def create_celery_app(beat):
         abstract = True
 
         def __call__(self, *args, **kwargs):
+            from say.app import app as flask_app
+
             with flask_app.app_context():
                 return TaskBase.__call__(self, *args, **kwargs)
 

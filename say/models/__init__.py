@@ -23,41 +23,12 @@ from sqlalchemy import exc
 from sqlalchemy import event
 from sqlalchemy.pool import Pool
 
-
-from say.api import db
 from say.date import *
 from say.langs import LANGS
 from say.locale import get_locale, DEFAULT_LOCALE
 from say.formatters import int_formatter, expose_datetime
 from say.orm import obj_to_dict, base
-
-
-@event.listens_for(Pool, "checkout")
-def ping_connection(dbapi_connection, connection_record, connection_proxy):
-    cursor = dbapi_connection.cursor()
-    try:
-        cursor.execute("SELECT 1")
-    except:
-        # optional - dispose the whole pool
-        # instead of invalidating one at a time
-        # connection_proxy._pool.dispose()
-
-        # raise DisconnectionError - pool will try
-        # connecting again up to three times before raising.
-        raise exc.DisconnectionError()
-    cursor.close()
-
-
-session_factory = sessionmaker(
-    db,
-    autoflush=False,
-    autocommit=False,
-    expire_on_commit=True,
-    twophase=False,
-)
-
-session = scoped_session(session_factory)
-
+from say.orm import session
 
 # FIXME: CIRITICAL
 def commit(func):
@@ -107,22 +78,3 @@ from .child_migration_model import ChildMigration
 from .invite import Invitation, InvitationAccept
 from .change_cost import *
 from .nakama import *
-
-
-# Handling mutliprocess engine
-# https://docs.sqlalchemy.org/en/13/core/pooling.html#using-connection-pools-with-multiprocessing
-@event.listens_for(db, "connect")
-def connect(dbapi_connection, connection_record):
-    connection_record.info['pid'] = os.getpid()
-
-@event.listens_for(db, "checkout")
-def checkout(dbapi_connection, connection_record, connection_proxy):
-    pid = os.getpid()
-    if connection_record.info['pid'] != pid:
-        connection_record.connection = connection_proxy.connection = None
-        raise exc.DisconnectionError(
-                "Connection record belongs to pid %s, "
-                "attempting to check out in pid %s" %
-                (connection_record.info['pid'], pid)
-        )
-

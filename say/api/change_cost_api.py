@@ -1,8 +1,17 @@
-from say.models import commit, session
-from say.models import Need, SocialWorker, ChangeCost, ChangeCostStatus, Child, \
-    ChangeCostCreateSchema, ChangeCostRejectSchema, ChangeCostAcceptSchema
+from flasgger import swag_from
+from flask import request
+from flask_restful import Resource
 
-from . import *
+from say.api.ext import api
+from say.authorization import get_user_id, get_sw_ngo_id, get_user_role, \
+    authorize
+from say.decorators import json
+from say.exceptions import HTTP_NOT_FOUND
+from say.models import Need, ChangeCost, ChangeCostStatus, Child, \
+    ChangeCostCreateSchema, ChangeCostRejectSchema, ChangeCostAcceptSchema
+from say.models import commit
+from say.orm import session
+from say.roles import *
 
 
 def filter_by_priv(query):
@@ -40,8 +49,6 @@ class PendingChangeCostAPi(Resource):
     @json
     @swag_from('./docs/change_cost/pending.yml')
     def get(self):
-        sw_id = get_user_id()
-
         change_costs = session.query(ChangeCost, Need) \
             .filter_by(status = ChangeCostStatus.pending) \
             .join(Need, Need.id == ChangeCost.need_id)
@@ -57,11 +64,9 @@ class ChangeCostAPi(Resource):
     @json
     @swag_from('./docs/change_cost/list_for_need.yml')
     def get(self, need_id):
-        sw_id = get_user_id()
-
         need = get_need(need_id).one_or_none()
         if not need:
-            return HTTP_NOT_FOUND()
+            raise HTTP_NOT_FOUND()
 
         change_costs = session.query(ChangeCost) \
             .filter_by(
@@ -86,7 +91,7 @@ class ChangeCostAPi(Resource):
 
         need = get_need(need_id).one_or_none()
         if not need:
-            return HTTP_NOT_FOUND()
+            raise HTTP_NOT_FOUND()
 
         change_cost = session.query(ChangeCost) \
             .filter_by(
@@ -121,7 +126,7 @@ class ChangeCostRejectApi(Resource):
 
         need = get_need(need_id).one_or_none()
         if not need:
-            return HTTP_NOT_FOUND()
+            raise HTTP_NOT_FOUND()
 
         change_cost = session.query(ChangeCost) \
             .filter(
@@ -133,7 +138,7 @@ class ChangeCostRejectApi(Resource):
             ).one_or_none()
 
         if not change_cost:
-            return HTTP_NOT_FOUND()
+            raise HTTP_NOT_FOUND()
 
         change_cost.status = ChangeCostStatus.rejected
         sw_id = get_user_id()
@@ -164,7 +169,7 @@ class ChangeCostAcceptApi(Resource):
             .one_or_none()
 
         if not need:
-            return HTTP_NOT_FOUND()
+            raise HTTP_NOT_FOUND()
 
         change_cost = session.query(ChangeCost) \
             .filter(
@@ -175,7 +180,7 @@ class ChangeCostAcceptApi(Resource):
             ).one_or_none()
 
         if not change_cost or change_cost.need_id != need_id:
-            return HTTP_NOT_FOUND()
+            raise HTTP_NOT_FOUND()
 
         change_cost.update(**data.dict(exclude_unset=True))
         need.change_cost(change_cost.to)

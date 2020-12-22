@@ -6,6 +6,7 @@ from sqlalchemy.orm import column_property
 
 from . import *
 from .need_model import Need
+from ..orm import session
 
 """
 Child Model
