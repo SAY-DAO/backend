@@ -1,6 +1,5 @@
 from sqlalchemy import or_
 
-import say.orm
 from say.celery import celery
 from say.orm import safe_commit
 
@@ -8,7 +7,7 @@ from say.orm import safe_commit
 @celery.task(base=celery.DBTask, bind=True, queue='slow')
 def update_needs(self):
     from say.models.need_model import Need
-    needs = say.orm.session.query(Need) \
+    needs = self.session.query(Need) \
         .filter(
             Need.type == 1,
             or_(
@@ -37,11 +36,11 @@ def update_needs(self):
 )
 def update_need(self, need_id, force=False):
     from say.models.need_model import Need
-    need = say.orm.session.query(Need) \
+    need = self.session.query(Need) \
         .with_for_update() \
         .get(need_id)
 
     data = need.update()
-    safe_commit(say.orm.session)
+    safe_commit(self.session)
 
     return data

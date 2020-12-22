@@ -1,24 +1,22 @@
 import os
 from datetime import datetime, timedelta
 from functools import partial
-from flask import config
 
 from sqlalchemy import or_
 
-import say.orm
+from say.celery import celery
+from say.config import configs
 from say.langs import LANGS
 from say.locale import ChangeLocaleTo
-from say.celery import celery
-from .send_email import send_embeded_subject_email
 from say.render_template_i18n import render_template_i18n
-from say.config import configs
+from .send_email import send_embeded_subject_email
 
 
 @celery.task(base=celery.DBTask, bind=True)
 def report_to_families(self):
     from say.models.family_model import Family
 
-    families_id = say.orm.session.query(Family.id)
+    families_id = self.session.query(Family.id)
     for family_id in families_id:
         report_to_family.delay(family_id[0])
 
@@ -32,7 +30,7 @@ def report_to_family(self, family_id):
     from say.models.user_family_model import UserFamily
     from say.models.need_family_model import NeedFamily
 
-    session = say.orm.session
+    session = self.session
     yesterday = datetime.utcnow() - timedelta(days=1)
 
     with app.app_context(), ChangeLocaleTo(LANGS.fa):
