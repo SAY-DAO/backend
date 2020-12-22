@@ -13,7 +13,7 @@ class TestResetPass(BaseTestClass):
         res = self.client.post(
             RESET_PASS_PHONE_URL,
             data={
-                'phoneNumber': '+989127616539'
+                'phoneNumber': '+989999999'
             }
         )
         print(res.json['message'])

@@ -14,7 +14,7 @@ class TestRegister(BaseTestClass):
             data={
                 'username': seed,
                 'password': 'password',
-                'phoneNumber': '+989127616539',
+                'phoneNumber': '+98999999',
                 'countryCode': 'ir',
                 'email': f'{seed}test@test.com',
                 'firstName': f'test{seed}',

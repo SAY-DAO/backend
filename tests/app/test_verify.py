@@ -9,7 +9,7 @@ class TestVerify(BaseTestClass):
         res = self.client.post(
             VERIFY_PHONE_URL,
             data={
-                'phone_number': '+989127616539'
+                'phone_number': '+989999999'
             }
         )
         assert res.status_code == 200
