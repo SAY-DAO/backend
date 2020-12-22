@@ -60,7 +60,7 @@ def handle_http_exception(error):
 
 @app.before_first_request
 def init_orm():
-    engine = session.bind or create_engine(url=configs.POSTGRES_DB)
+    engine = session.bind or create_engine(url=configs.postgres_url)
     init_model(engine)
 
 
