@@ -1,14 +1,12 @@
 import secrets
-from datetime import datetime
 from urllib.parse import urljoin
 
-from say.api import app
 from say.render_template_i18n import render_template_i18n
-from say.tasks import send_embeded_subject_email, send_sms
 from say.locale import ChangeLocaleTo
 from say.content import content
 
 from . import *
+from ..config import configs
 
 """
 Reset Password Model
@@ -17,7 +15,7 @@ Reset Password Model
 
 def expire_at():
     return datetime.utcnow() \
-        + timedelta(seconds=app.config['RESET_PASSWORD_EXPIRE_TIME'])
+        + timedelta(seconds=configs.RESET_PASSWORD_EXPIRE_TIME)
 
 
 class ResetPassword(base):
@@ -29,7 +27,7 @@ class ResetPassword(base):
         String,
         nullable=False,
         default=lambda: secrets.token_urlsafe(
-            app.config['RESET_PASSWORD_TOKEN_LENGTH']
+            configs.RESET_PASSWORD_TOKEN_LENGTH
         ),
         unique=True,
         index=True,
@@ -46,11 +44,13 @@ class ResetPassword(base):
     @property
     def link(self):
         return urljoin(
-            app.config['BASE_URL'],
-            app.config['SET_PASSWORD_URL'] + f'?token={self.token}'
+            configs.BASE_URL,
+            configs.SET_PASSWORD_URL + f'?token={self.token}'
         )
 
     def send_email(self, language):
+        from say.tasks import send_embeded_subject_email
+
         return send_embeded_subject_email.delay(
             to=self.user.emailAddress,
             html=render_template_i18n(
@@ -62,6 +62,8 @@ class ResetPassword(base):
         )
 
     def send_sms(self, language):
+        from say.tasks import send_sms
+
         with ChangeLocaleTo(language):
             send_sms.delay(
                 self.user.phone_number.e164,

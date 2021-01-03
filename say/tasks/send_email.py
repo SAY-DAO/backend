@@ -1,8 +1,8 @@
-from flask_mail import Message
 import bs4 as bs
+from flask_mail import Message
 
+from say.api.ext import mail
 from say.celery import celery
-from say.api import mail
 
 
 def get_subject_from_html(html):

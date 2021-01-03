@@ -7,10 +7,11 @@ from flask import jsonify, make_response
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_claims, \
     get_jwt_identity, create_access_token, verify_jwt_refresh_token_in_request
 from flask_jwt_extended.exceptions import JWTExtendedException
-    
+from jwt.exceptions import PyJWTError
 from sentry_sdk import set_user
 
-from say.api.ext.jwt import jwt
+from say.api.ext import jwt
+from say.config import configs
 from say.roles import *
 
 
@@ -20,11 +21,10 @@ _revoked_store = None
 def get_revoked_store():
     global _revoked_store
     if not _revoked_store:
-        from say.api import app
         _revoked_store = redis.StrictRedis(
-            host=app.config['REDIS_HOST'],
-            port=app.config['REDIS_PORT'],
-            db=app.config['REVOKED_TOKEN_STORE_DB'],
+            host=configs.REDIS_HOST,
+            port=configs.REDIS_PORT,
+            db=configs.REVOKED_TOKEN_STORE_DB,
             decode_responses=True,
         )
 
@@ -76,8 +76,8 @@ def authorize_refresh(func):
     def wrapper(*args, **kwargs):
         try:
             verify_jwt_refresh_token_in_request()
-        except:
-            return make_response(jsonify(message='Unauthorized'), 400)
+        except (PyJWTError, JWTExtendedException) as ex:
+            return make_response(jsonify(message='Unauthorized'), 401)
 
         return func(*args, **kwargs)
 
@@ -96,7 +96,7 @@ def authorize(*roles):
                     id=get_jwt_identity(),
                     role=get_user_role(),
                 ))
-            except JWTExtendedException as ex:
+            except (PyJWTError, JWTExtendedException) as ex:
                 getLogger().info(ex)
                 return make_response(jsonify(message=f'Unauthorized, {ex}'), 401)
 

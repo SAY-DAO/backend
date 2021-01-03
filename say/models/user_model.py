@@ -3,12 +3,10 @@ from hashlib import sha256
 from sqlalchemy.orm import column_property
 from sqlalchemy_utils import CountryType, LocaleType, PhoneNumberType
 
-from say.config import configs
 from say.content import content
 from say.gender import Gender
 from say.locale import ChangeLocaleTo
 from say.render_template_i18n import render_template_i18n
-from say.tasks import send_embeded_subject_email, send_sms
 from say.validations import validate_password as _validate_password
 from . import *
 from .need_model import Need, NeedFamily
@@ -173,6 +171,8 @@ class User(base, Timestamp):
         session.add(payment)
 
     def send_installion_notif(self, notif_url):
+        from say.tasks import send_embeded_subject_email, send_sms
+
         with ChangeLocaleTo(self.locale):
             if self.is_phonenumber_verified:
                 send_sms.delay(

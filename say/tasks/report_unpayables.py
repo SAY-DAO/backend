@@ -1,10 +1,9 @@
 from datetime import datetime, timedelta
 
-from .send_email import send_embeded_subject_email
-from say.api import app
 from say.celery import celery
 from say.langs import LANGS
 from say.render_template_i18n import render_template_i18n
+from .send_email import send_embeded_subject_email
 
 
 @celery.task(base=celery.DBTask, bind=True)

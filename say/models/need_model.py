@@ -7,10 +7,9 @@ from sqlalchemy.orm import object_session, column_property
 from . import *
 from .need_family_model import NeedFamily
 from .payment_model import Payment
-from say.api import app
 from say.statuses import NeedStatuses
 from say.constants import DIGIKALA_TITLE_SEP
-
+from ..config import configs
 
 """
 Need Model
@@ -140,14 +139,14 @@ class Need(base, Timestamp):
     def unpayable(self):
         return bool(self.unavailable_from \
             and self.unavailable_from < datetime.utcnow() \
-                - timedelta(days=app.config['PRODUCT_UNPAYABLE_PERIOD'])
+                - timedelta(days=configs.PRODUCT_UNPAYABLE_PERIOD)
         )
 
     @unpayable.expression
     def unpayable(cls):
         return cls.unavailable_from \
             and cls.unavailable_from < datetime.utcnow() \
-                - timedelta(days=app.config['PRODUCT_UNPAYABLE_PERIOD'])
+                - timedelta(days=configs.PRODUCT_UNPAYABLE_PERIOD)
 
     @hybrid_property
     def unpayable_from(self):
@@ -155,7 +154,7 @@ class Need(base, Timestamp):
             return None
 
         return self.unavailable_from \
-            + timedelta(days=app.config['PRODUCT_UNPAYABLE_PERIOD'])
+            + timedelta(days=configs.PRODUCT_UNPAYABLE_PERIOD)
 
     @unpayable_from.expression
     def unpayable_from(cls):
@@ -163,7 +162,7 @@ class Need(base, Timestamp):
             return None
 
         return cls.unavailable_from \
-            + timedelta(days=app.config['PRODUCT_UNPAYABLE_PERIOD'])
+            + timedelta(days=configs.PRODUCT_UNPAYABLE_PERIOD)
 
     @hybrid_property
     def progress(self):
@@ -389,11 +388,10 @@ class Need(base, Timestamp):
         return data
 
     def child_delivery_product(self):
-        from say.api import app
         from say.tasks import change_need_status_to_delivered
 
         deliver_to_child_delay = datetime.utcnow() \
-            + timedelta(seconds=app.config['DELIVER_TO_CHILD_DELAY'])
+            + timedelta(seconds=configs.DELIVER_TO_CHILD_DELAY)
 
         change_need_status_to_delivered.apply_async(
             (self.id,),

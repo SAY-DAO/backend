@@ -1,6 +1,11 @@
-from . import *
-from say.models import User, session
+from flasgger import swag_from
+from flask_restful import Resource
+
+from say.models import User
 from say.validations import validate_email, validate_phone
+from .ext import api
+from ..decorators import json
+from ..orm import session
 from ..schema.user import UserNameSchema
 
 '''

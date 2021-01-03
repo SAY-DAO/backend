@@ -1,4 +1,5 @@
-from say.models import session, User
+from say.models import User
+from say.orm import session
 
 
 def get_say_id():

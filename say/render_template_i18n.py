@@ -6,8 +6,7 @@ from say.formatters import int_formatter, expose_datetime
 from say.locale import ChangeLocaleTo, get_locale
 
 
-def render_template_i18n(path, *args, locale=None, date_with_year=True,
-                    **kwargs):
+def render_template_i18n(path, *args, locale=None, date_with_year=True, **kwargs):
 
     if not locale:
         return render_template(path, *args, int_formatter=int_formatter, **kwargs)
