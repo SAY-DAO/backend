@@ -3,6 +3,7 @@ from urllib.parse import urljoin
 
 from say.models import *
 from say.constants import ALPHABET
+from say.config import configs
 
 
 # FIXME: Collision
