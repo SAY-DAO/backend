@@ -386,7 +386,7 @@ class DeleteNeedById(Resource):
         if not need:
             return {'message': 'need not found'}, 404
 
-        if get_user_role in (SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR) \
+        if get_user_role() in (SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR) \
                 and need.isConfirmed:
             return {'message': 'permision denied'}, 403
 
