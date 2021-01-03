@@ -14,7 +14,6 @@ from .payment_api import *
 from .check_api import *
 from .invitation_api import *
 from .change_cost_api import *
-# from .healthz import *
 from .public import *
 from .nakama import *
 

@@ -7,7 +7,7 @@ from flask_caching import Cache
 from flask_cors import CORS
 
 from say.exceptions import HTTPException
-from say.api.ext import jwt, api, mail, limiter
+from say.api.ext import jwt, api, mail, limiter, setup_healthz
 from say.config import configs
 from say.orm import create_engine, session, init_model
 from say.sentry import setup_sentry
@@ -41,6 +41,7 @@ jwt.init_app(app)
 mail.init_app(app)
 api.init_app(app)
 limiter.init_app(app)
+setup_healthz(app)
 
 setup_sentry()
 
