@@ -29,6 +29,7 @@ def report_to_family(self, family_id):
     from say.models.family_model import Family
     from say.models.user_family_model import UserFamily
     from say.models.need_family_model import NeedFamily
+    from say.app import app
 
     session = self.session
     yesterday = datetime.utcnow() - timedelta(days=1)

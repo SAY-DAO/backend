@@ -28,6 +28,7 @@ def report_unpayables(self):
 
     say_coordinator = say.coordinator.emailAddress
 
+    from say.app import app
     with app.app_context():
         send_embeded_subject_email.delay(
             to=say_coordinator,
