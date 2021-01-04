@@ -68,6 +68,7 @@ class SocialWorker(base, Timestamp):
         from .child_need_model import ChildNeed
         from .ngo_model import Ngo
         from say.orm import safe_commit
+        from say.app import app
 
         session = object_session(self)
         needs = None
