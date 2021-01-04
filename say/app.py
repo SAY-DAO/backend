@@ -42,7 +42,6 @@ mail.init_app(app)
 api.init_app(app)
 limiter.init_app(app)
 setup_healthz(app)
-
 setup_sentry()
 
 
