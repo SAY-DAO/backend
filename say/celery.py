@@ -16,7 +16,7 @@ CELERY_TASK_LIST = [
 beat = {
     'report-to-social-workers': {
         'task': 'say.tasks.report_to_social_worker.report_to_social_workers',
-        'schedule': crontab(minute=30, hour='2,10'),
+        'schedule': crontab(minute=15, hour='2,12'),
     },
     'update-needs': {
         'task': 'say.tasks.update_needs.update_needs',
