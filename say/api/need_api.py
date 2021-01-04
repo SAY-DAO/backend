@@ -292,6 +292,7 @@ class UpdateNeedById(Resource):
         if 'link' in request.form.keys():
             new_link = request.form['link']
             if new_link != need.link:
+                from say.tasks import update_need
                 need.link = new_link
                 session.flush()
                 update_need.delay(need.id, force=True)
