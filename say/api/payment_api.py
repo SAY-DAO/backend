@@ -244,7 +244,7 @@ class VerifyPayment(Resource):
             .filter(
                 Payment.gateway_payment_id == paymentId,
                 Payment.order_id == order_id,
-                Payment.verified is None,
+                Payment.verified.is_(None),
             ) \
             .with_for_update() \
             .one_or_none()
