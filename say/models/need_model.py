@@ -192,7 +192,11 @@ class Need(base, Timestamp):
 
         for word in self.title.split(' '):
             if word in DIGIKALA_TITLE_SEP:
-                return self.title[: self.title.find(word)].strip()
+                keyword_index = self.title.find(word)
+                if keyword_index == 0:
+                    continue
+
+                return self.title[: keyword_index].strip()
 
         return self.title
 
