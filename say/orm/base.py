@@ -1,3 +1,6 @@
+from werkzeug.datastructures import FileStorage
+
+
 class BaseModel(object):
 
     @property
@@ -12,5 +15,8 @@ class BaseModel(object):
         for k, v in kwargs.items():
             if k not in self._column_names:
                 continue
-
+            
+            if isinstance(v, FileStorage):
+                v = v.filepath
+            
             setattr(self, k, v)

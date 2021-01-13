@@ -1,0 +1,52 @@
+Update a receipt
+
+---
+
+tags:
+  - Receipt API
+
+consumes:
+  - multipart/form-data
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - name: id
+    in: path
+    required: true
+
+  - name: attachment
+    in: formData
+    type: file
+
+  - name: description
+    in: formData
+    type: string
+    description: max 1024 char
+
+  - name: title
+    in: formData
+    type: string
+    description: max 128 char
+
+  - name: isPublic
+    in: formData
+    type: boolean
+    default: false
+    description: default=false, only SUPER_ADMIN, SAY_SUPERVISOR, ADMIN can set to true
+
+responses:
+  400:
+    description: bad request
+  401:
+    description: unauthorized
+  403:
+    description: forbiden
+  404:
+    description: not found
+  200:
+    description: Ok

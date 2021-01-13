@@ -1,0 +1,27 @@
+List receipts, sorted by updated, created
+
+---
+
+tags:
+  - Receipt API
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    type: string
+
+  - name: search
+    in: query
+    description: search query
+
+  - name: take
+    in: query
+    description: max 100, default = 10
+    
+  - name: skip
+    in: query
+
+responses:
+  200:
+    description: list of receipts

@@ -5,8 +5,6 @@ from flask import Response
 from flask.globals import request
 from sqlalchemy_utils import PhoneNumber
 
-from say.schema.base import BaseModel
-
 
 VALID_ROLES = [*range(-1, 6)]
 
@@ -20,6 +18,9 @@ validate_email = re.compile(EMAIL_PATTERN).fullmatch
 PASSWORD_PATTERN = '^(.){6,64}$'
 validate_password = re.compile(PASSWORD_PATTERN).fullmatch
 
+ALLOWED_VOICE_EXTENSIONS = {"wav", "m4a", "wma", "mp3", "aac", "ogg"}
+ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
+ALLOWED_RECEIPT_EXTENSIONS = ALLOWED_IMAGE_EXTENSIONS | {"pdf"}
 
 def validate_phone(phone):
     try:
@@ -28,7 +29,7 @@ def validate_phone(phone):
         return False
 
 
-def validate(model: BaseModel):
+def validate(model):
     def wrapper(func):
         def inner(*_args, **_kwargs):
             try:
@@ -71,8 +72,3 @@ def allowed_receipt(filename):
         return True
 
     raise TypeError('Wrong receipt format')
-
-
-ALLOWED_VOICE_EXTENSIONS = {"wav", "m4a", "wma", "mp3", "aac", "ogg"}
-ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
-ALLOWED_RECEIPT_EXTENSIONS = ALLOWED_IMAGE_EXTENSIONS | {"pdf"}
