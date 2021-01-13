@@ -23,11 +23,17 @@ from say.models import obj_to_dict, commit
 from say.models.child_model import Child
 from say.models.child_need_model import ChildNeed
 from say.models.family_model import Family
+from say.models.need_family_model import NeedFamily
 from say.models.need_model import Need
+from say.models.receipt import NeedReceipt, Receipt
 from say.models.social_worker_model import SocialWorker
 from say.models.user_family_model import UserFamily
 from say.orm import safe_commit, session
 from say.roles import *
+from say.schema import NewReceiptSchema, ReceiptSchema
+from sqlalchemy import or_
+
+from . import *
 
 '''
 Need APIs
@@ -42,8 +48,8 @@ def filter_by_privilege(query, get=False):  # TODO: priv
     if user_role in [SOCIAL_WORKER, COORDINATOR]:
         if get:
             query = query.join(Child).filter(or_(
-                    Child.id_social_worker == user_id,
-                    Child.id == DEFAULT_CHILD_ID,
+                Child.id_social_worker == user_id,
+                Child.id == DEFAULT_CHILD_ID,
             ))
         else:
             query = query.join(Child).filter(Child.id_social_worker == user_id)
@@ -573,28 +579,41 @@ class AddNeed(Resource):
             new_need.imageUrl = '/' + image_path
 
         # Depreceted
-        if 'receipts' in request.files.keys():
-            file2 = request.files['receipts']
-            if file2.filename == '':
-                return {'message': 'ERROR OCCURRED --> EMPTY FILE!'}, 400
+        if "receipts" in request.files.keys():
+            file2 = request.files["receipts"]
+            if file2.filename == "":
+                resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY FILE!"}), 500)
+                session.close()
+                return resp
 
-            if file2 and allowed_receipt(file2.filename):
-                filename = secure_filename(file2.filename)
-                # filename = str(0) + '.' + file2.filename.split('.')[-1]
 
-                temp_need_path = os.path.join(
-                    temp_need_path, str(new_need.id) + '-need'
-                )
+            if not allowed_receipt(file2.filename):
+                resp = make_response(jsonify({"message": f"Only {ALLOWED_RECEIPT_EXTENSIONS} allowed"}), 400)
+                session.close()
+                return resp
 
-                if not os.path.isdir(temp_need_path):
-                    os.makedirs(temp_need_path, exist_ok=True)
+            filename = secure_filename(file2.filename)
 
-                receipt_path = os.path.join(
-                    temp_need_path, str(new_need.id) + '-receipt_' + filename
-                )
+            temp_need_path = os.path.join(
+                temp_need_path, str(new_need.id) + "-need"
+            )
 
-                file2.save(receipt_path)
-                new_need.receipts = '/' + receipt_path
+            if not os.path.isdir(temp_need_path):
+                os.makedirs(temp_need_path, exist_ok=True)
+
+            receipt_path = os.path.join(
+                temp_need_path, str(new_need.id) + "-receipt_" + filename
+            )
+
+            file2.save(receipt_path)
+            new_need.receipts = '/' + receipt_path
+
+            safe_commit(session)
+
+            if new_need.link:
+                update_need.delay(new_need.id)
+
+            resp = make_response(jsonify(obj_to_dict(new_need)), 200)
 
         safe_commit(session)
 
@@ -604,6 +623,121 @@ class AddNeed(Resource):
 
         return new_need
 
+class NeedReceipts(Resource):
+
+    @json
+    @swag_from('./docs/need/list_receipts.yml')
+    def get(self, id):
+        try:
+            user_role = get_user_role()
+            user_id = get_user_id()
+            ngo_id = get_sw_ngo_id()
+        except NoAuthorizationError:
+            user_role = None
+            user_id = None
+            ngo_id = None
+
+        base_query = (session.query(Receipt) \
+            .join(NeedReceipt, NeedReceipt.receipt_id == Receipt.id)
+            .join(Need, NeedReceipt.need_id == Need.id)
+            .join(Child, Child.id == Need.child_id)
+            .join(SocialWorker, SocialWorker.id == Child.id_social_worker)
+            .filter(
+                Need.isDeleted == False,
+                Receipt.deleted.is_(None),
+                NeedReceipt.deleted.is_(None),
+                Need.id == id,
+                or_(
+                    True if user_role in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR] else False,
+                    Receipt.is_public == True,
+                    Receipt.owner_id == user_id if not user_role in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR] else False,
+                    SocialWorker.id_ngo == ngo_id if user_role in [NGO_SUPERVISOR] else False,
+                ),
+            )
+        )
+
+        res = []
+        for r in base_query:
+            res.append(ReceiptSchema.from_orm(r))
+
+        return res
+        
+
+    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
+               SAY_SUPERVISOR, ADMIN)
+    @json
+    @swag_from('./docs/need/new_receipt.yml')
+    def post(self, id):
+        sw_id = get_user_id()
+
+        try:
+            data = NewReceiptSchema(**request.form.to_dict(), **request.files, owner_id=sw_id)
+        except ValueError as e:
+            return e.json(), 400
+
+
+        need = filter_by_privilege(
+            session.query(Need).filter(
+                Need.id == id,
+                Need.isDeleted == False,
+            )
+        ).one_or_none()
+
+
+        if need is None:
+            return HTTP_NOT_FOUND()
+        
+        receipt = session.query(Receipt).filter(
+            Receipt.code == data.code,
+            Receipt.deleted == None,
+        ).one_or_none()
+
+        if receipt is not None:
+            return {'message': 'Code already exists'}, 400
+
+        receipt = Receipt(**data.dict())
+
+        need_receipt = NeedReceipt(
+            need=need,
+            receipt=receipt,
+            sw_id=sw_id,
+        )
+        session.add(need_receipt)
+
+        data.attachment.save(data.attachment.filepath)
+        receipt.attachment = data.attachment.filepath
+
+        safe_commit(session)
+        return ReceiptSchema.from_orm(receipt)
+
+
+class NeedReceiptAPI(Resource):
+
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
+    @json
+    @swag_from('./docs/need/delete_receipt.yml')
+    def delete(self, id, receiptId):
+        receipt_id = receiptId
+        need_receipt = session.query(NeedReceipt).filter(
+            NeedReceipt.need_id == id,
+            NeedReceipt.receipt_id == receipt_id,
+        ).one_or_none()
+
+        if need_receipt is None:
+            return HTTP_NOT_FOUND()
+
+        if need_receipt.deleted:
+            return {'message': 'Already deleted'}
+
+        need_receipt.deleted = datetime.utcnow()
+        safe_commit(session)
+        return ReceiptSchema.from_orm(need_receipt.receipt)
+        
+        
+
+"""
+API URLs
+"""
 
 api.add_resource(GetNeedById, '/api/v2/need/needId=<need_id>')
 api.add_resource(GetAllNeeds, '/api/v2/need/all/confirm=<confirm>')
@@ -613,4 +747,12 @@ api.add_resource(
     ConfirmNeed,
     '/api/v2/need/confirm/needId=<need_id>',
 )
-api.add_resource(AddNeed, '/api/v2/need/')
+api.add_resource(AddNeed, "/api/v2/need/")
+api.add_resource(
+    NeedReceipts,
+    "/api/v2/needs/<int:id>/receipts",
+)
+api.add_resource(
+    NeedReceiptAPI,
+    "/api/v2/needs/<int:id>/receipts/<int:receiptId>",
+)
