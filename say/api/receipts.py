@@ -146,7 +146,6 @@ class ListReceiptsAPI(Resource):
             .filter(
                 Need.isDeleted == False,
                 Receipt.deleted.is_(None),
-                NeedReceipt.deleted.is_(None),
                 or_(
                     True if user_role in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR] else False,
                     Receipt.is_public == True,
