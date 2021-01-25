@@ -32,6 +32,7 @@ def get_revoked_store():
 
 
 def get_user_role():
+    verify_jwt_in_request()
     return get_jwt_claims().get('role', USER)
 
 
