@@ -721,13 +721,11 @@ class NeedReceiptAPI(Resource):
         need_receipt = session.query(NeedReceipt).filter(
             NeedReceipt.need_id == id,
             NeedReceipt.receipt_id == receipt_id,
+            NeedReceipt.deleted.is_(None),
         ).one_or_none()
 
         if need_receipt is None:
             return HTTP_NOT_FOUND()
-
-        if need_receipt.deleted:
-            return {'message': 'Already deleted'}
 
         need_receipt.deleted = datetime.utcnow()
         safe_commit(session)
