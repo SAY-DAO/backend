@@ -1,0 +1,29 @@
+Delete a receipt from a need, not the receipt itself!
+
+---
+
+tags:
+  - Need API
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - name: id
+    in: path
+    required: true
+
+  - name: receiptId
+    in: path
+    required: true
+
+responses:
+  404:
+    description: receipt not found
+  400:
+    description: receipt already deleted
+  200:
+    description: receipt deleted

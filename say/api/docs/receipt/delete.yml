@@ -1,0 +1,27 @@
+Delete a receipt, from all needs that it is attached
+
+---
+
+tags:
+  - Receipt API
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - name: id
+    in: path
+    required: true
+
+responses:
+  401:
+    description: unauthorized
+  403:
+    description: forbiden
+  404:
+    description: receipt not found
+  200:
+    description: receipt deleted
