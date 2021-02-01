@@ -338,9 +338,10 @@ class GetChildNeeds(Resource):
             .all()
 
         needs = []
+        role = get_user_role()
         for need in needs_query:
             if not need.isConfirmed \
-                    and get_user_role() in [USER]:
+                    and  role in [USER]:
                 continue
 
             need_dict = obj_to_dict(need)
