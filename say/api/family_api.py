@@ -189,15 +189,24 @@ class LeaveFamily(Resource):
             session.query(Family)
             .filter_by(id=family_id)
             .filter_by(isDeleted=False)
-            .first()
+            .one_or_none()
         )
+
+        if family is None:
+            return {'message': 'Family not found'}, 404
+
         user_family = (
             session.query(UserFamily)
             .filter_by(id_user=user_id)
             .filter_by(id_family=family_id)
             .filter_by(isDeleted=False)
-            .one()
+            .with_for_update()
+            .one_or_none()
         )
+
+        if user_family is None:
+            return {'message': 'User not in family'}, 400
+
         user_family.isDeleted = True
 
         participations = (
@@ -205,6 +214,7 @@ class LeaveFamily(Resource):
             .filter_by(id_user=user_id)
             .filter_by(id_family=family_id)
             .filter_by(isDeleted=False)
+            .with_for_update()
         )
 
         for p in participations:
