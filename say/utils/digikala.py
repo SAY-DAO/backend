@@ -17,29 +17,33 @@ def parse_dkp(url):
 
 
 def parse_cost(c):
-    cost = None
-    try:
-        cost_text = re.search(
-            COST_PATTERN,
-            c,
-            re.DOTALL
-        ).group(1, 2)
+    if raw_cost_text := re.search(
+        COST_PATTERN,
+        c,
+        re.DOTALL
+    ):
+        cost_text = raw_cost_text.group(1, 2)
         cost_text = cost_text[0] if cost_text[0] else cost_text[1]
         cost_text = cost_text.strip().replace(',', '')
-    except:
-        has_product_status = re.search(
-            r'c-product-stock__body">(.*?)<',
-            c,
-            re.DOTALL,
-        )
-        if not has_product_status:
-            raise
+        return int(cost_text)
 
+    elif has_product_status := re.search(
+        r'c-product-stock__body">(.*?)<',
+        c,
+        re.DOTALL,
+    ):
         product_status = has_product_status.group(1).strip()
         return product_status
-
-    cost = int(cost_text)
-    return cost
+    
+    elif product_unavailable := re.search(
+        r'c-product-not-available__title',
+        c,
+        re.DOTALL,
+    ):
+        return 'unavailable'
+    
+    else:
+        return None
 
 
 def parse_title(c):
