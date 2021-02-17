@@ -54,7 +54,7 @@ def parse_title(c):
             c,
             re.DOTALL
         ).group(1).strip()
-    except IndexError:
+    except (IndexError, AttributeError):
         pass
 
     return title
@@ -68,7 +68,7 @@ def parse_img(c):
             c,
             re.DOTALL
         ).group(1).strip()
-    except IndexError:
+    except (IndexError, AttributeError):
         pass
 
     return img
