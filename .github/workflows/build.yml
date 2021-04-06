@@ -18,7 +18,19 @@ jobs:
 
       - name: Get Ref Name
         run: echo "REF=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
-      
+
+      - name: Set Development Envars
+        if: ${{ REF == 'develop' }}
+        run: echo "ENVIRONMENT=dev >> $GITHUB_ENV
+
+      - name: Set Staging Envars
+        if: ${{ REF == 'master' }}
+        run: echo "ENVIRONMENT=stag >> $GITHUB_ENV
+
+      - name: Set Staging Envars
+        if: ${{ REF == 'release' }}
+        run: echo "ENVIRONMENT=prod >> $GITHUB_ENV
+
       -
         name: Set Base Docker Image ID
         run: echo "BASE_IMAGE_ID=${{ secrets.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):base-${REF}" >> $GITHUB_ENV
@@ -41,11 +53,11 @@ jobs:
 
       -
         name: Build Base Image
-        run: docker build --build-arg ENVIRONMENT=$ENVIRONMENT --cache-from ${{ env.BASE_IMAGE_ID }} --target base -t ${{ env.BASE_IMAGE_ID }} .
+        run: docker build --build-arg ENVIRONMENT=${ENVIRONMENT} --cache-from ${{ env.BASE_IMAGE_ID }} --target base -t ${{ env.BASE_IMAGE_ID }} .
 
       -
         name: Build Runtime Image
-        run: docker build --build-arg ENVIRONMENT=$ENVIRONMENT --cache-from ${{ env.BASE_IMAGE_ID }} --cache-from ${{ env.RUNTIME_IMAGE_ID }} --target prod -t ${{ env.RUNTIME_IMAGE_ID }} .
+        run: docker build --build-arg ENVIRONMENT=${ENVIRONMENT} --cache-from ${{ env.BASE_IMAGE_ID }} --cache-from ${{ env.RUNTIME_IMAGE_ID }} --target prod -t ${{ env.RUNTIME_IMAGE_ID }} .
 
       -
         name: Push Base Image
