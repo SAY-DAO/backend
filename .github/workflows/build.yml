@@ -16,15 +16,20 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
-      - name: Git checkout
+      - name: Git Checkout
         uses: actions/checkout@v1
+      
+      -
+        name: Set Docker Image ID
+        run: echo ::set-env name=BASE_IMAGE::${{ secrets.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${{ github.ref#refs/heads/}}
+
       -
         name: Login to GitHub Container Registry
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login -u ${{ github.repository_owner }} --password-stdin ${{ secrets.REGISTRY }}
       
       -
         name: Populate cache
-        run: docker build --build-arg ENVIRONMENT=$ENVIRONMENT --cache-from $BASE_IMAGE --target base -t $BASE_IMAGE .
+        run: docker build --build-arg ENVIRONMENT=$ENVIRONMENT --cache-from ${{ env.BASE_IMAGE }} --target base -t ${{ env.BASE_IMAGE }} .
       
       -
         name: Build
