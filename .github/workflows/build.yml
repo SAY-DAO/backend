@@ -20,15 +20,15 @@ jobs:
         run: echo "REF=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
       - name: Set Development Envars
-        if: ${{ REF == 'develop' }}
+        if: ${{ env.REF == 'develop' }}
         run: echo "ENVIRONMENT=dev >> $GITHUB_ENV
 
       - name: Set Staging Envars
-        if: ${{ REF == 'master' }}
+        if: ${{ env.REF == 'master' }}
         run: echo "ENVIRONMENT=stag >> $GITHUB_ENV
 
       - name: Set Staging Envars
-        if: ${{ REF == 'release' }}
+        if: ${{ env.REF == 'release' }}
         run: echo "ENVIRONMENT=prod >> $GITHUB_ENV
 
       -
