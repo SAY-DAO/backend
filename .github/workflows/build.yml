@@ -8,9 +8,11 @@ on:
       - 'develop'
       - 'release'
 
+env:
+  BASE_IMAGE: ghcr.io/${GITHUB_REPOSITORY}:${GITHUB_REF#refs/heads/}
+
 jobs:
-  env:
-    BASE_IMAGE: ghcr.io/${GITHUB_REPOSITORY}:${GITHUB_REF#refs/heads/}
+
   build-and-push:
     runs-on: ubuntu-latest
     steps:
