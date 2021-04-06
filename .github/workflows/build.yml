@@ -31,7 +31,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: SAY-DAO/backend:latest
+          tags: ghcr.io/say-dao/backend:latest
       -
         name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
