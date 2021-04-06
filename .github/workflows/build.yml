@@ -9,7 +9,7 @@ on:
       - 'release'
 
 env:
-  BASE_IMAGE: ${{ secrets.REGISTRY }}/${GITHUB_REPOSITORY,,}:${GITHUB_REF#refs/heads/}
+  BASE_IMAGE: ${{ secrets.REGISTRY }}/${{GITHUB_REPOSITORY,,}}:${{GITHUB_REF#refs/heads/}}
 
 jobs:
 
