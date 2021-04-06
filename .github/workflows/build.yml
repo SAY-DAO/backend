@@ -26,8 +26,11 @@ jobs:
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login -u ${{ github.repository_owner }} --password-stdin ${{ secrets.REGISTRY }}
       
       -
-        name: Populate Cache
+        name: Pull Base Image Cache
         run: docker pull ${{ env.BASE_IMAGE_ID }} || true
+      
+      -
+        name: Pull Runtime Image Cache
         run: docker pull ${{ env.RUNTIME_IMAGE_ID }} || true
 
       -
