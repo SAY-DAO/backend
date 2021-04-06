@@ -18,7 +18,7 @@ jobs:
       
       -
         name: Set Docker Image ID
-        run: echo ::set-env name=BASE_IMAGE::${{ secrets.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${GITHUB_REF#refs/heads/}
+        run: echo "BASE_IMAGE::${{ secrets.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
       -
         name: Login to GitHub Container Registry
