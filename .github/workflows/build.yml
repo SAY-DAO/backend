@@ -21,13 +21,16 @@ jobs:
 
       - name: Set Development Envars
         if: ${{ env.REF == 'develop' }}
-        run: echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+        run: |
+          echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+          echo "DOMAIN=d.sayapp.company" >> $GITHUB_ENV
+          echo "STACK_NAME=say-dev-backend" >> $GITHUB_ENV
 
       - name: Set Staging Envars
         if: ${{ env.REF == 'master' }}
         run: echo "ENVIRONMENT=stag" >> $GITHUB_ENV
 
-      - name: Set Staging Envars
+      - name: Set Production Envars
         if: ${{ env.REF == 'release' }}
         run: echo "ENVIRONMENT=prod" >> $GITHUB_ENV
 
