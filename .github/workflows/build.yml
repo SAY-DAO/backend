@@ -15,14 +15,17 @@ jobs:
     steps:
       - name: Git Checkout
         uses: actions/checkout@v1
+
+      - name: Get Ref Name
+        run: echo "REF=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
       
       -
         name: Set Base Docker Image ID
-        run: echo "BASE_IMAGE_ID=${{ secrets.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):base-${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+        run: echo "BASE_IMAGE_ID=${{ secrets.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):base-${REF}" >> $GITHUB_ENV
       
       -
         name: Set Runtime Docker Image ID
-        run: echo "RUNTIME_IMAGE_ID=${{ secrets.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+        run: echo "RUNTIME_IMAGE_ID=${{ secrets.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${REF}" >> $GITHUB_ENV
 
       -
         name: Login to GitHub Container Registry
