@@ -21,15 +21,15 @@ jobs:
 
       - name: Set Development Envars
         if: ${{ env.REF == 'develop' }}
-        run: echo "ENVIRONMENT=dev >> $GITHUB_ENV
+        run: echo "ENVIRONMENT=dev" >> $GITHUB_ENV
 
       - name: Set Staging Envars
         if: ${{ env.REF == 'master' }}
-        run: echo "ENVIRONMENT=stag >> $GITHUB_ENV
+        run: echo "ENVIRONMENT=stag" >> $GITHUB_ENV
 
       - name: Set Staging Envars
         if: ${{ env.REF == 'release' }}
-        run: echo "ENVIRONMENT=prod >> $GITHUB_ENV
+        run: echo "ENVIRONMENT=prod" >> $GITHUB_ENV
 
       -
         name: Set Base Docker Image ID
