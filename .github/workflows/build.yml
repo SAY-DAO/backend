@@ -18,7 +18,8 @@ jobs:
       
       -
         name: Set Docker Image ID
-        run: echo "BASE_IMAGE=${{ secrets.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):base-${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+        run: echo "BASE_IMAGE_ID=${{ secrets.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):base-${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+        run: echo "RUNTIME_IMAGE_ID=${{ secrets.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
       -
         name: Login to GitHub Container Registry
@@ -26,18 +27,22 @@ jobs:
       
       -
         name: Populate Cache
-        run: docker pull ${{ env.BASE_IMAGE }} || true
+        run: docker pull ${{ env.BASE_IMAGE_ID }} || true
+        run: docker pull ${{ env.RUNTIME_IMAGE_ID }} || true
 
       -
         name: Build Base Image
-        run: docker build --build-arg ENVIRONMENT=$ENVIRONMENT --cache-from ${{ env.BASE_IMAGE }} --target base -t ${{ env.BASE_IMAGE }} .
+        run: docker build --build-arg ENVIRONMENT=$ENVIRONMENT --cache-from ${{ env.BASE_IMAGE_ID }} --target base -t ${{ env.BASE_IMAGE_ID }} .
+
+      -
+        name: Build Runtime Image
+        run: docker build --build-arg ENVIRONMENT=$ENVIRONMENT --cache-from ${{ env.BASE_IMAGE_ID }} --cache-from ${{ env.RUNTIME_IMAGE_ID }} --target prod -t ${{ env.RUNTIME_IMAGE_ID }} .
+
       -
         name: Push Base Image
-        run: docker push ${{ env.BASE_IMAGE }}
+        run: docker push ${{ env.BASE_IMAGE_ID }}
+      
+      -
+        name: Push Runtime Image
+        run: docker push ${{ env.RUNTIME_IMAGE_ID }}
 
-      #   with:
-      #     push: true
-      #     tags: ghcr.io/${GITHUB_REPOSITORY}:${GITHUB_REF#refs/heads/}
-      # -
-      #   name: Image digest
-      #   run: echo ${{ steps.docker_build.outputs.digest }}
