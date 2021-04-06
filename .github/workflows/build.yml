@@ -25,7 +25,9 @@ jobs:
           echo "ENVIRONMENT=dev" >> $GITHUB_ENV
           echo "DOMAIN=d.sayapp.company" >> $GITHUB_ENV
           echo "STACK_NAME=say-dev-backend" >> $GITHUB_ENV
-
+      - name: as
+        run: echo $STACK_NAME
+        
       - name: Set Staging Envars
         if: ${{ env.REF == 'master' }}
         run: echo "ENVIRONMENT=stag" >> $GITHUB_ENV
