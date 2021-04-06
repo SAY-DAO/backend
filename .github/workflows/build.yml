@@ -25,16 +25,20 @@ jobs:
           echo "ENVIRONMENT=dev" >> $GITHUB_ENV
           echo "DOMAIN=d.sayapp.company" >> $GITHUB_ENV
           echo "STACK_NAME=say-dev-backend" >> $GITHUB_ENV
-      - name: as
-        run: echo $STACK_NAME
         
       - name: Set Staging Envars
         if: ${{ env.REF == 'master' }}
-        run: echo "ENVIRONMENT=stag" >> $GITHUB_ENV
+        run: |
+          echo "ENVIRONMENT=stag" >> $GITHUB_ENV
+          echo "DOMAIN=s.sayapp.company" >> $GITHUB_ENV
+          echo "STACK_NAME=say-stag-backend" >> $GITHUB_ENV
 
       - name: Set Production Envars
         if: ${{ env.REF == 'release' }}
-        run: echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+        run: |
+          echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+          echo "DOMAIN=sayapp.company" >> $GITHUB_ENV
+          echo "STACK_NAME=say-backend" >> $GITHUB_ENV
 
       -
         name: Set Base Docker Image ID
