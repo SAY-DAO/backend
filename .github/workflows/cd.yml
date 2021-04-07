@@ -119,7 +119,7 @@ jobs:
           remote_docker_host: ${{ secrets.DEV_SERVER_ADDR }}
           remote_docker_port: ${{ secrets.DEV_SERVER_PORT }}
           ssh_private_key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
-          # ssh_public_key: ${{ secrets.DOCKER_SSH_PUBLIC_KEY }}
+          ssh_public_key: ${{ secrets.DEV_SSH_PUBLIC_KEY }}
           deployment_mode: docker-swarm
           copy_stack_file: true
           deploy_path: /tmp/
