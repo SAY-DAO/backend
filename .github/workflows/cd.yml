@@ -1,0 +1,114 @@
+name: Deployment
+
+on:
+  push:
+    tags:
+    branches:
+      - 'master'
+      - 'develop'
+      - 'release'
+
+jobs:
+
+  build-and-push-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+
+      - name: Get Ref Name
+        run: echo "REF=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+
+      - name: Set Development Envars
+        if: ${{ env.REF == 'develop' }}
+        run: |
+          echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+          echo "DOMAIN=d.sayapp.company" >> $GITHUB_ENV
+          echo "STACK_NAME=say-dev-backend" >> $GITHUB_ENV
+        
+      - name: Set Staging Envars
+        if: ${{ env.REF == 'master' }}
+        run: |
+          echo "ENVIRONMENT=stag" >> $GITHUB_ENV
+          echo "DOMAIN=s.sayapp.company" >> $GITHUB_ENV
+          echo "STACK_NAME=say-stag-backend" >> $GITHUB_ENV
+
+      - name: Set Production Envars
+        if: ${{ env.REF == 'release' }}
+        run: |
+          echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+          echo "DOMAIN=sayapp.company" >> $GITHUB_ENV
+          echo "STACK_NAME=say-backend" >> $GITHUB_ENV
+
+      -
+        name: Set Base Docker Image ID
+        run: echo "BASE_IMAGE_ID=${{ secrets.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):base-${REF}" >> $GITHUB_ENV
+      
+      -
+        name: Set Runtime Docker Image ID
+        run: echo "RUNTIME_IMAGE_ID=${{ secrets.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${REF}" >> $GITHUB_ENV
+
+      -
+        name: Login to GitHub Container Registry
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login -u ${{ github.repository_owner }} --password-stdin ${{ secrets.REGISTRY }}
+      
+      # -
+      #   name: Pull Base Image Cache
+      #   run: docker pull ${{ env.BASE_IMAGE_ID }} || true
+      
+      # -
+      #   name: Pull Runtime Image Cache
+      #   run: docker pull ${{ env.RUNTIME_IMAGE_ID }} || true
+
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      -
+        name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - 
+        name: Build Production Image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          # builder: ${{ steps.buildx.outputs.name }}
+          target: prod
+          push: true
+          tags: ${{ env.RUNTIME_IMAGE_ID }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          # Note the mode=max here
+          # More: https://github.com/moby/buildkit#--export-cache-options
+          # And: https://github.com/docker/buildx#--cache-tonametypetypekeyvalue
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+
+      -
+        name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+      # -
+      #   name: Build Base Image
+      #   run: docker build --build-arg ENVIRONMENT=${{ env.ENVIRONMENT }} --cache-from ${{ env.BASE_IMAGE_ID }} --target base -t ${{ env.BASE_IMAGE_ID }} .
+
+      # -
+      #   name: Build Runtime Image
+      #   run: docker build --build-arg ENVIRONMENT=${{ env.ENVIRONMENT }} --cache-from ${{ env.BASE_IMAGE_ID }} --cache-from ${{ env.RUNTIME_IMAGE_ID }} --target prod -t ${{ env.RUNTIME_IMAGE_ID }} .
+
+      # -
+      #   name: Push Base Image
+      #   run: docker push ${{ env.BASE_IMAGE_ID }}
+      
+      # -
+      #   name: Push Runtime Image
+      #   run: docker push ${{ env.RUNTIME_IMAGE_ID }}
+
+      # -
+      #   name: Deploy
+      #   run: 
