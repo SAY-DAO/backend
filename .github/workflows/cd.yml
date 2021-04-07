@@ -39,6 +39,8 @@ jobs:
           echo "ENVIRONMENT=prod" >> $GITHUB_ENV
           echo "DOMAIN=sayapp.company" >> $GITHUB_ENV
           echo "STACK_NAME=say-backend" >> $GITHUB_ENV
+          echo "OVERRIDE_IF_PROD=-f docker-compose-prod.yml" >> $GITHUB_ENV
+
       -
         name: Set Runtime Docker Image ID
         run: echo "RUNTIME_IMAGE_ID=${{ secrets.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${REF}" >> $GITHUB_ENV
@@ -99,6 +101,10 @@ jobs:
       #   name: Deploy
       #   run: 
 
+      -
+        name: Prepare Stack File
+        run: ENVIRONMENT=${ENVIRONMENT} DOMAIN=${DOMAIN} CONTAINER_IMAGE=${RUNTIME_IMAGE_ID} STACK_NAME=${STACK_NAME} docker-compose -f docker-compose.yml $OVERRIDE_IF_PROD config > docker-stack.yml
+
       - 
         name: Deploy Development
         uses: wshihadeh/docker-deployment-action@v2
@@ -110,6 +116,6 @@ jobs:
           deployment_mode: docker-swarm
           copy_stack_file: true
           deploy_path: /tmp/${{ env.STACK_NAME }}
-          stack_file_name: docker-compose.yml
+          stack_file_name: docker-stack.yml
           keep_files: 5
           args: ${{ env.STACK_NAME }}
