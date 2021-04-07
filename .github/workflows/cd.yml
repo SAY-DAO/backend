@@ -10,7 +10,7 @@ on:
 
 jobs:
 
-  build-and-push-deploy:
+  build-push-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Git Checkout
