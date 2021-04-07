@@ -114,7 +114,7 @@ jobs:
 
       - 
         name: Deploy Development
-        uses: wshihadeh/docker-deployment-action@v1
+        uses: wshihadeh/docker-deployment-action@v2
         with:
           remote_docker_host: ${{ secrets.DEV_SERVER_ADDR }}
           remote_docker_port: ${{ secrets.DEV_SERVER_PORT }}
