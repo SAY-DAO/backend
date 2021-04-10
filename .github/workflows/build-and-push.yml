@@ -10,24 +10,18 @@ on:
       - 'release'
 
 jobs:
-  get_image_id:
-    runs-on: ubuntu-latest
-    outputs:
-      image_id: ${{ steps.step1.outputs.image_id }}
-    steps:
-      - name: Git Checkout
-        uses: actions/checkout@v2
-
-      - id: step1
-        name: Image ID
-        run: echo "::set-output name=image_id::ghcr.io/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${{ github.sha }}"
-
   build_and_push:
     runs-on: ubuntu-latest
     needs: get_image_id
+    outputs:
+      image_id: ${{ steps.image_id.outputs.image_id }}
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2
+
+      - id: image_id
+        name: Generate Image ID
+        run: echo "::set-output name=image_id::ghcr.io/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${{ github.sha }}"
 
       - name: Get Ref Name
         run: echo "REF=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
@@ -83,15 +77,12 @@ jobs:
   deploy_dev:
     runs-on: ubuntu-latest
     if: github.event.ref == 'refs/heads/develop'
-    needs: 
-      - get_image_id
-      - build_and_push
-
+    needs: build_and_push
     env:
       ENVIRONMENT: dev
       DOMAIN: d.sayapp.company
       STACK_NAME: say-dev-backend
-      IMAGE_ID: ${{ needs.get_image_id.outputs.image_id }}
+      IMAGE_ID: ${{ needs.build_and_push.outputs.image_id }}
       # STACK_FILE: docker-stack-${{ env.STACK_NAME }}-${{ github.sha }}.yml
 
     environment: 
@@ -113,7 +104,7 @@ jobs:
       - name: Prepare Stack File
         run: |
           echo "STACK_FILE=docker-stack-${{ env.STACK_NAME }}-${{ github.sha }}.yml" >> $GITHUB_ENV  
-          ENVIRONMENT=${ENVIRONMENT} DOMAIN=${DOMAIN} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${STACK_NAME} docker-compose -f docker-compose.yml $OVERRIDE_IF_PROD config > $STACK_FILE
+          ENVIRONMENT=${ENVIRONMENT} DOMAIN=${DOMAIN} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${STACK_NAME} docker-compose -f docker-compose.yml $OVERRIDE_IF_PROD config > ${{ env.STACK_FILE }}
 
       - name: Move Stack File to Server
         uses: appleboy/scp-action@v0.1.1
