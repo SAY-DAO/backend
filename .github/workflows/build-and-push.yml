@@ -29,7 +29,7 @@ jobs:
         if: ${{ env.REF == 'develop' }}
         run: |
           echo "ENVIRONMENT=dev" >> $GITHUB_ENV
-          echo ${{ needs.get_image_id.outputs.image_id }}
+          echo ${{ steps.image_id.outputs.image_id }}
 
       - name: Set Staging Envars
         if: ${{ env.REF == 'master' || env.REF == 'main' }}
@@ -61,7 +61,7 @@ jobs:
           context: .
           target: prod
           push: true
-          tags: ${{ needs.get_image_id.outputs.image_id }}
+          tags: ${{ steps.image_id.outputs.image_id }}
           build-args: |
             ENVIRONMENT=${ENVIRONMENT}
           cache-from: type=local,src=/tmp/.buildx-cache
