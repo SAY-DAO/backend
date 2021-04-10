@@ -111,7 +111,7 @@ jobs:
         name: Move Stack File to Server
         uses: appleboy/scp-action@8a54b394594637844fcf9ec5cab3eb97ce5dedae
         with:
-          host: git.say.company
+          host: 94.139.174.130
           username: ${{ secrets.DEV_SERVER_USER }}
           key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
           port: ${{ secrets.DEV_SERVER_PORT }}
