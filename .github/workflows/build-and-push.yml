@@ -35,7 +35,7 @@ jobs:
           echo "ENVIRONMENT=prod" >> $GITHUB_ENV
 
       - name: Set Runtime Docker Image ID
-        run: echo "RUNTIME_IMAGE_ID=${{ secrets.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):$${{ github.sha }}" >> $GITHUB_ENV
+        run: echo "RUNTIME_IMAGE_ID=${{ secrets.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${{ github.sha }}" >> $GITHUB_ENV
 
       - name: Login to GitHub Container Registry
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login -u ${{ github.repository_owner }} --password-stdin ${{ secrets.REGISTRY }}
