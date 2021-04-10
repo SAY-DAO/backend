@@ -20,7 +20,7 @@ jobs:
 
       - id: step1
         name: Image ID
-        run: echo "::set-output name=image_id::${{ secrets.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${{ github.sha }}"
+        run: echo "::set-output name=image_id::ghcr.io/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${{ github.sha }}"
 
   build-and-push:
     runs-on: ubuntu-latest
@@ -37,7 +37,7 @@ jobs:
         run: |
           echo "ENVIRONMENT=dev" >> $GITHUB_ENV
           echo ${{ needs.get_image_id.outputs.image_id }}
-          
+
       - name: Set Staging Envars
         if: ${{ env.REF == 'master' || env.REF == 'main' }}
         run: |
