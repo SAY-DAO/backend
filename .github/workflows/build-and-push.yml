@@ -92,8 +92,10 @@ jobs:
       - name: Git Checkout
         uses: actions/checkout@v2
 
-      # - name: Deploy Development
-      #   run: |
+      - name: Set Envars
+        run: |
+          echo "STACK_FILE=docker-stack-${{ env.STACK_NAME }}-${{ github.sha }}.yml" >> $GITHUB_ENV  
+
       #     echo "ENVIRONMENT=dev" >> $GITHUB_ENV
       #     echo "DOMAIN=d.sayapp.company" >> $GITHUB_ENV
       #     echo "STACK_NAME=say-dev-backend" >> $GITHUB_ENV
@@ -101,9 +103,7 @@ jobs:
       #     echo "STACK_FILE=docker-stack-${STACK_NAME}-${{ github.sha }}.yml" >> $GITHUB_ENV
           
       - name: Prepare Stack File
-        run: |
-          echo "STACK_FILE=docker-stack-${{ env.STACK_NAME }}-${{ github.sha }}.yml" >> $GITHUB_ENV  
-          ENVIRONMENT=${ENVIRONMENT} DOMAIN=${DOMAIN} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${STACK_NAME} docker-compose -f docker-compose.yml $OVERRIDE_IF_PROD config > ${{ env.STACK_FILE }}
+        run: ENVIRONMENT=${ENVIRONMENT} DOMAIN=${DOMAIN} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${STACK_NAME} docker-compose -f docker-compose.yml $OVERRIDE_IF_PROD config > ${{ env.STACK_FILE }}
 
       - name: Move Stack File to Server
         uses: appleboy/scp-action@v0.1.1
