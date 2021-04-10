@@ -1,5 +1,8 @@
 name: Build, Push and Deploy
 
+env:
+  registry: ghcr.io
+
 on:
   push:
     tags:
@@ -20,7 +23,7 @@ jobs:
 
       - id: image_id
         name: Generate Image ID
-        run: echo "::set-output name=image_id::ghcr.io/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${{ github.sha }}"
+        run: echo "::set-output name=image_id::${{ env.registry }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${{ github.sha }}"
 
       - name: Get Ref Name
         run: echo "REF=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
@@ -42,7 +45,7 @@ jobs:
           echo "ENVIRONMENT=prod" >> $GITHUB_ENV
 
       - name: Login to GitHub Container Registry
-        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login -u ${{ github.repository_owner }} --password-stdin ${{ secrets.REGISTRY }}
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login -u ${{ github.repository_owner }} --password-stdin ${{ env.registry }}
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
