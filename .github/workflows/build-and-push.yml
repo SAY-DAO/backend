@@ -80,25 +80,35 @@ jobs:
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
       
     
-  deploy-dev:
+  deploy_dev:
     runs-on: ubuntu-latest
     if: github.event.ref == 'refs/heads/develop'
     needs: 
       - get_image_id
       - build_and_push
 
+    env:
+      ENVIRONMENT: dev
+      DOMAIN: d.sayapp.company
+      STACK_NAME: say-dev-backend
+      IMAGE_ID: ${{ needs.get_image_id.outputs.image_id }}
+      STACK_FILE: docker-stack-${STACK_NAME}-${{ github.sha }}.yml
+
+    environment: 
+      name: Development
+      url: ${DOMAIN}
+
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2
 
-      - name: Deploy Development
-        run: |
-          echo "ENVIRONMENT=dev" >> $GITHUB_ENV
-          echo "DOMAIN=d.sayapp.company" >> $GITHUB_ENV
-          echo "STACK_NAME=say-dev-backend" >> $GITHUB_ENV
-          echo "STACK_NAME=say-dev-backend" >> $GITHUB_ENV
-          echo "IMAGE_ID=${{ needs.get_image_id.outputs.image_id }}" >> $GITHUB_ENV
-          echo "STACK_FILE=docker-stack-${STACK_NAME}-${{ github.sha }}.yml" >> $GITHUB_ENV
+      # - name: Deploy Development
+      #   run: |
+      #     echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+      #     echo "DOMAIN=d.sayapp.company" >> $GITHUB_ENV
+      #     echo "STACK_NAME=say-dev-backend" >> $GITHUB_ENV
+      #     echo "IMAGE_ID=${{ needs.get_image_id.outputs.image_id }}" >> $GITHUB_ENV
+      #     echo "STACK_FILE=docker-stack-${STACK_NAME}-${{ github.sha }}.yml" >> $GITHUB_ENV
           
       - name: Prepare Stack File
         run: ENVIRONMENT=${ENVIRONMENT} DOMAIN=${DOMAIN} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${STACK_NAME} docker-compose -f docker-compose.yml $OVERRIDE_IF_PROD config > $STACK_FILE
@@ -113,8 +123,7 @@ jobs:
           source: ${{ env.STACK_FILE }}
           target: "/tmp"
       
-      - 
-        name: Deploy Stack
+      - name: Deploy Stack
         uses: appleboy/ssh-action@v0.1.4
         with:
           host: ${{ secrets.DEV_SERVER_ADDR }}
@@ -123,7 +132,49 @@ jobs:
           port: ${{ secrets.DEV_SERVER_PORT }}
           script: docker stack deploy --prune --resolve-image=always --with-registry-auth -c /tmp/${{ env.STACK_FILE }} ${{ env.STACK_NAME }} 
           
+  # deploy_dev:
+  #   runs-on: ubuntu-latest
+  #   if: github.event.ref == 'refs/heads/develop'
+  #   needs: 
+  #     - get_image_id
+  #     - build_and_push
 
+  #   steps:
+  #     - name: Git Checkout
+  #       uses: actions/checkout@v2
+
+  #     - name: Deploy Development
+  #       run: |
+  #         echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+  #         echo "DOMAIN=d.sayapp.company" >> $GITHUB_ENV
+  #         echo "STACK_NAME=say-dev-backend" >> $GITHUB_ENV
+  #         echo "IMAGE_ID=${{ needs.get_image_id.outputs.image_id }}" >> $GITHUB_ENV
+  #         echo "STACK_FILE=docker-stack-${STACK_NAME}-${{ github.sha }}.yml" >> $GITHUB_ENV
+          
+  #     - name: Prepare Stack File
+  #       run: ENVIRONMENT=${ENVIRONMENT} DOMAIN=${DOMAIN} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${STACK_NAME} docker-compose -f docker-compose.yml $OVERRIDE_IF_PROD config > $STACK_FILE
+
+  #     - name: Move Stack File to Server
+  #       uses: appleboy/scp-action@v0.1.1
+  #       with:
+  #         host: ${{ secrets.DEV_SERVER_ADDR }}
+  #         username: ${{ secrets.DEV_SERVER_USER }}
+  #         key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+  #         port: ${{ secrets.DEV_SERVER_PORT }}
+  #         source: ${{ env.STACK_FILE }}
+  #         target: "/tmp"
+      
+  #     - 
+  #       name: Deploy Stack
+  #       uses: appleboy/ssh-action@v0.1.4
+  #       with:
+  #         host: ${{ secrets.DEV_SERVER_ADDR }}
+  #         username: ${{ secrets.DEV_SERVER_USER }}
+  #         key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+  #         port: ${{ secrets.DEV_SERVER_PORT }}
+  #         script: docker stack deploy --prune --resolve-image=always --with-registry-auth -c /tmp/${{ env.STACK_FILE }} ${{ env.STACK_NAME }} 
+          
+          
   #     # - name: Set Development Envars
   #     #   if: ${{ env.REF == 'develop' }}
   #     #   run: |
