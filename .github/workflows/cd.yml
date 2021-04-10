@@ -109,7 +109,7 @@ jobs:
 
       -
         name: Move Stack File to Server
-        uses: appleboy/scp-action@8a54b394594637844fcf9ec5cab3eb97ce5dedae
+        uses: appleboy/scp-action@v0.1.1
         with:
           host: 94.139.174.130
           username: ${{ secrets.DEV_SERVER_USER }}
@@ -126,7 +126,7 @@ jobs:
           username: ${{ secrets.DEV_SERVER_USER }}
           key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
           port: ${{ secrets.DEV_SERVER_PORT }}
-          script: docker stack deploy --prune --resolve-image=always -c /tmp/docker-stack.yml $STACK_NAME 
+          script: docker stack deploy --prune --resolve-image=always -c /tmp/docker-stack.yml ${{STACK_NAME}} 
           
         # name: Deploy Development
         # uses: wshihadeh/docker-deployment-action@v2
