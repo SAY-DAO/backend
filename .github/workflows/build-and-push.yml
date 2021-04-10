@@ -1,4 +1,4 @@
-name: Deployment
+name: Build, Push and Deploy
 
 on:
   push:
@@ -23,38 +23,27 @@ jobs:
         if: ${{ env.REF == 'develop' }}
         run: |
           echo "ENVIRONMENT=dev" >> $GITHUB_ENV
-          echo "DOMAIN=d.sayapp.company" >> $GITHUB_ENV
-          echo "STACK_NAME=say-dev-backend" >> $GITHUB_ENV
         
       - name: Set Staging Envars
-        if: ${{ env.REF == 'master' }}
+        if: ${{ env.REF == 'master' || env.REF == 'main' }}
         run: |
-          echo "ENVIRONMENT=stage" >> $GITHUB_ENV
-          echo "DOMAIN=s.sayapp.company" >> $GITHUB_ENV
-          echo "STACK_NAME=say-stag-backend" >> $GITHUB_ENV
+          echo "ENVIRONMENT=stag" >> $GITHUB_ENV
 
       - name: Set Production Envars
         if: ${{ env.REF == 'release' }}
         run: |
           echo "ENVIRONMENT=prod" >> $GITHUB_ENV
-          echo "DOMAIN=sayapp.company" >> $GITHUB_ENV
-          echo "STACK_NAME=say-backend" >> $GITHUB_ENV
-          echo "OVERRIDE_IF_PROD=-f docker-compose-prod.yml" >> $GITHUB_ENV
 
-      -
-        name: Set Runtime Docker Image ID
-        run: echo "RUNTIME_IMAGE_ID=${{ secrets.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${REF}" >> $GITHUB_ENV
+      - name: Set Runtime Docker Image ID
+        run: echo "RUNTIME_IMAGE_ID=${{ secrets.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):$${{ github.sha }}" >> $GITHUB_ENV
 
-      -
-        name: Login to GitHub Container Registry
+      - name: Login to GitHub Container Registry
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login -u ${{ github.repository_owner }} --password-stdin ${{ secrets.REGISTRY }}
       
-      -
-        name: Set up Docker Buildx
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      -
-        name: Cache Docker layers
+      - name: Cache Docker layers
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
@@ -62,8 +51,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-      - 
-        name: Build Production Image
+      - name: Build Image
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -73,11 +61,9 @@ jobs:
           build-args: |
             ENVIRONMENT=${ENVIRONMENT}
           cache-from: type=local,src=/tmp/.buildx-cache
-          # mode=max: https://github.com/docker/buildx#--cache-tonametypetypekeyvalue
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new # mode=max: https://github.com/docker/buildx#--cache-tonametypetypekeyvalue
 
-      -
-        name: Move cache
+      - name: Move cache
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
@@ -103,30 +89,54 @@ jobs:
       #   name: Deploy
       #   run: 
 
-      -
-        name: Prepare Stack File
-        run: ENVIRONMENT=${ENVIRONMENT} DOMAIN=${DOMAIN} CONTAINER_IMAGE=${RUNTIME_IMAGE_ID} STACK_NAME=${STACK_NAME} docker-compose -f docker-compose.yml $OVERRIDE_IF_PROD config > docker-stack.yml
 
-      -
-        name: Move Stack File to Server
-        uses: appleboy/scp-action@v0.1.1
-        with:
-          host: ${{ secrets.DEV_SERVER_ADDR }}
-          username: ${{ secrets.DEV_SERVER_USER }}
-          key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
-          port: ${{ secrets.DEV_SERVER_PORT }}
-          source: "docker-stack.yml"
-          target: "/tmp"
+
+      # - name: Set Development Envars
+      #   if: ${{ env.REF == 'develop' }}
+      #   run: |
+      #     echo "ENVIRONMENT=dev" >> $GITHUB_ENV
+      #     echo "DOMAIN=d.sayapp.company" >> $GITHUB_ENV
+      #     echo "STACK_NAME=say-dev-backend" >> $GITHUB_ENV
+        
+      # - name: Set Staging Envars
+      #   if: ${{ env.REF == 'master' || env.REF == 'main' }}
+      #   run: |
+      #     echo "ENVIRONMENT=stag" >> $GITHUB_ENV
+      #     echo "DOMAIN=s.sayapp.company" >> $GITHUB_ENV
+      #     echo "STACK_NAME=say-stag-backend" >> $GITHUB_ENV
+
+      # - name: Set Production Envars
+      #   if: ${{ env.REF == 'release' }}
+      #   run: |
+      #     echo "ENVIRONMENT=prod" >> $GITHUB_ENV
+      #     echo "DOMAIN=sayapp.company" >> $GITHUB_ENV
+      #     echo "STACK_NAME=say-backend" >> $GITHUB_ENV
+      #     echo "OVERRIDE_IF_PROD=-f docker-compose-prod.yml" >> $GITHUB_ENV
+
+      # -
+      #   name: Prepare Stack File
+      #   run: ENVIRONMENT=${ENVIRONMENT} DOMAIN=${DOMAIN} CONTAINER_IMAGE=${RUNTIME_IMAGE_ID} STACK_NAME=${STACK_NAME} docker-compose -f docker-compose.yml $OVERRIDE_IF_PROD config > docker-stack.yml
+
+      # -
+      #   name: Move Stack File to Server
+      #   uses: appleboy/scp-action@v0.1.1
+      #   with:
+      #     host: ${{ secrets.DEV_SERVER_ADDR }}
+      #     username: ${{ secrets.DEV_SERVER_USER }}
+      #     key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+      #     port: ${{ secrets.DEV_SERVER_PORT }}
+      #     source: "docker-stack.yml"
+      #     target: "/tmp"
       
-      - 
-        name: Deploy Stack
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.DEV_SERVER_ADDR }}
-          username: ${{ secrets.DEV_SERVER_USER }}
-          key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
-          port: ${{ secrets.DEV_SERVER_PORT }}
-          script: docker stack deploy --prune --resolve-image=always --with-registry-auth -c /tmp/docker-stack.yml ${{ env.STACK_NAME }} 
+      # - 
+      #   name: Deploy Stack
+      #   uses: appleboy/ssh-action@v0.1.4
+      #   with:
+      #     host: ${{ secrets.DEV_SERVER_ADDR }}
+      #     username: ${{ secrets.DEV_SERVER_USER }}
+      #     key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+      #     port: ${{ secrets.DEV_SERVER_PORT }}
+      #     script: docker stack deploy --prune --resolve-image=always --with-registry-auth -c /tmp/docker-stack.yml ${{ env.STACK_NAME }} 
           
         # name: Deploy Development
         # uses: wshihadeh/docker-deployment-action@v2
