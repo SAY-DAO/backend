@@ -92,7 +92,7 @@ jobs:
       DOMAIN: d.sayapp.company
       STACK_NAME: say-dev-backend
       IMAGE_ID: ${{ needs.get_image_id.outputs.image_id }}
-      STACK_FILE: docker-stack-${STACK_NAME}-${{ github.sha }}.yml
+      STACK_FILE: docker-stack-${{ env.STACK_NAME }}-${{ github.sha }}.yml
 
     environment: 
       name: Development
