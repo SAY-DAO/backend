@@ -9,7 +9,7 @@ flask_limiter
 Flask-Migrate
 flask_jwt_extended
 Flask-WTF
-SQLAlchemy
+SQLAlchemy < 1.4.0
 sqlalchemy_utils
 psycopg2-binary
 requests
