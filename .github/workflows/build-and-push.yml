@@ -77,6 +77,7 @@ jobs:
       
     
   deploy_dev:
+    name: Deploy to Development Server
     runs-on: ubuntu-latest
     if: github.event.ref == 'refs/heads/develop'
     needs: build_and_push
@@ -89,7 +90,7 @@ jobs:
 
     environment: 
       name: Development
-      url: ${{ env.DOMAIN }}
+      url: https://${{ env.DOMAIN }}
 
     steps:
       - name: Git Checkout
