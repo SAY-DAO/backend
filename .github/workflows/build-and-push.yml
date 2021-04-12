@@ -6,9 +6,9 @@ env:
   STAGING: stag
   PRODUCTION: prod
   MAIN_BRANCH: master
-  DEV_DOMAIN: https://d.sayapp.company
-  STAGE_DOMAIN: https://s.sayapp.company
-  PROD_DOMAIN: https://sayapp.company
+  DEV_DOMAIN: d.sayapp.company
+  STAGE_DOMAIN: s.sayapp.company
+  PROD_DOMAIN: sayapp.company
   TARGET_LAYER: prod
   DEV_STACK_NAME: say-dev-backend
   STAGE_STACK_NAME: say-stag-backend
