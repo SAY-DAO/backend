@@ -13,7 +13,7 @@ env:
   DEV_STACK_NAME: say-dev-backend
   STAGE_STACK_NAME: say-stag-backend
   PROD_STACK_NAME: say-backend
-  DOCKER_STACK_PATH: ${{ env.DOCKER_STACK_PATH }}
+  DOCKER_STACK_PATH: docker-compose.yml
 
 on:
   push:
