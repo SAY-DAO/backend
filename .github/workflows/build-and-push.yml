@@ -13,6 +13,7 @@ env:
   DEV_STACK_NAME: say-dev-backend
   STAGE_STACK_NAME: say-stag-backend
   PROD_STACK_NAME: say-backend
+  DOCKER_STACK_PATH: ${{ env.DOCKER_STACK_PATH }}
 
 on:
   push:
@@ -96,7 +97,7 @@ jobs:
 
     environment: 
       name: Development
-      url: ${{ env.DEV_DOMAIN }}
+      url: https://${{ env.DEV_DOMAIN }}
 
     steps:
       - name: Git Checkout
@@ -107,7 +108,7 @@ jobs:
           echo "STACK_FILE=docker-stack-${{ env.DEV_STACK_NAME }}-${{ github.sha }}.yml" >> $GITHUB_ENV  
 
       - name: Prepare Stack File
-        run: ENVIRONMENT=${{ env.DEVELOPMENT }} DOMAIN=${{ env.DEV_DOMAIN }} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${{ env.DEV_STACK_NAME }} docker-compose -f docker-compose.yml $OVERRIDE_IF_PROD config > ${{ env.STACK_FILE }}
+        run: ENVIRONMENT=${{ env.DEVELOPMENT }} DOMAIN=${{ env.DEV_DOMAIN }} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${{ env.DEV_STACK_NAME }} docker-compose -f ${{ env.DOCKER_STACK_PATH }} $OVERRIDE_IF_PROD config > ${{ env.STACK_FILE }}
 
       - name: Move Stack File to Server
         uses: appleboy/scp-action@v0.1.1
@@ -138,7 +139,7 @@ jobs:
 
     environment: 
       name: Staging
-      url: ${{ env.STAGE_DOMAIN }}
+      url: https://${{ env.STAGE_DOMAIN }}
 
     steps:
       - name: Git Checkout
@@ -149,7 +150,7 @@ jobs:
           echo "STACK_FILE=docker-stack-${{ env.STAGE_STACK_NAME }}-${{ github.sha }}.yml" >> $GITHUB_ENV  
 
       - name: Prepare Stack File
-        run: ENVIRONMENT=${{ env.STAGING }} DOMAIN=${{ env.STAGE_DOMAIN }} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${{ env.STAGE_STACK_NAME }} docker-compose -f docker-compose.yml $OVERRIDE_IF_PROD config > ${{ env.STACK_FILE }}
+        run: ENVIRONMENT=${{ env.STAGING }} DOMAIN=${{ env.STAGE_DOMAIN }} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${{ env.STAGE_STACK_NAME }} docker-compose -f ${{ env.DOCKER_STACK_PATH }} $OVERRIDE_IF_PROD config > ${{ env.STACK_FILE }}
 
       - name: Move Stack File to Server
         uses: appleboy/scp-action@v0.1.1
@@ -180,7 +181,7 @@ jobs:
 
     environment: 
       name: Production
-      url: ${{ env.PROD_DOMAIN }}
+      url: https://${{ env.PROD_DOMAIN }}
 
     steps:
       - name: Git Checkout
@@ -191,7 +192,7 @@ jobs:
           echo "STACK_FILE=docker-stack-${{ env.PROD_STACK_NAME }}-${{ github.sha }}.yml" >> $GITHUB_ENV  
 
       - name: Prepare Stack File
-        run: ENVIRONMENT=${{ env.PRODUCTION }} DOMAIN=${{ env.PROD_DOMAIN }} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${{ env.PROD_STACK_NAME }} docker-compose -f docker-compose.yml $OVERRIDE_IF_PROD config > ${{ env.STACK_FILE }}
+        run: ENVIRONMENT=${{ env.PRODUCTION }} DOMAIN=${{ env.PROD_DOMAIN }} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${{ env.PROD_STACK_NAME }} docker-compose -f ${{ env.DOCKER_STACK_PATH }} $OVERRIDE_IF_PROD config > ${{ env.STACK_FILE }}
 
       - name: Move Stack File to Server
         uses: appleboy/scp-action@v0.1.1
