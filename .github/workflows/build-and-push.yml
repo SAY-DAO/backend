@@ -19,7 +19,7 @@ on:
     tags:        
       - '*'   
     branches:
-      - ${env.MAIN_BRANCH}
+      - 'master
       - 'develop'
 
 jobs:
@@ -46,7 +46,7 @@ jobs:
           echo ${{ steps.image_id.outputs.image_id }}
 
       - name: Set Staging Envars
-        if: ${{ env.REF == ${{ env.MAIN_BRANCH }} }}
+        if: ${{ env.REF == 'master' }}
         run: |
           echo "ENVIRONMENT=stag" >> $GITHUB_ENV
 
@@ -132,7 +132,7 @@ jobs:
   deploy_staging:
     name: Deploy to Staging Server
     runs-on: ubuntu-latest
-    if: github.event.ref == 'refs/heads/${{ env.MAIN_BRANCH }}'
+    if: github.event.ref == 'refs/heads/'master''
     needs: build_and_push
     env:
       IMAGE_ID: ${{ needs.build_and_push.outputs.image_id }}
