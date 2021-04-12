@@ -97,7 +97,7 @@ jobs:
 
     environment: 
       name: Development
-      url: https://${{ env.DEV_DOMAIN }}
+      url: ${{ env.DEV_DOMAIN }}
 
     steps:
       - name: Git Checkout
@@ -139,7 +139,7 @@ jobs:
 
     environment: 
       name: Staging
-      url: https://${{ env.STAGE_DOMAIN }}
+      url: ${{ env.STAGE_DOMAIN }}
 
     steps:
       - name: Git Checkout
@@ -181,7 +181,7 @@ jobs:
 
     environment: 
       name: Production
-      url: https://${{ env.PROD_DOMAIN }}
+      url: ${{ env.PROD_DOMAIN }}
 
     steps:
       - name: Git Checkout
