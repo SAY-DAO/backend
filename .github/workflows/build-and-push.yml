@@ -173,7 +173,7 @@ jobs:
   deploy_production:
     name: Deploy to Production Server
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/release')
+    if: startsWith(github.ref, 'refs/heads/release')
     needs: build_and_push
     env:
       IMAGE_ID: ${{ needs.build_and_push.outputs.image_id }}
