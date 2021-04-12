@@ -19,7 +19,7 @@ on:
     tags:        
       - '*'   
     branches:
-      - ${{ env.MAIN_BRANCH }}
+      - ${env.MAIN_BRANCH}
       - 'develop'
 
 jobs:
@@ -212,4 +212,3 @@ jobs:
           key: ${{ secrets.PROD_SSH_PRIVATE_KEY }}
           port: ${{ secrets.PROD_SERVER_PORT }}
           script: docker stack deploy --prune --resolve-image=always --with-registry-auth -c /tmp/${{ env.STACK_FILE }} ${{ env.STAGE_STACK_NAME }}
-  
