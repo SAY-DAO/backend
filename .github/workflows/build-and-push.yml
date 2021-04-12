@@ -19,7 +19,7 @@ on:
     tags:        
       - '*'   
     branches:
-      - 'master
+      - 'master'
       - 'develop'
 
 jobs:
@@ -132,7 +132,7 @@ jobs:
   deploy_staging:
     name: Deploy to Staging Server
     runs-on: ubuntu-latest
-    if: github.event.ref == 'refs/heads/'master''
+    if: github.event.ref == 'refs/heads/master'
     needs: build_and_push
     env:
       IMAGE_ID: ${{ needs.build_and_push.outputs.image_id }}
