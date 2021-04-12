@@ -53,25 +53,7 @@ services:
       placement:
         constraints:
           - node.labels.${ENVIRONMENT} == true
-  rabbitmq:
-    image: rabbitmq:3-management-alpine
-    volumes:
-      - rabbitmq_data_volume:/var/lib/rabbitmq/
-      - rabbitmq_log_volume:/var/log/rabbitmq/
-    environment:
-      RABBITMQ_DEFAULT_USER: say
-      RABBITMQ_DEFAULT_PASS_FILE: /run/secrets/rabbitmq-password
-      RABBITMQ_DEFAULT_VHOST: say
-    secrets:
-      - rabbitmq-password
-    deploy:
-      replicas: 1
-      update_config:
-        parallelism: 1
-        order: start-first
-      placement:
-        constraints:
-          - node.labels.${ENVIRONMENT} == true
+
   backend: &backend
     image: $CONTAINER_IMAGE
     configs:
@@ -79,7 +61,6 @@ services:
         target: .env
     secrets:
       - postgres-password
-      - rabbitmq-password
       - flower-password
     environment:
       SAY_ENVIRONMENT: ${ENVIRONMENT}
@@ -234,8 +215,6 @@ volumes:
   redis_volume:
   postgres_volume:
   postgres_backup_volume:
-  rabbitmq_data_volume:
-  rabbitmq_log_volume:
   media_volume:
   static_volume:
   flower_volume:
@@ -249,9 +228,6 @@ configs:
 secrets:
   postgres-password:
     name: ${STACK_NAME}-postgres-password
-    external: true
-  rabbitmq-password:
-    name: ${STACK_NAME}-rabbitmq-password
     external: true
   flower-password:
     name: ${STACK_NAME}-flower-password
