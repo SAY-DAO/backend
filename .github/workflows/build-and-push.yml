@@ -14,7 +14,7 @@ env:
   STAGE_STACK_NAME: say-stag-backend
   PROD_STACK_NAME: say-backend
   DOCKER_STACK_PATH: docker-compose.yml
-  OVERRIDE_STACK_FILE: -f docker-compose-prod.yml'
+  OVERRIDE_STACK_FILE: -f docker-compose-prod.yml
 
 on:
   push:
