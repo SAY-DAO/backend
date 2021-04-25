@@ -22,7 +22,7 @@ class ResetPassword(base):
     __tablename__ = "reset_password"
 
     id = Column(Integer, nullable=False, primary_key=True)
-    user_id = Column(Integer, ForeignKey('user.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('user.id'), nullable=False, index=True)
     token = Column(
         String,
         nullable=False,

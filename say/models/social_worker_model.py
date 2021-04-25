@@ -21,8 +21,8 @@ class SocialWorker(base, Timestamp):
     id = Column(Integer, primary_key=True, nullable=False, unique=True)
     generatedCode = Column(String, nullable=False)
 
-    id_ngo = Column(Integer, ForeignKey('ngo.id'), nullable=False)
-    id_type = Column(Integer, ForeignKey('social_worker_type.id'), nullable=False)
+    id_ngo = Column(Integer, ForeignKey('ngo.id'), nullable=False, index=True)
+    id_type = Column(Integer, ForeignKey('social_worker_type.id'), nullable=False, index=True)
 
     country = Column(Integer, nullable=True)
     city = Column(Integer, nullable=True)

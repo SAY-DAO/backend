@@ -20,8 +20,8 @@ class Payment(base, Timestamp):
     __tablename__ = "payment"
 
     id = Column(Integer, nullable=False, primary_key=True)
-    id_need = Column(Integer, ForeignKey('need.id'), nullable=True)
-    id_user = Column(Integer, ForeignKey('user.id'), nullable=False)
+    id_need = Column(Integer, ForeignKey('need.id'), nullable=True, index=True)
+    id_user = Column(Integer, ForeignKey('user.id'), nullable=False, index=True)
 
     gateway_payment_id = Column(String, nullable=True)
     gateway_track_id = Column(String, nullable=True)
