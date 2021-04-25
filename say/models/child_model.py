@@ -17,8 +17,8 @@ class Child(base, Timestamp):
     __tablename__ = "child"
 
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
-    id_ngo = Column(Integer, ForeignKey('ngo.id'), nullable=False)
-    id_social_worker = Column(Integer, ForeignKey('social_worker.id'), nullable=False)
+    id_ngo = Column(Integer, ForeignKey('ngo.id'), nullable=False, index=True)
+    id_social_worker = Column(Integer, ForeignKey('social_worker.id'), nullable=False, index=True)
 
     firstName_translations = Column(HSTORE)
     firstName = translation_hybrid(firstName_translations)

@@ -13,7 +13,7 @@ class Receipt(base, Timestamp):
 
     id = Column(Integer, primary_key=True)
 
-    owner_id = Column(Integer, ForeignKey('social_worker.id'), nullable=False)
+    owner_id = Column(Integer, ForeignKey('social_worker.id'), nullable=False, index=True)
 
     attachment = Column(Unicode(128), nullable=False)
     code = Column(Unicode(64), nullable=False, index=True)
@@ -67,9 +67,9 @@ class NeedReceipt(base, Timestamp):
 
     id = Column(Integer, primary_key=True)
 
-    need_id = Column(Integer, ForeignKey('need.id'), nullable=False)
-    sw_id = Column(Integer, ForeignKey('social_worker.id'), nullable=False)
-    receipt_id = Column(Integer, ForeignKey('receipt.id'), nullable=False)
+    need_id = Column(Integer, ForeignKey('need.id'), nullable=False, index=True)
+    sw_id = Column(Integer, ForeignKey('social_worker.id'), nullable=False, index=True)
+    receipt_id = Column(Integer, ForeignKey('receipt.id'), nullable=False, index=True)
 
     deleted = Column(DateTime, nullable=True)
 
