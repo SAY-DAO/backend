@@ -13,9 +13,9 @@ class NeedFamily(base, Timestamp):
     __tablename__ = "need_family"
 
     id = Column(Integer, nullable=False, primary_key=True)
-    id_family = Column(Integer, ForeignKey('family.id'), nullable=True)
-    id_user = Column(Integer, ForeignKey('user.id'), nullable=True)
-    id_need = Column(Integer, ForeignKey('need.id'), nullable=False)
+    id_family = Column(Integer, ForeignKey('family.id'), nullable=True, index=True)
+    id_user = Column(Integer, ForeignKey('user.id'), nullable=True, index=True)
+    id_need = Column(Integer, ForeignKey('need.id'), nullable=False, index=True)
     isDeleted = Column(Boolean, nullable=False, default=False)
     username = Column(Text, nullable=False, default='')
     type = Column(Text, nullable=False)
