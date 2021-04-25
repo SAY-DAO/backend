@@ -18,6 +18,7 @@ Dashboard API
 
 dashboard_user_fields = (
     'id',
+    'avatarUrl',
     'userName',
     'firstName',
     'lastName',

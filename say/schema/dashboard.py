@@ -8,7 +8,7 @@ class UserSchema(BaseModel):
     userName: str
     firstName: str
     lastName: str
-
+    avatarUrl: str
 
 class ChildSchema(BaseModel):
     id: int
