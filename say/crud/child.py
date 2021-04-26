@@ -18,7 +18,7 @@ def get_family_members(id):
         User.id,
     ) \
         .select_from(UserFamily) \
-        .join(Family, Family.id_child == UserFamily.id_family) \
+        .join(Family, Family.id == UserFamily.id_family) \
         .join(User, User.id == UserFamily.id_user) \
         .filter(
             Family.id_child == id,
