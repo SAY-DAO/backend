@@ -26,7 +26,6 @@ class Invitation(base, Timestamp):
     )
 
     role = Column(Integer, nullable=True)
-    see_count = Column(Integer, default=0, nullable=False)
     text = Column(Unicode(128), nullable=True)
     token = Column(
         Unicode(TEXT_LENGHT),

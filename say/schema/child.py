@@ -7,6 +7,8 @@ from typing import List
 class FamilyMemberSchema(BaseModel):
     role: int
     username: str
+    isDeleted: bool = None
+    member_id: int = None
 
 
 class UserChildSchema(BaseModel):
@@ -20,9 +22,10 @@ class UserChildSchema(BaseModel):
     familyId: int
     gender: bool
     generatedCode: str
-    id: int
+    id: int = None
     is_gone: bool
     sayName: str
     spent_credit: int
-    userRole: int
+    userRole: int = None
     voiceUrl: str
+    socialWorkerGeneratedCode: str
