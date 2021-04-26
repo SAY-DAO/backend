@@ -16,7 +16,7 @@ class NeedFamily(base, Timestamp):
     id_family = Column(Integer, ForeignKey('family.id'), nullable=True, index=True)
     id_user = Column(Integer, ForeignKey('user.id'), nullable=True, index=True)
     id_need = Column(Integer, ForeignKey('need.id'), nullable=False, index=True)
-    isDeleted = Column(Boolean, nullable=False, default=False)
+    isDeleted = Column(Boolean, nullable=False, default=False, index=True)
     username = Column(Text, nullable=False, default='')
     type = Column(Text, nullable=False)
     user_avatar = Column(Text, nullable=True)

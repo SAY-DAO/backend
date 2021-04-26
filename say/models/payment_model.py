@@ -32,7 +32,7 @@ class Payment(base, Timestamp):
     card_no = Column(String, nullable=True)
     hashed_card_no = Column(String, nullable=True)
     transaction_date = Column(DateTime, nullable=True)
-    verified = Column(DateTime, nullable=True)
+    verified = Column(DateTime, nullable=True, index=True)
     use_credit = Column(Boolean, default=False, nullable=False)
     is_nakama = Column(Boolean, default=False, nullable=False)
 

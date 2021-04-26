@@ -34,15 +34,15 @@ class User(base, Timestamp):
     emailAddress = Column(String, nullable=True, unique=True, index=True)
     gender = Column(Enum(Gender), nullable=True)
     isDeleted = Column(Boolean, nullable=False, default=False)
-    is_email_verified = Column(Boolean, nullable=False, default=False)
-    is_phonenumber_verified = Column(Boolean, nullable=False, default=False)
+    is_email_verified = Column(Boolean, nullable=False, default=False, index=True)
+    is_phonenumber_verified = Column(Boolean, nullable=False, default=False, index=True)
     birthDate = Column(Date, nullable=True)
     birthPlace = Column(Integer, nullable=True)  # 1:tehran | 2:karaj
     lastLogin = Column(DateTime, nullable=False)
     _password = Column(String, nullable=False)
     locale = Column(LocaleType, default=Locale('fa'), nullable=False)
     is_installed = Column(Boolean, default=False, nullable=False)
-    is_nakama = Column(Boolean, default=False, nullable=False)
+    is_nakama = Column(Boolean, default=False, nullable=False, index=True)
 
     @hybrid_property
     def formated_username(self):

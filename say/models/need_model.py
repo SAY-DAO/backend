@@ -37,19 +37,19 @@ class Need(base, Timestamp):
     purchase_cost = Column(Integer, nullable=False, default=0)
     link = Column(String, nullable=True)
     affiliateLinkUrl = Column(String, nullable=True)
-    isDone = Column(Boolean, nullable=False, default=False)
-    isDeleted = Column(Boolean, nullable=False, default=False)
+    isDone = Column(Boolean, nullable=False, default=False, index=True)
+    isDeleted = Column(Boolean, nullable=False, default=False, index=True)
     receipts = Column(String, nullable=True)  # comma separated
-    isConfirmed = Column(Boolean, nullable=False, default=False)
+    isConfirmed = Column(Boolean, nullable=False, default=False, index=True)
     confirmUser = Column(Integer, nullable=True)
-    type = Column(Integer, nullable=False)  # 0:service | 1:product
+    type = Column(Integer, nullable=False, index=True)  # 0:service | 1:product
     doing_duration = Column(Integer, nullable=False, default=5)
-    status = Column(Integer, nullable=False, default=0)
+    status = Column(Integer, nullable=False, default=0, index=True)
     status_updated_at = Column(DateTime, nullable=True)
-    isReported = Column(Boolean, default=False)
+    isReported = Column(Boolean, default=False, index=True)
     img = Column(Text, nullable=True)
     title = Column(Text, nullable=True)
-    oncePurchased = Column(Boolean, nullable=False, default=False)
+    oncePurchased = Column(Boolean, nullable=False, default=False, index=True)
     bank_track_id = Column(Unicode(30), nullable=True) # Only for services
     # product
     unavailable_from = Column(DateTime, nullable=True)
