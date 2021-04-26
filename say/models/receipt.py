@@ -1,11 +1,18 @@
 from logging import fatal
-from sqlalchemy import Column, Integer, Unicode, Boolean, DateTime, ForeignKey, or_
+
+from sqlalchemy import Boolean
+from sqlalchemy import Column
+from sqlalchemy import DateTime
+from sqlalchemy import ForeignKey
+from sqlalchemy import Integer
+from sqlalchemy import Unicode
+from sqlalchemy import or_
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import Timestamp
 
-from ..roles import *
 from ..orm import base
+from ..roles import *
 
 
 class Receipt(base, Timestamp):

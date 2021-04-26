@@ -13,23 +13,40 @@ import ujson
 from flasgger import swag_from
 from flask import request
 from flask_jwt_extended.exceptions import NoAuthorizationError
-from flask_restful import abort, Resource
+from flask_restful import Resource
+from flask_restful import abort
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
 
-from say.api.ext import api, logger
-from say.constants import DEFAULT_CHILD_ID
-from say.validations import allowed_voice, allowed_image
-from say.authorization import get_user_role, get_user_id, get_sw_ngo_id, \
-    authorize
+from say import crud
+from say.api.ext import api
+from say.api.ext import logger
+from say.authorization import authorize
+from say.authorization import get_sw_ngo_id
+from say.authorization import get_user_id
+from say.authorization import get_user_role
 from say.config import configs
+from say.constants import DEFAULT_CHILD_ID
 from say.decorators import json
-from say.exceptions import HTTP_PERMISION_DENIED, HTTP_NOT_FOUND
-from say.models import Child, ChildNeed, Family, Need, SocialWorker, UserFamily, \
-    Invitation
-from say.models import obj_to_dict, commit
-from say.orm import safe_commit, session
+from say.exceptions import HTTP_NOT_FOUND
+from say.exceptions import HTTP_PERMISION_DENIED
+from say.models import Child
+from say.models import ChildNeed
+from say.models import Family
+from say.models import Invitation
+from say.models import Need
+from say.models import SocialWorker
+from say.models import User
+from say.models import UserFamily
+from say.models import commit
+from say.models import obj_to_dict
+from say.orm import safe_commit
+from say.orm import session
 from say.roles import *
+from say.schema.child import FamilyMemberSchema
+from say.schema.child import UserChildSchema
+from say.validations import allowed_image
+from say.validations import allowed_voice
 
 
 def filter_by_confirm(child_query, confirm):
@@ -199,43 +216,36 @@ class GetChildById(Resource):
         if get_user_role() in [USER]:  # TODO: priv
             user_id = get_user_id()
             family_id = child.family.id
-            child_family_member = []
 
-            user_family = session.query(UserFamily) \
+            user_role = session.query(UserFamily.userRole) \
                 .filter_by(isDeleted=False) \
                 .filter_by(id_user=user_id) \
                 .filter_by(id_family=family_id) \
-                .first()
+                .one_or_none()
 
-            child_dict['familyId'] = family_id
-            child_dict['userRole'] = user_family.userRole
-            del child_dict['phoneNumber']
-            del child_dict['firstName']
-            del child_dict['firstName_translations']
-            del child_dict['lastName']
-            del child_dict['lastName_translations']
-            del child_dict['nationality']
-            del child_dict['country']
-            del child_dict['city']
-            del child_dict['birthPlace']
-            del child_dict['address']
-            del child_dict['id_social_worker']
-            del child_dict['id_ngo']
+            if user_role is None:
+                raise HTTP_NOT_FOUND()
 
-            for member in child.family.current_members():
-                child_family_member.append(dict(
-                    role=member.userRole,
-                    username=member.user.userName,
-                ))
+            # Unpack role
+            user_role, = user_role
 
-            child_dict['childFamilyMembers'] = child_family_member
+            child_family_members = [
+                x for x in crud.child.get_family_members(child_id)
+            ]
+
+            result = UserChildSchema(
+                **child_dict,
+                userRole=user_role,
+                familyId=family_id,
+                childFamilyMembers=child_family_members
+            )
+            return result
 
         return child_dict
 
 
 class GetChildByInvitationToken(Resource):
 
-    @commit
     @json
     @swag_from('./docs/child/get-by-token.yml')
     def get(self, token):
@@ -258,7 +268,6 @@ class GetChildByInvitationToken(Resource):
         if not invitation:
             return {'messasge': 'Invitation not found'}, 400
 
-        invitation.see_count += 1
         family = session.query(Family).get(invitation.family_id)
 
         if not family or family.child.isDeleted:
@@ -278,36 +287,18 @@ class GetChildByInvitationToken(Resource):
         child_dict['familyId'] = family.id
         child_dict['userRole'] = invitation.role
 
-        del child_dict['phoneNumber']
-        del child_dict['firstName']
-        del child_dict['firstName_translations']
-        del child_dict['lastName']
-        del child_dict['lastName_translations']
-        del child_dict['nationality']
-        del child_dict['country']
-        del child_dict['city']
-        del child_dict['birthPlace']
-        del child_dict['address']
-        del child_dict['id_social_worker']
-        del child_dict['id_ngo']
-
         if not user_id:
             child_dict['id'] = None
 
-        child_family_member = []
-        for member in child.family.members:
-            member_id = member.id_user if user_id == member.id_user else None
-            username = member.user.userName
+        child_family_members = [
+            x for x in crud.child.get_family_members(child.id)
+        ]
 
-            child_family_member.append(dict(
-                user_id=member_id,
-                role=member.userRole,
-                username=username,
-                isDeleted=member.isDeleted,
-            ))
-
-        child_dict['childFamilyMembers'] = child_family_member
-        return child_dict
+        result = UserChildSchema(
+            **child_dict,
+            childFamilyMembers=child_family_members
+        )
+        return result
 
 
 class GetChildNeeds(Resource):

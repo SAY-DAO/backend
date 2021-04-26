@@ -3,15 +3,18 @@ import tempfile
 
 import pytest
 import sqlalchemy.orm.session
-from sqlalchemy.orm import scoped_session, sessionmaker
+from flask.testing import FlaskClient
+from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 
 from say.app import app
 from say.config import configs
-from say.orm import setup_schema, create_engine, init_model, session
 from say.db import PostgreSQLManager as DBManager
-
-from flask.testing import FlaskClient
+from say.orm import create_engine
+from say.orm import init_model
+from say.orm import session
+from say.orm import setup_schema
 
 
 # class CustomClient(FlaskClient):

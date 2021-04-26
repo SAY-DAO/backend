@@ -3,11 +3,12 @@ from celery import exceptions
 from sqlalchemy.orm import object_session
 from sqlalchemy_utils import LocaleType
 
-from . import *
-from say.render_template_i18n import render_template_i18n
 from say.formatters import expose_datetime
-from say.utils import surname
 from say.locale import ChangeLocaleTo
+from say.render_template_i18n import render_template_i18n
+from say.utils import surname
+
+from . import *
 
 
 """
@@ -147,4 +148,3 @@ class SocialWorker(base, Timestamp):
                 safe_commit(session)
 
             return [need.id for need in needs]
-

@@ -8,8 +8,10 @@ from say.decorators import json
 from say.exceptions import HTTP_NOT_FOUND
 from say.models import obj_to_dict
 from say.models.privilege_model import Privilege
-from say.orm import safe_commit, session
+from say.orm import safe_commit
+from say.orm import session
 from say.roles import *
+
 
 '''
 Privilege APIs

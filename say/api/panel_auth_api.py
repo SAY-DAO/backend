@@ -3,18 +3,23 @@ from hashlib import md5
 
 from flasgger import swag_from
 from flask import request
-from flask_jwt_extended import create_refresh_token, \
-    get_raw_jwt, get_jwt_identity
+from flask_jwt_extended import create_refresh_token
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import get_raw_jwt
 from flask_restful import Resource
 
 from say.api.ext import api
-from say.authorization import create_sw_access_token, authorize_refresh, \
-    revoke_jwt, authorize
+from say.authorization import authorize
+from say.authorization import authorize_refresh
+from say.authorization import create_sw_access_token
+from say.authorization import revoke_jwt
 from say.config import configs
 from say.decorators import json
 from say.models.social_worker_model import SocialWorker
-from say.orm import safe_commit, session
+from say.orm import safe_commit
+from say.orm import session
 from say.roles import *
+
 
 '''
 Panel Authentication APIs

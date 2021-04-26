@@ -1,9 +1,9 @@
 import secrets
 from urllib.parse import urljoin
 
-from say.models import *
-from say.constants import ALPHABET
 from say.config import configs
+from say.constants import ALPHABET
+from say.models import *
 
 
 # FIXME: Collision
@@ -26,7 +26,6 @@ class Invitation(base, Timestamp):
     )
 
     role = Column(Integer, nullable=True)
-    see_count = Column(Integer, default=0, nullable=False)
     text = Column(Unicode(128), nullable=True)
     token = Column(
         Unicode(TEXT_LENGHT),

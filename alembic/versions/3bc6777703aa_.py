@@ -42,5 +42,3 @@ def downgrade():
         ALTER TABLE activity
             DROP COLUMN created_at;
     ''')
-
-

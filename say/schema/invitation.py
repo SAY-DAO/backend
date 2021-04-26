@@ -1,5 +1,7 @@
 from typing import Optional
-from pydantic import constr, validator
+
+from pydantic import constr
+from pydantic import validator
 
 from say.models.invite.invitation import TEXT_LENGHT
 from say.schema.base import CamelModel

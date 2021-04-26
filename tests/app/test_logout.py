@@ -1,4 +1,6 @@
-from tests.helper import BaseTestClass, UNAUTHORIZED_ERROR_CODE
+from tests.helper import UNAUTHORIZED_ERROR_CODE
+from tests.helper import BaseTestClass
+
 
 LOGOUT_URL = '/api/v2/auth/logout/token'
 

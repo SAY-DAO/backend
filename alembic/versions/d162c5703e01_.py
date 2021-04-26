@@ -5,8 +5,9 @@ Revises: 656b67f31482
 Create Date: 2019-11-11 17:42:02.101896
 
 """
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 
 
 # revision identifiers, used by Alembic.
@@ -28,5 +29,3 @@ def downgrade():
         ALTER TABLE need
             RENAME COLUMN _cost TO cost;
     ''')
-
-

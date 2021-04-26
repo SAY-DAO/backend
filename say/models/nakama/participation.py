@@ -1,5 +1,7 @@
-from sqlalchemy.sql.schema import Column, ForeignKey
+from sqlalchemy.sql.schema import Column
+from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import Unicode
+
 from ..need_family_model import NeedFamily
 
 

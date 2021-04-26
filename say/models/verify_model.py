@@ -1,10 +1,12 @@
 import secrets
 
-from sqlalchemy_utils import PhoneNumberType, EmailType
+from sqlalchemy_utils import EmailType
+from sqlalchemy_utils import PhoneNumberType
 
-from . import *
 from say.content import content
 from say.render_template_i18n import render_template_i18n
+
+from . import *
 
 
 """
@@ -69,5 +71,3 @@ class EmailVerification(Verification):
                 locale=get_locale(),
             ),
         )
-
-

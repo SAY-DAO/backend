@@ -2,6 +2,7 @@ from khayyam import JalaliDate
 
 from say.langs import LANGS
 
+
 int_formatter = lambda integer: format(integer, ',d')
 
 def expose_datetime(dt, locale, with_year=True):
@@ -18,6 +19,3 @@ def expose_datetime(dt, locale, with_year=True):
             return JalaliDate(dt).strftime('%A %D %B')
 
     return dt
-
-
-

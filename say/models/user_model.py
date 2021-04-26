@@ -1,16 +1,21 @@
 from hashlib import sha256
 
 from sqlalchemy.orm import column_property
-from sqlalchemy_utils import CountryType, LocaleType, PhoneNumberType
+from sqlalchemy_utils import CountryType
+from sqlalchemy_utils import LocaleType
+from sqlalchemy_utils import PhoneNumberType
 
 from say.content import content
 from say.gender import Gender
 from say.locale import ChangeLocaleTo
 from say.render_template_i18n import render_template_i18n
 from say.validations import validate_password as _validate_password
+
 from . import *
-from .need_model import Need, NeedFamily
+from .need_model import Need
+from .need_model import NeedFamily
 from .payment_model import Payment
+
 
 """
 User Model
@@ -191,4 +196,3 @@ class User(base, Timestamp):
                  )
             else:
                 raise Exception('User has not a verified contact, BUG!')
-

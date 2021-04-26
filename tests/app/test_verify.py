@@ -1,5 +1,6 @@
 from tests.helper import BaseTestClass
 
+
 VERIFY_PHONE_URL = '/api/v2/auth/verify/phone'
 VERIFY_EMAIL_URL = '/api/v2/auth/verify/email'
 

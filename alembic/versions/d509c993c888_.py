@@ -5,11 +5,12 @@ Revises: 2153402df074
 Create Date: 2020-01-22 21:58:34.700453
 
 """
-from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
 import sqlalchemy_utils
 from babel import Locale
+from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 
 # revision identifiers, used by Alembic.

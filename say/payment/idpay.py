@@ -1,5 +1,7 @@
-import requests
 import json
+
+import requests
+
 
 # DOCS: https://idpay.ir/web-service/v1.1/index.html
 
@@ -69,4 +71,3 @@ class IDPay:
 
     def inquiry(self, id, order_id):
         return self.request("/inquiry", id=id, order_id=order_id)
-

@@ -1,4 +1,6 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
+
 from khayyam import JalaliDate
 
 
@@ -18,4 +20,3 @@ def parse_datetime(datetime_string):
         datetime_string,
         DATETIME_FORMAT,
     )
-

@@ -1,8 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from say.celery import celery
 from say.config import configs
-from say.orm import obj_to_dict, safe_commit
+from say.orm import obj_to_dict
+from say.orm import safe_commit
 
 
 @celery.task(base=celery.DBTask, bind=True)

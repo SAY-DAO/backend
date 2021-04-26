@@ -1,6 +1,7 @@
 
 from . import *
 
+
 """
 User-Family Model
 """
@@ -31,4 +32,3 @@ class UserFamily(base, Timestamp):
         uselist=False,
         back_populates='user_families',
     )
-

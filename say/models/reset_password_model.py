@@ -1,12 +1,13 @@
 import secrets
 from urllib.parse import urljoin
 
-from say.render_template_i18n import render_template_i18n
-from say.locale import ChangeLocaleTo
 from say.content import content
+from say.locale import ChangeLocaleTo
+from say.render_template_i18n import render_template_i18n
 
-from . import *
 from ..config import configs
+from . import *
+
 
 """
 Reset Password Model
@@ -69,4 +70,3 @@ class ResetPassword(base):
                 self.user.phone_number.e164,
                 content['RESET_PASSWORD'] % self.link
             )
-

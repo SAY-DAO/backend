@@ -5,8 +5,9 @@ Revises: 380390152fa0
 Create Date: 2019-10-16 14:29:31.602388
 
 """
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 
 
 # revision identifiers, used by Alembic.
@@ -27,5 +28,3 @@ def downgrade():
         ALTER TABLE "user"
             RENAME COLUMN _password TO password;
     ''')
-
-

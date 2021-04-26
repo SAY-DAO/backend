@@ -1,6 +1,8 @@
 import functools
 
-from flask import jsonify, make_response, Response
+from flask import Response
+from flask import jsonify
+from flask import make_response
 from sqlalchemy.orm.query import Query
 
 from say.orm import obj_to_dict
