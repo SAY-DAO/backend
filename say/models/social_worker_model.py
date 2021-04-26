@@ -54,7 +54,7 @@ class SocialWorker(base, Timestamp):
     lastLoginDate = Column(Date, nullable=False)
     lastLogoutDate = Column(Date, nullable=True)
     isActive = Column(Boolean, nullable=False, default=True)
-    isDeleted = Column(Boolean, nullable=False, default=False)
+    isDeleted = Column(Boolean, nullable=False, default=False, index=True)
     locale = Column(LocaleType, default=Locale('fa'), nullable=False)
 
     privilege = relationship("Privilege", foreign_keys=id_type)
