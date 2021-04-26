@@ -221,7 +221,7 @@ class GetChildById(Resource):
                 .filter(
                     UserFamily.id_family == family_id,
                     UserFamily.isDeleted.is_(False),    
-                )
+                ).all()
 
             child_family_members = []
             for member in family_members:
