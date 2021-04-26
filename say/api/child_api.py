@@ -276,7 +276,7 @@ class GetChildByInvitationToken(Resource):
             child_dict['id'] = None
 
         child_family_members = [
-            x for x in crud.child.get_family_members(child_id)
+            x for x in crud.child.get_family_members(child.id)
         ]
 
         result = UserChildSchema(
