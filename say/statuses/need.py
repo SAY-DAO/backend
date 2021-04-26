@@ -46,4 +46,3 @@ class NeedStatuses:
     def get(cls, status, type_name, locale):
         key = f'{type_name}_{locale}'
         return cls.statuses[key][str(status)]
-

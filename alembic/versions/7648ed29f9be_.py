@@ -59,4 +59,3 @@ def downgrade():
         ALTER TABLE need
             DROP COLUMN expected_delivery_date;
     ''')
-

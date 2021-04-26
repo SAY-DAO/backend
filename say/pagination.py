@@ -1,6 +1,8 @@
 import functools
 
-from flask import request, make_response, jsonify
+from flask import jsonify
+from flask import make_response
+from flask import request
 
 
 def paginate(func):

@@ -1,9 +1,11 @@
-from kombu import Exchange, Queue
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
-
 from celery import Celery
 from celery.schedules import crontab
+from kombu import Exchange
+from kombu import Queue
+from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import sessionmaker
+
 from say.config import configs
 from say.orm import init_model
 from say.sentry import setup_sentry

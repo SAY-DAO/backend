@@ -2,14 +2,21 @@ import os
 from logging import basicConfig
 
 from flasgger import Swagger
-from flask import Flask, jsonify
+from flask import Flask
+from flask import jsonify
 from flask_caching import Cache
 from flask_cors import CORS
 
-from say.exceptions import HTTPException
-from say.api.ext import jwt, api, mail, limiter, setup_healthz
+from say.api.ext import api
+from say.api.ext import jwt
+from say.api.ext import limiter
+from say.api.ext import mail
+from say.api.ext import setup_healthz
 from say.config import configs
-from say.orm import create_engine, session, init_model
+from say.exceptions import HTTPException
+from say.orm import create_engine
+from say.orm import init_model
+from say.orm import session
 from say.sentry import setup_sentry
 
 

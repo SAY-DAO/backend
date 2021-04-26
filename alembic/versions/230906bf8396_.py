@@ -5,8 +5,9 @@ Revises: 7a03bec66f6f
 Create Date: 2019-10-17 23:45:50.862379
 
 """
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 
 
 # revision identifiers, used by Alembic.
@@ -34,4 +35,3 @@ def downgrade():
         ALTER TABLE need
             DROP COLUMN child_id;
     ''')
-

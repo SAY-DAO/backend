@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import sessionmaker
 
 
 def basedata(db):
@@ -37,4 +38,3 @@ def basedata(db):
         session.commit()
     except:
         session.rollback()
-

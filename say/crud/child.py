@@ -1,4 +1,7 @@
-from say.models import Child, UserFamily, User, Family
+from say.models import Child
+from say.models import Family
+from say.models import User
+from say.models import UserFamily
 from say.orm import session
 from say.schema.child import FamilyMemberSchema
 

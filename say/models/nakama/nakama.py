@@ -1,6 +1,6 @@
-from sqlalchemy.sql.schema import Column
 from sqlalchemy import Unicode
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql.schema import Column
 from sqlalchemy_utils import Timestamp
 
 from say.orm import base

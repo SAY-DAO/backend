@@ -1,6 +1,8 @@
 from random import randint
-from tests.helper import BaseTestClass
+
 from say.orm import session
+from tests.helper import BaseTestClass
+
 
 REGISTER_URL = '/api/v2/auth/register'
 

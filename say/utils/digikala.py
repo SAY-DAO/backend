@@ -1,4 +1,5 @@
 import re
+
 import requests
 
 
@@ -83,4 +84,3 @@ def get_data(url):
     img = parse_img(c)
 
     return dict(dkp=dkp, cost=cost, img=img, title=title)
-

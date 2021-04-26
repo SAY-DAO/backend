@@ -1,5 +1,6 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from functools import partial
 
 from sqlalchemy import or_
@@ -9,6 +10,7 @@ from say.config import configs
 from say.langs import LANGS
 from say.locale import ChangeLocaleTo
 from say.render_template_i18n import render_template_i18n
+
 from .send_email import send_embeded_subject_email
 
 
@@ -104,4 +106,3 @@ def report_to_family(self, family_id):
             )
 
     return [to_members_email, cc_members_email]
-

@@ -116,4 +116,3 @@ class Payment(base, Timestamp):
                 user_role=user_role
             )
             session.add(new_participant)
-

@@ -5,8 +5,9 @@ Revises: 230906bf8396
 Create Date: 2019-10-20 13:54:24.181421
 
 """
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 
 
 # revision identifiers, used by Alembic.
@@ -46,4 +47,3 @@ def downgrade():
         ALTER TABLE child
             DROP COLUMN "sleptAvatarUrl";
     ''')
-

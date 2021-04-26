@@ -1,4 +1,5 @@
-from tests.helper import BaseTestClass, LOGIN_URL
+from tests.helper import LOGIN_URL
+from tests.helper import BaseTestClass
 
 
 class TestLogin(BaseTestClass):

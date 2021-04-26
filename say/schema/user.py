@@ -1,4 +1,5 @@
-from pydantic import constr, BaseModel
+from pydantic import BaseModel
+from pydantic import constr
 
 from say.constants import DEFAULT_AVATAR_URI
 from say.schema.base import CamelModel
@@ -16,4 +17,3 @@ class NewUserSchema(UserNameSchema):
 class UserSearchSchema(CamelModel):
     user_name: str
     avatar_url: str
-

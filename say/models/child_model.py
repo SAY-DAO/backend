@@ -4,9 +4,10 @@ import pytz
 from sqlalchemy.dialects.postgresql import HSTORE
 from sqlalchemy.orm import column_property
 
+from ..orm import session
 from . import *
 from .need_model import Need
-from ..orm import session
+
 
 """
 Child Model

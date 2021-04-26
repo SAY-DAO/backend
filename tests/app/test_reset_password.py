@@ -1,5 +1,6 @@
 from tests.helper import BaseTestClass
 
+
 RESET_PASS_EMAIL_URL = '/api/v2/auth/password/reset/email'
 RESET_PASS_PHONE_URL = '/api/v2/auth/password/reset/phone'
 

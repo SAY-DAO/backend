@@ -1,4 +1,5 @@
-from flask import request, g
+from flask import g
+from flask import request
 
 from .langs import LANGS
 

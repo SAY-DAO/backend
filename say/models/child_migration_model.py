@@ -41,4 +41,3 @@ class ChildMigration(base):
         uselist=False,
         foreign_keys=old_sw_id,
     )
-

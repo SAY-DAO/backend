@@ -1,5 +1,6 @@
 from . import *
 
+
 """
 Family Model
 """
@@ -53,4 +54,3 @@ class Family(base, Timestamp):
                 return False
 
         return True
-

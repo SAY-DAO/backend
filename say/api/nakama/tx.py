@@ -4,8 +4,11 @@ from flask_restful import Resource
 
 from say.decorators import json
 from say.models.nakama.nakama_tx import NakamaTx
-from say.orm import safe_commit, session
-from .. import api, swag_from
+from say.orm import safe_commit
+from say.orm import session
+
+from .. import api
+from .. import swag_from
 
 
 class SubmitTx(Resource):

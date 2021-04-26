@@ -1,4 +1,7 @@
-from tests.helper import BaseTestClass, REFRESH_TOKEN_KEY, UNAUTHORIZED_ERROR_CODE
+from tests.helper import REFRESH_TOKEN_KEY
+from tests.helper import UNAUTHORIZED_ERROR_CODE
+from tests.helper import BaseTestClass
+
 
 REFRESH_TOKEN_URL = '/api/v2/auth/refresh'
 

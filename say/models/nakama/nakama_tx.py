@@ -1,23 +1,27 @@
 import re
-from eth_utils import address
-from flask.globals import session
-from sqlalchemy.orm.session import object_session
-
-from say.config import configs
-from .nakama import NakamaOwner
-from .participation import NakamaParticipation
-
-from eth_utils import remove_0x_prefix, is_same_address
-from sqlalchemy import Integer, Unicode
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql.schema import Column, ForeignKey
-from sqlalchemy.sql.sqltypes import BigInteger, Boolean
-from sqlalchemy_utils import Timestamp
 from datetime import datetime
 
+from eth_utils import address
+from eth_utils import is_same_address
+from eth_utils import remove_0x_prefix
+from flask.globals import session
+from sqlalchemy import Integer
+from sqlalchemy import Unicode
+from sqlalchemy.orm import relationship
+from sqlalchemy.orm.session import object_session
+from sqlalchemy.sql.schema import Column
+from sqlalchemy.sql.schema import ForeignKey
+from sqlalchemy.sql.sqltypes import BigInteger
+from sqlalchemy.sql.sqltypes import Boolean
+from sqlalchemy_utils import Timestamp
+
+from say.config import configs
+from say.constants import NAKAMA_ROLE
 from say.orm import base
 from say.web3 import w3
-from say.constants import NAKAMA_ROLE
+
+from .nakama import NakamaOwner
+from .participation import NakamaParticipation
 
 
 class NakamaTx(base, Timestamp):

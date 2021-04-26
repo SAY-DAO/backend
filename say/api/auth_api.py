@@ -1,31 +1,50 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 import phonenumbers
 from babel import Locale
+from email_validator import EmailNotValidError
 from email_validator import validate_email
 from flasgger import swag_from
 from flask import request
-from flask_jwt_extended import create_refresh_token, get_raw_jwt, \
-    get_jwt_identity
+from flask_jwt_extended import create_refresh_token
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import get_raw_jwt
 from flask_restful import Resource
-from sqlalchemy_utils import PhoneNumber, Country, PhoneNumberParseException
+from sqlalchemy_utils import Country
+from sqlalchemy_utils import PhoneNumber
+from sqlalchemy_utils import PhoneNumberParseException
 
 from say.exceptions import HTTPException
-from say.models import or_, commit, ResetPassword, \
-    PhoneVerification, Verification, EmailVerification, User, and_
-from say.orm import safe_commit, session, obj_to_dict
+from say.models import EmailVerification
+from say.models import PhoneVerification
+from say.models import ResetPassword
+from say.models import User
+from say.models import Verification
+from say.models import and_
+from say.models import commit
+from say.models import or_
+from say.orm import obj_to_dict
+from say.orm import safe_commit
+from say.orm import session
 from say.tasks import subscribe_email
-from say.validations import validate_username, validate_email, validate_phone, \
-    validate_password
-from .ext import api, limiter
-from ..authorization import create_user_access_token, authorize, revoke_jwt, \
-    authorize_refresh
+from say.validations import validate_email
+from say.validations import validate_password
+from say.validations import validate_phone
+from say.validations import validate_username
+
+from ..authorization import authorize
+from ..authorization import authorize_refresh
+from ..authorization import create_user_access_token
+from ..authorization import revoke_jwt
 from ..config import configs
 from ..decorators import json
 from ..i18n import t
 from ..locale import get_locale
 from ..schema.user import NewUserSchema
-from email_validator import validate_email, EmailNotValidError
+from .ext import api
+from .ext import limiter
+
 
 '''
 Authentication APIs

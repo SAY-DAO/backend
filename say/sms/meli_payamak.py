@@ -1,5 +1,6 @@
-import requests
 import json
+
+import requests
 
 
 class MeliPayamak:
@@ -35,4 +36,3 @@ class MeliPayamak:
 
     def send(self, to, text):
         return self.request('/SendSMS/SendSMS', to=to, text=text)
-

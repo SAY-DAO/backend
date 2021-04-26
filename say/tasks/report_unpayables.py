@@ -1,8 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 from say.celery import celery
 from say.langs import LANGS
 from say.render_template_i18n import render_template_i18n
+
 from .send_email import send_embeded_subject_email
 
 
@@ -40,4 +42,3 @@ def report_unpayables(self):
         )
 
     return [u.id for u in unpayables]
-

@@ -5,9 +5,13 @@ Revises: aa02ecb3b4c8
 Create Date: 2019-10-12 21:27:25.307454
 
 """
-from alembic import op
 import sqlalchemy as sa
-from sqlalchemy import Integer, Date, String, Boolean
+from sqlalchemy import Boolean
+from sqlalchemy import Date
+from sqlalchemy import Integer
+from sqlalchemy import String
+
+from alembic import op
 
 
 # revision identifiers, used by Alembic.

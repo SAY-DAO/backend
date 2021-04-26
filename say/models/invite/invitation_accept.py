@@ -1,6 +1,9 @@
 from datetime import datetime
 
-from sqlalchemy import Column, Integer, ForeignKey, DateTime
+from sqlalchemy import Column
+from sqlalchemy import DateTime
+from sqlalchemy import ForeignKey
+from sqlalchemy import Integer
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import Timestamp
 

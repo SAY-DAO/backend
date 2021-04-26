@@ -2,8 +2,11 @@ import os
 from datetime import datetime
 
 from flask import render_template
-from say.formatters import int_formatter, expose_datetime
-from say.locale import ChangeLocaleTo, get_locale
+
+from say.formatters import expose_datetime
+from say.formatters import int_formatter
+from say.locale import ChangeLocaleTo
+from say.locale import get_locale
 
 
 def render_template_i18n(path, *args, locale=None, date_with_year=True, **kwargs):
@@ -29,5 +32,3 @@ def render_template_i18n(path, *args, locale=None, date_with_year=True, **kwargs
             int_formatter=int_formatter,
             **kwargs
         )
-
-

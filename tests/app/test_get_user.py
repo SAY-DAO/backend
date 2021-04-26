@@ -8,6 +8,7 @@ from datetime import datetime
 from say.models import User
 from tests.helper import BaseTestClass
 
+
 USER_GET_URL = '/api/v2/user/userId=%s'
 
 

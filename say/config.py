@@ -1,7 +1,8 @@
-from logging import DEBUG
 import os
+from logging import DEBUG
 
-from dotenv import load_dotenv, find_dotenv
+from dotenv import find_dotenv
+from dotenv import load_dotenv
 
 from say.helpers import get_secret
 

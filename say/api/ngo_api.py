@@ -7,7 +7,6 @@ from flask_restful import Resource
 from werkzeug.utils import secure_filename
 
 from say.api.ext import api
-from say.validations import allowed_image
 from say.authorization import authorize
 from say.config import configs
 from say.decorators import json
@@ -15,8 +14,11 @@ from say.exceptions import HTTP_NOT_FOUND
 from say.models import obj_to_dict
 from say.models.ngo_model import Ngo
 from say.models.social_worker_model import SocialWorker
-from say.orm import safe_commit, session
+from say.orm import safe_commit
+from say.orm import session
 from say.roles import *
+from say.validations import allowed_image
+
 
 '''
 Activity APIs

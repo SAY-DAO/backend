@@ -1,14 +1,20 @@
 import enum
 from typing import Optional
 
-from pydantic import conint, constr
 from pydantic import BaseModel as PydanticBaseModel
-from sqlalchemy import Column, Integer, ForeignKey, Enum, String
+from pydantic import conint
+from pydantic import constr
+from sqlalchemy import Column
+from sqlalchemy import Enum
+from sqlalchemy import ForeignKey
+from sqlalchemy import Integer
+from sqlalchemy import String
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import Timestamp
 
 from ..constants import MAX_NEED_COST
 from ..orm import base
+
 
 DESCRIPTION_MAX_LENGTH = 128
 REJECT_CAUSE_MAX_LENGTH = 128
@@ -72,5 +78,3 @@ class ChangeCost(base, Timestamp):
         foreign_keys=need_id,
         uselist=False,
     )
-
-

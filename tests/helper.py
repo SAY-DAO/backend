@@ -6,8 +6,12 @@ from random import randint
 import pytest
 
 from say.config import configs
-from say.models import User, SocialWorker, Privilege, Ngo
+from say.models import Ngo
+from say.models import Privilege
+from say.models import SocialWorker
+from say.models import User
 from tests.conftest import TEST_DB_URL
+
 
 LOGIN_URL = '/api/v2/auth/login'
 
