@@ -26,10 +26,11 @@ from say.config import configs
 from say.decorators import json
 from say.exceptions import HTTP_PERMISION_DENIED, HTTP_NOT_FOUND
 from say.models import Child, ChildNeed, Family, Need, SocialWorker, UserFamily, \
-    Invitation
+    Invitation, User
 from say.models import obj_to_dict, commit
 from say.orm import safe_commit, session
 from say.roles import *
+from say.schema.child import FamilyMemberSchema, UserChildSchema
 
 
 def filter_by_confirm(child_query, confirm):
@@ -199,36 +200,45 @@ class GetChildById(Resource):
         if get_user_role() in [USER]:  # TODO: priv
             user_id = get_user_id()
             family_id = child.family.id
-            child_family_member = []
 
-            user_family = session.query(UserFamily) \
+            user_role = session.query(UserFamily.userRole) \
                 .filter_by(isDeleted=False) \
                 .filter_by(id_user=user_id) \
                 .filter_by(id_family=family_id) \
-                .first()
+                .one_or_none()
 
-            child_dict['familyId'] = family_id
-            child_dict['userRole'] = user_family.userRole
-            del child_dict['phoneNumber']
-            del child_dict['firstName']
-            del child_dict['firstName_translations']
-            del child_dict['lastName']
-            del child_dict['lastName_translations']
-            del child_dict['nationality']
-            del child_dict['country']
-            del child_dict['city']
-            del child_dict['birthPlace']
-            del child_dict['address']
-            del child_dict['id_social_worker']
-            del child_dict['id_ngo']
+            if user_role is None:
+                raise HTTP_NOT_FOUND()
 
-            for member in child.family.current_members():
-                child_family_member.append(dict(
-                    role=member.userRole,
-                    username=member.user.userName,
+            # Unpack role
+            user_role, = user_role
+
+            family_members = session.query(
+                UserFamily.userRole,
+                User.userName,
+            ) \
+                .join(User, User.id == UserFamily.id_user) \
+                .filter(
+                    UserFamily.id_family == family_id,
+                    UserFamily.isDeleted.is_(False),    
+                )
+
+            child_family_members = []
+            for member in family_members:
+                child_family_members.append(obj_to_dict(
+                    FamilyMemberSchema(
+                        role=member[0],
+                        username=member[1],
+                    )
                 ))
 
-            child_dict['childFamilyMembers'] = child_family_member
+            result = UserChildSchema(
+                **child_dict,
+                userRole=user_role,
+                familyId=family_id,
+                childFamilyMembers=child_family_members
+            )
+            return result
 
         return child_dict
 
