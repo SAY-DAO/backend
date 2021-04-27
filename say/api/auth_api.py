@@ -28,7 +28,6 @@ from say.orm import obj_to_dict
 from say.orm import safe_commit
 from say.orm import session
 from say.tasks import subscribe_email
-from say.validations import validate_email
 from say.validations import validate_password
 from say.validations import validate_phone
 from say.validations import validate_username
