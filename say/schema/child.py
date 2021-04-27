@@ -1,7 +1,7 @@
 from datetime import date
 from typing import List
 
-from pydantic import BaseModel
+from .base import BaseModel
 
 
 class FamilyMemberSchema(BaseModel):
@@ -29,3 +29,20 @@ class UserChildSchema(BaseModel):
     userRole: int = None
     voiceUrl: str
     socialWorkerGeneratedCode: str
+
+
+class Participant(BaseModel):
+    user_avatar: str = None
+
+
+class NeedSummary(BaseModel):
+    id: int
+    imageUrl: str
+    name: str
+    progress: float
+    cost: int
+    isDone: bool
+    isUrgent: bool
+    category: int
+    type: int
+    participants: List[Participant] = []
