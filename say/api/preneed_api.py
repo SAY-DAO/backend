@@ -23,6 +23,8 @@ class PreNeedsAPi(Resource):
             Need.name.label('name'),
             Need.cost,
             Need.title,
+            Need.type,
+            Need.details
         ) \
             .filter(
                 Need.child_id == DEFAULT_CHILD_ID,

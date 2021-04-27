@@ -6,3 +6,5 @@ class PreneedSummarySchema(CamelModel):
     name: str
     title: str = None
     cost: int
+    type: int
+    details: str = None
