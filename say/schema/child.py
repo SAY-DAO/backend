@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import List
 
 from .base import BaseModel
@@ -46,3 +46,5 @@ class NeedSummary(BaseModel):
     category: int
     type: int
     participants: List[Participant] = []
+    created: datetime
+    doneAt: datetime = None
