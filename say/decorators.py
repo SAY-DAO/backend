@@ -1,4 +1,5 @@
 import functools
+import types
 
 from flask import Response
 from flask import jsonify
@@ -25,7 +26,13 @@ def json(func, *args, **kwargs):
                 obj_to_dict(item)
                 for item in result
             ])
-
+    
+        elif isinstance(result, types.GeneratorType):
+            return jsonify([
+                obj_to_dict(item)
+                for item in result
+            ])
+        
         return jsonify(obj_to_dict(result))
 
     return wrapper
