@@ -35,6 +35,7 @@ from say.models import ChildNeed
 from say.models import Family
 from say.models import Invitation
 from say.models import Need
+from say.models import NeedFamily
 from say.models import SocialWorker
 from say.models import User
 from say.models import UserFamily
@@ -44,6 +45,7 @@ from say.orm import safe_commit
 from say.orm import session
 from say.roles import *
 from say.schema.child import FamilyMemberSchema
+from say.schema.child import NeedSummary
 from say.schema.child import UserChildSchema
 from say.validations import allowed_image
 from say.validations import allowed_voice
@@ -332,7 +334,7 @@ class GetChildNeeds(Resource):
         role = get_user_role()
         for need in needs_query:
             if not need.isConfirmed \
-                    and  role in [USER]:
+                    and role in [USER]:
                 continue
 
             need_dict = obj_to_dict(need)
@@ -341,6 +343,54 @@ class GetChildNeeds(Resource):
                 for p in need.current_participants
             ]
             needs.append(need_dict)
+
+        result = dict(
+            total_count=len(needs),
+            needs=needs,
+        )
+        return result
+
+# id, imageUrl, name, participants.user_avatar, progress, cost, isDone, isUrgent, category
+
+class GetChildNeedsSummary(Resource):
+
+    @authorize(USER, SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
+               SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @json
+    @swag_from('./docs/child/needs_summary.yml')
+    def get(self, child_id):
+        child_id = int(child_id)
+
+        child_query = session.query(Child) \
+            .filter(Child.isDeleted==False) \
+            .filter(Child.isMigrated==False) \
+            .filter(Child.id==child_id) \
+
+        child_query = filter_by_privilege(child_query, get=True)
+
+        child = child_query.one_or_none()
+        if child is None:
+            raise HTTP_NOT_FOUND()
+
+        needs_query = session.query(Need) \
+            .options(selectinload('participants')) \
+            .filter(Need.child_id==child_id) \
+            .filter(Need.isDeleted==False) \
+            .order_by(Need.name)
+        
+        needs = []
+        role = get_user_role()
+        for need in needs_query:
+            if not need.isConfirmed \
+                    and role in [USER]:
+                continue
+
+            need_dict = obj_to_dict(need)
+            need_dict['participants'] = [
+                {'user_avatar': p.user_avatar}
+                for p in need.current_participants
+            ]
+            needs.append(NeedSummary(**need_dict).dict())
 
         result = dict(
             total_count=len(needs),
@@ -973,6 +1023,7 @@ api.add_resource(
     '/api/v2/child/invitations/<token>',
 )
 api.add_resource(GetChildNeeds, '/api/v2/child/childId=<child_id>/needs')
+api.add_resource(GetChildNeedsSummary, '/api/v2/child/<child_id>/needs/summary')
 api.add_resource(GetAllChildren, '/api/v2/child/all/confirm=<confirm>')
 api.add_resource(
     AddChild,
