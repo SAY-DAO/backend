@@ -38,7 +38,7 @@ class Need(base, Timestamp):
     isUrgent = Column(Boolean, nullable=False)
     details = Column(Text, nullable=True)
     _cost = Column(Integer, nullable=False)
-    purchase_cost = Column(Integer, nullable=False, default=0)
+    purchase_cost = Column(Integer, nullable=True)
     link = Column(String, nullable=True)
     affiliateLinkUrl = Column(String, nullable=True)
     isDone = Column(Boolean, nullable=False, default=False, index=True)
@@ -394,7 +394,7 @@ class Need(base, Timestamp):
         if type(cost) is int:
             if not self.isDone:
                 self.cost = cost
-                self.purchase_cost = cost
+
             self.change_availability(True)
         else:
             self.change_availability(False)
@@ -433,7 +433,7 @@ class Need(base, Timestamp):
 
     def unconfirm(self):
         self.refund_extra_credit(0)
-        self.purchase_cost = 0
+        self.purchase_cost = None
         self.confirmDate = None
         self.confirmUser = None
         self.isConfirmed = False

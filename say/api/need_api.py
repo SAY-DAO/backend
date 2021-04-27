@@ -260,12 +260,9 @@ class UpdateNeedById(Resource):
             new_cost = int(request.form['cost'].replace(',', ''))
 
             if (
-                (
-                    (
-                        sw_role in [SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR]
-                        and need.isConfirmed
-                    ) or need.isDone
-                ) and new_cost != need._cost
+                ((sw_role in [SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR] and need.isConfirmed) or need.isDone) 
+                and 
+                new_cost != need._cost
             ):
                 return {'message': 'Can not change cost when need is done'}, 400
 
@@ -407,7 +404,7 @@ class DeleteNeedById(Resource):
 
         if (need.type == 0 and need.status < 4) or (need.type == 1 and need.status < 5):
             need.status = 0
-            need.purchase_cost = 0
+            need.purchase_cost = None
             need.refund_extra_credit(new_paid=0)
 
             for participant in need.participants:
@@ -542,7 +539,6 @@ class AddNeed(Resource):
             imageUrl=image_url,
             category=category,
             cost=cost,
-            purchase_cost=cost,
             isUrgent=is_urgent,
             affiliateLinkUrl=affiliate_link_url,
             link=link,
