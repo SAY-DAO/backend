@@ -92,7 +92,7 @@ class Payment(base, Timestamp):
             .filter_by(id_need=self.id_need)
             .filter_by(id_user=self.id_user)
             .with_for_update()
-            .first()
+            .one_or_none()
         )
 
         if participant is None:

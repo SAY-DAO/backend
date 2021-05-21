@@ -147,10 +147,7 @@ class AddPayment(Resource):
         if donation < 0:
             return {'message': 'Donation Can Not Be Negetive'}
 
-        need = session.query(Need) \
-            .with_for_update() \
-            .get(need_id)
-
+        need = session.query(Need).get(need_id)
         if need is None or need.isDeleted:
             return {'message': 'Need Not Found'}
 
@@ -280,19 +277,16 @@ class VerifyPayment(Resource):
                 pending_payment.gateway_payment_id,
                 pending_payment.order_id,
             )
-        except: # bare except intentianly
+            response.raise_for_status() # To raise ex for non OK responses
+        except requests.exceptions.RequestException:
             return make_response(unsuccessful_response)
 
         if not response or 'error_code' in response or response['status'] != 100:
             return make_response(unsuccessful_response)
 
-        transaction_date = datetime.fromtimestamp(
-            int(response['date']),
-        )
+        transaction_date = datetime.fromtimestamp(int(response['date']))
         gateway_track_id = response['track_id']
-        verified = datetime.fromtimestamp(
-            int(response['verify']['date']),
-        )
+        verified = datetime.fromtimestamp(int(response['verify']['date']))
         card_no = response['payment']['card_no']
         hashed_card_no = response['payment']['hashed_card_no']
 
@@ -305,7 +299,6 @@ class VerifyPayment(Resource):
         )
 
         need.payments.append(pending_payment)
-
         return make_response(render_template_i18n(
             'successful_payment.html',
             payment=pending_payment,

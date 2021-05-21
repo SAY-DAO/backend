@@ -11,6 +11,7 @@ class IDPay:
     API_URL = "https://api.idpay.ir/v1.1/payment"
     MIN_AMOUNT = 100 # TOMAN
     TRY_COUNT = 3
+    TIMEOUT = 20
 
     RESPONSES = {
         1: "پرداخت انجام نشده است",
@@ -55,7 +56,7 @@ class IDPay:
     def request(self, route, **kwargs):
         # Retry for 5xx response
         for i in range(self.TRY_COUNT):
-            response = requests.post(f"{self.API_URL}{route}", data=json.dumps(kwargs), headers=self.headers)
+            response = requests.post(f"{self.API_URL}{route}", data=json.dumps(kwargs), headers=self.headers, timeout=TIMEOUT)
             if response.status_code < 500:
                 break
 

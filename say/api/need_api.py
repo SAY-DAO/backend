@@ -210,7 +210,8 @@ class UpdateNeedById(Resource):
 
         need_query = session.query(Need) \
             .filter_by(id=need_id) \
-            .filter_by(isDeleted=False)
+            .filter_by(isDeleted=False) \
+            .with_for_update()
 
         need = filter_by_privilege(need_query).one_or_none()
 
@@ -393,8 +394,7 @@ class DeleteNeedById(Resource):
             .filter_by(isDeleted=False) \
             .filter_by(id=need_id)
         
-        need = filter_by_privilege(need).one_or_none()
-
+        need = filter_by_privilege(need).with_for_update().one_or_none()
         if not need:
             return {'message': 'need not found'}, 404
 
