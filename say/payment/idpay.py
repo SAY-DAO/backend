@@ -59,7 +59,8 @@ class IDPay:
             response = requests.post(f"{self.API_URL}{route}", data=json.dumps(kwargs), headers=self.headers, timeout=self.TIMEOUT)
             if response.status_code < 500 and response.status_code != 405:
                 break
-
+        
+        response.raise_for_status() # To raise ex for non OK responses
         result = response.json()
         return result
 

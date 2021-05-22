@@ -274,7 +274,6 @@ class VerifyPayment(Resource):
                 pending_payment.gateway_payment_id,
                 pending_payment.order_id,
             )
-            verify_response.raise_for_status() # To raise ex for non OK responses
         except requests.exceptions.RequestException as ex:
             if isinstance(ex, requests.exceptions.Timeout):
                 pass # payment may be verified
@@ -285,7 +284,6 @@ class VerifyPayment(Resource):
                 pending_payment.gateway_payment_id,
                 pending_payment.order_id,
             )
-            response.raise_for_status() # To raise ex for non OK responses
         except requests.exceptions.RequestException as ex:
             return make_response(unsuccessful_response)
 
