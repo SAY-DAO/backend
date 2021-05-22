@@ -380,6 +380,9 @@ class Need(base, Timestamp):
         from say.utils import digikala
         data = digikala.get_data(self.link)
 
+        if data is None:
+            return
+
         dkp = data['dkp']
         img = data['img']
         title = data['title']

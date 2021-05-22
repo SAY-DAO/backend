@@ -14,7 +14,12 @@ DKP_PATTERN = r'(dkp-\d+)'
 
 
 def parse_dkp(url):
-    return re.search(DKP_PATTERN, url).group(1)
+    try:
+        dpk = re.search(DKP_PATTERN, url).group(1).strip()
+    except (IndexError, AttributeError):
+        return None
+
+    return dkp
 
 
 def parse_cost(c):
@@ -77,6 +82,9 @@ def parse_img(c):
 
 def get_data(url):
     dkp = parse_dkp(url)
+    if dpk is None:
+        return None
+
     c = requests.get(url).text
 
     cost = parse_cost(c)
