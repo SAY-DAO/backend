@@ -7,6 +7,7 @@ from flasgger import swag_from
 from flask import make_response
 from flask import request
 from flask_restful import Resource
+import requests
 from werkzeug.exceptions import abort
 
 from say.models import commit
@@ -273,15 +274,26 @@ class VerifyPayment(Resource):
             return make_response(unsuccessful_response)
 
         try:
-            response = idpay.verify(
+            verify_response = idpay.verify(
+                pending_payment.gateway_payment_id,
+                pending_payment.order_id,
+            )
+            verify_response.raise_for_status() # To raise ex for non OK responses
+        except requests.exceptions.RequestException as ex:
+            if isinstance(ex, requests.exceptions.Timeout):
+                pass # payment may be verified
+            return make_response(unsuccessful_response)
+
+        try:
+            response = idpay.inquiry(
                 pending_payment.gateway_payment_id,
                 pending_payment.order_id,
             )
             response.raise_for_status() # To raise ex for non OK responses
-        except requests.exceptions.RequestException:
+        except requests.exceptions.RequestException as ex:
             return make_response(unsuccessful_response)
 
-        if not response or 'error_code' in response or response['status'] != 100:
+        if not response or 'error_code' in response or response['status'] not in (100, 101, 200):
             return make_response(unsuccessful_response)
 
         transaction_date = datetime.fromtimestamp(int(response['date']))
