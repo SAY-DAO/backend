@@ -82,7 +82,7 @@ def parse_img(c):
 
 def get_data(url):
     dkp = parse_dkp(url)
-    if dpk is None:
+    if dkp is None:
         return None
 
     c = requests.get(url).text

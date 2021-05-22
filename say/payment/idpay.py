@@ -62,7 +62,7 @@ class IDPay:
         
         response.raise_for_status() # To raise ex for non OK responses
         result = response.json()
-        return result
+        return result 
 
     def new_transaction(self, order_id: str, amount: int, callback: str, name: str = None, phone: str = None, mail: str = None, desc: str = None, reseller: int = None):
         amount *= 10 # RIAL to TOMAN
