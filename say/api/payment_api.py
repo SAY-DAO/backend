@@ -237,15 +237,11 @@ class AddPayment(Resource):
 
 
 class VerifyPayment(Resource):
-    @json
-    @commit
-    def post(self):
-        paymentId = request.form['id']
-        order_id = request.form['order_id']
-
+    @staticmethod
+    def _verify_payment(payment_id, order_id):
         pending_payment = session.query(Payment) \
             .filter(
-                Payment.gateway_payment_id == paymentId,
+                Payment.gateway_payment_id == payment_id,
                 Payment.order_id == order_id,
                 Payment.verified.is_(None),
             ) \
@@ -317,6 +313,27 @@ class VerifyPayment(Resource):
             user=user,
             locale=user.locale,
         ))
+
+    @json
+    @commit
+    def post(self):
+        payment_id = request.form.get('id')
+        order_id = request.form.get('order_id')
+        if not payment_id or not order_id:
+            return make_response(unsuccessful_response)
+
+        return self._verify_payment(payment_id, order_id)
+
+    @json
+    @commit
+    def get(self):
+        payment_id = request.args.get('id')
+        order_id = request.args.get('order_id')
+        if not payment_id or not order_id:
+            return make_response(unsuccessful_response)
+            
+        return self._verify_payment(payment_id, order_id)
+   
 
 
 api.add_resource(AddPayment, '/api/v2/payment')
