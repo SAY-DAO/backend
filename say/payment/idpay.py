@@ -57,7 +57,7 @@ class IDPay:
         # Retry for 5xx response
         for i in range(self.TRY_COUNT):
             response = requests.post(f"{self.API_URL}{route}", data=json.dumps(kwargs), headers=self.headers, timeout=TIMEOUT)
-            if response.status_code < 500:
+            if response.status_code < 500 and response.status_code != 405:
                 break
 
         result = response.json()
