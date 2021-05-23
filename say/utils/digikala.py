@@ -91,5 +91,3 @@ def get_data(url):
     img = parse_img(c)
 
     return dict(dkp=dkp, cost=cost, img=img, title=title)
-
-print(parse_dkp('dkp-1'))
