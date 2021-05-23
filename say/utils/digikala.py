@@ -15,10 +15,9 @@ DKP_PATTERN = r'(dkp-\d+)'
 
 def parse_dkp(url):
     try:
-        dpk = re.search(DKP_PATTERN, url).group(1).strip()
+        dkp = re.search(DKP_PATTERN, url).group(1).strip()
     except (IndexError, AttributeError):
         return None
-
     return dkp
 
 
@@ -92,3 +91,5 @@ def get_data(url):
     img = parse_img(c)
 
     return dict(dkp=dkp, cost=cost, img=img, title=title)
+
+print(parse_dkp('dkp-1'))
