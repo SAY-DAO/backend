@@ -3,13 +3,14 @@ import string
 from datetime import datetime
 from urllib.parse import urljoin
 
+import requests
 from flasgger import swag_from
 from flask import make_response
 from flask import request
 from flask_restful import Resource
-import requests
 from werkzeug.exceptions import abort
 
+from say.locale import DEFAULT_LOCALE
 from say.models import commit
 from say.models import obj_to_dict
 from say.models.family_model import Family
@@ -60,7 +61,7 @@ def generate_order_id(N=configs.PAYMENT_ORDER_ID_LENGTH):
 
 def check_order_id_exist(order_id):
     return session.query(Payment) \
-        .filter(Payment.order_id==order_id) \
+        .filter(Payment.order_id == order_id) \
         .one_or_none()
 
 
@@ -239,17 +240,24 @@ class AddPayment(Resource):
 class VerifyPayment(Resource):
     @staticmethod
     def _verify_payment(payment_id, order_id):
-        pending_payment = session.query(Payment) \
-            .filter(
-                Payment.gateway_payment_id == payment_id,
-                Payment.order_id == order_id,
-                Payment.verified.is_(None),
-            ) \
+        unsuccessful_response = render_template_i18n(
+            'unsuccessful_payment.html',
+            locale=DEFAULT_LOCALE,
+        )
+
+        if not payment_id or not order_id:
+            return make_response(unsuccessful_response)
+
+        pending_payment = session.query(Payment).filter(
+            Payment.gateway_payment_id == payment_id,
+            Payment.order_id == order_id,
+            Payment.verified.is_(None),
+        ) \
             .with_for_update() \
             .one_or_none()
 
         if pending_payment is None:
-            abort(404)
+            return make_response(unsuccessful_response)
 
         user = session.query(User) \
             .with_for_update() \
@@ -259,24 +267,17 @@ class VerifyPayment(Resource):
             .with_for_update() \
             .get(pending_payment.id_need)
 
-        unsuccessful_response = render_template_i18n(
-            'unsuccessful_payment.html',
-            payment=pending_payment,
-            user=user,
-            locale=user.locale,
-        )
-
         if need.isDone:
             return make_response(unsuccessful_response)
 
         try:
-            verify_response = idpay.verify(
+            idpay.verify(
                 pending_payment.gateway_payment_id,
                 pending_payment.order_id,
             )
         except requests.exceptions.RequestException as ex:
             if isinstance(ex, requests.exceptions.Timeout):
-                pass # payment may be verified
+                pass  # payment may be verified
             return make_response(unsuccessful_response)
 
         try:
@@ -284,10 +285,12 @@ class VerifyPayment(Resource):
                 pending_payment.gateway_payment_id,
                 pending_payment.order_id,
             )
-        except requests.exceptions.RequestException as ex:
+        except requests.exceptions.RequestException:
             return make_response(unsuccessful_response)
 
-        if not response or 'error_code' in response or response['status'] not in (100, 101, 200):
+        if not response or 'error_code' in response or response['status'] not in (
+            100, 101, 200,
+        ):
             return make_response(unsuccessful_response)
 
         transaction_date = datetime.fromtimestamp(int(response['date']))
@@ -317,9 +320,6 @@ class VerifyPayment(Resource):
     def post(self):
         payment_id = request.form.get('id')
         order_id = request.form.get('order_id')
-        if not payment_id or not order_id:
-            return make_response(unsuccessful_response)
-
         return self._verify_payment(payment_id, order_id)
 
     @json
@@ -327,11 +327,7 @@ class VerifyPayment(Resource):
     def get(self):
         payment_id = request.args.get('id')
         order_id = request.args.get('order_id')
-        if not payment_id or not order_id:
-            return make_response(unsuccessful_response)
-            
         return self._verify_payment(payment_id, order_id)
-   
 
 
 api.add_resource(AddPayment, '/api/v2/payment')
