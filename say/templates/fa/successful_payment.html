@@ -101,6 +101,10 @@
                 direction: rtl;
                 }
 
+                .ltr {
+                direction: ltr;
+                }
+
         </style>
     </head>
     <body>
@@ -174,7 +178,7 @@
 
         {% if payment.credit_amount %}
                 <div class="rowContent">
-                        <span>
+                        <span class="ltr">
                                 {{payment.order_id}}
                         </span>
                         <span>
@@ -185,7 +189,7 @@
 
         {% if payment.bank_amount %}
                 <div class="rowContent">
-                        <span>
+                        <span class="ltr">
                                 {{payment.gateway_track_id}}
                         </span>
                         <span>
@@ -198,7 +202,7 @@
         <hr />
         
         <div class="rowContent">
-                <span>
+                <span class="ltr">
                         {{payment.card_no}}
                 </span>
                 <span>
