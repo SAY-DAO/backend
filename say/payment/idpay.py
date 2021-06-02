@@ -56,20 +56,31 @@ class IDPay:
     def request(self, route, **kwargs):
         # Retry for 5xx response
         for i in range(self.TRY_COUNT):
-            response = requests.post(f"{self.API_URL}{route}", data=json.dumps(kwargs), headers=self.headers, timeout=self.TIMEOUT)
+            response = requests.post(
+                f'{self.API_URL}{route}',
+                data=json.dumps(kwargs),
+                headers=self.headers,
+                timeout=self.TIMEOUT,
+            )
             if response.status_code < 500 and response.status_code != 405:
                 break
-        
-        response.raise_for_status() # To raise ex for non OK responses
-        result = response.json()
-        return result 
 
-    def new_transaction(self, order_id: str, amount: int, callback: str, name: str = None, phone: str = None, mail: str = None, desc: str = None, reseller: int = None):
-        amount *= 10 # RIAL to TOMAN
-        return self.request("", order_id=order_id, amount=amount, callback=callback, name=name, phone=phone, mail=mail, desc=desc, reseller=reseller)
+        response.raise_for_status()  # To raise ex for non OK responses
+        result = response.json()
+        return result
+
+    def new_transaction(self, order_id: str, amount: int, callback: str,
+                        name: str = None, phone: str = None, mail: str = None,
+                        desc: str = None, reseller: int = None):
+
+        amount *= 10  # RIAL to TOMAN
+        return self.request(
+            '', order_id=order_id, amount=amount, callback=callback, name=name,
+            phone=phone, mail=mail, desc=desc, reseller=reseller,
+        )
 
     def verify(self, id, order_id):
-        return self.request("/verify", id=id, order_id=order_id)
+        return self.request('/verify', id=id, order_id=order_id)
 
     def inquiry(self, id, order_id):
-        return self.request("/inquiry", id=id, order_id=order_id)
+        return self.request('/inquiry', id=id, order_id=order_id)

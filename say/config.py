@@ -1,5 +1,5 @@
 import os
-from logging import DEBUG
+from logging import DEBUG as DEBUG_LVL
 
 from dotenv import find_dotenv
 from dotenv import load_dotenv
@@ -12,7 +12,7 @@ class Config(object):
     PRODUCTION = False
     TESTING = False
     DEBUG = True
-    LOGLEVEL = DEBUG
+    LOGLEVEL = DEBUG_LVL
     POSTGRES_HOST = 'localhost'
     POSTGRES_PORT = '5432'
     POSTGRES_DB = 'say'
@@ -28,7 +28,7 @@ class Config(object):
     REVOKED_TOKEN_STORE_HOST = 'localhost'
     REVOKED_TOKEN_STORE_PORT = '6379'
     REVOKED_TOKEN_STORE_DB = 1
-    SANDBOX = False
+    SANDBOX = True
     JSON_SORT_KEYS = False
     SET_PASSWORD_URL = 'setpassword'
     RESET_PASSWORD_EXPIRE_TIME = 2 * 3600
@@ -55,8 +55,8 @@ class Config(object):
     RABBITMQ_PORT = '5672'
     SENTRY_DSN = 'https://e7665a883afe47d082b3fa4e0b956c07@sentry.say.company/4'
     INFURA_URL = 'https://mainnet.infura.io/v3/0be880209fd94507a2b7b340f638f8a0'
-    NAKAMA_ADDRESS =  '0x052e909bd1a6b20d35c850d2a188fd515a738953'
-    ORPHAN_NAKAMA_TX_RANGE = 2 # Days
+    NAKAMA_ADDRESS = '0x052e909bd1a6b20d35c850d2a188fd515a738953'
+    ORPHAN_NAKAMA_TX_RANGE = 2  # Days
     MAILERLITE_API_KEY = 'abcd'
 
     # Celery
@@ -117,11 +117,11 @@ class Config(object):
     @property
     def rabbitmq_url(self):
         return f'amqp://' \
-           f'{self.RABBITMQ_DEFAULT_USER}' \
-           f':{self.RABBITMQ_DEFAULT_PASS}' \
-           f'@{self.RABBITMQ_HOST}' \
-           f':{self.RABBITMQ_PORT}' \
-           f'/{self.RABBITMQ_VHOST}'
+            f'{self.RABBITMQ_DEFAULT_USER}' \
+            f':{self.RABBITMQ_DEFAULT_PASS}' \
+            f'@{self.RABBITMQ_HOST}' \
+            f':{self.RABBITMQ_PORT}' \
+            f'/{self.RABBITMQ_VHOST}'
 
     @property
     def broker_url(self):

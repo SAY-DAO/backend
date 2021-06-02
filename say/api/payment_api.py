@@ -49,9 +49,7 @@ def generate_order_id(N=configs.PAYMENT_ORDER_ID_LENGTH):
     while True:
         order_id = ''.join(
             random.SystemRandom().choice(
-                string.ascii_uppercase
-                + string.ascii_lowercase
-                + string.digits
+                string.ascii_uppercase + string.ascii_lowercase + string.digits
             ) for _ in range(N)
         )
 
