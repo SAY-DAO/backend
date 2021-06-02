@@ -11,7 +11,7 @@ class IDPay:
     API_URL = "https://api.idpay.ir/v1.1/payment"
     MIN_AMOUNT = 100  # TOMAN
     TRY_COUNT = 3
-    TIMEOUT = 30
+    TIMEOUT = 59
 
     RESPONSES = {
         1: "پرداخت انجام نشده است",
