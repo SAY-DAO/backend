@@ -30,9 +30,10 @@ def check_unverified_payments():
                 print('Payment ID: ', p.id)
                 print('Payment Gateway ID: ', p.gateway_payment_id)
                 print('Payment Order ID: ', p.order_id)
-                print('Bank Amount: ', p.bank_amount)
-                print('Need ID: ', p.need_id)
+                print('Need ID: ', p.id_need)
+                print('User ID: ', p.id_user)
                 print('Need Amount: ', p.need_amount)
+                print('Bank Amount: ', p.bank_amount)
                 print(
                     'Payment Verified AT:',
                     res['verify']['date'],
