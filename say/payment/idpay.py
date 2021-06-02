@@ -9,9 +9,9 @@ import requests
 class IDPay:
 
     API_URL = "https://api.idpay.ir/v1.1/payment"
-    MIN_AMOUNT = 100 # TOMAN
+    MIN_AMOUNT = 100  # TOMAN
     TRY_COUNT = 3
-    TIMEOUT = 20
+    TIMEOUT = 30
 
     RESPONSES = {
         1: "پرداخت انجام نشده است",
