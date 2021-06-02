@@ -41,6 +41,10 @@ beat = {
         'task': 'say.tasks.nakama.update_nakama_txs',
         'schedule': 10 * 60,
     },
+    'check_unverified_payments': {
+        'task': 'say.tasks.check_unverified_payments.check_unverified_payments',
+        'schedule': crontab(hour=1),
+    },
 }
 
 
@@ -52,14 +56,14 @@ def create_celery_app(beat):
     :return: Celery app
     """
     celery = Celery(
-        'SAY', 
+        'SAY',
         broker=configs.broker_url,
         include=CELERY_TASK_LIST,
     )
     celery.conf.beat_schedule = beat
     celery.conf.update(configs.to_dict())
     celery.conf.acksa_late = True
-    
+
     celery.conf.task_default_priority = 5
 
     exchange = Exchange('celery')

@@ -17,3 +17,7 @@ HTTP_NOT_FOUND = partial(HTTPException, message='Not Found', status_code=404)
 
 class InvalidLocale(Exception):
     pass
+
+
+class PaidUnverifiedPaymentError(Exception):
+    """Raise when a paid unverified payment found"""
