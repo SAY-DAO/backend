@@ -1,8 +1,5 @@
 from datetime import datetime
 
-from flask.cli import AppGroup
-from flask.cli import with_appcontext
-
 from say.config import configs
 from say.models import Payment
 from say.orm import create_engine
@@ -11,11 +8,7 @@ from say.orm import session
 from say.payment import IDPay
 
 
-payment_cli = AppGroup('payment')
-
-@payment_cli.command('check-verification')
-@with_appcontext
-def check_verification():
+def check_unverified_payments():
     # db
     engine = session.bind or create_engine(url=configs.postgres_url)
     init_model(engine)
@@ -37,9 +30,10 @@ def check_verification():
                 print('Payment ID: ', p.id)
                 print('Payment Gateway ID: ', p.gateway_payment_id)
                 print('Payment Order ID: ', p.order_id)
-                print('Bank Amount: ', p.bank_amount)
-                print('Need ID: ', p.need_id)
+                print('Need ID: ', p.id_need)
+                print('User ID: ', p.id_user)
                 print('Need Amount: ', p.need_amount)
+                print('Bank Amount: ', p.bank_amount)
                 print(
                     'Payment Verified AT:',
                     res['verify']['date'],
@@ -48,3 +42,7 @@ def check_verification():
 
         except Exception as ex:
             print(ex)
+
+
+if __name__ == '__main__':
+    check_unverified_payments()
