@@ -72,13 +72,13 @@ def create_celery_app(beat):
             queue_arguments={'x-max-priority': 10}
         ),
         Queue(
-            'slow', 
+            'slow',
             exchange,
             routing_key='slow',
             queue_arguments={'x-max-priority': 1}
         ),
     ]
-    
+
     TaskBase = celery.Task
 
     db = create_engine(configs.postgres_url, pool_pre_ping=True)
@@ -90,7 +90,7 @@ def create_celery_app(beat):
         twophase=False,
     )
     session = scoped_session(session_factory)
-    
+
     class DBTask(TaskBase):
         _session = None
 
@@ -100,7 +100,7 @@ def create_celery_app(beat):
         def after_return(self, *args, **kwargs):
             if self.session:
                 self.session.remove()
-                
+
             super().after_return(*args, **kwargs)
 
         @property

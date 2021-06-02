@@ -49,9 +49,7 @@ def generate_order_id(N=configs.PAYMENT_ORDER_ID_LENGTH):
     while True:
         order_id = ''.join(
             random.SystemRandom().choice(
-                string.ascii_uppercase
-                + string.ascii_lowercase
-                + string.digits
+                string.ascii_uppercase + string.ascii_lowercase + string.digits
             ) for _ in range(N)
         )
 
@@ -271,17 +269,7 @@ class VerifyPayment(Resource):
             return make_response(unsuccessful_response)
 
         try:
-            idpay.verify(
-                pending_payment.gateway_payment_id,
-                pending_payment.order_id,
-            )
-        except requests.exceptions.RequestException as ex:
-            if isinstance(ex, requests.exceptions.Timeout):
-                pass  # payment may be verified
-            return make_response(unsuccessful_response)
-
-        try:
-            response = idpay.inquiry(
+            response = idpay.verify(
                 pending_payment.gateway_payment_id,
                 pending_payment.order_id,
             )

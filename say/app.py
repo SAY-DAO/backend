@@ -12,6 +12,7 @@ from say.api.ext import jwt
 from say.api.ext import limiter
 from say.api.ext import mail
 from say.api.ext import setup_healthz
+from say.commands import setup_commands
 from say.config import configs
 from say.exceptions import HTTPException
 from say.orm import create_engine
@@ -50,6 +51,7 @@ api.init_app(app)
 limiter.init_app(app)
 setup_healthz(app)
 setup_sentry()
+setup_commands(app)
 
 
 @app.before_first_request
