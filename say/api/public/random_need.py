@@ -1,11 +1,18 @@
+from urllib.parse import urljoin
+
 from flask_restful import Resource
 from sqlalchemy import func
 
+from say.config import configs
 from say.decorators import json
+from say.exceptions import HTTP_NOT_FOUND
+from say.locale import LANGS
+from say.locale import ChangeLocaleTo
 from say.models import Child
 from say.models import Need
 from say.orm import session
 
+from ...orm import session
 from .. import api
 from .. import swag_from
 
@@ -16,15 +23,16 @@ class RandomNeed(Resource):
     @swag_from('../docs/public/random_need.yml')
     def get(self):
         need = session.query(
-            Need.id, 
-            Need.name, 
+            Need.id,
+            Need.name,
             Need.imageUrl,
-            Need.cost, 
-            Child.avatarUrl, 
+            Need.cost,
+            Child.avatarUrl,
             Child.sayName,
             Need.type,
             Need.link,
             Need.img,
+            Need.description,
         ).filter(
             Need.status.in_([0, 1]),
             Need.name.isnot(None),
@@ -32,7 +40,7 @@ class RandomNeed(Resource):
             Need.isDeleted.is_(False),
             Child.isConfirmed.is_(True),
         ).join(
-            Child, 
+            Child,
             Child.id == Need.child_id,
         ) \
             .order_by(func.random()) \
@@ -42,13 +50,14 @@ class RandomNeed(Resource):
         return dict(
             id=need[0],
             name=need[1],
-            imageUrl=need[2],
+            image=urljoin(configs.BASE_URL, need[2]),
             cost=need[3],
-            childAvatarUrl=need[4],
+            childAvatarUrl=urljoin(configs.BASE_URL, need[4]),
             childSayName=need[5],
             type=need[6],
             retailerLink=need[7],
             retailerImage=need[8],
+            description=need[9],
         )
 
 

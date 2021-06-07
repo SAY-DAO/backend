@@ -9,14 +9,14 @@ parameters:
     in: path
     required: true
     type: string
-  
+
   - name: _lang
     in: query
     description: fa,en
     required: false
     type: string
-    
-  
+
+
 responses:
   404:
     description: Not Found
@@ -37,6 +37,10 @@ responses:
         childAvatarUrl:
           type: string
         childSayName:
+          type: string
+        description:
+          type: string
+        image:
           type: string
         type:
           type: integer

@@ -28,7 +28,7 @@ class NakamaTx(base, Timestamp):
     __tablename__ = 'nakama_txs'
 
     id = Column(Unicode(120), nullable=False, primary_key=True)
-    
+
     sender_address = Column(Unicode(64), ForeignKey('nakama_owners.address'), nullable=True)
     need_id = Column(Integer, ForeignKey('need.id'), nullable=True)
 
@@ -37,9 +37,9 @@ class NakamaTx(base, Timestamp):
 
     need = relationship('Need', foreign_keys=need_id)
     nakama_owner = relationship(
-        'NakamaOwner', 
-        foreign_keys=sender_address, 
-        back_populates='nakama_txs', 
+        'NakamaOwner',
+        foreign_keys=sender_address,
+        back_populates='nakama_txs',
         uselist=False,
     )
 
@@ -55,18 +55,17 @@ class NakamaTx(base, Timestamp):
     def confirm(self):
         from ..payment_model import Payment
         from ..user_model import User
-        from ..payment_model import Payment
-        
+
         session = object_session(self)
 
         nakama_owner = session.query(NakamaOwner).get(self.sender_address)
         if not nakama_owner:
             self.nakama_owner = NakamaOwner(address=self.sender_address)
-        
+
         session.flush()
         if self.need.isDone:
             raise ValueError('Need Already Done')
-        
+
         self.need.done()
 
         nakama_user = session.query(User).filter(User.is_nakama == True).one()
@@ -84,9 +83,9 @@ class NakamaTx(base, Timestamp):
             gateway_track_id=self.id,
             card_no=self.sender_address,
             is_nakama=True,
-            transaction_date = now,
-            verified = now,
-            hashed_card_no = self.sender_address,
+            transaction_date=now,
+            verified=now,
+            hashed_card_no=self.sender_address,
         )
         session.add(payment)
 
@@ -103,11 +102,11 @@ class NakamaTx(base, Timestamp):
 
     def _decode_input(self, input):
         return bytes.fromhex(remove_0x_prefix(input)).decode(errors='ignore')
-    
+
     def _parse_need(self, input):
         input = self._decode_input(input)
         parsed_data = re.findall(r'needs/([0-9]+)', input)
-        
+
         if len(parsed_data) != 1:
             raise ValueError('Invalid input data, need id not found!')
 
