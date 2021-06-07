@@ -21,18 +21,19 @@ class SubmitTx(Resource):
 
         tx_hash = tx_hash.lower()
         tx = session.query(NakamaTx).get(tx_hash)
-    
+
         if tx:
             return dict(message='Tx Exists'), 400
-        
+
         tx = NakamaTx(id=tx_hash)
         session.add(tx)
         try:
             tx.update()
         except web3.exceptions.TransactionNotFound:
             print(f'Tx {tx_hash} not mined yet')
-            
+
         safe_commit(session)
         return tx
+
 
 api.add_resource(SubmitTx, '/api/v2/nakama/<string:tx_hash>')
