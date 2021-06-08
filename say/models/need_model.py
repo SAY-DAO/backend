@@ -141,16 +141,20 @@ class Need(base, Timestamp):
 
     @hybrid_property
     def unpayable(self):
-        return bool(self.unavailable_from \
-            and self.unavailable_from < datetime.utcnow() \
-                - timedelta(days=configs.PRODUCT_UNPAYABLE_PERIOD)
+        return bool(
+            self.unavailable_from and self.unavailable_from < datetime.utcnow() - timedelta(
+                days=configs.PRODUCT_UNPAYABLE_PERIOD,
+            )
         )
 
     @unpayable.expression
     def unpayable(cls):
-        return cls.unavailable_from \
-            and cls.unavailable_from < datetime.utcnow() \
-                - timedelta(days=configs.PRODUCT_UNPAYABLE_PERIOD)
+        return and_(
+            cls.unavailable_from.isnot(None),
+            cls.unavailable_from < datetime.utcnow() - timedelta(
+                days=configs.PRODUCT_UNPAYABLE_PERIOD
+            ),
+        )
 
     @hybrid_property
     def unpayable_from(self):

@@ -23,9 +23,10 @@ User Model
 
 
 class User(base, Timestamp):
-    __tablename__ = "user"
+    __tablename__ = 'user'
 
     id = Column(Integer, nullable=False, primary_key=True, unique=True)
+
     firstName = Column(String, nullable=False)
     lastName = Column(String, nullable=False)
     userName = Column(String, nullable=False, unique=True)
@@ -66,10 +67,7 @@ class User(base, Timestamp):
         return or_(cls.is_phonenumber_verified, cls.is_email_verified)
 
     spent = column_property(
-        select([coalesce(
-            func.sum(Payment.need_amount),
-            0,
-        )]).where(
+        select([coalesce(func.sum(Payment.need_amount), 0,)]).where(
             and_(
                 Payment.verified.isnot(None),
                 Payment.id_user == id,
@@ -78,10 +76,7 @@ class User(base, Timestamp):
     )
 
     credit = column_property(
-        select([coalesce(
-            func.sum(-Payment.credit_amount),
-            0,
-        )]).where(
+        select([coalesce(func.sum(-Payment.credit_amount), 0,)]).where(
             and_(
                 Payment.verified.isnot(None),
                 Payment.id_user == id,
@@ -90,23 +85,20 @@ class User(base, Timestamp):
     )
 
     done_needs_count = column_property(
-        select([coalesce(
-            func.count(Need.id),
-            0,
-        )])
-        .where(and_(
-            NeedFamily.id_user == id,
-            NeedFamily.id_need == Need.id,
-            Need.status >= 2,
-            Need.isDeleted.is_(False),
-        ))
+        select([coalesce(func.count(Need.id), 0,)]).where(
+            and_(
+                NeedFamily.id_user == id,
+                NeedFamily.id_need == Need.id,
+                Need.status >= 2,
+                Need.isDeleted.is_(False),
+            )
+        )
     )
 
     payments = relationship(
         'Payment',
         back_populates='user',
-        primaryjoin=
-            'and_(User.id==Payment.id_user, Payment.verified.isnot(None))',
+        primaryjoin='and_(User.id==Payment.id_user, Payment.verified.isnot(None))',
     )
     user_families = relationship(
         'UserFamily',
@@ -127,7 +119,13 @@ class User(base, Timestamp):
         back_populates='invitee',
     )
 
-    def _hash_password(cls, password):
+    cart = relationship(
+        'Cart',
+        uselist=False,
+        back_populates='user',
+    )
+
+    def _hash_password(self, password):
         password = str(password)
         salt = sha256()
         salt.update(os.urandom(60))
@@ -155,7 +153,7 @@ class User(base, Timestamp):
     password = synonym(
         '_password',
         descriptor=property(_get_password, _set_password),
-        info=dict(protected=True)
+        info=dict(protected=True),
     )
 
     def validate_password(self, password):
@@ -165,6 +163,7 @@ class User(base, Timestamp):
 
     def charge(self, amount):
         from . import Payment
+
         session = object_session(self)
 
         payment = Payment(
@@ -175,8 +174,14 @@ class User(base, Timestamp):
         self.payments.append(payment)
         session.add(payment)
 
+    def create_cart(self):
+        from say.models import Cart
+
+        self.cart = Cart(user=self)
+
     def send_installion_notif(self, notif_url):
-        from say.tasks import send_embeded_subject_email, send_sms
+        from say.tasks import send_embeded_subject_email
+        from say.tasks import send_sms
 
         with ChangeLocaleTo(self.locale):
             if self.is_phonenumber_verified:
@@ -192,7 +197,7 @@ class User(base, Timestamp):
                         'installion.html',
                         locale=self.locale,
                         link=notif_url,
-                    )
-                 )
+                    ),
+                )
             else:
                 raise Exception('User has not a verified contact, BUG!')

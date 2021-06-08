@@ -184,6 +184,7 @@ class RegisterUser(Resource):
             is_nakama=False,
         )
         session.add(new_user)
+        new_user.create_cart()
 
         if isinstance(verification, EmailVerification):
             new_user.is_email_verified = True

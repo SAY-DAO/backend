@@ -11,6 +11,7 @@ class UserSchema(BaseModel):
     lastName: str
     avatarUrl: Optional[str] = None
 
+
 class ChildSchema(BaseModel):
     id: int
     avatarUrl: str

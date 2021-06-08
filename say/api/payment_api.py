@@ -37,8 +37,8 @@ def validate_amount(need, amount):
     need_unpaid = need.cost - need.paid
     if int(amount) > need_unpaid:
         raise ValueError(f'Amount can not be greater that {need_unpaid}')
-    if int(amount) < idpay.MIN_AMOUNT:
-        raise ValueError('Amount can not be smaller than 100')
+    if int(amount) < configs.MIN_BANK_AMOUNT:
+        raise ValueError(f'Amount can not be smaller than {configs.MIN_BANK_AMOUNT}')
     return amount
 
 
@@ -215,8 +215,8 @@ class AddPayment(Resource):
             return {'response': success_payment}, 299
 
         # Save some credit for the user
-        if payment.bank_amount < idpay.MIN_AMOUNT:
-            payment.credit_amount -= idpay.MIN_AMOUNT - payment.bank_amount
+        if payment.bank_amount < configs.MIN_BANK_AMOUNT:
+            payment.credit_amount -= configs.MIN_BANK_AMOUNT - payment.bank_amount
 
         api_data = {
             'order_id': payment.order_id,

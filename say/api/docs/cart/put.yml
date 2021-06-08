@@ -1,0 +1,42 @@
+Add/Update a Need to/from Cart
+---
+
+tags:
+  - Cart API
+
+parameters:
+
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - in: formData
+    name: needId
+    type: integer
+    required: true
+
+  - in: formData
+    name: amount
+    type: integer
+    required: false
+    description: full need amount if null
+
+  - in: formData
+    name: donation
+    type: integer
+    required: false
+    default: 0
+
+responses:
+  200:
+    description: OK
+    schema:
+      id: cart
+  400:
+    description: Bad request
+  401:
+    description: Bad auth token
+  600:
+    description: Bad amount, Amount should be equal to {max_need_amount} or less than {max_need_amount - min_bank_threshold}

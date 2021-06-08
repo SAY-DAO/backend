@@ -1,0 +1,47 @@
+Get Cart
+---
+
+tags:
+  - Cart API
+
+parameters:
+
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+responses:
+  200:
+    description: OK
+    schema:
+      id: cart
+      properties:
+        id:
+          type: integer
+        created:
+          type: string
+          format: date-time
+        updated:
+          type: string
+          format: date-time
+        totalAmount:
+          type: integer
+        totalDonation:
+          type: string
+        needs:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              amount:
+                type: integer
+              donation:
+                type: integer
+  401:
+    description: Bad auth token

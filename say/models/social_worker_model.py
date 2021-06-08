@@ -63,13 +63,14 @@ class SocialWorker(base, Timestamp):
     children = relationship("Child", back_populates='social_worker')
 
     def send_report(self):
+        from say.app import app
+        from say.orm import safe_commit
         from say.tasks import send_embeded_subject_email
-        from .need_model import Need
+
         from .child_model import Child
         from .child_need_model import ChildNeed
+        from .need_model import Need
         from .ngo_model import Ngo
-        from say.orm import safe_commit
-        from say.app import app
 
         session = object_session(self)
         needs = None

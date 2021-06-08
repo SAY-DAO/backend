@@ -11,9 +11,9 @@ class Family(base, Timestamp):
 
     id = Column(Integer, nullable=False, primary_key=True)
     id_child = Column(
-        Integer, 
-        ForeignKey('child.id'), 
-        nullable=False, 
+        Integer,
+        ForeignKey('child.id'),
+        nullable=False,
         unique=True,
     )
     isDeleted = Column(Boolean, nullable=False, default=False)
