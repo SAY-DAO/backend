@@ -8,7 +8,6 @@ from flasgger import swag_from
 from flask import make_response
 from flask import request
 from flask_restful import Resource
-from werkzeug.exceptions import abort
 
 from say.locale import DEFAULT_LOCALE
 from say.models import commit
@@ -26,7 +25,9 @@ from ..config import configs
 from ..decorators import json
 from ..exceptions import HTTP_NOT_FOUND
 from ..orm import session
-from ..roles import *
+from ..roles import ADMIN
+from ..roles import SAY_SUPERVISOR
+from ..roles import SUPER_ADMIN
 from .ext import api
 from .ext import idpay
 
@@ -99,7 +100,7 @@ class GetAllPayment(Resource):
 
         result = dict(
             totalCount=total_count,
-            payments=[],
+            payments=list(),
         )
         for payment in payments:
             result['payments'].append(obj_to_dict(payment))

@@ -68,7 +68,7 @@ class Payment(base, Timestamp):
 
         from .need_family_model import NeedFamily
         session = object_session(self)
-        
+
         if self.need_amount + self.need.paid == self.need.cost:
             self.need.done()
         else:
