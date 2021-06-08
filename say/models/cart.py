@@ -82,8 +82,11 @@ class Cart(base, Timestamp):
         uselist=False,
         back_populates='cart',
     )
-    items = relationship(
+    needs = relationship(
         'CartNeed',
         primaryjoin='and_(Cart.id==CartNeed.cart_id, CartNeed.deleted.is_(None))',
         back_populates='cart',
     )
+
+    def delete_need(self, item):
+        pass

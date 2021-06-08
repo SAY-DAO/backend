@@ -13,6 +13,10 @@ class CartNeedInputSchema(CamelModel):
     donation: conint(ge=0) = 0
 
 
+class CartNeedDeleteSchema(CamelModel):
+    need_id: int
+
+
 class CartNeedSchema(CartNeedInputSchema):
     id: int
     name: str
@@ -30,7 +34,7 @@ class CartSchema(CamelModel):
     need_amount: int
     donation_amount: int
     total_amount: int
-    items: List[CartNeedSchema] = []
+    needs: List[CartNeedSchema] = []
 
     class Config:
         orm_mode = True
