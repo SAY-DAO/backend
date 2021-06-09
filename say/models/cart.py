@@ -1,4 +1,3 @@
-from flask.globals import session
 from sqlalchemy import Column
 from sqlalchemy import DateTime
 from sqlalchemy import ForeignKey
@@ -12,6 +11,8 @@ from sqlalchemy.sql.expression import select
 from sqlalchemy.sql.functions import coalesce
 from sqlalchemy.sql.functions import func
 from sqlalchemy_utils import Timestamp
+
+from say.models.need_model import Need
 
 from ..orm import base
 
@@ -32,9 +33,11 @@ class CartNeed(base, Timestamp):
     title = association_proxy('need', 'title')
     cost = association_proxy('need', 'cost')
     paid = association_proxy('need', 'paid')
-    amount = Column(Integer, nullable=False)
-    donation = Column(Integer, default=0)
     deleted = Column(DateTime, nullable=True)
+
+    amount = column_property(
+        select([Need.cost - Need.paid]).where(Need.id == need_id)
+    )
 
     cart = relationship(
         'Cart',
@@ -55,7 +58,7 @@ class Cart(base, Timestamp):
 
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False, unique=True)
 
-    need_amount = column_property(
+    total_amount = column_property(
         select([coalesce(func.sum(CartNeed.amount), 0,)]).where(
             and_(
                 CartNeed.cart_id == id,
@@ -63,18 +66,6 @@ class Cart(base, Timestamp):
             )
         )
     )
-    donation_amount = column_property(
-        select([coalesce(func.sum(CartNeed.donation), 0,)]).where(
-            and_(
-                CartNeed.cart_id == id,
-                CartNeed.deleted.is_(None),
-            )
-        )
-    )
-
-    @hybrid_property
-    def total_amount(self):
-        return self.need_amount + self.donation_amount
 
     user = relationship(
         'User',

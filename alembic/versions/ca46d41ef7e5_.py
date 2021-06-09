@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 00abbfdfa8cf
+Revision ID: ca46d41ef7e5
 Revises: fe214bd981c5
-Create Date: 2021-06-08 18:41:55.310582
+Create Date: 2021-06-09 16:08:32.954660
 
 """
 import sqlalchemy as sa
@@ -11,13 +11,13 @@ from alembic import op
 
 
 # revision identifiers, used by Alembic.
-revision = '00abbfdfa8cf'
+revision = 'ca46d41ef7e5'
 down_revision = 'fe214bd981c5'
 branch_labels = None
 depends_on = None
 
 
-def create_cart():
+def create_cart_for_users():
     from say.models import Cart
     from say.models import User
     from say.orm import init_model
@@ -52,8 +52,6 @@ def upgrade():
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('cart_id', sa.Integer(), nullable=False),
         sa.Column('need_id', sa.Integer(), nullable=False),
-        sa.Column('amount', sa.Integer(), nullable=False),
-        sa.Column('donation', sa.Integer(), nullable=True),
         sa.Column('deleted', sa.DateTime(), nullable=True),
         sa.ForeignKeyConstraint(
             ['cart_id'], ['cart.id'], name=op.f('cart_needs_cart_id_cart_fkey')
@@ -69,7 +67,7 @@ def upgrade():
     op.create_index(
         op.f('cart_needs_need_id_idx'), 'cart_needs', ['need_id'], unique=False
     )
-    create_cart()
+    create_cart_for_users()
     # ### end Alembic commands ###
 
 

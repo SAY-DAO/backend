@@ -41,7 +41,5 @@ responses:
                 type: string
               amount:
                 type: integer
-              donation:
-                type: integer
   401:
     description: Bad auth token

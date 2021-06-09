@@ -1,4 +1,4 @@
-Add/Update a Need to/from Cart
+Add a Need to Cart
 ---
 
 tags:
@@ -17,18 +17,6 @@ parameters:
     type: integer
     required: true
 
-  - in: formData
-    name: amount
-    type: integer
-    required: false
-    description: full need amount if null
-
-  - in: formData
-    name: donation
-    type: integer
-    required: false
-    default: 0
-
 responses:
   200:
     description: OK
@@ -39,4 +27,4 @@ responses:
   401:
     description: Bad auth token
   600:
-    description: Bad amount, Amount should be equal to {max_need_amount} or less than {max_need_amount - min_bank_threshold}
+    description: Need already is in the cart'

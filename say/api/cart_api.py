@@ -1,7 +1,6 @@
 from datetime import date
 from datetime import datetime
 
-from dotenv.main import dotenv_values
 from flasgger import swag_from
 from flask import request
 from flask_restful import Resource
@@ -20,10 +19,8 @@ from say.models import Family
 from say.models import Need
 from say.models import UserFamily
 from say.models import commit
-from say.orm import obj_to_dict
 from say.orm import session
 from say.roles import USER
-from say.schema.cart import CartNeedDeleteSchema
 from say.schema.cart import CartNeedInputSchema
 from say.schema.cart import CartSchema
 
@@ -42,7 +39,7 @@ class CartNeedsAPI(Resource):
     @authorize(USER)
     @json
     @commit
-    @swag_from('./docs/cart/put.yml')
+    @swag_from('./docs/cart/add.yml')
     def post(self):
         try:
             data = CartNeedInputSchema(**request.form.to_dict())
@@ -67,30 +64,17 @@ class CartNeedsAPI(Resource):
             raise HTTPException(400, f'Can not add need {data.need_id} to cart')
 
         cart = session.query(Cart).filter(Cart.user_id == user_id).one()
-
         cart_need = session.query(CartNeed).filter(
             CartNeed.cart_id == cart.id,
             CartNeed.need_id == need.id,
             CartNeed.deleted.is_(None),
         ).scalar()
 
-        if cart_need is None:
-            cart_need = CartNeed(need=need, cart=cart)
-            session.add(cart_need)
+        if cart_need is not None:
+            raise HTTPException(600, 'Need already is in the cart')
 
-        max_need_amount = need.cost - need.paid
-        if data.amount is None or data.amount > max_need_amount:
-            data.amount = max_need_amount
-
-        remaining_amount = max_need_amount - data.amount
-        if remaining_amount != 0 and remaining_amount < configs.MIN_BANK_AMOUNT:
-            raise HTTPException(
-                600,
-                f'Amount should be equal to {max_need_amount} or less than {remaining_amount}',
-            )
-
-        cart_need.amount = data.amount
-        cart_need.donation = data.donation
+        cart_need = CartNeed(need=need, cart=cart)
+        session.add(cart_need)
         session.flush()
         session.expire(cart)
         return CartSchema.from_orm(cart)
@@ -101,7 +85,7 @@ class CartNeedsAPI(Resource):
     @swag_from('./docs/cart/delete.yml')
     def delete(self):
         try:
-            data = CartNeedDeleteSchema(**request.form.to_dict())
+            data = CartNeedInputSchema(**request.form.to_dict())
         except ValueError as e:
             return e.json(), 400
 
