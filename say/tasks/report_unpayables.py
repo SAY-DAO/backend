@@ -10,10 +10,11 @@ from .send_email import send_embeded_subject_email
 
 @celery.task(base=celery.DBTask, bind=True)
 def report_unpayables(self):
-    from say.models import Need, Ngo
+    from say.models import Need
+    from say.models import Ngo
 
     unpayables = self.session.query(Need).filter(
-        Need.unavailable_from.isnot(None), # < datetime.utcnow(),
+        Need.unavailable_from.isnot(None),  # < datetime.utcnow(),
         Need.unpayable_from < datetime.utcnow(),
         Need.unpayable_from > datetime.utcnow() - timedelta(days=1),
         Need.isDeleted.is_(False),

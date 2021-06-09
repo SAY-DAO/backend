@@ -261,8 +261,8 @@ class UpdateNeedById(Resource):
             new_cost = int(request.form['cost'].replace(',', ''))
 
             if (
-                ((sw_role in [SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR] and need.isConfirmed) or need.isDone) 
-                and 
+                ((sw_role in [SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR] and need.isConfirmed) or need.isDone)
+                and
                 new_cost != need._cost
             ):
                 return {'message': 'Can not change cost when need is done'}, 400
@@ -340,7 +340,7 @@ class UpdateNeedById(Resource):
             need.expected_delivery_date = parse_datetime(
                 request.form['expected_delivery_date']
             )
-        
+
         prev_status = need.status
 
         if 'status' in request.form.keys():
@@ -371,10 +371,10 @@ class UpdateNeedById(Resource):
 
         if need.type == 0 and need.status == 3:
             bank_track_id = request.form.get('bank_track_id')
-            
+
             if not bank_track_id and prev_status == 2:
                 raise ValueError(f'bank_track_id is required')
-            
+
             if bank_track_id:
                 need.bank_track_id = bank_track_id
 
@@ -393,7 +393,7 @@ class DeleteNeedById(Resource):
         need = session.query(Need) \
             .filter_by(isDeleted=False) \
             .filter_by(id=need_id)
-        
+
         need = filter_by_privilege(need).with_for_update().one_or_none()
         if not need:
             return {'message': 'need not found'}, 404
@@ -411,6 +411,7 @@ class DeleteNeedById(Resource):
                 participant.isDeleted = True
 
             need.isDeleted = True
+            need.delete_from_carts()
             return {'message': 'need deleted'}
         else:
             return {'message': 'need has arrived to the child so can not be deleted'}, 422
@@ -665,7 +666,7 @@ class NeedReceipts(Resource):
             res.append(ReceiptSchema.from_orm(r))
 
         return res
-        
+
 
     @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
                SAY_SUPERVISOR, ADMIN)
@@ -690,7 +691,7 @@ class NeedReceipts(Resource):
 
         if need is None:
             return HTTP_NOT_FOUND()
-        
+
         receipt = session.query(Receipt).filter(
             Receipt.code == data.code,
             Receipt.deleted == None,
@@ -734,8 +735,8 @@ class NeedReceiptAPI(Resource):
         need_receipt.deleted = datetime.utcnow()
         safe_commit(session)
         return ReceiptSchema.from_orm(need_receipt.receipt)
-        
-        
+
+
 
 """
 API URLs

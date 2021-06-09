@@ -3,7 +3,6 @@ from sqlalchemy import DateTime
 from sqlalchemy import ForeignKey
 from sqlalchemy import Integer
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import column_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.elements import and_
@@ -17,11 +16,11 @@ from say.models.need_model import Need
 from ..orm import base
 
 
-# if need unpayable or done, delete, unconfirmed from cart
-# if cost of need changed, change cart item
-
-
 class CartNeed(base, Timestamp):
+    """ Cart Needs Table
+    Need will be deleted from cart when get done/delete/unconfirm
+    #TODO: if need become unpayable, what happen?
+    """
     __tablename__ = 'cart_needs'
 
     id = Column(Integer, primary_key=True)
@@ -48,6 +47,7 @@ class CartNeed(base, Timestamp):
         'Need',
         foreign_keys=need_id,
         uselist=False,
+        back_populates='carts',
     )
 
 
