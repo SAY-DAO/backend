@@ -37,9 +37,23 @@ responses:
             properties:
               id:
                 type: integer
+              needId:
+                type: integer
               name:
                 type: string
               amount:
                 type: integer
+              title:
+                type: string
+              cost:
+                type: integer
+              paid:
+                type: integer
+              created:
+                type: string
+                format: date-time
+              deleted:
+                type: string
+                format: date-time
   401:
     description: Bad auth token

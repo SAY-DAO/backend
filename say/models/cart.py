@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import Column
 from sqlalchemy import DateTime
 from sqlalchemy import ForeignKey
@@ -19,7 +21,7 @@ from ..orm import base
 class CartNeed(base, Timestamp):
     """ Cart Needs Table
     Need will be deleted from cart when get done/delete/unconfirm
-    #TODO: if need become unpayable, what happen?
+    #TODO: what happen if a need become unpayable?
     """
     __tablename__ = 'cart_needs'
 
@@ -28,6 +30,7 @@ class CartNeed(base, Timestamp):
     cart_id = Column(Integer, ForeignKey('cart.id'), index=True, nullable=False)
     need_id = Column(Integer, ForeignKey('need.id'), index=True, nullable=False)
 
+    created = Column(DateTime, default=datetime.utcnow, nullable=False)
     name = association_proxy('need', 'name')
     title = association_proxy('need', 'title')
     cost = association_proxy('need', 'cost')
