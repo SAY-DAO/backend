@@ -35,7 +35,7 @@ class CartAPI(Resource):
     def get(self):
         user_id = get_user_id()
         cart = session.query(Cart).filter(Cart.user_id == user_id).one()
-        return cart.needs
+        return CartSchema.from_orm(cart)
 
 
 class CartNeedsAPI(Resource):
