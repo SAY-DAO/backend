@@ -13,6 +13,7 @@ class CartNeedSchema(CartNeedInputSchema):
     title: str
     cost: int
     paid: int
+    amount: int
 
     class Config:
         orm_mode = True
