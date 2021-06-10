@@ -23,17 +23,16 @@ class Payment(base, Timestamp):
     id_need = Column(Integer, ForeignKey('need.id'), nullable=True, index=True)
     id_user = Column(Integer, ForeignKey('user.id'), nullable=False, index=True)
 
-    gateway_payment_id = Column(String, nullable=True)
-    gateway_track_id = Column(String, nullable=True)
+    gateway_payment_id = Column(String, nullable=True, index=True)
+    gateway_track_id = Column(String, nullable=True, index=True)
     link = Column(String, nullable=True)
 
-    order_id = Column(String, nullable=True, unique=True)
+    order_id = Column(String, nullable=True, unique=False, index=True)
     desc = Column(String, nullable=True)
     card_no = Column(String, nullable=True)
     hashed_card_no = Column(String, nullable=True)
     transaction_date = Column(DateTime, nullable=True)
     verified = Column(DateTime, nullable=True, index=True)
-    use_credit = Column(Boolean, default=False, nullable=False)
     is_nakama = Column(Boolean, default=False, nullable=False)
 
     need_amount = Column(Integer, default=0)

@@ -197,7 +197,6 @@ class AddPayment(Resource):
             donation_amount=donation,
             credit_amount=credit,
             desc=desc,
-            use_credit=use_credit,
             order_id=generate_order_id(),
         )
         session.add(payment)

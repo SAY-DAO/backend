@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import List
 
+from pydantic.types import conint
+
 from .base import CamelModel
 
 
@@ -32,3 +34,8 @@ class CartSchema(CamelModel):
 
     class Config:
         orm_mode = True
+
+
+class CartNeedPaymentSchema(CamelModel):
+    donation: conint(ge=0) = 0
+    use_credit: bool = True

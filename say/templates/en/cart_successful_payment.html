@@ -1,0 +1,172 @@
+<html>
+  <head>
+    <title>Payment successful</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf8" />
+
+    <!-- Font -->
+    <link
+      rel="stylesheet"
+      href="/public/resources/font/roboto/css/roboto.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:100,400&display=swap"
+      rel="stylesheet"
+      type="text/css"
+    />
+
+    <style type="text/css">
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: roboto, "Roboto";
+        padding-bottom: 50px;
+        text-align: center;
+        color: #666;
+      }
+
+      #header {
+        background-color: #f1f1f1;
+        height: 250px;
+        width: 100%;
+        padding: 50px 0;
+        margin-bottom: 30px;
+      }
+
+      #logoWrapper {
+        margin-bottom: 30px;
+      }
+
+      #logoWrapper img {
+        max-width: 182px;
+        width: 40%;
+        height: auto;
+      }
+
+      #header p {
+        font-weight: 500;
+        font-size: 16px;
+      }
+
+      #header p:last-child {
+        color: #f05a31;
+        font-size: 12px;
+        line-height: 25px;
+      }
+
+      #content h6 {
+        color: #1aae0e;
+        font-size: 16px;
+        font-weight: 500;
+      }
+
+      #content hr {
+        background-color: #cdcdcd;
+        width: 90%;
+      }
+
+      .rowContent {
+        width: 100%;
+        margin-top: 15px;
+        margin-bottom: 15px;
+      }
+
+      .rowContent span {
+        width: 44%;
+        display: inline-block;
+      }
+
+      .rowContent span:first-child {
+        text-align: left;
+        font-size: 12px;
+      }
+
+      .rowContent span:last-child {
+        text-align: right;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      #backSAY {
+        text-decoration: none;
+        color: #fff;
+        width: 230px;
+        margin: 0 auto;
+        display: block;
+        margin-top: 65px;
+        background: linear-gradient(90deg, #f59e39 0%, #f05a31 100%);
+        border-radius: 48px;
+        height: 40px;
+        padding-top: 7px;
+        line-height: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="header">
+      <div id="logoWrapper">
+        <img src="https://sayapp.company/public/resources/img/logo.png" />
+      </div>
+      <p>What you hear is real</p>
+      <p>Building a platform to share wealth and love, literally</p>
+    </div>
+
+    <div id="content">
+      <h6>Payment successful</h6>
+      <hr />
+
+      <div class="rowContent">
+        <span>Total amount</span>
+        <span>{{int_formatter(total_amount)}} Tomans</span>
+      </div>
+
+      <div class="rowContent">
+        <span>Total need amount</span>
+        <span>{{int_formatter(cart.total_amount)}} Tomans</span>
+      </div>
+
+      <div class="rowContent">
+        <span>Donation</span>
+        <span>{{int_formatter(donation_amount)}} Tomans</span>
+      </div>
+
+      <hr />
+
+      {% if credit_amount %}
+      <div class="rowContent">
+        <span>Paid from wallet</span>
+        <span>{{int_formatter(credit_amount)}} Tomans</span>
+      </div>
+      {% endif %} {% if bank_amount %}
+      <div class="rowContent">
+        <span>Paid from debit card</span>
+        <span>{{int_formatter(bank_amount)}} Tomans</span>
+      </div>
+      {% endif %}
+
+      <hr />
+
+      <div class="rowContent">
+        <span>SAY tracking number</span>
+        <span>{{order_id}}</span>
+      </div>
+
+      {% if bank_amount %}
+      <div class="rowContent">
+        <span>Bank tracking number</span>
+        <span>{{gateway_track_id}}</span>
+      </div>
+      {% endif %} {% if bank_amount %}
+      <hr />
+
+      <div class="rowContent">
+        <span>Card number</span>
+        <span>{{card_no}}</span>
+      </div>
+      {% endif %}
+
+      <a id="backSAY" href="javascript:close();"> Back to SAY </a>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,34 @@
+Pay for Cart
+---
+
+tags:
+  - Cart API
+
+parameters:
+
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - in: formData
+    name: donation
+    type: integer
+    required: false
+    default: 0
+
+  - in: formData
+    name: useCredit
+    type: bool
+    required: false
+    default: true
+
+responses:
+  200:
+    description: OK
+    schema:
+      id: cart
+
+  401:
+    description: Bad auth token

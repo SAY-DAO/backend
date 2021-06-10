@@ -168,7 +168,6 @@ class User(base, Timestamp):
 
         payment = Payment(
             credit_amount=-amount,
-            use_credit=True,
         )
         payment.verify()
         self.payments.append(payment)
