@@ -118,30 +118,31 @@
 
       <div class="rowContent">
         <span>Total amount</span>
-        <span>{{int_formatter(total_amount)}} Tomans</span>
+        <span>{{int_formatter(cart_payment.total_amount)}} Tomans</span>
       </div>
 
       <div class="rowContent">
         <span>Total need amount</span>
-        <span>{{int_formatter(cart.total_amount)}} Tomans</span>
+        <span>{{int_formatter(cart_payment.needs_amount)}} Tomans</span>
       </div>
 
       <div class="rowContent">
         <span>Donation</span>
-        <span>{{int_formatter(donation_amount)}} Tomans</span>
+        <span>{{int_formatter(cart_payment.donation_amount)}} Tomans</span>
       </div>
 
       <hr />
 
-      {% if credit_amount %}
+      {% if cart_payment.credit_amount %}
       <div class="rowContent">
         <span>Paid from wallet</span>
-        <span>{{int_formatter(credit_amount)}} Tomans</span>
+        <span>{{int_formatter(cart_payment.credit_amount)}} Tomans</span>
       </div>
-      {% endif %} {% if bank_amount %}
+      {% endif %}
+      {% if cart_payment.bank_amount %}
       <div class="rowContent">
         <span>Paid from debit card</span>
-        <span>{{int_formatter(bank_amount)}} Tomans</span>
+        <span>{{int_formatter(cart_payment.bank_amount)}} Tomans</span>
       </div>
       {% endif %}
 
@@ -149,20 +150,20 @@
 
       <div class="rowContent">
         <span>SAY tracking number</span>
-        <span>{{order_id}}</span>
+        <span>{{cart_payment.order_id}}</span>
       </div>
 
-      {% if bank_amount %}
+      {% if cart_payment.bank_amount %}
       <div class="rowContent">
         <span>Bank tracking number</span>
-        <span>{{gateway_track_id}}</span>
+        <span>{{cart_payment.gateway_track_id}}</span>
       </div>
-      {% endif %} {% if bank_amount %}
+      {% endif %}
+      {% if cart_payment.bank_amount %}
       <hr />
-
       <div class="rowContent">
         <span>Card number</span>
-        <span>{{card_no}}</span>
+        <span>{{cart_payment.hashed_card_no}}</span>
       </div>
       {% endif %}
 

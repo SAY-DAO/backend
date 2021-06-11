@@ -1,0 +1,80 @@
+Pay for Cart
+---
+
+tags:
+  - Cart API
+
+parameters:
+
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - in: formData
+    name: donation
+    type: integer
+    required: false
+    default: 0
+
+  - in: formData
+    name: useCredit
+    type: bool
+    required: false
+    default: true
+
+responses:
+  200:
+    description: Payment created
+    schema:
+      id: cart_payment
+      properties:
+        id:
+          type: integer
+        cartId:
+          type: integer
+        orderId:
+          type: string
+        created:
+          type: string
+          format: date-time
+        updated:
+          type: string
+          format: date-time
+        verified:
+          type: string
+          format: date-time
+        bankAmount:
+          type: integer
+        creditAmount:
+          type: integer
+        donationAmount:
+          type: integer
+        needsAmount:
+          type: integer
+        totalAmount:
+          type: integer
+        gatewayPaymentId:
+          type: string
+        gatewayTrackId:
+          type: string
+        link:
+          type: string
+        hashedCardNo:
+          type: string
+
+  299:
+    description: Successful payment (using credit), return raw HTML
+    schema:
+      id: cart_payment_successful
+      properties:
+        response:
+          type: string
+          format: HTML
+
+  401:
+    description: Bad auth token
+
+  600:
+    description: Cart empty

@@ -126,30 +126,30 @@
       <hr />
 
       <div class="rowContent">
-        <span> {{int_formatter(total_amount)}} تومان </span>
+        <span> {{int_formatter(cart_payment.total_amount)}} تومان </span>
         <span> مجموع پرداخت </span>
       </div>
 
       <div class="rowContent">
-        <span> {{int_formatter(cart.total_amount)}} تومان </span>
+        <span> {{int_formatter(cart_payment.needs_amount)}} تومان </span>
         <span> مجموع مبلغ نیازها </span>
       </div>
 
       <div class="rowContent">
-        <span> {{int_formatter(donation_amount)}} تومان </span>
+        <span> {{int_formatter(cart_payment.donation_amount)}} تومان </span>
         <span> هم‌راهی با SAY </span>
       </div>
 
       <hr />
 
-      {% if credit_amount %}
+      {% if cart_payment.credit_amount %}
       <div class="rowContent">
-        <span> {{int_formatter(credit_amount)}} تومان </span>
+        <span> {{int_formatter(cart_payment.credit_amount)}} تومان </span>
         <span> پرداخت از کیف پول </span>
       </div>
-      {% endif %} {% if bank_amount %}
+      {% endif %} {% if cart_payment.bank_amount %}
       <div class="rowContent">
-        <span> {{int_formatter(bank_amount)}} تومان </span>
+        <span> {{int_formatter(cart_payment.bank_amount)}} تومان </span>
         <span> پرداخت از کارت بانکی </span>
       </div>
       {% endif %}
@@ -157,20 +157,19 @@
       <hr />
 
       <div class="rowContent">
-        <span class="ltr"> {{payment.order_id}} </span>
+        <span class="ltr"> {{cart_payment.order_id}} </span>
         <span> کد رهگیری SAY </span>
       </div>
 
-      {% if bank_amount %}
+      {% if cart_payment.bank_amount %}
       <div class="rowContent">
-        <span class="ltr"> {{gateway_track_id}} </span>
+        <span class="ltr"> {{cart_payment.gateway_track_id}} </span>
         <span> کد رهگیری بانک </span>
       </div>
-      {% endif %} {% if bank_amount %}
+      {% endif %} {% if cart_payment.bank_amount %}
       <hr />
-
       <div class="rowContent">
-        <span class="ltr"> {{card_no}} </span>
+        <span class="ltr"> {{cart_payment.hashed_card_no}} </span>
         <span> شماره کارت </span>
       </div>
       {% endif %}

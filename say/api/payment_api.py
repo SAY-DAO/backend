@@ -249,6 +249,7 @@ class VerifyPayment(Resource):
         pending_payment = session.query(Payment).filter(
             Payment.gateway_payment_id == payment_id,
             Payment.order_id == order_id,
+            Payment.cart_payment_id.is_(None),
             Payment.verified.is_(None),
         ) \
             .with_for_update() \

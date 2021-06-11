@@ -36,6 +36,24 @@ class CartSchema(CamelModel):
         orm_mode = True
 
 
-class CartNeedPaymentSchema(CamelModel):
+class CartPaymentInSchema(CamelModel):
     donation: conint(ge=0) = 0
     use_credit: bool = True
+
+
+class CartPaymentSchema(CamelModel):
+    id: int
+    cart_id: int
+    order_id: str
+    bank_amount: int
+    credit_amount: int
+    donation_amount: int
+    needs_amount: int
+    total_amount: int
+    gateway_payment_id: str = None
+    gateway_track_id: str = None
+    link: str = None
+    verified: datetime = None
+
+    class Config:
+        orm_mode = True

@@ -1,5 +1,6 @@
 from datetime import date
 from datetime import datetime
+from typing import cast
 from urllib.parse import urljoin
 
 from flasgger import swag_from
@@ -22,11 +23,13 @@ from say.models import Need
 from say.models import Payment
 from say.models import UserFamily
 from say.models import commit
+from say.models.cart import CartPayment
 from say.orm import session
 from say.render_template_i18n import render_template_i18n
 from say.roles import USER
 from say.schema.cart import CartNeedInputSchema
-from say.schema.cart import CartNeedPaymentSchema
+from say.schema.cart import CartPaymentInSchema
+from say.schema.cart import CartPaymentSchema
 from say.schema.cart import CartSchema
 
 from .ext import idpay
@@ -65,6 +68,7 @@ class CartNeedsAPI(Resource):
                 Need.unpayable.is_(False),
                 Need.isDone.is_(False),
                 UserFamily.id_user == user_id,
+                UserFamily.isDeleted.is_(False),
             ).one_or_none()
 
         if need is None:
@@ -117,10 +121,10 @@ class CartPaymentAPI(Resource):
     @authorize(USER)
     @json
     @commit
-    @swag_from('./docs/cart/pay.yml')
+    @swag_from('./docs/cart/payment.yml')
     def post(self):
         try:
-            data = CartNeedPaymentSchema(**request.form.to_dict())
+            data = CartPaymentInSchema(**request.form.to_dict())
         except ValueError as e:
             return e.json(), 400
 
@@ -129,12 +133,9 @@ class CartPaymentAPI(Resource):
             Cart.user_id == user_id
         ).with_for_update().one()
 
-        cart_needs = session.query(CartNeed).filter(
-            CartNeed.cart_id == cart.id,
-            CartNeed.deleted.is_(None),
-        ).with_for_update()
-
         order_id = generate_order_id()
+        if len(cart.needs) == 0:
+            return HTTPException(600, 'Cart empty')
 
         total_amount = cart.total_amount + data.donation
         bank_amount = total_amount
@@ -144,15 +145,25 @@ class CartPaymentAPI(Resource):
             credit_amount = min(cart.user.credit, bank_amount)
             bank_amount -= credit_amount
 
-            # Save some credit for the user
-            if bank_amount < configs.MIN_BANK_AMOUNT:
+            # Save some credit for the user to meet IPG minimum
+            if bank_amount != 0 and bank_amount < configs.MIN_BANK_AMOUNT:
                 extra_amount_needed = configs.MIN_BANK_AMOUNT - bank_amount
                 credit_amount -= extra_amount_needed
                 bank_amount += extra_amount_needed
 
-        payments = []
-        for cart_need in cart_needs:
-            payments.append(Payment(
+        cart_payment = CartPayment(
+            cart=cart,
+            order_id=order_id,
+            bank_amount=bank_amount,
+            credit_amount=credit_amount,
+            donation_amount=data.donation,
+            needs_amount=cart.total_amount,
+            total_amount=cart.total_amount + data.donation,
+        )
+        session.add(cart_payment)
+
+        for cart_need in cart.needs:
+            cart_payment.payments.append(Payment(
                 user=cart.user,
                 need=cart_need.need,
                 need_amount=cart_need.amount,
@@ -162,32 +173,25 @@ class CartPaymentAPI(Resource):
         extra_paymnent = Payment(
             user=cart.user,
             donation_amount=data.donation,
-            credit_amount=cart.user.credit if data.use_credit else 0,
+            credit_amount=credit_amount,
             order_id=order_id,
             desc='Donation and credit payment',
         )
-        payments.append(extra_paymnent)
-        session.add_all(payments)
+        cart_payment.payments.append(extra_paymnent)
+        session.flush()
 
         if bank_amount == 0:
-            for payment in payments:
-                payment.verify()
+            cart_payment.verify()
 
             success_payment = render_template_i18n(
                 'cart_successful_payment.html',
-                cart=cart,
-                order_id=order_id,
-                credit_amount=credit_amount,
-                donation_amount=data.donation,
-                bank_amount=bank_amount,
-                total_amount=total_amount,
-                user=cart.user,
+                cart_payment=cart_payment,
                 locale=cart.user.locale,
             )
             return {'response': success_payment}, 299
 
         name = f'{cart.user.firstName} {cart.user.lastName}'
-        callback = urljoin(configs.BASE_URL, 'api/v2/payment/verify')
+        callback = urljoin(configs.BASE_URL, 'api/v2/mycart/payment/verify')
 
         api_data = {
             'order_id': order_id,
@@ -200,14 +204,15 @@ class CartPaymentAPI(Resource):
         if 'error_code' in transaction:
             raise Exception(idpay.ERRORS[transaction['error_code']])
 
-        gateway_payment_id = transaction['id']
-        link = transaction['link']
+        cart_payment.gateway_payment_id = transaction['id']
+        cart_payment.link = transaction['link']
 
-        for payment in payments:
-            payment.gateway_payment_id = gateway_payment_id
-            payment.link = link
+        for payment in cart_payment.payments:
+            payment.gateway_payment_id = cart_payment.gateway_payment_id
+            payment.link = cart_payment.link
 
-        return CartSchema.from_orm(cart)
+        session.flush()
+        return CartPaymentSchema.from_orm(cart_payment)
 
 
 api.add_resource(
@@ -222,5 +227,5 @@ api.add_resource(
 
 api.add_resource(
     CartPaymentAPI,
-    '/api/v2/mycart/pay',
+    '/api/v2/mycart/payment',
 )
