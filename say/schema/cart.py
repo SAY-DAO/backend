@@ -54,6 +54,9 @@ class CartPaymentSchema(CamelModel):
     gateway_track_id: str = None
     link: str = None
     verified: datetime = None
+    card_no: str = None
+    hashed_card_no: str = None
+    transaction_date: datetime = None
 
     class Config:
         orm_mode = True

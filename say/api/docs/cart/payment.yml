@@ -45,6 +45,9 @@ responses:
         verified:
           type: string
           format: date-time
+        transactionDate:
+          type: string
+          format: date-time
         bankAmount:
           type: integer
         creditAmount:
@@ -60,6 +63,8 @@ responses:
         gatewayTrackId:
           type: string
         link:
+          type: string
+        cardNo:
           type: string
         hashedCardNo:
           type: string

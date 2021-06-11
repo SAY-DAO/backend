@@ -20,6 +20,8 @@ responses:
       properties:
         id:
           type: integer
+        userId:
+          type: integer
         created:
           type: string
           format: date-time
@@ -28,8 +30,6 @@ responses:
           format: date-time
         totalAmount:
           type: integer
-        totalDonation:
-          type: string
         needs:
           type: array
           items:

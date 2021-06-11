@@ -3,7 +3,9 @@ from datetime import datetime
 from typing import cast
 from urllib.parse import urljoin
 
+import requests
 from flasgger import swag_from
+from flask import make_response
 from flask import request
 from flask_restful import Resource
 
@@ -15,6 +17,7 @@ from say.config import configs
 from say.decorators import json
 from say.exceptions import HTTP_NOT_FOUND
 from say.exceptions import HTTPException
+from say.locale import DEFAULT_LOCALE
 from say.models import Cart
 from say.models import CartNeed
 from say.models import Child
@@ -215,6 +218,74 @@ class CartPaymentAPI(Resource):
         return CartPaymentSchema.from_orm(cart_payment)
 
 
+class VerifyCartPayment(Resource):
+    @staticmethod
+    def _verify_payment(payment_id, order_id):
+        unsuccessful_response = render_template_i18n(
+            'unsuccessful_payment.html',
+            locale=DEFAULT_LOCALE,
+        )
+
+        if not payment_id or not order_id:
+            return make_response(unsuccessful_response)
+
+        pending_payment = session.query(CartPayment).filter(
+            CartPayment.gateway_payment_id == payment_id,
+            CartPayment.order_id == order_id,
+            CartPayment.verified.is_(None),
+        ).with_for_update().scalar()
+
+        if pending_payment is None:
+            return make_response(unsuccessful_response)
+
+        try:
+            response = idpay.verify(
+                pending_payment.gateway_payment_id,
+                pending_payment.order_id,
+            )
+        except requests.exceptions.RequestException:
+            return make_response(unsuccessful_response)
+
+        if not response or 'error_code' in response or response['status'] not in (
+            100, 101, 200,
+        ):
+            return make_response(unsuccessful_response)
+
+        transaction_date = datetime.fromtimestamp(int(response['date']))
+        gateway_track_id = response['track_id']
+        verified = datetime.fromtimestamp(int(response['verify']['date']))
+        card_no = response['payment']['card_no']
+        hashed_card_no = response['payment']['hashed_card_no']
+
+        pending_payment.verify(
+            transaction_date=transaction_date,
+            track_id=gateway_track_id,
+            verify_date=verified,
+            card_no=card_no,
+            hashed_card_no=hashed_card_no,
+        )
+
+        return make_response(render_template_i18n(
+            'cart_successful_payment.html',
+            cart_payment=pending_payment,
+            locale=pending_payment.cart.user.locale,
+        ))
+
+    @json
+    @commit
+    def post(self):
+        payment_id = request.form.get('id')
+        order_id = request.form.get('order_id')
+        return self._verify_payment(payment_id, order_id)
+
+    @json
+    @commit
+    def get(self):
+        payment_id = request.args.get('id')
+        order_id = request.args.get('order_id')
+        return self._verify_payment(payment_id, order_id)
+
+
 api.add_resource(
     CartAPI,
     '/api/v2/mycart',
@@ -229,3 +300,5 @@ api.add_resource(
     CartPaymentAPI,
     '/api/v2/mycart/payment',
 )
+
+api.add_resource(VerifyCartPayment, '/api/v2/mycart/payment/verify')

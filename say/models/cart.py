@@ -106,7 +106,9 @@ class CartPayment(base, Timestamp):
     gateway_payment_id = Column(String, nullable=True, index=True)
     gateway_track_id = Column(String, nullable=True, index=True)
     link = Column(String, nullable=True)
+    transaction_date = Column(DateTime, nullable=True)
     verified = Column(DateTime, nullable=True)
+    card_no = Column(String, nullable=True)
     hashed_card_no = Column(String, nullable=True)
 
     cart = relationship(
@@ -120,8 +122,11 @@ class CartPayment(base, Timestamp):
     def verify(self, transaction_date=datetime.utcnow(), track_id=None,
                verify_date=datetime.utcnow(), card_no=None, hashed_card_no=None):
 
+        self.transaction_date = transaction_date
         self.verified = verify_date
+        self.gateway_track_id = track_id
         self.hashed_card_no = hashed_card_no
+        self.card_no = card_no
 
         for payment in self.payments:
             payment.verify(

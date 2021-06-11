@@ -88,6 +88,8 @@ class Payment(base, Timestamp):
 
         if self.need.paid == self.need.cost:
             self.need.done()
+        elif self.need.paid > self.need.cost:
+            self.need.refund_extra_credit(self.need.cost)
         else:
             self.need.status = 1
 
