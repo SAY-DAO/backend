@@ -85,6 +85,10 @@ parameters:
     in: formData
     type: string
 
+  - name: informations
+    in: formData
+    type: string
+
   - name: delivery_date
     in: formData
     type: string

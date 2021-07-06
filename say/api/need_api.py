@@ -261,8 +261,8 @@ class UpdateNeedById(Resource):
             new_cost = int(request.form['cost'].replace(',', ''))
 
             if (
-                ((sw_role in [SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR] and need.isConfirmed) or need.isDone) 
-                and 
+                ((sw_role in [SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR] and need.isConfirmed) or need.isDone)
+                and
                 new_cost != need._cost
             ):
                 return {'message': 'Can not change cost when need is done'}, 400
@@ -328,6 +328,9 @@ class UpdateNeedById(Resource):
         if 'details' in request.form.keys():
             need.details = request.form['details']
 
+        if 'informations' in request.form.keys():
+            need.informations = request.form['informations']
+
         if dkc := request.form.get('dkc'):
             need.dkc = dkc
 
@@ -340,7 +343,7 @@ class UpdateNeedById(Resource):
             need.expected_delivery_date = parse_datetime(
                 request.form['expected_delivery_date']
             )
-        
+
         prev_status = need.status
 
         if 'status' in request.form.keys():
@@ -371,10 +374,10 @@ class UpdateNeedById(Resource):
 
         if need.type == 0 and need.status == 3:
             bank_track_id = request.form.get('bank_track_id')
-            
+
             if not bank_track_id and prev_status == 2:
                 raise ValueError(f'bank_track_id is required')
-            
+
             if bank_track_id:
                 need.bank_track_id = bank_track_id
 
@@ -393,7 +396,7 @@ class DeleteNeedById(Resource):
         need = session.query(Need) \
             .filter_by(isDeleted=False) \
             .filter_by(id=need_id)
-        
+
         need = filter_by_privilege(need).with_for_update().one_or_none()
         if not need:
             return {'message': 'need not found'}, 404
@@ -482,6 +485,9 @@ class AddNeed(Resource):
             .filter_by(isConfirmed=True) \
             .one_or_none()
 
+        if child is None:
+            return {'message': 'error: child not found!'}, 400
+
         sw_id = int(request.form.get('sw_id', get_user_id()))
         sw_role = get_user_role()
 
@@ -520,7 +526,6 @@ class AddNeed(Resource):
         need_type = request.form['type']
 
         details = request.form.get('details', '')
-        last_update = datetime.utcnow()
         link = request.form.get('link', None)
 
         if 'affiliateLinkUrl' in request.form.keys():
@@ -547,6 +552,7 @@ class AddNeed(Resource):
             child=child,
             doing_duration=doing_duration,
             details=details,
+            informations=request.form.get('informations', ''),
         )
         session.add(new_need)
         session.flush()
@@ -665,7 +671,7 @@ class NeedReceipts(Resource):
             res.append(ReceiptSchema.from_orm(r))
 
         return res
-        
+
 
     @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
                SAY_SUPERVISOR, ADMIN)
@@ -690,7 +696,7 @@ class NeedReceipts(Resource):
 
         if need is None:
             return HTTP_NOT_FOUND()
-        
+
         receipt = session.query(Receipt).filter(
             Receipt.code == data.code,
             Receipt.deleted == None,
@@ -734,8 +740,8 @@ class NeedReceiptAPI(Resource):
         need_receipt.deleted = datetime.utcnow()
         safe_commit(session)
         return ReceiptSchema.from_orm(need_receipt.receipt)
-        
-        
+
+
 
 """
 API URLs

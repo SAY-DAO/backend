@@ -122,3 +122,6 @@ responses:
           type: string
           description: Details
 
+        informations:
+          type: string
+

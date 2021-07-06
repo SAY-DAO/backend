@@ -18,7 +18,7 @@ parameters:
     description: Access Token
     required: true
     type: string
- 
+
   - name: need_id
     in: path
     type: integer
@@ -95,6 +95,10 @@ parameters:
     in: formData
     type: string
     description: Digikala purchase code (only in s3)
+
+  - name: informations
+    in: formData
+    type: string
 
   - name: bank_track_id
     in: formData

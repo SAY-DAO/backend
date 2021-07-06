@@ -37,6 +37,7 @@ class Need(base, Timestamp):
     category = Column(Integer, nullable=False)  # 0:Growth | 1:Joy | 2:Health | 3:Surroundings
     isUrgent = Column(Boolean, nullable=False)
     details = Column(Text, nullable=True)
+    informations = Column(String(1024), nullable=True)
     _cost = Column(Integer, nullable=False)
     purchase_cost = Column(Integer, nullable=True)
     link = Column(String, nullable=True)
