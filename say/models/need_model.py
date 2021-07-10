@@ -123,24 +123,6 @@ class Need(base, Timestamp):
         pass
 
     @hybrid_property
-    def pretty_paid(self):
-        return int_formatter(self.paid)
-
-    # TODO: proper expression
-    @pretty_paid.expression
-    def pretty_paid(cls):
-        pass
-
-    @hybrid_property
-    def pretty_donated(self):
-        return int_formatter(self.donated)
-
-    # TODO: proper expression
-    @pretty_paid.expression
-    def pretty_donated(cls):
-        pass
-
-    @hybrid_property
     def unpayable(self):
         return bool(self.unavailable_from \
             and self.unavailable_from < datetime.utcnow() \
