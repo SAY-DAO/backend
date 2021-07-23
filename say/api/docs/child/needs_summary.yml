@@ -14,7 +14,7 @@ parameters:
   - in: path
     name: child_id
     required: true
-    type: integereger
+    type: integer
 
 responses:
   500:
@@ -24,37 +24,6 @@ responses:
     description: Ok
 
     schema:
-      id: need_summary
-      properties:
-          id:
-            type: integer
-          status:
-            type: integer
-          isConfirmed:
-            type: boolean
-          title:
-            type: string
-          imageUrl:
-            type: string
-          name:
-            type: string
-          progress:
-            type: float
-          cost:
-            type: integer
-          isDone:
-            type: boolean
-          isUrgent:
-            type: boolean
-          category:
-            type: integer
-          type:
-            type: integer
-          created:
-            type: datetime
-          doneAt:
-            type: datetime = None
-          participants:
-            type: List[Participant] = []
+      id: need_model
 
 

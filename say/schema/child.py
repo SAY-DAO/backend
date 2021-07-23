@@ -1,5 +1,4 @@
-from datetime import date
-from datetime import datetime
+from datetime import date, datetime
 from typing import List
 
 from .base import BaseModel
@@ -38,9 +37,6 @@ class Participant(BaseModel):
 
 class NeedSummary(BaseModel):
     id: int
-    status: int
-    isConfirmed: bool
-    title: str = None
     imageUrl: str
     name: str
     progress: float
@@ -49,6 +45,6 @@ class NeedSummary(BaseModel):
     isUrgent: bool
     category: int
     type: int
+    participants: List[Participant] = []
     created: datetime
     doneAt: datetime = None
-    participants: List[Participant] = []
