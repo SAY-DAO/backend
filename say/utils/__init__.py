@@ -1,6 +1,3 @@
-from .digikala import get_data
-
-
 def surname(gender):
     surname = ''
 

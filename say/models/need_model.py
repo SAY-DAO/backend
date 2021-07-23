@@ -360,13 +360,12 @@ class Need(base, Timestamp):
             )
 
     def update(self):
-        from say.utils import digikala
-        data = digikala.get_data(self.link)
+        from say.crawler import Crawler
+        data = Crawler(self.link).get_data()
 
         if data is None:
             return
 
-        dkp = data['dkp']
         img = data['img']
         title = data['title']
         cost = data['cost']
