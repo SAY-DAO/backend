@@ -81,7 +81,9 @@ class Payment(base, Timestamp):
         self.card_no = card_no
         self.hashed_card_no = hashed_card_no
 
+        # To update need.paid
         session.flush()
+        session.expire_all()
 
         if self.id_need is None:
             return
