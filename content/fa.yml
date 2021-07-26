@@ -1,7 +1,7 @@
 reset_password:
-  4o4: as 5
-  used: as 3
-  expired: s 4
+  4o4: توکن اشتباه است
+  used: توکن قبلا استفاده شده است
+  expired: توکن منقضی شده است
 
 verification:
   4o4: کد پیدا نشد

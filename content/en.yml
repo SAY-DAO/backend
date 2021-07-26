@@ -1,7 +1,7 @@
 reset_password:
-  4o4: as 0
-  used: as 1
-  expired: s 2
+  4o4: Token not Found
+  used: Token is Used
+  expired: Token is Expired
 
 verification:
   4o4: Code Not Found
