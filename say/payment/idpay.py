@@ -9,7 +9,6 @@ import requests
 class IDPay:
 
     API_URL = "https://api.idpay.ir/v1.1/payment"
-    MIN_AMOUNT = 100  # TOMAN
     TRY_COUNT = 3
     TIMEOUT = 59
 
@@ -23,8 +22,9 @@ class IDPay:
         10: "در انتظار تایید پرداخت",
         100: "پرداخت تایید شده است",
         101: "پرداخت قبلا تایید شده است",
-        200: "به دریافت کننده واریز شد"
+        200: "به دریافت کننده واریز شد",
     }
+
     ERRORS = {
         11: "کاربر مسدود شده است.",
         12: "API Key یافت نشد.",
@@ -46,10 +46,7 @@ class IDPay:
     }
 
     def __init__(self, api_key, sandbox=False):
-        self.headers = {
-            "X-API-KEY": api_key,
-            "Content-Type": "application/json"
-        }
+        self.headers = {"X-API-KEY": api_key, "Content-Type": "application/json"}
         if sandbox:
             self.headers["X-SANDBOX"] = '1'
 
@@ -69,14 +66,29 @@ class IDPay:
         result = response.json()
         return result
 
-    def new_transaction(self, order_id: str, amount: int, callback: str,
-                        name: str = None, phone: str = None, mail: str = None,
-                        desc: str = None, reseller: int = None):
+    def new_transaction(
+        self,
+        order_id: str,
+        amount: int,
+        callback: str,
+        name: str = None,
+        phone: str = None,
+        mail: str = None,
+        desc: str = None,
+        reseller: int = None,
+    ):
 
         amount *= 10  # RIAL to TOMAN
         return self.request(
-            '', order_id=order_id, amount=amount, callback=callback, name=name,
-            phone=phone, mail=mail, desc=desc, reseller=reseller,
+            '',
+            order_id=order_id,
+            amount=amount,
+            callback=callback,
+            name=name,
+            phone=phone,
+            mail=mail,
+            desc=desc,
+            reseller=reseller,
         )
 
     def verify(self, id, order_id):

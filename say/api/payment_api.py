@@ -8,7 +8,6 @@ from flasgger import swag_from
 from flask import make_response
 from flask import request
 from flask_restful import Resource
-from werkzeug.exceptions import abort
 
 from say.locale import DEFAULT_LOCALE
 from say.models import commit
@@ -26,7 +25,9 @@ from ..config import configs
 from ..decorators import json
 from ..exceptions import HTTP_NOT_FOUND
 from ..orm import session
-from ..roles import *
+from ..roles import ADMIN
+from ..roles import SAY_SUPERVISOR
+from ..roles import SUPER_ADMIN
 from .ext import api
 from .ext import idpay
 
@@ -36,8 +37,8 @@ def validate_amount(need, amount):
     need_unpaid = need.cost - need.paid
     if int(amount) > need_unpaid:
         raise ValueError(f'Amount can not be greater that {need_unpaid}')
-    if int(amount) < idpay.MIN_AMOUNT:
-        raise ValueError('Amount can not be smaller than 100')
+    if int(amount) < configs.MIN_BANK_AMOUNT:
+        raise ValueError(f'Amount can not be smaller than {configs.MIN_BANK_AMOUNT}')
     return amount
 
 
@@ -99,7 +100,7 @@ class GetAllPayment(Resource):
 
         result = dict(
             totalCount=total_count,
-            payments=[],
+            payments=list(),
         )
         for payment in payments:
             result['payments'].append(obj_to_dict(payment))
@@ -196,7 +197,6 @@ class AddPayment(Resource):
             donation_amount=donation,
             credit_amount=credit,
             desc=desc,
-            use_credit=use_credit,
             order_id=generate_order_id(),
         )
         session.add(payment)
@@ -214,8 +214,8 @@ class AddPayment(Resource):
             return {'response': success_payment}, 299
 
         # Save some credit for the user
-        if payment.bank_amount < idpay.MIN_AMOUNT:
-            payment.credit_amount -= idpay.MIN_AMOUNT - payment.bank_amount
+        if payment.bank_amount < configs.MIN_BANK_AMOUNT:
+            payment.credit_amount -= configs.MIN_BANK_AMOUNT - payment.bank_amount
 
         api_data = {
             'order_id': payment.order_id,
@@ -249,6 +249,7 @@ class VerifyPayment(Resource):
         pending_payment = session.query(Payment).filter(
             Payment.gateway_payment_id == payment_id,
             Payment.order_id == order_id,
+            Payment.cart_payment_id.is_(None),
             Payment.verified.is_(None),
         ) \
             .with_for_update() \

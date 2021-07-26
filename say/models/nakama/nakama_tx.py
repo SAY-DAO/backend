@@ -78,7 +78,6 @@ class NakamaTx(base, Timestamp):
             donation_amount=0,
             credit_amount=self.need.cost,
             desc=f'Paid by {self.sender_address} from dapp',
-            use_credit=True,
             order_id=self.id,
             gateway_track_id=self.id,
             card_no=self.sender_address,

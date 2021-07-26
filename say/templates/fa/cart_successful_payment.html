@@ -1,0 +1,180 @@
+<html>
+  <head>
+    <title>تراکنش موفق</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf8" />
+
+    <!-- Font -->
+    <link
+      rel="stylesheet"
+      href="/public/resources/font/iranyekan/css/fontiran.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:100,400&display=swap"
+      rel="stylesheet"
+      type="text/css"
+    />
+
+    <style type="text/css">
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: iranyekan;
+        padding-bottom: 50px;
+        text-align: center;
+        color: #666;
+        max-width: 480px;
+        margin: 0 auto;
+        box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.08);
+      }
+
+      #header {
+        background-color: #f1f1f1;
+        height: 250px;
+        width: 100%;
+        padding: 50px 0;
+        margin-bottom: 30px;
+      }
+
+      #logoWrapper {
+        margin-bottom: 30px;
+      }
+
+      #logoWrapper img {
+        max-width: 182px;
+        width: 40%;
+        height: auto;
+      }
+
+      #header p {
+        font-weight: 500;
+        font-size: 16px;
+      }
+
+      #header p:last-child {
+        color: #f05a31;
+        font-size: 12px;
+        line-height: 25px;
+      }
+
+      #content h6 {
+        color: #1aae0e;
+        font-size: 16px;
+        font-weight: 500;
+      }
+
+      #content hr {
+        background-color: #cdcdcd;
+        width: 90%;
+      }
+
+      .rowContent {
+        width: 100%;
+        margin-top: 15px;
+        margin-bottom: 15px;
+      }
+
+      .rowContent span {
+        width: 44%;
+        display: inline-block;
+        direction: rtl;
+      }
+
+      .rowContent span:first-child {
+        text-align: left;
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .rowContent span:last-child {
+        text-align: right;
+        font-size: 12px;
+      }
+
+      #backSAY {
+        text-decoration: none;
+        color: #fff;
+        width: 230px;
+        margin: 0 auto;
+        display: block;
+        margin-top: 65px;
+        background: linear-gradient(90deg, #f59e39 0%, #f05a31 100%);
+        border-radius: 48px;
+        height: 40px;
+        padding-top: 7px;
+        line-height: 30px;
+        direction: rtl;
+      }
+
+      .ltr {
+        direction: ltr !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="header">
+      <div id="logoWrapper">
+        <img src="https://sayapp.company/public/resources/img/logo.png" />
+      </div>
+      <p>صدایی که به گوش شما می‌رسد واقعی است</p>
+      <p>بنیانِ بنیادی برای امید و آسودگی</p>
+    </div>
+
+    <div id="content">
+      <h6>پرداخت انجام شد</h6>
+      <hr />
+
+      <div class="rowContent">
+        <span> {{int_formatter(cart_payment.total_amount)}} تومان </span>
+        <span> مجموع پرداخت </span>
+      </div>
+
+      <div class="rowContent">
+        <span> {{int_formatter(cart_payment.needs_amount)}} تومان </span>
+        <span> مجموع مبلغ نیازها </span>
+      </div>
+
+      <div class="rowContent">
+        <span> {{int_formatter(cart_payment.donation_amount)}} تومان </span>
+        <span> هم‌راهی با SAY </span>
+      </div>
+
+      <hr />
+
+      {% if cart_payment.credit_amount %}
+      <div class="rowContent">
+        <span> {{int_formatter(cart_payment.credit_amount)}} تومان </span>
+        <span> پرداخت از کیف پول </span>
+      </div>
+      {% endif %} {% if cart_payment.bank_amount %}
+      <div class="rowContent">
+        <span> {{int_formatter(cart_payment.bank_amount)}} تومان </span>
+        <span> پرداخت از کارت بانکی </span>
+      </div>
+      {% endif %}
+
+      <hr />
+
+      <div class="rowContent">
+        <span class="ltr"> {{cart_payment.order_id}} </span>
+        <span> کد رهگیری SAY </span>
+      </div>
+
+      {% if cart_payment.bank_amount %}
+      <div class="rowContent">
+        <span class="ltr"> {{cart_payment.gateway_track_id}} </span>
+        <span> کد رهگیری بانک </span>
+      </div>
+      {% endif %} {% if cart_payment.bank_amount %}
+      <hr />
+      <div class="rowContent">
+        <span class="ltr"> {{cart_payment.card_no}} </span>
+        <span> شماره کارت </span>
+      </div>
+      {% endif %}
+
+      <a id="backSAY" href="javascript:close();"> بازگشت به SAY </a>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,30 @@
+Add a Need to Cart
+---
+
+tags:
+  - Cart API
+
+parameters:
+
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - in: formData
+    name: needId
+    type: integer
+    required: true
+
+responses:
+  200:
+    description: OK
+    schema:
+      id: cart
+  400:
+    description: Bad request
+  401:
+    description: Bad auth token
+  600:
+    description: Need already is in the cart'

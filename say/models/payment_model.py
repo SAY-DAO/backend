@@ -12,6 +12,7 @@ from .user_family_model import UserFamily
 Payment Model
 """
 
+
 def create_order_id():
     return uuid4().hex
 
@@ -22,18 +23,18 @@ class Payment(base, Timestamp):
     id = Column(Integer, nullable=False, primary_key=True)
     id_need = Column(Integer, ForeignKey('need.id'), nullable=True, index=True)
     id_user = Column(Integer, ForeignKey('user.id'), nullable=False, index=True)
+    cart_payment_id = Column(Integer, ForeignKey('cart_payments.id'), nullable=True, index=True)
 
-    gateway_payment_id = Column(String, nullable=True)
-    gateway_track_id = Column(String, nullable=True)
+    gateway_payment_id = Column(String, nullable=True, index=True)
+    gateway_track_id = Column(String, nullable=True, index=True)
     link = Column(String, nullable=True)
 
-    order_id = Column(String, nullable=True, unique=True)
+    order_id = Column(String, nullable=True, unique=False, index=True)
     desc = Column(String, nullable=True)
     card_no = Column(String, nullable=True)
     hashed_card_no = Column(String, nullable=True)
     transaction_date = Column(DateTime, nullable=True)
     verified = Column(DateTime, nullable=True, index=True)
-    use_credit = Column(Boolean, default=False, nullable=False)
     is_nakama = Column(Boolean, default=False, nullable=False)
 
     need_amount = Column(Integer, default=0)
@@ -61,6 +62,11 @@ class Payment(base, Timestamp):
         back_populates='payments',
         uselist=False,
     )
+    cart_payment = relationship(
+        'CartPayment',
+        foreign_keys=cart_payment_id,
+        back_populates='payments',
+    )
 
     def verify(self, transaction_date=datetime.utcnow(), track_id=None,
                verify_date=datetime.utcnow(), card_no=None,
@@ -68,11 +74,6 @@ class Payment(base, Timestamp):
 
         from .need_family_model import NeedFamily
         session = object_session(self)
-        
-        if self.need_amount + self.need.paid == self.need.cost:
-            self.need.done()
-        else:
-            self.need.status = 1
 
         self.transaction_date = transaction_date
         self.gateway_track_id = track_id or self.order_id
@@ -84,6 +85,13 @@ class Payment(base, Timestamp):
 
         if self.id_need is None:
             return
+
+        if self.need.paid == self.need.cost:
+            self.need.done()
+        elif self.need.paid > self.need.cost:
+            self.need.refund_extra_credit(self.need.cost)
+        else:
+            self.need.status = 1
 
         family = self.need.child.family
 

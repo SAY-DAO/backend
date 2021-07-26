@@ -142,16 +142,20 @@ class Need(base, Timestamp):
 
     @hybrid_property
     def unpayable(self):
-        return bool(self.unavailable_from \
-            and self.unavailable_from < datetime.utcnow() \
-                - timedelta(days=configs.PRODUCT_UNPAYABLE_PERIOD)
+        return bool(
+            self.unavailable_from and self.unavailable_from < datetime.utcnow() - timedelta(
+                days=configs.PRODUCT_UNPAYABLE_PERIOD,
+            )
         )
 
     @unpayable.expression
     def unpayable(cls):
-        return cls.unavailable_from \
-            and cls.unavailable_from < datetime.utcnow() \
-                - timedelta(days=configs.PRODUCT_UNPAYABLE_PERIOD)
+        return and_(
+            cls.unavailable_from.isnot(None),
+            cls.unavailable_from < datetime.utcnow() - timedelta(
+                days=configs.PRODUCT_UNPAYABLE_PERIOD
+            ),
+        )
 
     @hybrid_property
     def unpayable_from(self):
@@ -262,6 +266,11 @@ class Need(base, Timestamp):
         back_populates='needs',
     )
 
+    carts = relationship(
+        'CartNeed',
+        back_populates='need',
+    )
+
     payments = relationship(
         'Payment',
         back_populates='need',
@@ -281,6 +290,7 @@ class Need(base, Timestamp):
     def done(self):
         self.status = 2
         self.doneAt = datetime.utcnow()
+        self.delete_from_carts()
 
     @property
     def family(self):
@@ -288,6 +298,10 @@ class Need(base, Timestamp):
             member.user
             for member in self.child.family.current_members()
         }
+
+    def delete_from_carts(self):
+        for cart in self.carts:
+            cart.deleted = datetime.utcnow()
 
     def refund_extra_credit(self, new_paid):
         session = object_session(self)
@@ -441,6 +455,8 @@ class Need(base, Timestamp):
         self.confirmUser = None
         self.isConfirmed = False
         self.status = 0
+        self.delete_from_carts()
+
 
 
 @event.listens_for(Need.status, "set")

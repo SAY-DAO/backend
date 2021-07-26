@@ -432,7 +432,7 @@ class SearchUserAPI(Resource):
             .order_by(func.similarity(User.userName, query).desc()) \
             .limit(5) \
             .all()
-       
+
         return [
             UserSearchSchema(user_name=r.userName, avatar_url=r.avatarUrl)
             for r in result

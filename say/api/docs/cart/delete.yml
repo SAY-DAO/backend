@@ -1,0 +1,26 @@
+Delete a Need from Cart
+---
+
+tags:
+  - Cart API
+
+parameters:
+
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - in: formData
+    name: needId
+    type: integer
+    required: true
+
+responses:
+  200:
+    description: OK
+    schema:
+      id: cart
+  404:
+    description: Need not found

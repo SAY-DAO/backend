@@ -59,6 +59,9 @@ class Config(object):
     ORPHAN_NAKAMA_TX_RANGE = 2  # Days
     MAILERLITE_API_KEY = 'abcd'
 
+    # Business
+    MIN_BANK_AMOUNT = 100  # Toman
+
     # Celery
     BROKER = 'redis'
     task_soft_time_limit = 60

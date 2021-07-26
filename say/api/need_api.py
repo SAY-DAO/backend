@@ -414,6 +414,7 @@ class DeleteNeedById(Resource):
                 participant.isDeleted = True
 
             need.isDeleted = True
+            need.delete_from_carts()
             return {'message': 'need deleted'}
         else:
             return {'message': 'need has arrived to the child so can not be deleted'}, 422
