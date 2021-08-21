@@ -7,26 +7,33 @@ from say.schema.child import FamilyMemberSchema
 
 
 def is_gone(id_):
-    return session.query(Child.id).filter(
-        Child.id == id_,
-        Child.existence_status != 1,
-    ).scalar()
+    return (
+        session.query(Child.id)
+        .filter(
+            Child.id == id_,
+            Child.existence_status != 1,
+        )
+        .scalar()
+    )
 
 
 def get_family_members(id):
-    query = session.query(
-        UserFamily.userRole,
-        User.userName,
-        UserFamily.isDeleted,
-        User.id,
-    ) \
-        .select_from(UserFamily) \
-        .join(Family, Family.id == UserFamily.id_family) \
-        .join(User, User.id == UserFamily.id_user) \
+    query = (
+        session.query(
+            UserFamily.userRole,
+            User.userName,
+            UserFamily.isDeleted,
+            User.id,
+            User.avatarUrl,
+        )
+        .select_from(UserFamily)
+        .join(Family, Family.id == UserFamily.id_family)
+        .join(User, User.id == UserFamily.id_user)
         .filter(
             Family.id_child == id,
-            UserFamily.isDeleted.is_(False),    
+            UserFamily.isDeleted.is_(False),
         )
+    )
 
     for member in query:
         yield FamilyMemberSchema(
@@ -34,4 +41,5 @@ def get_family_members(id):
             username=member[1],
             isDeleted=member[2],
             member_id=member[3],
+            avatarUrl=member[4],
         )

@@ -35,16 +35,19 @@ from say.models import ChildNeed
 from say.models import Family
 from say.models import Invitation
 from say.models import Need
-from say.models import NeedFamily
 from say.models import SocialWorker
-from say.models import User
 from say.models import UserFamily
 from say.models import commit
 from say.models import obj_to_dict
 from say.orm import safe_commit
 from say.orm import session
-from say.roles import *
-from say.schema.child import FamilyMemberSchema
+from say.roles import ADMIN
+from say.roles import COORDINATOR
+from say.roles import NGO_SUPERVISOR
+from say.roles import SAY_SUPERVISOR
+from say.roles import SOCIAL_WORKER
+from say.roles import SUPER_ADMIN
+from say.roles import USER
 from say.schema.child import NeedSummary
 from say.schema.child import UserChildSchema
 from say.validations import allowed_image
@@ -52,10 +55,10 @@ from say.validations import allowed_voice
 
 
 def filter_by_confirm(child_query, confirm):
-    confirm =  int(confirm)
+    confirm = int(confirm)
     if confirm != 2:
         confirm = bool(confirm)
-        return child_query.filter(Child.isConfirmed==confirm)
+        return child_query.filter(Child.isConfirmed == confirm)
 
     return child_query
 
@@ -67,21 +70,25 @@ def filter_by_privilege(query, get=False):  # TODO: priv
 
     if user_role in [SOCIAL_WORKER, COORDINATOR]:
         if get:
-            query = query.filter(or_(
-                Child.id_social_worker==sw_id,
-                Child.id==DEFAULT_CHILD_ID,
-            ))
+            query = query.filter(
+                or_(
+                    Child.id_social_worker == sw_id,
+                    Child.id == DEFAULT_CHILD_ID,
+                )
+            )
         else:
             query = query.filter_by(id_social_worker=sw_id)
 
     elif user_role in [NGO_SUPERVISOR]:
         if get:
-            query = query.filter(or_(
-                Child.id_ngo==ngo_id,
-                Child.id==DEFAULT_CHILD_ID,
-            ))
+            query = query.filter(
+                or_(
+                    Child.id_ngo == ngo_id,
+                    Child.id == DEFAULT_CHILD_ID,
+                )
+            )
         else:
-            query = query.filter(Child.id_ngo==ngo_id)
+            query = query.filter(Child.id_ngo == ngo_id)
 
     elif user_role in [USER]:
         query = filter_by_user(query)
@@ -92,12 +99,12 @@ def filter_by_privilege(query, get=False):  # TODO: priv
 def filter_by_user(query):  # TODO: priv
     user_id = get_user_id()
 
-    query = query \
-        .join(Family) \
-        .join(UserFamily) \
-        .filter(UserFamily.id_user==user_id) \
-        .filter(UserFamily.isDeleted==False) \
-
+    query = (
+        query.join(Family)
+        .join(UserFamily)
+        .filter(UserFamily.id_user == user_id)
+        .filter(UserFamily.isDeleted.is_(False))
+    )
     return query
 
 
@@ -106,11 +113,9 @@ def filter_by_query(child_query):
 
     ngo_id = query.get('ngo_id', None)
     sw_id = query.get('sw_id', None)
-    sw_role = get_user_role()
 
     if sw_id:
-        child_query = child_query \
-            .filter_by(id_social_worker=sw_id)
+        child_query = child_query.filter_by(id_social_worker=sw_id)
 
     if ngo_id:
         child_query = child_query.filter_by(id_ngo=ngo_id)
@@ -119,9 +124,7 @@ def filter_by_query(child_query):
 
 
 class GetAllChildren(Resource):
-
     def check_privileges(func):  # TODO: priv
-
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             query = request.args
@@ -142,8 +145,9 @@ class GetAllChildren(Resource):
 
         return wrapper
 
-    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
-               SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @authorize(
+        SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+    )  # TODO: priv
     @check_privileges
     @json
     @swag_from('./docs/child/all.yml')
@@ -153,18 +157,20 @@ class GetAllChildren(Resource):
         skip = query.get('skip', 0)
 
         ex_status = query.get('existence_status', '1')
- 
+
         confirm = int(confirm)
         children_query = (
-            session.query(Child)
-            .filter_by(isDeleted=False)
-            .filter_by(isMigrated=False)
+            session.query(Child).filter_by(isDeleted=False).filter_by(isMigrated=False)
         )
 
         if ex_status.startswith('!'):
-            children_query = children_query.filter(Child.existence_status != int(ex_status[1:]))
+            children_query = children_query.filter(
+                Child.existence_status != int(ex_status[1:])
+            )
         else:
-            children_query = children_query.filter(Child.existence_status == int(ex_status))
+            children_query = children_query.filter(
+                Child.existence_status == int(ex_status)
+            )
 
         children_query = filter_by_privilege(children_query, get=True)
         children_query = filter_by_query(children_query)
@@ -174,8 +180,7 @@ class GetAllChildren(Resource):
         elif int(confirm) == 1:
             children_query = children_query.filter_by(isConfirmed=True)
 
-        children_query = children_query \
-            .order_by(Child.generatedCode.asc())
+        children_query = children_query.order_by(Child.generatedCode.asc())
 
         children = children_query.offset(skip).limit(take)
 
@@ -190,18 +195,26 @@ class GetAllChildren(Resource):
 
 
 class GetChildById(Resource):
-
-    @authorize(USER, SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
-               SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @authorize(
+        USER,
+        SOCIAL_WORKER,
+        COORDINATOR,
+        NGO_SUPERVISOR,
+        SUPER_ADMIN,
+        SAY_SUPERVISOR,
+        ADMIN,
+    )  # TODO: priv
     @json
     @swag_from('./docs/child/id.yml')
     def get(self, child_id, confirm):
 
         child_id = int(child_id)
-        child_query = session.query(Child) \
-            .filter(Child.isDeleted==False) \
-            .filter(Child.isMigrated==False) \
-            .filter(Child.id==child_id)
+        child_query = (
+            session.query(Child)
+            .filter(Child.isDeleted.is_(False))
+            .filter(Child.isMigrated.is_(False))
+            .filter(Child.id == child_id)
+        )
 
         if child_id != DEFAULT_CHILD_ID:  # TODO: need needs
             child_query = filter_by_privilege(child_query, get=True)
@@ -219,27 +232,27 @@ class GetChildById(Resource):
             user_id = get_user_id()
             family_id = child.family.id
 
-            user_role = session.query(UserFamily.userRole) \
-                .filter_by(isDeleted=False) \
-                .filter_by(id_user=user_id) \
-                .filter_by(id_family=family_id) \
+            user_role = (
+                session.query(UserFamily.userRole)
+                .filter_by(isDeleted=False)
+                .filter_by(id_user=user_id)
+                .filter_by(id_family=family_id)
                 .one_or_none()
+            )
 
             if user_role is None:
                 raise HTTP_NOT_FOUND()
 
             # Unpack role
-            user_role, = user_role
+            (user_role,) = user_role
 
-            child_family_members = [
-                x for x in crud.child.get_family_members(child_id)
-            ]
+            child_family_members = [x for x in crud.child.get_family_members(child_id)]
 
             result = UserChildSchema(
                 **child_dict,
                 userRole=user_role,
                 familyId=family_id,
-                childFamilyMembers=child_family_members
+                childFamilyMembers=child_family_members,
             )
             return result
 
@@ -247,7 +260,6 @@ class GetChildById(Resource):
 
 
 class GetChildByInvitationToken(Resource):
-
     @json
     @swag_from('./docs/child/get-by-token.yml')
     def get(self, token):
@@ -262,10 +274,12 @@ class GetChildByInvitationToken(Resource):
             logger.info(str(e))
             abort(403)
 
-        invitation = session.query(Invitation) \
-            .filter_by(token=token) \
-            .with_for_update() \
+        invitation = (
+            session.query(Invitation)
+            .filter_by(token=token)
+            .with_for_update()
             .one_or_none()
+        )
 
         if not invitation:
             return {'messasge': 'Invitation not found'}, 400
@@ -275,11 +289,13 @@ class GetChildByInvitationToken(Resource):
         if not family or family.child.isDeleted:
             return {'message': f'family {invitation.family_id} not found'}, 743
 
-        child = session.query(Child) \
-            .filter(Child.isDeleted.is_(False)) \
-            .filter(Child.id == family.id_child) \
-            .options(selectinload('family.members.user'))\
+        child = (
+            session.query(Child)
+            .filter(Child.isDeleted.is_(False))
+            .filter(Child.id == family.id_child)
+            .options(selectinload('family.members.user'))
             .one_or_none()
+        )
 
         if child is None:
             raise HTTP_NOT_FOUND()
@@ -292,30 +308,32 @@ class GetChildByInvitationToken(Resource):
         if not user_id:
             child_dict['id'] = None
 
-        child_family_members = [
-            x for x in crud.child.get_family_members(child.id)
-        ]
+        child_family_members = [x for x in crud.child.get_family_members(child.id)]
 
-        result = UserChildSchema(
-            **child_dict,
-            childFamilyMembers=child_family_members
-        )
+        result = UserChildSchema(**child_dict, childFamilyMembers=child_family_members)
         return result
 
 
 class GetChildNeeds(Resource):
-
-    @authorize(USER, SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
-               SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @authorize(
+        USER,
+        SOCIAL_WORKER,
+        COORDINATOR,
+        NGO_SUPERVISOR,
+        SUPER_ADMIN,
+        SAY_SUPERVISOR,
+        ADMIN,
+    )  # TODO: priv
     @json
     @swag_from('./docs/child/needs.yml')
     def get(self, child_id):
         child_id = int(child_id)
-        child_query = session.query(Child) \
-            .filter(Child.isDeleted==False) \
-            .filter(Child.isMigrated==False) \
-            .filter(Child.id==child_id) \
-
+        child_query = (
+            session.query(Child)
+            .filter(Child.isDeleted.is_(False))
+            .filter(Child.isMigrated.is_(False))
+            .filter(Child.id == child_id)
+        )
         if child_id != DEFAULT_CHILD_ID:  # TODO: need needs
             child_query = filter_by_privilege(child_query, get=True)
 
@@ -323,24 +341,24 @@ class GetChildNeeds(Resource):
         if child is None:
             raise HTTP_NOT_FOUND()
 
-        needs_query = session.query(Need) \
-            .options(selectinload('participants')) \
-            .filter(Need.child_id==child_id) \
-            .filter(Need.isDeleted==False) \
-            .order_by(Need.name) \
+        needs_query = (
+            session.query(Need)
+            .options(selectinload('participants'))
+            .filter(Need.child_id == child_id)
+            .filter(Need.isDeleted.is_(False))
+            .order_by(Need.name)
             .all()
+        )
 
         needs = []
         role = get_user_role()
         for need in needs_query:
-            if not need.isConfirmed \
-                    and role in [USER]:
+            if not need.isConfirmed and role in [USER]:
                 continue
 
             need_dict = obj_to_dict(need)
             need_dict['participants'] = [
-                {'user_avatar': p.user_avatar}
-                for p in need.current_participants
+                {'user_avatar': p.user_avatar} for p in need.current_participants
             ]
             needs.append(need_dict)
 
@@ -350,45 +368,54 @@ class GetChildNeeds(Resource):
         )
         return result
 
+
 # id, imageUrl, name, participants.user_avatar, progress, cost, isDone, isUrgent, category
 
-class GetChildNeedsSummary(Resource):
 
-    @authorize(USER, SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
-               SAY_SUPERVISOR, ADMIN)  # TODO: priv
+class GetChildNeedsSummary(Resource):
+    @authorize(
+        USER,
+        SOCIAL_WORKER,
+        COORDINATOR,
+        NGO_SUPERVISOR,
+        SUPER_ADMIN,
+        SAY_SUPERVISOR,
+        ADMIN,
+    )  # TODO: priv
     @json
     @swag_from('./docs/child/needs_summary.yml')
     def get(self, child_id):
         child_id = int(child_id)
 
-        child_query = session.query(Child) \
-            .filter(Child.isDeleted==False) \
-            .filter(Child.isMigrated==False) \
-            .filter(Child.id==child_id) \
-
+        child_query = (
+            session.query(Child)
+            .filter(Child.isDeleted.is_(False))
+            .filter(Child.isMigrated.is_(False))
+            .filter(Child.id == child_id)
+        )
         child_query = filter_by_privilege(child_query, get=True)
 
         child = child_query.one_or_none()
         if child is None:
             raise HTTP_NOT_FOUND()
 
-        needs_query = session.query(Need) \
-            .options(selectinload('participants')) \
-            .filter(Need.child_id==child_id) \
-            .filter(Need.isDeleted==False) \
+        needs_query = (
+            session.query(Need)
+            .options(selectinload('participants'))
+            .filter(Need.child_id == child_id)
+            .filter(Need.isDeleted.is_(False))
             .order_by(Need.name)
-        
+        )
+
         needs = []
         role = get_user_role()
         for need in needs_query:
-            if not need.isConfirmed \
-                    and role in [USER]:
+            if not need.isConfirmed and role in [USER]:
                 continue
 
             need_dict = obj_to_dict(need)
             need_dict['participants'] = [
-                {'user_avatar': p.user_avatar}
-                for p in need.current_participants
+                {'user_avatar': p.user_avatar} for p in need.current_participants
             ]
             needs.append(NeedSummary(**need_dict).dict())
 
@@ -401,7 +428,6 @@ class GetChildNeedsSummary(Resource):
 
 # TODO: ngo_id is needed?
 class AddChild(Resource):
-
     def check_privilege(self, sw_id, ngo_id, allowed_sw_ids):  # TODO: priv
         sw_role = get_user_role()
 
@@ -419,8 +445,9 @@ class AddChild(Resource):
 
         return
 
-    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
-               SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @authorize(
+        SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+    )  # TODO: priv
     @json
     @swag_from('./docs/child/add.yml')
     def post(self):
@@ -430,26 +457,36 @@ class AddChild(Resource):
 
         allowed_sw_ids = []
         if sw_role in [NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN]:
-            allowed_sw_ids_tuple = session.query(SocialWorker.id) \
-                .filter_by(isDeleted=False) \
-                .filter_by(id_ngo=ngo_id) \
-                .distinct() \
+            allowed_sw_ids_tuple = (
+                session.query(SocialWorker.id)
+                .filter_by(isDeleted=False)
+                .filter_by(id_ngo=ngo_id)
+                .distinct()
                 .all()
+            )
 
             allowed_sw_ids = [item[0] for item in allowed_sw_ids_tuple]
 
         # May throw 403
         self.check_privilege(sw_id, ngo_id, allowed_sw_ids)
 
-        sw = session.query(SocialWorker) \
-            .filter_by(id=sw_id) \
-            .filter_by(isDeleted=False) \
-            .first()
+        sw = (
+            session.query(SocialWorker)
+            .filter_by(id=sw_id)
+            .filter_by(isDeleted=False)
+            .one_or_none()
+        )
+
+        if sw is None:
+            abort(403)
 
         code = sw.generatedCode + format(sw.childCount + 1, '04d')
 
-        avatar_path, slept_avatar_path, voice_path = \
-            'wrong avatar', 'wrong avatar', 'wrong voice'
+        avatar_path, slept_avatar_path, voice_path = (
+            'wrong avatar',
+            'wrong avatar',
+            'wrong voice',
+        )
 
         if 'nationality' in request.form.keys():
             nationality = int(request.form['nationality'])
@@ -504,9 +541,7 @@ class AddChild(Resource):
         phone_number = request.form['phoneNumber']
         country = int(request.form['country'])
         city = int(request.form['city'])
-        sayname_translations = ujson.loads(
-            request.form['sayname_translations']
-        )
+        sayname_translations = ujson.loads(request.form['sayname_translations'])
         bio_translations = ujson.loads(request.form['bio_translations'])
         bio_summary_translations = ujson.loads(request.form['bio_summary_translations'])
         gender = True if request.form['gender'] == 'true' else False
@@ -607,7 +642,6 @@ class AddChild(Resource):
 
 
 class UpdateChildById(Resource):
-
     def check_privilege(self, sw_id, ngo_id, allowed_sw_ids):  # TODO: priv
         sw_role = get_user_role()
 
@@ -621,8 +655,9 @@ class UpdateChildById(Resource):
 
         return
 
-    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
-               SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @authorize(
+        SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+    )  # TODO: priv
     @json
     @swag_from('./docs/child/update.yml')
     def patch(self, child_id):
@@ -633,16 +668,20 @@ class UpdateChildById(Resource):
             .filter_by(id=child_id)
             .filter_by(isDeleted=False)
             .filter_by(isMigrated=False)
-            .first()
+            .one_or_none()
         )
+        if primary_child is None:
+            abort(404)
 
         allowed_sw_ids = []
         if sw_role in [NGO_SUPERVISOR]:
-            allowed_sw_ids_tuple = session.query(SocialWorker.id) \
-                .filter_by(isDeleted=False) \
-                .filter_by(id_ngo=primary_child.id_ngo) \
-                .distinct() \
+            allowed_sw_ids_tuple = (
+                session.query(SocialWorker.id)
+                .filter_by(isDeleted=False)
+                .filter_by(id_ngo=primary_child.id_ngo)
+                .distinct()
                 .all()
+            )
 
             allowed_sw_ids = [item[0] for item in allowed_sw_ids_tuple]
 
@@ -673,9 +712,7 @@ class UpdateChildById(Resource):
 
             if file2 and allowed_image(file2.filename):
                 filename2 = (
-                    primary_child.generatedCode
-                    + '.'
-                    + file2.filename.split('.')[-1]
+                    primary_child.generatedCode + '.' + file2.filename.split('.')[-1]
                 )
 
                 temp_avatar_path = os.path.join(
@@ -704,9 +741,7 @@ class UpdateChildById(Resource):
 
             if file3 and allowed_image(file3.filename):
                 filename2 = (
-                    primary_child.generatedCode
-                    + '.'
-                    + file3.filename.split('.')[-1]
+                    primary_child.generatedCode + '.' + file3.filename.split('.')[-1]
                 )
 
                 temp_sleptAvatar_path = os.path.join(
@@ -720,7 +755,8 @@ class UpdateChildById(Resource):
                         os.remove(os.path.join(temp_sleptAvatar_path, obj))
 
                 primary_child.sleptAvatarUrl = os.path.join(
-                    temp_sleptAvatar_path, str(primary_child.id) + '-sleptAvatar_' + uuid4().hex + filename2
+                    temp_sleptAvatar_path,
+                    str(primary_child.id) + '-sleptAvatar_' + uuid4().hex + filename2,
                 )
 
                 file3.save(primary_child.sleptAvatarUrl)
@@ -734,9 +770,7 @@ class UpdateChildById(Resource):
 
             if file1 and allowed_voice(file1.filename):
                 filename1 = (
-                    primary_child.generatedCode
-                    + '.'
-                    + file1.filename.split('.')[-1]
+                    primary_child.generatedCode + '.' + file1.filename.split('.')[-1]
                 )
 
                 temp_voice_path = os.path.join(
@@ -768,17 +802,17 @@ class UpdateChildById(Resource):
             primary_child.housingStatus = int(request.form['housingStatus'])
 
         if 'firstName_translations' in request.form.keys():
-            primary_child.firstName_translations = \
-                ujson.loads(request.form['firstName_translations'])
+            primary_child.firstName_translations = ujson.loads(
+                request.form['firstName_translations']
+            )
 
         if 'lastName_translations' in request.form.keys():
-            primary_child.lastName_translations = \
-                ujson.loads(request.form['lastName_translations'])
+            primary_child.lastName_translations = ujson.loads(
+                request.form['lastName_translations']
+            )
 
         if 'gender' in request.form.keys():
-            primary_child.gender = (
-                True if request.form['gender'] == 'true' else False
-            )
+            primary_child.gender = True if request.form['gender'] == 'true' else False
 
         if 'familyCount' in request.form.keys():
             primary_child.familyCount = int(request.form['familyCount'])
@@ -832,8 +866,8 @@ class UpdateChildById(Resource):
 
             if primary_child.existence_status != 1:
                 needs = session.query(Need).filter(
-                    Need.isDeleted == False,
-                    Need.isConfirmed == True,
+                    Need.isDeleted.is_(False),
+                    Need.isConfirmed.is_(True),
                     Need.child_id == child_id,
                     Need.status <= 3,
                 )
@@ -850,7 +884,6 @@ class UpdateChildById(Resource):
 
 
 class DeleteChildById(Resource):
-
     def check_privilege(self, sw_id, ngo_id, allowed_sw_ids):  # TODO: priv
         sw_role = get_user_role()
 
@@ -860,11 +893,12 @@ class DeleteChildById(Resource):
 
         if sw_role in [NGO_SUPERVISOR]:
             if sw_id not in allowed_sw_ids or ngo_id != get_sw_ngo_id():
-                raise  HTTP_PERMISION_DENIED()
+                raise HTTP_PERMISION_DENIED()
         return
 
-    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
-               SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @authorize(
+        SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+    )  # TODO: priv
     @json
     @swag_from('./docs/child/delete.yml')
     def patch(self, child_id):
@@ -875,16 +909,20 @@ class DeleteChildById(Resource):
             .filter_by(id=child_id)
             .filter_by(isDeleted=False)
             .filter_by(isMigrated=False)
-            .first()
+            .one_or_none()
         )
+        if child is None:
+            abort(404)
 
         allowed_sw_ids = []
         if sw_role in [NGO_SUPERVISOR]:
-            allowed_sw_ids_tuple = session.query(SocialWorker.id) \
-                .filter_by(isDeleted=False) \
-                .filter_by(id_ngo=child.id_ngo) \
-                .distinct() \
+            allowed_sw_ids_tuple = (
+                session.query(SocialWorker.id)
+                .filter_by(isDeleted=False)
+                .filter_by(id_ngo=child.id_ngo)
+                .distinct()
                 .all()
+            )
 
             allowed_sw_ids = [item[0] for item in allowed_sw_ids_tuple]
 
@@ -927,7 +965,6 @@ class DeleteChildById(Resource):
 
 
 class ConfirmChild(Resource):
-
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @json
     @commit
@@ -962,7 +999,6 @@ class ConfirmChild(Resource):
 
 
 class MigrateChild(Resource):
-
     @authorize(SUPER_ADMIN, ADMIN)  # TODO: priv
     @json
     @swag_from('./docs/child/migrate.yml')
@@ -977,20 +1013,24 @@ class MigrateChild(Resource):
         except (ValueError, TypeError):
             return {'message': 'Invalid new_sw_id'}, 422
 
-        new_sw = session.query(SocialWorker) \
-            .filter_by(isDeleted=False) \
-            .filter_by(id=new_sw_id) \
-            .with_for_update() \
+        new_sw = (
+            session.query(SocialWorker)
+            .filter_by(isDeleted=False)
+            .filter_by(id=new_sw_id)
+            .with_for_update()
             .one_or_none()
+        )
 
         if not new_sw:
             return {'message': 'social_worker not found'}, 422
 
-        child = session.query(Child) \
-            .filter_by(id=child_id) \
-            .filter_by(isDeleted=False) \
-            .with_for_update() \
+        child = (
+            session.query(Child)
+            .filter_by(id=child_id)
+            .filter_by(isDeleted=False)
+            .with_for_update()
             .one_or_none()
+        )
 
         if not child:
             return {'message': 'Child not found'}, 404
@@ -1006,14 +1046,12 @@ class MigrateChild(Resource):
 
 
 class GetActiveChildrenApi(Resource):
-
     @authorize(SUPER_ADMIN, ADMIN)  # TODO: priv
     @json
     @commit
     @swag_from('./docs/child/active-children.yml')
     def get(self):
-        return Child.get_actives() \
-            .order_by(Child.created)
+        return Child.get_actives().order_by(Child.created)
 
 
 api.add_resource(GetActiveChildrenApi, '/api/v2/child/actives')

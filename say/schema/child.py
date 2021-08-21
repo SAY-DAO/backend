@@ -1,4 +1,5 @@
-from datetime import date, datetime
+from datetime import date
+from datetime import datetime
 from typing import List
 
 from .base import BaseModel
@@ -9,6 +10,7 @@ class FamilyMemberSchema(BaseModel):
     username: str
     isDeleted: bool = None
     member_id: int = None
+    avatarUrl: str = None
 
 
 class UserChildSchema(BaseModel):
