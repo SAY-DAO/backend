@@ -94,7 +94,7 @@ class Child(base, Timestamp):
             return cls.sleptAvatarUrl
         else:
             return cls.awakeAvatarUrl
-    
+
     @hybrid_property
     def is_gone(self):
         return self.existence_status != 1

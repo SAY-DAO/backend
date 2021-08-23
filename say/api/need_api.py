@@ -43,9 +43,7 @@ from say.roles import SUPER_ADMIN
 from say.roles import USER
 from say.schema import NewReceiptSchema
 from say.schema import ReceiptSchema
-from say.validations import ALLOWED_RECEIPT_EXTENSIONS
 from say.validations import allowed_image
-from say.validations import allowed_receipt
 
 from . import *
 
@@ -233,28 +231,6 @@ class UpdateNeedById(Resource):
         if not os.path.isdir(temp_need_path):
             os.makedirs(temp_need_path, exist_ok=True)
 
-        if 'receipts' in request.files.keys():
-            file2 = request.files['receipts']
-            if file2.filename == '':
-                return {'message': 'ERROR OCCURRED --> EMPTY FILE!'}, 400
-
-            if file2 and allowed_receipt(file2.filename):
-                filename = secure_filename(uuid4().hex + '-' + file2.filename)
-                if not os.path.isdir(temp_need_path):
-                    os.makedirs(temp_need_path, exist_ok=True)
-
-                receipt_path = os.path.join(
-                    temp_need_path, str(need.id) + '-receipt_' + filename
-                )
-
-                file2.save(receipt_path)
-                receipt_url = '/' + receipt_path
-                if need.receipts is None:
-                    need.receipts = receipt_url
-                else:
-                    need.receipts += f',{receipt_url}'
-
-        # FIXME: receipts are allowed
         if need.isConfirmed and sw_role not in (ADMIN, SUPER_ADMIN):
             safe_commit(session)
             need_dict = obj_to_dict(need)
@@ -518,10 +494,9 @@ class AddNeed(Resource):
         if not child.isConfirmed:
             return {'message': 'error: child is not confirmed yet!'}, 400
 
-        image_path, receipt_path = 'wrong path', None
+        image_path = 'wrong path'
 
         image_url = image_path
-        receipts = receipt_path
 
         category = int(request.form['category'])
         cost = request.form['cost'].replace(',', '')
@@ -556,7 +531,6 @@ class AddNeed(Resource):
             isUrgent=is_urgent,
             affiliateLinkUrl=affiliate_link_url,
             link=link,
-            receipts=receipts,
             type=need_type,
             child=child,
             doing_duration=doing_duration,
@@ -596,29 +570,6 @@ class AddNeed(Resource):
 
             file.save(image_path)
             new_need.imageUrl = '/' + image_path
-
-        # Depreceted
-        if "receipts" in request.files.keys():
-            file2 = request.files["receipts"]
-            if file2.filename == "":
-                return {"message": "ERROR OCCURRED --> EMPTY FILE!"}, 400
-
-            if not allowed_receipt(file2.filename):
-                return {"message": f"Only {ALLOWED_RECEIPT_EXTENSIONS} allowed"}, 400
-
-            filename = secure_filename(file2.filename)
-
-            temp_need_path = os.path.join(temp_need_path, str(new_need.id) + "-need")
-
-            if not os.path.isdir(temp_need_path):
-                os.makedirs(temp_need_path, exist_ok=True)
-
-            receipt_path = os.path.join(
-                temp_need_path, str(new_need.id) + "-receipt_" + filename
-            )
-
-            file2.save(receipt_path)
-            new_need.receipts = '/' + receipt_path
 
         safe_commit(session)
 

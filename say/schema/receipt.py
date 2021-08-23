@@ -12,7 +12,6 @@ from werkzeug.utils import secure_filename
 
 from say.authorization import get_user_role
 from say.config import configs
-from say.models.receipt import Receipt
 from say.roles import *
 from say.schema.base import CamelModel
 from say.validations import ALLOWED_RECEIPT_EXTENSIONS
@@ -29,30 +28,31 @@ class UpdateReceiptSchema(CamelModel):
     def attachment_validator(cls, v):
         if not isinstance(v, FileStorage):
             raise ValueError('attachment must be file')
-        
+
         if not allowed_receipt(v.filename):
             raise ValueError(f'attachment must be {ALLOWED_RECEIPT_EXTENSIONS}')
-        
+
         receipt_path = os.path.join(
             configs.UPLOAD_FOLDER,
             'receipts',
         )
-        
+
         os.makedirs(receipt_path, exist_ok=True)
 
         v.filename = secure_filename(str(v.filename))
         v.filepath = f'{receipt_path}/{uuid4().hex}-{v.filename}'
 
         return v
-    
+
     @validator('is_public')
     def is_public_validator(cls, v):
         role = get_user_role()
 
-        if not role in [SUPER_ADMIN, SAY_SUPERVISOR, ADMIN] and v == True:
+        if role not in [SUPER_ADMIN, SAY_SUPERVISOR, ADMIN] and v is True:
             raise ValueError(f'can not create public receipt with role {role}')
-        
+
         return v
+
 
 class NewReceiptSchema(UpdateReceiptSchema):
 
@@ -71,8 +71,8 @@ class ReceiptSchema(NewReceiptSchema):
 
     class Config:
         exclude = 'owner_id'
-        orm_mode=True 
-    
+        orm_mode = True
+
     @validator('attachment')
     def attachment_validator(cls, v):
         return urljoin(
@@ -87,6 +87,6 @@ class ReceiptSchema(NewReceiptSchema):
     @validator('owner_id')
     def owner_id_validator(cls, v):
         role = get_user_role()
-        if not role in [SUPER_ADMIN, SAY_SUPERVISOR, ADMIN] and v == True:
+        if role not in [SUPER_ADMIN, SAY_SUPERVISOR, ADMIN] and v is True:
             return None
         return v

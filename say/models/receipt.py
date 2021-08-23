@@ -1,5 +1,3 @@
-from logging import fatal
-
 from sqlalchemy import Boolean
 from sqlalchemy import Column
 from sqlalchemy import DateTime
@@ -11,8 +9,13 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import UniqueConstraint
 from sqlalchemy_utils import Timestamp
 
+from say.roles import ADMIN
+from say.roles import NGO_SUPERVISOR
+from say.roles import SAY_SUPERVISOR
+from say.roles import SUPER_ADMIN
+from say.roles import USER
+
 from ..orm import base
-from ..roles import *
 
 
 class Receipt(base, Timestamp):
@@ -22,8 +25,8 @@ class Receipt(base, Timestamp):
 
     owner_id = Column(Integer, ForeignKey('social_worker.id'), nullable=False, index=True)
 
-    attachment = Column(Unicode(128), nullable=False)
-    code = Column(Unicode(64), nullable=False, index=True)
+    attachment = Column(Unicode(256), nullable=False)
+    code = Column(Unicode(128), nullable=False, index=True)
     deleted = Column(DateTime, nullable=True)
     description = Column(Unicode(1024), nullable=True)
     title = Column(Unicode(128), nullable=True)
@@ -34,14 +37,15 @@ class Receipt(base, Timestamp):
         secondary='need_receipt',
         back_populates='receipts_',
     )
-        
+
     __table_args__ = (
         UniqueConstraint('code', 'deleted'),
     )
 
     @classmethod
     def _query(cls, session, role, user_id, ngo_id=-1, for_update=False, fields=None):
-        from . import Need, Child
+        from . import Child
+        from . import Need
 
         query = session.query(cls).filter(cls.deleted.is_(None))
         if for_update:
@@ -52,9 +56,9 @@ class Receipt(base, Timestamp):
 
         if role in [SUPER_ADMIN, SAY_SUPERVISOR, ADMIN]:
             return query
-        
+
         if role in [USER, None]:
-            return query.filter(Receipt.is_public == True)
+            return query.filter(Receipt.is_public.is_(True))
 
         return query \
             .join(NeedReceipt) \
@@ -63,11 +67,12 @@ class Receipt(base, Timestamp):
             .filter(
                 or_(
                     Child.id_social_worker == user_id,
-                    Receipt.is_public == True if not for_update else False,
+                    Receipt.is_public.is_(True) if not for_update else False,
                     Child.id_ngo == ngo_id if role == NGO_SUPERVISOR else False,
                 ),
-                cls.is_public == False if for_update else True,
+                cls.is_public.is_(False) if for_update else True,
             )
+
 
 class NeedReceipt(base, Timestamp):
     __tablename__ = 'need_receipt'
