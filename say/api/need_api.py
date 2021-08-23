@@ -5,8 +5,8 @@ from uuid import uuid4
 
 import ujson
 from flasgger import swag_from
-from flask import jsonify
 from flask import request
+from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_restful import Resource
 from sqlalchemy import or_
 from werkzeug.utils import secure_filename
@@ -27,7 +27,6 @@ from say.models import obj_to_dict
 from say.models.child_model import Child
 from say.models.child_need_model import ChildNeed
 from say.models.family_model import Family
-from say.models.need_family_model import NeedFamily
 from say.models.need_model import Need
 from say.models.receipt import NeedReceipt
 from say.models.receipt import Receipt
@@ -35,9 +34,16 @@ from say.models.social_worker_model import SocialWorker
 from say.models.user_family_model import UserFamily
 from say.orm import safe_commit
 from say.orm import session
-from say.roles import *
+from say.roles import ADMIN
+from say.roles import COORDINATOR
+from say.roles import NGO_SUPERVISOR
+from say.roles import SAY_SUPERVISOR
+from say.roles import SOCIAL_WORKER
+from say.roles import SUPER_ADMIN
+from say.roles import USER
 from say.schema import NewReceiptSchema
 from say.schema import ReceiptSchema
+from say.validations import ALLOWED_RECEIPT_EXTENSIONS
 from say.validations import allowed_image
 from say.validations import allowed_receipt
 
@@ -56,43 +62,48 @@ def filter_by_privilege(query, get=False):  # TODO: priv
 
     if user_role in [SOCIAL_WORKER, COORDINATOR]:
         if get:
-            query = query.join(Child).filter(or_(
-                Child.id_social_worker == user_id,
-                Child.id == DEFAULT_CHILD_ID,
-            ))
+            query = query.join(Child).filter(
+                or_(
+                    Child.id_social_worker == user_id,
+                    Child.id == DEFAULT_CHILD_ID,
+                )
+            )
         else:
             query = query.join(Child).filter(Child.id_social_worker == user_id)
 
     elif user_role in [NGO_SUPERVISOR]:
         if get:
-            query = query \
-                .join(Child) \
-                .join(SocialWorker) \
-                .filter(or_(
-                    SocialWorker.id_ngo == ngo_id,
-                    Child.id == DEFAULT_CHILD_ID,
-                ))
+            query = (
+                query.join(Child)
+                .join(SocialWorker)
+                .filter(
+                    or_(
+                        SocialWorker.id_ngo == ngo_id,
+                        Child.id == DEFAULT_CHILD_ID,
+                    )
+                )
+            )
         else:
-            query = query \
-                .join(Child) \
-                .join(SocialWorker) \
-                .filter(SocialWorker.id_ngo == ngo_id)
+            query = (
+                query.join(Child).join(SocialWorker).filter(SocialWorker.id_ngo == ngo_id)
+            )
 
     elif user_role in [USER]:
-        query = query \
-            .join(Child) \
-            .join(Family) \
-            .join(UserFamily) \
-            .filter(UserFamily.id_user == user_id) \
+        query = (
+            query.join(Child)
+            .join(Family)
+            .join(UserFamily)
+            .filter(UserFamily.id_user == user_id)
             .filter(UserFamily.isDeleted.is_(False))
+        )
 
     return query
 
 
 class GetAllNeeds(Resource):
-
-    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
-               SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @authorize(
+        SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+    )  # TODO: priv
     @json
     @swag_from('./docs/need/all.yml')
     def get(self, confirm):
@@ -106,23 +117,17 @@ class GetAllNeeds(Resource):
         type_ = args.get('type', None)
 
         done = int(done)
-        needs = session.query(Need) \
-            .filter(Need.isDeleted.is_(False)) \
+        needs = (
+            session.query(Need)
+            .filter(Need.isDeleted.is_(False))
             .order_by(Need.doneAt.desc())
+        )
 
         if int(confirm) == 1:
-            needs = (
-                needs
-                    .filter_by(isDeleted=False)
-                    .filter_by(isConfirmed=True)
-            )
+            needs = needs.filter_by(isDeleted=False).filter_by(isConfirmed=True)
 
         elif int(confirm) == 0:
-            needs = (
-                needs
-                    .filter_by(isDeleted=False)
-                    .filter_by(isConfirmed=False)
-            )
+            needs = needs.filter_by(isDeleted=False).filter_by(isConfirmed=False)
 
         if done == 1:
             needs = needs.filter_by(isDone=True)
@@ -142,14 +147,11 @@ class GetAllNeeds(Resource):
             is_reported = bool(int(is_reported))
             needs = needs.filter_by(isReported=is_reported)
 
-        if ngo_id and sw_role in [
-            SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
-        ]:
+        if ngo_id and sw_role in [SUPER_ADMIN, SAY_SUPERVISOR, ADMIN]:
             ngo_id = int(ngo_id)
-            needs = needs \
-                .join(Child) \
-                .join(SocialWorker) \
-                .filter(SocialWorker.id_ngo == ngo_id)
+            needs = (
+                needs.join(Child).join(SocialWorker).filter(SocialWorker.id_ngo == ngo_id)
+            )
 
         needs = filter_by_privilege(needs, get=True)
 
@@ -177,15 +179,19 @@ class GetAllNeeds(Resource):
 
 
 class GetNeedById(Resource):
-
-    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
-               SAY_SUPERVISOR, ADMIN, USER)  # TODO: priv
+    @authorize(
+        SOCIAL_WORKER,
+        COORDINATOR,
+        NGO_SUPERVISOR,
+        SUPER_ADMIN,
+        SAY_SUPERVISOR,
+        ADMIN,
+        USER,
+    )  # TODO: priv
     @json
     @swag_from('./docs/need/id.yml')
     def get(self, need_id):
-        need_query = session.query(Need) \
-            .filter_by(isDeleted=False) \
-            .filter_by(id=need_id)
+        need_query = session.query(Need).filter_by(isDeleted=False).filter_by(id=need_id)
 
         need = filter_by_privilege(need_query, get=True).one_or_none()
 
@@ -194,25 +200,25 @@ class GetNeedById(Resource):
 
         need_dict = obj_to_dict(need)
 
-        need_dict['participants'] = [
-            obj_to_dict(p) for p in need.current_participants
-        ]
+        need_dict['participants'] = [obj_to_dict(p) for p in need.current_participants]
         return need_dict
 
 
 class UpdateNeedById(Resource):
-
-    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
-               SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @authorize(
+        SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+    )  # TODO: priv
     @json
     @swag_from('./docs/need/update.yml')
     def patch(self, need_id):
         sw_role = get_user_role()
 
-        need_query = session.query(Need) \
-            .filter_by(id=need_id) \
-            .filter_by(isDeleted=False) \
+        need_query = (
+            session.query(Need)
+            .filter_by(id=need_id)
+            .filter_by(isDeleted=False)
             .with_for_update()
+        )
 
         need = filter_by_privilege(need_query).one_or_none()
 
@@ -220,13 +226,9 @@ class UpdateNeedById(Resource):
             raise HTTP_NOT_FOUND()
 
         child = need.child
-        temp_need_path = os.path.join(
-            configs.UPLOAD_FOLDER, str(child.id) + '-child'
-        )
+        temp_need_path = os.path.join(configs.UPLOAD_FOLDER, str(child.id) + '-child')
         temp_need_path = os.path.join(temp_need_path, 'needs')
-        temp_need_path = os.path.join(
-            temp_need_path, str(need.id) + '-need'
-        )
+        temp_need_path = os.path.join(temp_need_path, str(need.id) + '-need')
 
         if not os.path.isdir(temp_need_path):
             os.makedirs(temp_need_path, exist_ok=True)
@@ -262,10 +264,12 @@ class UpdateNeedById(Resource):
             new_cost = int(request.form['cost'].replace(',', ''))
 
             if (
-                ((sw_role in [SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR] and need.isConfirmed) or need.isDone)
-                and
-                new_cost != need._cost
-            ):
+                (
+                    sw_role in [SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR]
+                    and need.isConfirmed
+                )
+                or need.isDone
+            ) and new_cost != need._cost:
                 return {'message': 'Can not change cost when need is done'}, 400
 
             need.cost = new_cost
@@ -298,14 +302,13 @@ class UpdateNeedById(Resource):
             need.type = int(request.form['type'])
 
         if 'isUrgent' in request.form.keys():
-            need.isUrgent = (
-                True if request.form['isUrgent'] == 'true' else False
-            )
+            need.isUrgent = True if request.form['isUrgent'] == 'true' else False
 
         if 'link' in request.form.keys():
             new_link = request.form['link']
             if new_link != need.link:
                 from say.tasks import update_need
+
                 need.link = new_link
                 session.flush()
                 update_need.delay(need.id, force=True)
@@ -337,9 +340,7 @@ class UpdateNeedById(Resource):
 
         if request.form.get('expected_delivery_date'):
             if not (2 <= need.status <= 3):
-                raise Exception(
-                    'Expected delivery date can not changed in this status'
-                )
+                raise Exception('Expected delivery date can not changed in this status')
             need.isReported = False
             need.expected_delivery_date = parse_datetime(
                 request.form['expected_delivery_date']
@@ -351,9 +352,12 @@ class UpdateNeedById(Resource):
             new_status = int(request.form['status'])
 
             purchase_cost = request.form.get('purchase_cost', None)
-            if purchase_cost and sw_role in [
-                SUPER_ADMIN, SAY_SUPERVISOR, ADMIN,
-            ] and new_status == 3 and need.type == 1:
+            if (
+                purchase_cost
+                and sw_role in [SUPER_ADMIN, SAY_SUPERVISOR, ADMIN]
+                and new_status == 3
+                and need.type == 1
+            ):
 
                 purchase_cost = purchase_cost.replace(',', '')
                 need.purchase_cost = purchase_cost
@@ -368,16 +372,15 @@ class UpdateNeedById(Resource):
 
             elif new_status != prev_status:
                 return {
-                    'message':
-                        f'Can not change status from '
-                        f'{prev_status} to {new_status}',
-                    }, 400
+                    'message': f'Can not change status from '
+                    f'{prev_status} to {new_status}',
+                }, 400
 
         if need.type == 0 and need.status == 3:
             bank_track_id = request.form.get('bank_track_id')
 
             if not bank_track_id and prev_status == 2:
-                raise ValueError(f'bank_track_id is required')
+                raise ValueError('bank_track_id is required')
 
             if bank_track_id:
                 need.bank_track_id = bank_track_id
@@ -387,23 +390,23 @@ class UpdateNeedById(Resource):
 
 
 class DeleteNeedById(Resource):
-
     @json
     @commit
-    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
-               SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @authorize(
+        SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+    )  # TODO: priv
     @swag_from('./docs/need/delete.yml')
     def patch(self, need_id):
-        need = session.query(Need) \
-            .filter_by(isDeleted=False) \
-            .filter_by(id=need_id)
+        need = session.query(Need).filter_by(isDeleted=False).filter_by(id=need_id)
 
         need = filter_by_privilege(need).with_for_update().one_or_none()
         if not need:
             return {'message': 'need not found'}, 404
 
-        if get_user_role() in (SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR) \
-                and need.isConfirmed:
+        if (
+            get_user_role() in (SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR)
+            and need.isConfirmed
+        ):
             return {'message': 'permision denied'}, 403
 
         if (need.type == 0 and need.status < 4) or (need.type == 1 and need.status < 5):
@@ -422,7 +425,6 @@ class DeleteNeedById(Resource):
 
 
 class ConfirmNeed(Resource):
-
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @json
     @swag_from('./docs/need/confirm.yml')
@@ -431,10 +433,13 @@ class ConfirmNeed(Resource):
 
         primary_need = (
             session.query(Need)
-                .filter_by(id=need_id)
-                .filter_by(isDeleted=False)
-                .one_or_none()
+            .filter_by(id=need_id)
+            .filter_by(isDeleted=False)
+            .one_or_none()
         )
+
+        if primary_need is None:
+            return {'message': 'need not found'}, 404
 
         if primary_need.isConfirmed:
             return {'message': 'need has already been confirmed!'}, 400
@@ -460,7 +465,6 @@ class ConfirmNeed(Resource):
 
 
 class AddNeed(Resource):
-
     def check_privilege(self, sw_id, allowed_sw_ids):  # TODO: priv
         sw_role = get_user_role()
 
@@ -474,18 +478,21 @@ class AddNeed(Resource):
 
         return None
 
-    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
-               SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @authorize(
+        SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+    )  # TODO: priv
     @json
     @swag_from('./docs/need/add.yml')
     def post(self):
         child_id = int(request.form['child_id'])
-        child = session.query(Child) \
-            .filter_by(id=child_id) \
-            .filter_by(isDeleted=False) \
-            .filter_by(isMigrated=False) \
-            .filter_by(isConfirmed=True) \
+        child = (
+            session.query(Child)
+            .filter_by(id=child_id)
+            .filter_by(isDeleted=False)
+            .filter_by(isMigrated=False)
+            .filter_by(isConfirmed=True)
             .one_or_none()
+        )
 
         if child is None:
             return {'message': 'error: child not found!'}, 400
@@ -495,11 +502,13 @@ class AddNeed(Resource):
 
         allowed_sw_ids = []
         if sw_role in [NGO_SUPERVISOR]:
-            allowed_sw_ids_tuple = session.query(SocialWorker.id) \
-                .filter_by(isDeleted=False) \
-                .filter_by(id_ngo=get_sw_ngo_id()) \
-                .distinct() \
+            allowed_sw_ids_tuple = (
+                session.query(SocialWorker.id)
+                .filter_by(isDeleted=False)
+                .filter_by(id_ngo=get_sw_ngo_id())
+                .distinct()
                 .all()
+            )
 
             allowed_sw_ids = [item[0] for item in allowed_sw_ids_tuple]
 
@@ -517,9 +526,7 @@ class AddNeed(Resource):
         category = int(request.form['category'])
         cost = request.form['cost'].replace(',', '')
 
-        name_translations = ujson.loads(
-            request.form['name_translations']
-        )
+        name_translations = ujson.loads(request.form['name_translations'])
         description_translations = ujson.loads(
             request.form['description_translations'],
         )
@@ -594,21 +601,14 @@ class AddNeed(Resource):
         if "receipts" in request.files.keys():
             file2 = request.files["receipts"]
             if file2.filename == "":
-                resp = make_response(jsonify({"message": "ERROR OCCURRED --> EMPTY FILE!"}), 500)
-                session.close()
-                return resp
-
+                return {"message": "ERROR OCCURRED --> EMPTY FILE!"}, 400
 
             if not allowed_receipt(file2.filename):
-                resp = make_response(jsonify({"message": f"Only {ALLOWED_RECEIPT_EXTENSIONS} allowed"}), 400)
-                session.close()
-                return resp
+                return {"message": f"Only {ALLOWED_RECEIPT_EXTENSIONS} allowed"}, 400
 
             filename = secure_filename(file2.filename)
 
-            temp_need_path = os.path.join(
-                temp_need_path, str(new_need.id) + "-need"
-            )
+            temp_need_path = os.path.join(temp_need_path, str(new_need.id) + "-need")
 
             if not os.path.isdir(temp_need_path):
                 os.makedirs(temp_need_path, exist_ok=True)
@@ -620,13 +620,6 @@ class AddNeed(Resource):
             file2.save(receipt_path)
             new_need.receipts = '/' + receipt_path
 
-            safe_commit(session)
-
-            if new_need.link:
-                update_need.delay(new_need.id)
-
-            resp = make_response(jsonify(obj_to_dict(new_need)), 200)
-
         safe_commit(session)
 
         if new_need.link:
@@ -635,8 +628,8 @@ class AddNeed(Resource):
 
         return new_need
 
-class NeedReceipts(Resource):
 
+class NeedReceipts(Resource):
     @json
     @swag_from('./docs/need/list_receipts.yml')
     def get(self, id):
@@ -649,21 +642,26 @@ class NeedReceipts(Resource):
             user_id = None
             ngo_id = None
 
-        base_query = (session.query(Receipt) \
+        base_query = (
+            session.query(Receipt)
             .join(NeedReceipt, NeedReceipt.receipt_id == Receipt.id)
             .join(Need, NeedReceipt.need_id == Need.id)
             .join(Child, Child.id == Need.child_id)
             .join(SocialWorker, SocialWorker.id == Child.id_social_worker)
             .filter(
-                Need.isDeleted == False,
+                Need.isDeleted.is_(False),
                 Receipt.deleted.is_(None),
                 NeedReceipt.deleted.is_(None),
                 Need.id == id,
                 or_(
                     True if user_role in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR] else False,
-                    Receipt.is_public == True,
-                    Receipt.owner_id == user_id if not user_role in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR] else False,
-                    SocialWorker.id_ngo == ngo_id if user_role in [NGO_SUPERVISOR] else False,
+                    Receipt.is_public.is_(True),
+                    Receipt.owner_id == user_id
+                    if user_role not in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR]
+                    else False,
+                    SocialWorker.id_ngo == ngo_id
+                    if user_role in [NGO_SUPERVISOR]
+                    else False,
                 ),
             )
         )
@@ -674,35 +672,39 @@ class NeedReceipts(Resource):
 
         return res
 
-
-    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
-               SAY_SUPERVISOR, ADMIN)
+    @authorize(
+        SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+    )
     @json
     @swag_from('./docs/need/new_receipt.yml')
     def post(self, id):
         sw_id = get_user_id()
 
         try:
-            data = NewReceiptSchema(**request.form.to_dict(), **request.files, owner_id=sw_id)
+            data = NewReceiptSchema(
+                **request.form.to_dict(), **request.files, owner_id=sw_id
+            )
         except ValueError as e:
             return e.json(), 400
-
 
         need = filter_by_privilege(
             session.query(Need).filter(
                 Need.id == id,
-                Need.isDeleted == False,
+                Need.isDeleted.is_(False),
             )
         ).one_or_none()
-
 
         if need is None:
             return HTTP_NOT_FOUND()
 
-        receipt = session.query(Receipt).filter(
-            Receipt.code == data.code,
-            Receipt.deleted == None,
-        ).one_or_none()
+        receipt = (
+            session.query(Receipt)
+            .filter(
+                Receipt.code == data.code,
+                Receipt.deleted.is_(None),
+            )
+            .one_or_none()
+        )
 
         if receipt is not None:
             return {'message': 'Code already exists'}, 400
@@ -724,17 +726,20 @@ class NeedReceipts(Resource):
 
 
 class NeedReceiptAPI(Resource):
-
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
     @json
     @swag_from('./docs/need/delete_receipt.yml')
     def delete(self, id, receiptId):
         receipt_id = receiptId
-        need_receipt = session.query(NeedReceipt).filter(
-            NeedReceipt.need_id == id,
-            NeedReceipt.receipt_id == receipt_id,
-            NeedReceipt.deleted.is_(None),
-        ).one_or_none()
+        need_receipt = (
+            session.query(NeedReceipt)
+            .filter(
+                NeedReceipt.need_id == id,
+                NeedReceipt.receipt_id == receipt_id,
+                NeedReceipt.deleted.is_(None),
+            )
+            .one_or_none()
+        )
 
         if need_receipt is None:
             return HTTP_NOT_FOUND()
@@ -742,7 +747,6 @@ class NeedReceiptAPI(Resource):
         need_receipt.deleted = datetime.utcnow()
         safe_commit(session)
         return ReceiptSchema.from_orm(need_receipt.receipt)
-
 
 
 """
