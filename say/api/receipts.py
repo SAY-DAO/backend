@@ -8,7 +8,7 @@ from flask_restful import Resource
 from sqlalchemy import func
 from sqlalchemy import or_
 
-from say import api
+from say.api.ext import api
 from say.authorization import authorize
 from say.authorization import get_sw_ngo_id
 from say.authorization import get_user_id

@@ -58,8 +58,8 @@ class NewReceiptSchema(UpdateReceiptSchema):
 
     attachment: Any
     code: constr(max_length=64)
-    description: constr(max_length=1024) = ''
-    title: constr(max_length=128) = ''
+    description: constr(max_length=1024) = None
+    title: constr(max_length=128) = None
     is_public: bool = False
     owner_id: int
 
