@@ -5,6 +5,7 @@ from uuid import uuid4
 
 import ujson
 from flasgger import swag_from
+from flask import jsonify
 from flask import request
 from flask_restful import Resource
 from sqlalchemy import or_
