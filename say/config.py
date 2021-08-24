@@ -61,7 +61,7 @@ class Config(object):
 
     # Business
     MIN_BANK_AMOUNT = 100  # Toman
-    RANDOM_SEARCH_FACTOR = 3
+    RANDOM_SEARCH_FACTOR = 2
 
     # Celery
     BROKER = 'redis'
