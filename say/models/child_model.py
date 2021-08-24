@@ -154,8 +154,8 @@ class Child(base, Timestamp):
             .filter_by(isMigrated=False) \
             .filter_by(existence_status=1) \
             .join(Need) \
-            .filter(Need.isConfirmed == True) \
-            .filter(Need.isDeleted == False)
+            .filter(Need.isConfirmed.is_(True)) \
+            .filter(Need.isDeleted.is_(False))
 
     def migrate(self, new_sw):
         assert new_sw.id != self.social_worker.id
