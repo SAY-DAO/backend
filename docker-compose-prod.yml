@@ -8,8 +8,8 @@ services:
     image: pranasnet/sqlbak
     volumes:
       - sqlbak_local_data:/opt/sqlbak
-      - sqlbac_backups:/tmp/sqlbak
+      - sqlbak_backups:/tmp/sqlbak
 
 volumes:
  sqlbak_local_data:
- sqlbac_backups:
+ sqlbak_backups:
