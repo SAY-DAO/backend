@@ -3,3 +3,22 @@ services:
   db:
     ports:
       - 35432:5432
+
+  sqlbak:
+    image: pranasnet/sqlbak
+    volumes:
+      - sqlbak_local_data:/opt/sqlbak
+      - backup_folder:/tmp/sqlbak
+    environment:
+    sqlbak_key:
+    sqlbak_name: SAY
+    db_type: postgresql
+    user: postgres
+    password: ''
+    host: db
+    secrets:
+      - postgres-password
+
+volumes:
+ sqlbak_local_data:
+ backup_folder:
