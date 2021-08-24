@@ -657,7 +657,7 @@ class NeedReceipts(Resource):
             .one_or_none()
         )
 
-        if receipt is not None:
+        if data.code and receipt is not None:
             return {'message': 'Code already exists'}, 400
 
         receipt = Receipt(**data.dict())

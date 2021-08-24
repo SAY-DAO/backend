@@ -23,7 +23,7 @@ parameters:
     in: formData
     type: integer
     type: string
-    required: true
+    description: uniqe, max 128 char
 
   - name: attachment
     in: formData
@@ -39,6 +39,7 @@ parameters:
     in: formData
     type: string
     description: max 128 char
+    required: true
 
   - name: isPublic
     in: formData
@@ -49,7 +50,7 @@ parameters:
 responses:
   400:
     description: bad request
-  
+
   401:
     description: unauthorized
 

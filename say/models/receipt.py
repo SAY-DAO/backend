@@ -26,10 +26,10 @@ class Receipt(base, Timestamp):
     owner_id = Column(Integer, ForeignKey('social_worker.id'), nullable=False, index=True)
 
     attachment = Column(Unicode(256), nullable=False)
-    code = Column(Unicode(128), nullable=False, index=True)
+    code = Column(Unicode(128), nullable=True, index=True)
     deleted = Column(DateTime, nullable=True)
     description = Column(Unicode(1024), nullable=True)
-    title = Column(Unicode(128), nullable=True)
+    title = Column(Unicode(128), nullable=False)
     is_public = Column(Boolean, default=False)
 
     needs = relationship(

@@ -12,7 +12,9 @@ from werkzeug.utils import secure_filename
 
 from say.authorization import get_user_role
 from say.config import configs
-from say.roles import *
+from say.roles import ADMIN
+from say.roles import SAY_SUPERVISOR
+from say.roles import SUPER_ADMIN
 from say.schema.base import CamelModel
 from say.validations import ALLOWED_RECEIPT_EXTENSIONS
 from say.validations import allowed_receipt
@@ -57,9 +59,9 @@ class UpdateReceiptSchema(CamelModel):
 class NewReceiptSchema(UpdateReceiptSchema):
 
     attachment: Any
-    code: constr(max_length=64)
+    code: constr(max_length=128) = None
     description: constr(max_length=1024) = None
-    title: constr(max_length=128) = None
+    title: constr(max_length=128)
     is_public: bool = False
     owner_id: int
 
