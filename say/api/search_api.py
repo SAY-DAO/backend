@@ -5,10 +5,10 @@ from flasgger import swag_from
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_restful import Resource
 from flask_restful import abort
-from sqlalchemy import func
 from sqlalchemy.sql.expression import distinct
 from sqlalchemy.sql.functions import count
 
+from say.config import configs
 from say.models import commit
 from say.models.child_model import Child
 from say.models.family_model import Family
@@ -79,8 +79,10 @@ class GetRandomSearchResult(Resource):
                 499,
             )
 
-        # weight is 1/(1 + family_count ^ 3)
-        weights = [1 / (1 + x[1]) ** 3 for x in child_family_counts]
+        # weight is 1/(1 + family_count ^ FACTOR)
+        weights = [
+            1 / (1 + x[1]) ** configs.RANDOM_SEARCH_FACTOR for x in child_family_counts
+        ]
         addoptable_children = [x[0] for x in child_family_counts]
         selected_child_id = random.choices(addoptable_children, weights)[0]
         random_child: Child = session.query(Child).get(selected_child_id)
