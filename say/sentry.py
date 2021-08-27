@@ -28,10 +28,10 @@ def traces_sampler(sampling_context):
 
 def before_send(event, hint):
     if 'exc_info' in hint:
-        exc_type, exc_value, tb = hint['exc_info'] 
+        exc_type, exc_value, tb = hint['exc_info']
         if isinstance(exc_value, HTTPException) and exc_value.status_code < 500:
             return None
-    return event    
+    return event
 
 
 def setup_sentry():

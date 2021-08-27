@@ -15,12 +15,13 @@ validate_username = re.compile(USERNAME_PATTERN).fullmatch
 EMAIL_PATTERN = r'^[^@]+@[^@]+\.[^@]+$'
 validate_email = re.compile(EMAIL_PATTERN).fullmatch
 
-PASSWORD_PATTERN = '^(.){6,64}$'
+PASSWORD_PATTERN = '^([^\n ]{6,64})$'
 validate_password = re.compile(PASSWORD_PATTERN).fullmatch
 
 ALLOWED_VOICE_EXTENSIONS = {"wav", "m4a", "wma", "mp3", "aac", "ogg"}
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg"}
 ALLOWED_RECEIPT_EXTENSIONS = ALLOWED_IMAGE_EXTENSIONS | {"pdf"}
+
 
 def validate_phone(phone):
     try:

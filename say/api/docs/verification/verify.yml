@@ -8,7 +8,7 @@ parameters:
   - in: path
     name: id
     type: int
-    
+
   - in: formData
     name: code
     required: true

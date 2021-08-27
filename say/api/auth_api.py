@@ -1,5 +1,6 @@
 from datetime import datetime
 from datetime import timedelta
+from os import abort
 
 import phonenumbers
 from babel import Locale
@@ -28,6 +29,7 @@ from say.orm import obj_to_dict
 from say.orm import safe_commit
 from say.orm import session
 from say.tasks import subscribe_email
+from say.utils import clean_input
 from say.validations import validate_password
 from say.validations import validate_phone
 from say.validations import validate_username
@@ -56,7 +58,6 @@ def datetime_converter(o):
 
 
 class RegisterUser(Resource):
-
     @json
     @commit
     @swag_from('./docs/auth/register.yml')
@@ -70,8 +71,7 @@ class RegisterUser(Resource):
 
         phone_number = None
         if 'phoneNumber' in request.form.keys():
-            phone_number = request.form['phoneNumber']
-            phone_number = phone_number.replace(' ', '')
+            phone_number = clean_input(request.form['phoneNumber'])
             if phone_number == '':
                 phone_number = None
 
@@ -87,30 +87,27 @@ class RegisterUser(Resource):
         if 'password' in request.form.keys():
             password = request.form['password']
             if not validate_password(password):
-                return {
-                           'message': 'password must be at least 6 charachters'}, 400
+                return {'message': 'password must be at least 6 charachters'}, 400
 
         else:
             return {'message': 'password is needed'}, 400
 
         email = None
         if 'email' in request.form.keys():
-            email = request.form['email'].lower()
-            if bool(email) == False:
+            email = clean_input(request.form['email'].lower())
+            if not bool(email):
                 email = None
 
         if not email and not phone_number:
             return {'message': 'Email or Phone Number is required'}, 400
 
         if 'verifyCode' in request.form.keys():
-            code = request.form['verifyCode']
+            code = clean_input(request.form['verifyCode'])
         else:
             return {'message': 'verifyCode is needed'}, 400
 
         if 'isInstalled' in request.form.keys():
-            is_installed = bool(
-                int(request.form['isInstalled'])
-            )
+            is_installed = bool(int(clean_input(request.form['isInstalled'])))
         else:
             return {'message': 'isInstalled is needed'}, 400
 
@@ -130,20 +127,22 @@ class RegisterUser(Resource):
 
         alreadyExist = (
             session.query(User)
-                .filter_by(isDeleted=False)
-                .filter(or_(
-                User.formated_username == username.lower(),
-                and_(
-                    User.phone_number == phone_number,
-                    User.phone_number.isnot(None),
-                    User.phone_number != '',
-                ),
-                and_(
-                    User.emailAddress == email,
-                    User.emailAddress.isnot(None),
-                ),
-            ))
-                .first()
+            .filter_by(isDeleted=False)
+            .filter(
+                or_(
+                    User.formated_username == username.lower(),
+                    and_(
+                        User.phone_number == phone_number,
+                        User.phone_number.isnot(None),
+                        User.phone_number != '',
+                    ),
+                    and_(
+                        User.emailAddress == email,
+                        User.emailAddress.isnot(None),
+                    ),
+                )
+            )
+            .first()
         )
 
         if alreadyExist is not None:
@@ -152,14 +151,18 @@ class RegisterUser(Resource):
                 422,
             )
 
-        verification = session.query(Verification) \
-            .filter(Verification._code == code) \
-            .filter(Verification.verified.is_(True)) \
-            .filter(or_(
-            EmailVerification.email == email,
-            PhoneVerification.phone_number == phone_number,
-        )) \
+        verification = (
+            session.query(Verification)
+            .filter(Verification._code == code)
+            .filter(Verification.verified.is_(True))
+            .filter(
+                or_(
+                    EmailVerification.email == email,
+                    PhoneVerification.phone_number == phone_number,
+                )
+            )
             .one_or_none()
+        )
 
         if not verification:
             return {'message': 'Invalid verifyCode'}, 400
@@ -219,6 +222,7 @@ class Login(Resource):
     def post(self):
         if 'username' in request.form.keys():
             username = request.form['username'].lower()
+            username = clean_input(username)
         else:
             return {'message': 'userName is needed'}, 400
 
@@ -236,22 +240,24 @@ class Login(Resource):
 
         user = None
         try:
-            user = user_query \
-                .filter(and_(
+            user = user_query.filter(
+                and_(
                     User.phone_number == username,
-                    User.is_phonenumber_verified == True,
-                )).one_or_none()
+                    User.is_phonenumber_verified.is_(True),
+                )
+            ).one_or_none()
         except phonenumbers.phonenumberutil.NumberParseException:
             pass
         if user is None:
-            user = user_query \
-                .filter(or_(
+            user = user_query.filter(
+                or_(
                     and_(
                         User.emailAddress == username,
-                        User.is_email_verified == True,
+                        User.is_email_verified.is_(True),
                     ),
                     User.formated_username == username,
-                )).one_or_none()
+                )
+            ).one_or_none()
 
         if user is None:
             return {'message': 'Please Register First'}, 400
@@ -302,18 +308,16 @@ class VerifyPhone(Resource):
     @swag_from('./docs/verification/verify-phone.yml')
     def post(self):
         phone_number = request.form.get('phone_number', None)
-
         if not phone_number:
             return {'message': 'phone_number is required'}, 400
 
         try:
+            phone_number = clean_input(phone_number)
             phone_number = PhoneNumber(phone_number)
         except PhoneNumberParseException:
             return {'message': 'phone_number is invalid'}, 400
 
-        user = session.query(User) \
-            .filter(User.phone_number == phone_number) \
-            .first()
+        user = session.query(User).filter(User.phone_number == phone_number).one_or_none()
 
         if user:
             return {'message': 'phone_number already exixst'}, 422
@@ -327,7 +331,6 @@ class VerifyPhone(Resource):
         session.add(verification)
         session.flush()
         verification.send()
-
         return verification
 
 
@@ -341,6 +344,10 @@ class VerificationAPI(Resource):
     @swag_from('./docs/verification/verify.yml')
     def patch(self, id):
         code = request.form.get('code')
+        if not code:
+            raise HTTPException(400, 'code is required')
+
+        code = clean_input(code)
         code = code.replace('-', '')
 
         verification = session.query(Verification).get(id)
@@ -365,7 +372,7 @@ class VerifyEmail(Resource):
     @commit
     @swag_from('./docs/verification/verify-email.yml')
     def post(self):
-        email = request.form.get('email', None)
+        email = clean_input(request.form.get('email', None))
 
         if not email:
             return {'message': 'email is required'}, 400
@@ -373,13 +380,18 @@ class VerifyEmail(Resource):
         try:
             valid = validate_email(email)
             email = valid.email
-        except EmailNotValidError as e:
+        except EmailNotValidError:
             return {'message': 'email is invalid'}, 400
 
-        user = session.query(User) \
-            .filter(and_(
-                User.emailAddress == email,
-            )).first()
+        user = (
+            session.query(User)
+            .filter(
+                and_(
+                    User.emailAddress == email,
+                )
+            )
+            .first()
+        )
 
         if user:
             return {'message': 'email already exixst'}, 422
@@ -398,7 +410,6 @@ class VerifyEmail(Resource):
 
 
 class TokenRefresh(Resource):
-
     @authorize_refresh
     @json
     @swag_from('./docs/auth/refresh.yml')
@@ -425,8 +436,8 @@ class ResetPasswordByEmailApi(Resource):
     @commit
     @swag_from('./docs/auth/reset_password_by_email.yml')
     def post(self):
-
-        email = request.form.get('email').lower()
+        email = request.form.get('email', '').lower()
+        email = clean_input(email)
 
         if not email:
             return {'message': 'email is missing'}, 400
@@ -434,17 +445,15 @@ class ResetPasswordByEmailApi(Resource):
         try:
             valid = validate_email(email)
             email = valid.email
-        except EmailNotValidError as e:
+        except EmailNotValidError:
             return {'message': 'email is invalid'}, 400
 
-        user = session.query(User) \
-            .filter_by(emailAddress=email) \
-            .first()
+        user = session.query(User).filter_by(emailAddress=email).first()
 
         if user:
-            session.query(ResetPassword) \
-                .filter(ResetPassword.user_id == user.id) \
-                .update({'is_used': True})
+            session.query(ResetPassword).filter(ResetPassword.user_id == user.id).update(
+                {'is_used': True}
+            )
 
             reset_password = ResetPassword(user=user)
             session.add(reset_password)
@@ -470,18 +479,17 @@ class ResetPasswordByPhoneApi(Resource):
             return {'message': 'phoneNumber is missing'}, 400
 
         try:
+            phone_number = clean_input(phone_number)
             phonenumbers.parse(phone_number)
         except phonenumbers.phonenumberutil.NumberParseException:
             return {'message': 'phone is invalid'}, 400
 
-        user = session.query(User) \
-            .filter_by(phone_number=phone_number) \
-            .first()
+        user = session.query(User).filter_by(phone_number=phone_number).first()
 
         if user:
-            session.query(ResetPassword) \
-                .filter(ResetPassword.user_id == user.id) \
-                .update({'is_used': True})
+            session.query(ResetPassword).filter(ResetPassword.user_id == user.id).update(
+                {'is_used': True}
+            )
 
             reset_password = ResetPassword(user=user)
             session.add(reset_password)
@@ -498,10 +506,8 @@ class ConfirmResetPassword(Resource):
     @commit
     @swag_from('./docs/auth/confirm_reset_password.yml')
     def post(self, token):
-
-        reset_password = session.query(ResetPassword) \
-            .filter_by(token=token) \
-            .first()
+        token = clean_input(token)
+        reset_password = session.query(ResetPassword).filter_by(token=token).one_or_none()
 
         if reset_password is None:
             raise HTTPException(404, t('reset_password.4o4'))
@@ -510,12 +516,17 @@ class ConfirmResetPassword(Resource):
         elif reset_password.is_expired:
             raise HTTPException(400, t('reset_password.expired'))
 
-        new_password = request.form['password']
+        new_password = request.form.get('password', '')
+        if not validate_password(new_password):
+            raise HTTPException(400, 'invald password')
+
         confirm_new_password = request.form['confirm_password']
         if new_password != confirm_new_password:
             return {'message': 'passwords dose not match'}, 499
 
         user = session.query(User).get(reset_password.user_id)
+        if not user:
+            abort(403)
 
         user.password = new_password
         reset_password.is_used = True
