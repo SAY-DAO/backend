@@ -106,6 +106,7 @@ from .privilege_model import Privilege
 from .receipt import NeedReceipt
 from .receipt import Receipt
 from .reset_password_model import ResetPassword
+from .search import Search
 from .social_worker_model import SocialWorker
 from .user_family_model import UserFamily
 from .user_model import User

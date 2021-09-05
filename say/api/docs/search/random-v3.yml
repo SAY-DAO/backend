@@ -1,0 +1,83 @@
+Random Search V3
+---
+
+tags:
+  - Search API
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: false
+    type: string
+
+responses:
+  499:
+    description: You can not addopt more children
+
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+    schema:
+      id: search_v3
+      type: object
+      properties:
+        token:
+          type: string
+          description: Search token
+        type:
+          type: string
+          description: Type of search
+        child:
+          schema:
+            id: user_child_model_v3
+            properties:
+              avatarurl:
+                type: string
+              bio:
+                type: string
+              biosummary:
+                type: string
+              birthdate:
+                type: string
+              doneNeedsCount:
+                type: integer
+              existenceStatus:
+                type: integer
+              familyId:
+                type: integer
+              gender:
+                type: string
+              generatedcode:
+                type: string
+              id:
+                type: integer
+              isGone:
+                type: boolean
+              sayname:
+                type: string
+              spentCredit:
+                type: integer
+              voiceurl:
+                type: string
+              socialWorkerGeneratedCode:
+                type: string
+              familyMembers:
+                schema:
+                  id: family_members_v3
+                  items:
+                    schema:
+                    id: family_member_v3
+                    properties:
+                      userRole:
+                        type: integer
+                      username:
+                        type: string
+                      isDeleted:
+                        type: boolean
+                      memberId:
+                        type: integer
+                      avatarurl:
+                        type: string

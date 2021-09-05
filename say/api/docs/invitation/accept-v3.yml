@@ -1,0 +1,46 @@
+Accept an Invitation V3
+---
+
+tags:
+  - Invitation API
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - in: path
+    name: token
+    required: true
+    type: string
+
+responses:
+  200:
+    description: Accepted and joined
+
+  740:
+    description: InvitationToken is required
+
+  404:
+    description: Inviation not found
+
+  742:
+    description: Invalid role
+
+  743:
+    description: Family not found
+
+  744:
+    description: Can not join this family
+
+  745:
+    description: User not found
+
+  746:
+    description: You must back to your old role
+
+  747:
+    description: Already joined
+

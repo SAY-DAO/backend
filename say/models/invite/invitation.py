@@ -1,6 +1,8 @@
 import secrets
 from urllib.parse import urljoin
 
+from sqlalchemy.ext.associationproxy import association_proxy
+
 from say.config import configs
 from say.constants import ALPHABET
 from say.models import *
@@ -35,6 +37,7 @@ class Invitation(base, Timestamp):
         index=True,
     )
 
+    child = association_proxy('family', 'child')
     family = relationship(
         'Family',
         back_populates='invitations',
@@ -57,9 +60,20 @@ class Invitation(base, Timestamp):
     @hybrid_property
     def link(self):
         return urljoin(
-            configs.BASE_URL, f'/search-result?token={self.token}',
+            configs.BASE_URL, configs.INVITATION_URL % self.token,
         )
 
     @link.expression
     def link(cls):
         return None
+
+    @hybrid_property
+    def link_v3(self):
+        return urljoin(
+            configs.BASE_URL, configs.INVITATION_V3_URL % self.token,
+        )
+
+    @link_v3.expression
+    def link_v3(cls):
+        return None
+

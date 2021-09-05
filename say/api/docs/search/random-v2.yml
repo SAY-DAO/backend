@@ -1,0 +1,32 @@
+Random Search V2
+---
+
+tags:
+  - Search API
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: false
+    type: string
+
+responses:
+  499:
+    description: You can not addopt more children
+
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+    schema:
+      id: search_model
+      properties:
+        token:
+          type: string
+          description: Invitation token, use this to get the child
+
+        type_:
+          type: string
+          description: Type of search

@@ -2,6 +2,7 @@ from datetime import time
 
 import pytz
 from sqlalchemy.dialects.postgresql import HSTORE
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import column_property
 
 from ..orm import session
@@ -19,7 +20,9 @@ class Child(base, Timestamp):
 
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
     id_ngo = Column(Integer, ForeignKey('ngo.id'), nullable=False, index=True)
-    id_social_worker = Column(Integer, ForeignKey('social_worker.id'), nullable=False, index=True)
+    id_social_worker = Column(
+        Integer, ForeignKey('social_worker.id'), nullable=False, index=True
+    )
 
     firstName_translations = Column(HSTORE)
     firstName = translation_hybrid(firstName_translations)
@@ -35,7 +38,9 @@ class Child(base, Timestamp):
     country = Column(
         Integer, nullable=False
     )  # 98:iran | 93:afghanistan | ... (real country codes) / [must be change after using real country/city api]
-    city = Column(Integer, nullable=False)  # 1:tehran | 2:karaj / [must be change after using real country/city api]
+    city = Column(
+        Integer, nullable=False
+    )  # 1:tehran | 2:karaj / [must be change after using real country/city api]
 
     awakeAvatarUrl = Column(String, nullable=False)
     sleptAvatarUrl = Column(String, nullable=False)
@@ -49,7 +54,9 @@ class Child(base, Timestamp):
     bioSummary = translation_hybrid(bio_summary_translations)
     sayFamilyCount = Column(Integer, nullable=False, default=0)
     voiceUrl = Column(String, nullable=False)
-    birthPlace = Column(Text, nullable=True)  # 1:tehran | 2:karaj / [must be change after using real country/city api]
+    birthPlace = Column(
+        Text, nullable=True
+    )  # 1:tehran | 2:karaj / [must be change after using real country/city api]
     birthDate = Column(Date, nullable=True)
     address = Column(Text, nullable=True)
     housingStatus = Column(
@@ -60,7 +67,9 @@ class Child(base, Timestamp):
         Integer, nullable=True
     )  # -3:Deprived of education | -2:Kinder garden | -1:Not attending | 0:Pre-school | 1:1st grade | 2:2nd grade | ... | 13:University
     status = Column(Integer, nullable=True)  # happy, sad, etc
-    existence_status = Column(Integer, nullable=True, default=1, index=True)  # 0: dead :( | 1: alive and present | 2: alive but gone | 3: Temporarry gone
+    existence_status = Column(
+        Integer, nullable=True, default=1, index=True
+    )  # 0: dead :( | 1: alive and present | 2: alive but gone | 3: Temporarry gone
     isDeleted = Column(Boolean, nullable=False, default=False, index=True)
     isConfirmed = Column(Boolean, nullable=False, default=False)
     confirmUser = Column(Integer, nullable=True)
@@ -69,6 +78,10 @@ class Child(base, Timestamp):
     isMigrated = Column(Boolean, nullable=False, default=False, index=True)
     migratedId = Column(Integer, nullable=True, index=True)
     migrateDate = Column(Date, nullable=True)
+
+    family_id = association_proxy('family', 'id')
+    social_worker_generated_code = association_proxy('social_worker', 'generatedCode')
+    family_members = association_proxy('family', 'members')
 
     @hybrid_property
     def avatarUrl(self):
@@ -104,26 +117,34 @@ class Child(base, Timestamp):
         return cls.existence_status != 1
 
     done_needs_count = column_property(
-        select([coalesce(
-            func.count(Need.id),
-            0,
-        )])
-        .where(and_(
-            Need.status >= 2,
-            Need.isDeleted.is_(False),
-            Need.child_id == id,
-        ))
+        select(
+            [
+                coalesce(
+                    func.count(Need.id),
+                    0,
+                )
+            ]
+        )
+        .where(
+            and_(
+                Need.status >= 2,
+                Need.isDeleted.is_(False),
+                Need.child_id == id,
+            )
+        )
         .correlate_except(Need),
     )
 
     spent_credit = column_property(
-        select([coalesce(
-            func.sum(Need.paid),
-            0,
-        )]).where(and_(
-            Need.child_id == id,
-            Need.isDeleted.is_(False)
-        ))
+        select(
+            [
+                coalesce(
+                    func.sum(Need.paid),
+                    0,
+                )
+            ]
+        )
+        .where(and_(Need.child_id == id, Need.isDeleted.is_(False)))
         .correlate_except(Need),
     )
 
@@ -133,6 +154,7 @@ class Child(base, Timestamp):
         primaryjoin='and_(Need.child_id==Child.id, ~Need.isDeleted)',
     )
     family = relationship('Family', back_populates='child', uselist=False)
+
     ngo = relationship("Ngo", foreign_keys="Child.id_ngo")
 
     social_worker = relationship(
@@ -148,14 +170,17 @@ class Child(base, Timestamp):
     @classmethod
     def get_actives(cls):
         from . import Need
-        return session.query(cls) \
-            .filter_by(isConfirmed=True) \
-            .filter_by(isDeleted=False) \
-            .filter_by(isMigrated=False) \
-            .filter_by(existence_status=1) \
-            .join(Need) \
-            .filter(Need.isConfirmed.is_(True)) \
+
+        return (
+            session.query(cls)
+            .filter_by(isConfirmed=True)
+            .filter_by(isDeleted=False)
+            .filter_by(isMigrated=False)
+            .filter_by(existence_status=1)
+            .join(Need)
+            .filter(Need.isConfirmed.is_(True))
             .filter(Need.isDeleted.is_(False))
+        )
 
     def migrate(self, new_sw):
         assert new_sw.id != self.social_worker.id
@@ -164,8 +189,9 @@ class Child(base, Timestamp):
 
         old_sw = self.social_worker
         old_generated_code = self.generatedCode
-        new_generated_code = new_sw.generatedCode \
-            + format(new_sw.childCount + 1, '04d'),
+        new_generated_code = (
+            new_sw.generatedCode + format(new_sw.childCount + 1, '04d'),
+        )
 
         migration = ChildMigration(
             new_sw=new_sw,

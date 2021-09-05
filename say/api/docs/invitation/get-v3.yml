@@ -1,0 +1,42 @@
+Get Invitation V3
+---
+
+tags:
+  - Invitation API
+
+parameters:
+  - name: token
+    in: path
+    required: true
+    type: string
+
+responses:
+  404:
+    description: Not Found
+
+  743:
+    description: Child is Gone
+
+  200:
+    description: Ok
+    schema:
+      id: invitation_v3
+      type: object
+      properties:
+        role:
+          type: integer
+        inviterId:
+          type: integer
+        familyId:
+          type: integer
+        text:
+          type: string
+        token:
+          type: string
+        link:
+          type: string
+        linkV3:
+          type: string
+        child:
+          schema:
+            id: user_child_model_v3

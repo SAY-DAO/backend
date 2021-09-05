@@ -58,6 +58,8 @@ class Config(object):
     NAKAMA_ADDRESS = '0x052e909bd1a6b20d35c850d2a188fd515a738953'
     ORPHAN_NAKAMA_TX_RANGE = 2  # Days
     MAILERLITE_API_KEY = 'abcd'
+    INVITATION_URL = '/search-result?token=%s'
+    INVITATION_V3_URL = '/invitations/%s'
 
     # Business
     MIN_BANK_AMOUNT = 100  # Toman

@@ -1,0 +1,48 @@
+Join to a family V3
+The roles are listed below:
+[0]father, [1]mother, [2] uncle, [3]aunt [4]daii [5]amme
+---
+
+tags:
+  - Family API
+
+parameters:
+
+  - in: header
+    name: Authorization
+    type: string
+    required: true
+
+  - in: path
+    name: family_id
+    required: true
+    type: integer
+
+  - in: formData
+    name: role
+    type: integer
+    required: true
+
+
+
+responses:
+  200:
+    description: Joined
+
+  404:
+    description: Family not found
+
+  744:
+    description: Can not join this family
+
+  745:
+    description: User not found
+
+  746:
+    description: You must back to your old role
+
+  747:
+    description: Already joined
+
+  400:
+    description: Invalid Data

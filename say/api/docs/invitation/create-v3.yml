@@ -1,0 +1,44 @@
+Invite to join to a family V3
+The roles are listed below:
+[0]father, [1]mother, [2] uncle, [3]aunt [4]daii [5]amme
+---
+
+tags:
+  - Invitation API
+
+parameters:
+
+  - in: header
+    name: Authorization
+    type: string
+    required: true
+
+  - in: formData
+    name: family_id
+    required: true
+    type: integer
+
+  - in: formData
+    name: role
+    type: integer
+    required: true
+
+  - in: formData
+    name: text
+    type: string
+
+
+responses:
+  200:
+    description: Response contains the token that needed in Add-to-family API
+    schema:
+      id: invitation_v3
+
+  400:
+    description: Invalid data
+
+  404:
+    description: Family not found
+
+  700:
+    description: Child is gone

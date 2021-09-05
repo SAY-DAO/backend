@@ -124,8 +124,9 @@ def filter_by_query(child_query):
 
 
 class GetAllChildren(Resource):
-    def check_privileges(func):  # TODO: priv
-        @functools.wraps(func)
+    @staticmethod
+    def check_privileges(func_):  # TODO: priv
+        @functools.wraps(func_)
         def wrapper(*args, **kwargs):
             query = request.args
 
@@ -141,7 +142,7 @@ class GetAllChildren(Resource):
                 if ngo_id:
                     raise HTTP_PERMISION_DENIED()
 
-            return func(*args, **kwargs)
+            return func_(*args, **kwargs)
 
         return wrapper
 

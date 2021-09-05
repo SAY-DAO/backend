@@ -1,4 +1,7 @@
 
+from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.orm.properties import ColumnProperty
+
 from . import *
 
 
@@ -15,9 +18,12 @@ class UserFamily(base, Timestamp):
 
     id_user = Column(Integer, ForeignKey('user.id'), nullable=False, index=True)
     id_family = Column(Integer, ForeignKey('family.id'), nullable=False, index=True)
-    
+
     userRole = Column(Integer, nullable=False)  # 0:father | 1:mother | 2:uncle | 3:aunt
     isDeleted = Column(Boolean, nullable=False, default=False)
+
+    username = association_proxy('user', 'userName')
+    avatar_url = association_proxy('user', 'avatarUrl')
 
     family = relationship(
         'Family',
@@ -32,3 +38,8 @@ class UserFamily(base, Timestamp):
         uselist=False,
         back_populates='user_families',
     )
+
+    @property
+    def is_deleted(self):
+        return self.isDeleted
+    
