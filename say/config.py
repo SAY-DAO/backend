@@ -62,7 +62,7 @@ class Config(object):
     INVITATION_V3_URL = '/invitations/%s'
 
     # Business
-    MIN_BANK_AMOUNT = 100  # Toman
+    MIN_BANK_AMOUNT = 1000  # Toman
     RANDOM_SEARCH_FACTOR = 3
 
     # Celery
