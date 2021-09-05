@@ -123,29 +123,29 @@ def filter_by_query(child_query):
     return child_query
 
 
+def check_privileges(func_):  # TODO: priv
+    @functools.wraps(func_)
+    def wrapper(*args, **kwargs):
+        query = request.args
+
+        ngo_id = query.get('ngo_id', None)
+        sw_id = query.get('sw_id', None)
+        sw_role = get_user_role()
+
+        if sw_role in [SOCIAL_WORKER, COORDINATOR]:
+            if sw_id or ngo_id:
+                raise HTTP_PERMISION_DENIED()
+
+        if sw_role in [NGO_SUPERVISOR]:
+            if ngo_id:
+                raise HTTP_PERMISION_DENIED()
+
+        return func_(*args, **kwargs)
+
+    return wrapper
+
+
 class GetAllChildren(Resource):
-    @staticmethod
-    def check_privileges(func_):  # TODO: priv
-        @functools.wraps(func_)
-        def wrapper(*args, **kwargs):
-            query = request.args
-
-            ngo_id = query.get('ngo_id', None)
-            sw_id = query.get('sw_id', None)
-            sw_role = get_user_role()
-
-            if sw_role in [SOCIAL_WORKER, COORDINATOR]:
-                if sw_id or ngo_id:
-                    raise HTTP_PERMISION_DENIED()
-
-            if sw_role in [NGO_SUPERVISOR]:
-                if ngo_id:
-                    raise HTTP_PERMISION_DENIED()
-
-            return func_(*args, **kwargs)
-
-        return wrapper
-
     @authorize(
         SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
     )  # TODO: priv
@@ -309,7 +309,7 @@ class GetChildByInvitationToken(Resource):
         if not user_id:
             child_dict['id'] = None
 
-        child_family_members = [x for x in crud.child.get_family_members(child.id)]
+        child_family_members = [x for x in crud.child.get_family_members(child.id, True)]
 
         result = UserChildSchema(**child_dict, childFamilyMembers=child_family_members)
         return result

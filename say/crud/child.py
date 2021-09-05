@@ -35,7 +35,7 @@ def get_family_members(id, include_deleted=False):
         .join(User, User.id == UserFamily.id_user)
         .filter(
             Family.id_child == id,
-            not include_deleted and UserFamily.isDeleted.is_(False),
+            True if include_deleted else UserFamily.isDeleted.is_(False),
         )
     )
 
