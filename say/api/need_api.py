@@ -386,15 +386,7 @@ class DeleteNeedById(Resource):
             return {'message': 'permision denied'}, 403
 
         if (need.type == 0 and need.status < 4) or (need.type == 1 and need.status < 5):
-            need.status = 0
-            need.purchase_cost = None
-            need.refund_extra_credit(new_paid=0)
-
-            for participant in need.participants:
-                participant.isDeleted = True
-
-            need.isDeleted = True
-            need.delete_from_carts()
+            need.delete()
             return {'message': 'need deleted'}
         else:
             return {'message': 'need has arrived to the child so can not be deleted'}, 422

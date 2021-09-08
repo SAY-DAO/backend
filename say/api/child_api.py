@@ -874,7 +874,7 @@ class UpdateChildById(Resource):
                 )
 
                 for need in needs:
-                    need.unconfirm()
+                    need.delete()
 
                 primary_child.social_worker.currentChildCount -= 1
                 primary_child.ngo.currentChildrenCount -= 1

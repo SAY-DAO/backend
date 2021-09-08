@@ -68,6 +68,9 @@ class Need(base, Timestamp):
     child_delivery_date = Column(DateTime)
     confirmDate = Column(DateTime, nullable=True)
 
+    deleted_at = Column(DateTime, nullable=True)
+    unconfirmed_at = Column(DateTime, nullable=True)
+
     paid = column_property(
         select([coalesce(
             func.sum(Payment.need_amount),
@@ -455,8 +458,16 @@ class Need(base, Timestamp):
         self.confirmUser = None
         self.isConfirmed = False
         self.status = 0
+        self.unconfirmed_at = datetime.utcnow()
         self.delete_from_carts()
+        for participant in self.participants:
+            participant.isDeleted = True
 
+    def delete(self):
+        assert self.status < 4
+        self.unconfirm()
+        self.isDeleted = True
+        self.deleted_at = datetime.utcnow()
 
 
 @event.listens_for(Need.status, "set")
