@@ -33,6 +33,7 @@ responses:
         needs:
           type: array
           items:
+            id: cart_need
             type: object
             properties:
               id:

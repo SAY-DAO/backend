@@ -10,10 +10,14 @@ class CartNeedInputSchema(CamelModel):
     need_id: int
 
 
+class CartPutSchema(CamelModel):
+    need_ids: List[int]
+
+
 class CartNeedSchema(CartNeedInputSchema):
     id: int
     name: str
-    title: str
+    title: str = None
     cost: int
     paid: int
     amount: int

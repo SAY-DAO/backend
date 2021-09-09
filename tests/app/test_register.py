@@ -1,6 +1,5 @@
 from random import randint
 
-from say.orm import session
 from tests.helper import BaseTestClass
 
 
@@ -25,6 +24,6 @@ class TestRegister(BaseTestClass):
                 'isInstalled': '0'
             }
         )
-        print(res.status_code)
+        assert res.status_code == 400
 
-        assert res.status_code == 200
+        # TODO

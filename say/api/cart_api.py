@@ -33,9 +33,31 @@ from say.roles import USER
 from say.schema.cart import CartNeedInputSchema
 from say.schema.cart import CartPaymentInSchema
 from say.schema.cart import CartPaymentSchema
+from say.schema.cart import CartPutSchema
 from say.schema.cart import CartSchema
 
 from .ext import idpay
+
+
+def payable_need(session, user_id, need_ids):
+    needs = (
+        session.query(Need)
+        .join(Child)
+        .join(Family)
+        .join(UserFamily)
+        .filter(
+            Need.id.in_(need_ids),
+            Need.isDeleted.is_(False),
+            Need.isConfirmed.is_(True),
+            Need.unpayable.is_(False),
+            Need.isDone.is_(False),
+            UserFamily.id_user == user_id,
+            UserFamily.isDeleted.is_(False),
+        )
+        .all()
+    )
+
+    return needs
 
 
 class CartAPI(Resource):
@@ -45,6 +67,45 @@ class CartAPI(Resource):
     def get(self):
         user_id = get_user_id()
         cart = session.query(Cart).filter(Cart.user_id == user_id).one()
+        return CartSchema.from_orm(cart)
+
+    @authorize(USER)
+    @json
+    @swag_from('./docs/cart/put.yml')
+    def put(self):
+        try:
+            data = CartPutSchema(**request.json)
+        except ValueError as e:
+            return e.json(), 400
+        except TypeError:
+            return 'No Data in Body', 400
+
+        user_id = get_user_id()
+        cart = session.query(Cart).filter(Cart.user_id == user_id).one()
+        needs = payable_need(session, user_id, data.need_ids)
+        if len(needs) != len(data.need_ids):
+            return {
+                'invalidNeedIds': list(set(data.need_ids) - set([n.id for n in needs]))
+            }, 600
+
+        cart_needs = (
+            session.query(CartNeed)
+            .filter(
+                CartNeed.cart_id == cart.id,
+                CartNeed.deleted.is_(None),
+            )
+            .all()
+        )
+
+        for cart_need in cart_needs:
+            cart_need.deleted = datetime.utcnow()
+
+        for need in needs:
+            cart_need = CartNeed(need=need, cart=cart)
+            session.add(cart_need)
+
+        session.flush()
+        session.expire(cart)
         return CartSchema.from_orm(cart)
 
 
@@ -60,10 +121,11 @@ class CartNeedsAPI(Resource):
             return e.json(), 400
 
         user_id = get_user_id()
-        need = session.query(Need) \
-            .join(Child) \
-            .join(Family) \
-            .join(UserFamily) \
+        need = (
+            session.query(Need)
+            .join(Child)
+            .join(Family)
+            .join(UserFamily)
             .filter(
                 Need.id == data.need_id,
                 Need.isDeleted.is_(False),
@@ -72,17 +134,23 @@ class CartNeedsAPI(Resource):
                 Need.isDone.is_(False),
                 UserFamily.id_user == user_id,
                 UserFamily.isDeleted.is_(False),
-            ).one_or_none()
+            )
+            .one_or_none()
+        )
 
         if need is None:
             raise HTTPException(400, f'Can not add need {data.need_id} to cart')
 
         cart = session.query(Cart).filter(Cart.user_id == user_id).one()
-        cart_need = session.query(CartNeed).filter(
-            CartNeed.cart_id == cart.id,
-            CartNeed.need_id == need.id,
-            CartNeed.deleted.is_(None),
-        ).scalar()
+        cart_need = (
+            session.query(CartNeed)
+            .filter(
+                CartNeed.cart_id == cart.id,
+                CartNeed.need_id == need.id,
+                CartNeed.deleted.is_(None),
+            )
+            .scalar()
+        )
 
         if cart_need is not None:
             raise HTTPException(600, 'Need already is in the cart')
@@ -105,11 +173,15 @@ class CartNeedsAPI(Resource):
 
         user_id = get_user_id()
         cart = session.query(Cart).filter(Cart.user_id == user_id).one()
-        cart_need = session.query(CartNeed).filter(
-            CartNeed.cart_id == cart.id,
-            CartNeed.need_id == data.need_id,
-            CartNeed.deleted.is_(None),
-        ).scalar()
+        cart_need = (
+            session.query(CartNeed)
+            .filter(
+                CartNeed.cart_id == cart.id,
+                CartNeed.need_id == data.need_id,
+                CartNeed.deleted.is_(None),
+            )
+            .scalar()
+        )
 
         if cart_need is None:
             raise HTTP_NOT_FOUND()
@@ -132,9 +204,7 @@ class CartPaymentAPI(Resource):
             return e.json(), 400
 
         user_id = get_user_id()
-        cart = session.query(Cart).filter(
-            Cart.user_id == user_id
-        ).with_for_update().one()
+        cart = session.query(Cart).filter(Cart.user_id == user_id).with_for_update().one()
 
         order_id = generate_order_id()
         if len(cart.needs) == 0:
@@ -166,12 +236,14 @@ class CartPaymentAPI(Resource):
         session.add(cart_payment)
 
         for cart_need in cart.needs:
-            cart_payment.payments.append(Payment(
-                user=cart.user,
-                need=cart_need.need,
-                need_amount=cart_need.amount,
-                order_id=order_id,
-            ))
+            cart_payment.payments.append(
+                Payment(
+                    user=cart.user,
+                    need=cart_need.need,
+                    need_amount=cart_need.amount,
+                    order_id=order_id,
+                )
+            )
 
         extra_paymnent = Payment(
             user=cart.user,
@@ -229,11 +301,16 @@ class VerifyCartPayment(Resource):
         if not payment_id or not order_id:
             return make_response(unsuccessful_response)
 
-        pending_payment = session.query(CartPayment).filter(
-            CartPayment.gateway_payment_id == payment_id,
-            CartPayment.order_id == order_id,
-            CartPayment.verified.is_(None),
-        ).with_for_update().scalar()
+        pending_payment = (
+            session.query(CartPayment)
+            .filter(
+                CartPayment.gateway_payment_id == payment_id,
+                CartPayment.order_id == order_id,
+                CartPayment.verified.is_(None),
+            )
+            .with_for_update()
+            .scalar()
+        )
 
         if pending_payment is None:
             return make_response(unsuccessful_response)
@@ -246,8 +323,15 @@ class VerifyCartPayment(Resource):
         except requests.exceptions.RequestException:
             return make_response(unsuccessful_response)
 
-        if not response or 'error_code' in response or response['status'] not in (
-            100, 101, 200,
+        if (
+            not response
+            or 'error_code' in response
+            or response['status']
+            not in (
+                100,
+                101,
+                200,
+            )
         ):
             return make_response(unsuccessful_response)
 
@@ -265,11 +349,13 @@ class VerifyCartPayment(Resource):
             hashed_card_no=hashed_card_no,
         )
 
-        return make_response(render_template_i18n(
-            'cart_successful_payment.html',
-            cart_payment=pending_payment,
-            locale=pending_payment.cart.user.locale,
-        ))
+        return make_response(
+            render_template_i18n(
+                'cart_successful_payment.html',
+                cart_payment=pending_payment,
+                locale=pending_payment.cart.user.locale,
+            )
+        )
 
     @json
     @commit

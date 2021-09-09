@@ -1,0 +1,43 @@
+Update Cart
+---
+
+tags:
+  - Cart API
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - in: body
+    name: body
+    required: true
+    schema:
+      type: object
+      properties:
+          needIds:
+            type: array
+            items:
+              type: integer
+
+
+responses:
+  200:
+    description: OK
+    schema:
+      id: cart
+  400:
+    description: Bad request
+  401:
+    description: Bad auth token
+  600:
+    description: Wrong Need/Needs
+    schema:
+      type: object
+      properties:
+          invalidNeedIds:
+            type: array
+            items:
+              type: integer

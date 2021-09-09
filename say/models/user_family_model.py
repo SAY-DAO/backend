@@ -42,4 +42,3 @@ class UserFamily(base, Timestamp):
     @property
     def is_deleted(self):
         return self.isDeleted
-    

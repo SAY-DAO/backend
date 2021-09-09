@@ -8,6 +8,7 @@ from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 
+from say.api.ext import limiter
 from say.app import app
 from say.config import configs
 from say.db import PostgreSQLManager as DBManager
@@ -33,6 +34,7 @@ TEST_DB_URL = 'postgresql://postgres:postgres@localhost/say_test'
 @pytest.fixture
 def flask_app():
     app.testing = True
+    limiter.enabled = False
     return app
 
 

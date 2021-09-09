@@ -1,15 +1,21 @@
 import tempfile
 from datetime import datetime
 from hashlib import md5
+from os import name
 from random import randint
 
 import pytest
 
 from say.config import configs
+from say.models import Child
+from say.models import Family
+from say.models import Need
 from say.models import Ngo
 from say.models import Privilege
 from say.models import SocialWorker
 from say.models import User
+from say.models import UserFamily
+from say.models.cart import Cart
 from tests.conftest import TEST_DB_URL
 
 
@@ -34,6 +40,10 @@ class BaseTestClass:
 
         # Insert mockup data
         self.mockup()
+
+        # Disable Sentry
+        import sentry_sdk
+        sentry_sdk.init()
 
         # get client
         self._client = client
@@ -112,8 +122,117 @@ class BaseTestClass:
             city=1,
             country=1,
             lastLogin=datetime.utcnow(),
+            cart=Cart(),
         )
         return user
+
+    def _create_user_family(self, user=None):
+        family = self._create_random_family()
+        user = user or self.create_user()
+
+        user_family = UserFamily(
+            user=user,
+            family=family,
+            userRole=0,
+        )
+        self.session.save(user_family)
+        return user_family
+
+    def _create_random_need(self, child=None, confirmed=True):
+        child = child or self._create_random_child()
+        seed = randint(1, 10 ** 3)
+        randomstr = str(seed)
+        need = Need(
+            child=child,
+            name=randomstr,
+            description=randomstr,
+            imageUrl=randomstr,
+            category=0,
+            _cost=seed,
+            purchase_cost=seed,
+            isConfirmed=confirmed,
+            confirmUser=child.id_social_worker,
+            type=1,
+            confirmDate=confirmed and datetime.utcnow(),
+            isUrgent=False,
+        )
+        self.session.save(need)
+        return need
+
+    def _create_random_family(self):
+
+        child = self._create_random_child()
+        family = Family(
+            child=child,
+        )
+        self.session.save(family)
+        return family
+
+    def _create_random_child(self):
+        seed = randint(1, 10 ** 3)
+        randomstr = str(seed)
+        sw = self._create_random_sw()
+        child = Child(
+            ngo=sw.ngo,
+            social_worker=sw,
+            firstName=randomstr,
+            lastName=randomstr,
+            sayName=randomstr,
+            phoneNumber=randomstr,
+            country=seed,
+            city=seed,
+            awakeAvatarUrl=randomstr,
+            sleptAvatarUrl=randomstr,
+            gender=False,
+            bio=randomstr,
+            bioSummary=randomstr,
+            voiceUrl=randomstr,
+            generatedCode=randomstr,
+        )
+        self.session.save(sw)
+        return child
+
+    def _create_random_sw(self):
+        seed = randint(1, 10 ** 3)
+        ngo = self._create_random_ngo()
+        sw = SocialWorker(
+            ngo=ngo,
+            generatedCode=str(seed),
+            firstName=str(seed),
+            lastName=str(seed),
+            userName=str(seed),
+            idNumber=str(seed),
+            gender=False,
+            emergencyPhoneNumber=str(seed),
+            telegramId=str(seed),
+            avatarUrl=str(seed),
+            emailAddress=f'{str(seed)}@email.com',
+            phoneNumber=str(seed),
+            password='abc',
+            registerDate=datetime.utcnow(),
+            lastLoginDate=datetime.utcnow(),
+            privilege=Privilege(
+                name='admin',
+                privilege=1
+            ),
+        )
+        self.session.save(sw)
+        return sw
+
+    def _create_random_ngo(self):
+        seed = randint(1, 10 ** 3)
+        ngo = Ngo(
+            country=0,
+            city=0,
+            name=str(seed),
+            emailAddress=f'{str(seed)}@email.com',
+            phoneNumber=str(seed),
+            logoUrl='',
+            postalAddress=str(seed),
+            registerDate=datetime.utcnow()
+        )
+        self.session.save(ngo)
+        return ngo
 
     def logout(self):
         del self._client.environ_base['HTTP_AUTHORIZATION']

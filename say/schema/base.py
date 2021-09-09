@@ -4,7 +4,6 @@ from say.helpers import to_camel
 
 
 class BaseModel(PydanticBase):
-    
     @classmethod
     def fields(cls):
         return cls.__fields__.keys()

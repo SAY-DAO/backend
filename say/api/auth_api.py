@@ -372,7 +372,7 @@ class VerifyEmail(Resource):
     @commit
     @swag_from('./docs/verification/verify-email.yml')
     def post(self):
-        email = clean_input(request.form.get('email', None))
+        email = clean_input(request.form.get('email', ''))
 
         if not email:
             return {'message': 'email is required'}, 400
