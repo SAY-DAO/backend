@@ -1,6 +1,4 @@
-from datetime import date
 from datetime import datetime
-from typing import cast
 from urllib.parse import urljoin
 
 import requests
@@ -10,6 +8,7 @@ from flask import request
 from flask_restful import Resource
 
 from say.api.ext import api
+from say.api.ext import limiter
 from say.api.payment_api import generate_order_id
 from say.authorization import authorize
 from say.authorization import get_user_id
@@ -39,7 +38,7 @@ from say.schema.cart import CartSchema
 from .ext import idpay
 
 
-def payable_need(session, user_id, need_ids):
+def payable_needs(session, user_id, need_ids):
     needs = (
         session.query(Need)
         .join(Child)
@@ -61,6 +60,8 @@ def payable_need(session, user_id, need_ids):
 
 
 class CartAPI(Resource):
+    decorators = [limiter.limit('15/minute')]
+
     @authorize(USER)
     @json
     @swag_from('./docs/cart/get.yml')
@@ -82,7 +83,7 @@ class CartAPI(Resource):
 
         user_id = get_user_id()
         cart = session.query(Cart).filter(Cart.user_id == user_id).one()
-        needs = payable_need(session, user_id, data.need_ids)
+        needs = payable_needs(session, user_id, data.need_ids)
         if len(needs) != len(data.need_ids):
             return {
                 'invalidNeedIds': list(set(data.need_ids) - set([n.id for n in needs]))
@@ -121,26 +122,12 @@ class CartNeedsAPI(Resource):
             return e.json(), 400
 
         user_id = get_user_id()
-        need = (
-            session.query(Need)
-            .join(Child)
-            .join(Family)
-            .join(UserFamily)
-            .filter(
-                Need.id == data.need_id,
-                Need.isDeleted.is_(False),
-                Need.isConfirmed.is_(True),
-                Need.unpayable.is_(False),
-                Need.isDone.is_(False),
-                UserFamily.id_user == user_id,
-                UserFamily.isDeleted.is_(False),
-            )
-            .one_or_none()
-        )
+        needs = payable_needs(session, user_id, [data.need_id])
 
-        if need is None:
+        if len(needs) != 1:
             raise HTTPException(400, f'Can not add need {data.need_id} to cart')
 
+        need = needs[0]
         cart = session.query(Cart).filter(Cart.user_id == user_id).one()
         cart_need = (
             session.query(CartNeed)
