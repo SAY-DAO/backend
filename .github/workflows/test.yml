@@ -51,7 +51,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-      - name: Start containers
+      - name: Running Tests
         run: >
           docker-compose
           -f docker-compose.yml
