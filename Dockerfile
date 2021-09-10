@@ -35,6 +35,7 @@ CMD ["./scripts/run.sh"]
 
 FROM prod as development
 COPY requirements-dev.txt .
+RUN pip install virtualenv
 RUN virtualenv $VIRTUAL_ENV
 RUN pip install -r requirements-dev.txt
 CMD ["./scripts/dev-run.sh"]
