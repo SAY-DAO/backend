@@ -11,6 +11,7 @@ services:
       - redis
     volumes:
       - ./:/app/
+      - pudb_volume:/root/.config/pudb/
     ports:
       - 127.0.0.1:5000:5000
 
@@ -32,3 +33,6 @@ services:
       - FLOWER_DB=/flower/db
     volumes:
       - flower_volume:/flower
+
+volumes:
+  pudb_volume:

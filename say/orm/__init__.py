@@ -3,14 +3,16 @@ from decimal import Decimal
 
 import pydantic
 from babel import Locale
+from sqlalchemy import create_engine as sa_create_engine
 from sqlalchemy import inspect
 from sqlalchemy.ext.associationproxy import ASSOCIATION_PROXY
-from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
-from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy_utils import PhoneNumber, Country
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
+from sqlalchemy.orm import scoped_session
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.schema import MetaData
-from sqlalchemy import create_engine as sa_create_engine
+from sqlalchemy_utils import Country
+from sqlalchemy_utils import PhoneNumber
 
 from .base import BaseModel
 

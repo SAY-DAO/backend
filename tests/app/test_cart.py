@@ -47,7 +47,6 @@ class TestCart(BaseTestClass):
             CART_URL,
             json=data,
         )
-        from pudb import set_trace; set_trace()
         assert res.status_code == 600
         assert set(res.json['invalidNeedIds']) == set(invalid_need_ids)
 

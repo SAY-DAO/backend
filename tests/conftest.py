@@ -32,6 +32,7 @@ from say.orm import setup_schema
 def flask_app():
     app.testing = True
     limiter.enabled = False
+    configs.POSTGRES_DB = configs.POSTGRES_TEST_DB
     return app
 
 
