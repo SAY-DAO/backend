@@ -128,6 +128,14 @@ jobs:
           docker-compose -f compose.yml
           run backend pytest
 
+      - name: Delete Test Image
+        uses: bots-house/ghcr-delete-image-action@v1.0.0
+        with:
+          owner: ${{ github.repository_owner }}
+          name: some-web-service
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{IMAGE_ID}}
+
   # deploy_dev:
   #   name: Deploy to Development Server
   #   runs-on: ubuntu-latest
