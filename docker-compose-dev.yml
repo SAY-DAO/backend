@@ -2,6 +2,9 @@ version: '3.6'
 services:
   backend: &backend
     build: .
+    depends_on:
+      - db
+      - redis
     volumes:
       - ./:/app/
     ports:

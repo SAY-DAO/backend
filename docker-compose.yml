@@ -16,9 +16,7 @@ services:
       - postgres_volume:/var/lib/postgresql/data
 
   backend: &backend
-    depends_on:
-      - db
-      - redis
+
     environment:
       SAY_ENVIRONMENT: ${ENVIRONMENT:-dev}
     networks:
@@ -27,7 +25,6 @@ services:
     expose:
       - 5000
     volumes:
-      # - ./:/app/
       - media_volume/:/app/files
 
   worker: &worker
