@@ -11,7 +11,6 @@ services:
     environment:
       POSTGRES_DB: say
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
     volumes:
       - postgres_volume:/var/lib/postgresql/data
 

@@ -1,5 +1,9 @@
 version: '3.6'
 services:
+  db:
+    environment:
+      POSTGRES_PASSWORD: postgres
+
   backend: &backend
     build: .
     depends_on:
