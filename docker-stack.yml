@@ -33,6 +33,9 @@ services:
     secrets:
       - postgres-password
       - flower-password
+    networks:
+     - default
+     - traefik-public
     deploy:
       placement:
         constraints:
