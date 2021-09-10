@@ -1,0 +1,64 @@
+name: Test
+
+env:
+  REGISTRY: ghcr.io
+  DEVELOPMENT: dev
+  STAGING: stag
+  PRODUCTION: prod
+  MAIN_BRANCH: master
+  DEV_DOMAIN: d.sayapp.company
+  STAGE_DOMAIN: s.sayapp.company
+  PROD_DOMAIN: sayapp.company
+  TARGET_LAYER: prod
+  DEV_STACK_NAME: say-dev-backend
+  STAGE_STACK_NAME: say-stag-backend
+  PROD_STACK_NAME: say-backend
+  DOCKER_COMPOSE_PATH: docker-compose.yml
+  DOCKER_STACK_PATH: docker-stack.yml
+  OVERRIDE_STACK_FILE: -f docker-compose-prod.yml
+
+on:
+  push:
+    branches:
+      - 'master'
+      - 'develop'
+      - 'release*'
+
+jobs:
+  test:
+    name: Test
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+
+    outputs:
+      image_id: ${{ steps.image_id.outputs.image_id }}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+
+      - id: image_id
+        name: Generate Image ID
+        run: echo "::set-output name=image_id::${{ env.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${{ github.sha }}"
+
+      - name: Get Ref Name
+        run: echo "REF=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Start containers
+        run: >
+          docker-compose
+          -f docker-compose.yml
+          -f docker-compose-dev.yml
+          run backend pytest
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
