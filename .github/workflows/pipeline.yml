@@ -10,6 +10,7 @@ env:
   STAGE_DOMAIN: s.sayapp.company
   PROD_DOMAIN: sayapp.company
   TARGET_LAYER: prod
+  TEST_TARGET_LAYER: development
   DEV_STACK_NAME: say-dev-backend
   STAGE_STACK_NAME: say-stag-backend
   PROD_STACK_NAME: say-backend
@@ -30,13 +31,16 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       image_id: ${{ steps.image_id.outputs.image_id }}
+      test_image_id: ${{ steps.image_id.outputs.test_image_id }}
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2
 
       - id: image_id
         name: Generate Image ID
-        run: echo "::set-output name=image_id::${{ env.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${{ github.sha }}"
+        run: |
+          echo "::set-output name=image_id::${{ env.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${{ github.sha }}"
+          echo "::set-output name=test_image_id::${{ env.REGISTRY }}/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${{ github.sha }}-test"
 
       - name: Get Ref Name
         run: echo "REF=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
@@ -82,14 +86,25 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new # mode=max: https://github.com/docker/buildx#--cache-tonametypetypekeyvalue
 
+      - name: Build Test Image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          target: ${{ env.TEST_TARGET_LAYER }}
+          push: true
+          tags: ${{ steps.image_id.outputs.test_image_id }}
+          build-args: |
+            ENVIRONMENT=${ENVIRONMENT}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-new # mode=max: https://github.com/docker/buildx#--cache-tonametypetypekeyvalue
+
   run-tests:
     name: Run Tests
     timeout-minutes: 10
     runs-on: ubuntu-latest
     needs: build_and_push
     env:
-      IMAGE_ID: ${{ needs.build_and_push.outputs.image_id }}
-
+      IMAGE_ID: ${{ needs.build_and_push.outputs.test_image_id }}
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2
@@ -107,11 +122,6 @@ jobs:
 
       - name: Pull Images
         run: docker-compose -f compose.yml pull
-
-      - name: Install Test Dependencies
-        run: >
-          docker-compose -f compose.yml
-          run backend pip install -r requirements-dev.txt
 
       - name: Run Tests
         run: >
