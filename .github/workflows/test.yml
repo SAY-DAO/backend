@@ -57,6 +57,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
+      - name: Build Image
+        run: >
+          docker buildx bake
+          -f docker-compose.yml
+          -f docker-compose-dev.yml
+
       - name: Running Tests
         run: >
           docker-compose
