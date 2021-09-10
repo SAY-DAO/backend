@@ -105,6 +105,8 @@ services:
         - traefik.http.services.${STACK_NAME}-flower.loadbalancer.server.port=5555
 
   media:
+    networks:
+      - traefik-public
     deploy:
       placement:
         constraints:
@@ -132,6 +134,8 @@ services:
         - traefik.http.services.${STACK_NAME}-media.loadbalancer.server.port=80
 
   static:
+    networks:
+      - traefik-public
     deploy:
       placement:
         constraints:

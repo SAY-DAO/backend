@@ -43,15 +43,11 @@ services:
 
   media:
     image: flashspys/nginx-static
-    networks:
-      - traefik-public
     volumes:
       - media_volume:/static
 
   static:
     image: flashspys/nginx-static
-    networks:
-      - traefik-public
     expose:
       - 80
     volumes:

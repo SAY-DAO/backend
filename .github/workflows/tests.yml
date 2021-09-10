@@ -1,4 +1,4 @@
-name: Running Tests
+name: Run Tests
 
 env:
   REGISTRY: ghcr.io
@@ -26,7 +26,7 @@ on:
 
 jobs:
   run-tests:
-    name: Running Tests
+    name: Run Tests
     timeout-minutes: 10
     runs-on: ubuntu-latest
 
