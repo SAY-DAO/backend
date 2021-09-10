@@ -108,6 +108,11 @@ jobs:
       - name: Pull Images
         run: docker-compose -f compose.yml pull
 
+      - name: Install Test Dependencies
+        run: >
+          docker-compose -f compose.yml
+          run backend pip install -r requirements-dev.txt
+
       - name: Run Tests
         run: >
           docker-compose -f compose.yml
