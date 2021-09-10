@@ -25,8 +25,8 @@ on:
       - 'release*'
 
 jobs:
-  test:
-    name: Test
+  run-tests:
+    name: Running Tests
     timeout-minutes: 10
     runs-on: ubuntu-latest
 
@@ -42,6 +42,9 @@ jobs:
 
       - name: Get Ref Name
         run: echo "REF=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+
+      - name: Touch .env if does not exsits
+        run: touch .env
 
       - name: Cache Docker layers
         uses: actions/cache@v2
