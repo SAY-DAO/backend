@@ -2,8 +2,8 @@ FROM python:3.8 AS base
 
 ENV VIRTUAL_ENV=/opt/venv
 
-RUN pip install --upgrade pip
 RUN pip install virtualenv
+RUN pip install --upgrade pip
 
 RUN virtualenv $VIRTUAL_ENV
 
@@ -35,6 +35,6 @@ CMD ["./scripts/run.sh"]
 
 FROM prod as development
 COPY requirements-dev.txt .
+RUN virtualenv $VIRTUAL_ENV
 RUN pip install -r requirements-dev.txt
-COPY .env .
 CMD ["./scripts/dev-run.sh"]
