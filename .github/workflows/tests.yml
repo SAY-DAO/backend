@@ -1,4 +1,4 @@
-name: Test
+name: Running Tests
 
 env:
   REGISTRY: ghcr.io
@@ -62,15 +62,15 @@ jobs:
           docker-compose
           -f docker-compose.yml
           -f docker-compose-dev.yml
-          config > docker-compose.yml
+          config > compose.yml
 
       - name: Build Image
         run: >
-          docker buildx bake
+          docker buildx bake -f compose.yml
 
       - name: Running Tests
         run: >
-          docker-compose
+          docker-compose -f compose.yml
           run backend pytest
 
       - name: Move cache
