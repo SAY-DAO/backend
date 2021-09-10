@@ -17,12 +17,19 @@ env:
   DOCKER_STACK_PATH: docker-stack.yml
   OVERRIDE_STACK_FILE: -f docker-compose-prod.yml
 
+# on:
+#   push:
+#     branches:
+#       - 'master'
+#       - 'develop'
+#       - 'release*'
+
 on:
-  push:
-    branches:
-      - 'master'
-      - 'develop'
-      - 'release*'
+  workflow_run:
+    workflows: ["Build, Push and Deploy"]
+    branches: [master, release]
+    types:
+      - completed
 
 jobs:
   run-tests:
