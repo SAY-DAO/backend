@@ -134,7 +134,7 @@ jobs:
           owner: ${{ github.repository_owner }}
           name: some-web-service
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${IMAGE_ID}
+          tag: ${{ env.IMAGE_ID }}
 
   # deploy_dev:
   #   name: Deploy to Development Server
