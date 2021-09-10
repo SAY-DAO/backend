@@ -43,12 +43,6 @@ jobs:
       - name: Get Ref Name
         run: echo "REF=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
 
-      - name: Touch .env if does not exsits
-        run: touch .env
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
       - name: Cache Docker layers
         uses: actions/cache@v2
         with:
@@ -68,7 +62,7 @@ jobs:
         run: >
           docker buildx bake -f compose.yml
 
-      - name: Running Tests
+      - name: Run Tests
         run: >
           docker-compose -f compose.yml
           run backend pytest
