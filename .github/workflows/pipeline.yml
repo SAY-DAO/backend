@@ -285,3 +285,12 @@ jobs:
           key: ${{ secrets.PROD_SSH_PRIVATE_KEY }}
           port: ${{ secrets.PROD_SERVER_PORT }}
           script: docker stack deploy --prune --resolve-image=always --with-registry-auth -c /tmp/${{ env.STACK_FILE }} ${{ env.PROD_STACK_NAME }}
+
+      - name: Wait for Successful Deploy
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.DEV_SERVER_ADDR }}
+          username: ${{ secrets.DEV_SERVER_USER }}
+          key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.DEV_SERVER_PORT }}
+          script: docker-stack-wait.sh ${{ env.DEV_STACK_NAME }}
