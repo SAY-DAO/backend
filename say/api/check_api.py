@@ -2,6 +2,7 @@ from flasgger import swag_from
 from flask_restful import Resource
 
 from say.models import User
+from say.utils import clean_input
 from say.validations import validate_email
 from say.validations import validate_phone
 
@@ -44,8 +45,9 @@ class CheckEmail(Resource):
         if not validate_email(email):
             return {'message': 'Invalid Email'}, 720
 
+        email = clean_input(email).lower()
         user = session.query(User) \
-            .filter_by(emailAddress=email.lower()) \
+            .filter_by(emailAddress=email) \
             .one_or_none()
 
         if user:
@@ -62,6 +64,7 @@ class CheckPhone(Resource):
         if not validate_phone(phone):
             return {'message': 'Invalid Phone'}, 730
 
+        phone = clean_input(phone)
         user = session.query(User) \
             .filter_by(phone_number=phone) \
             .one_or_none()

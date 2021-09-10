@@ -115,7 +115,8 @@ class BaseTestClass:
         user = User(
             userName=seed,
             emailAddress=f'{seed}test@test.com',
-            phone_number=f'+989990{seed}',
+            phone_number=f'+9899{seed}',
+            is_phonenumber_verified=True,
             password=password,
             firstName=f'test{seed}',
             lastName=f'test{seed}',

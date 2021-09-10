@@ -34,7 +34,7 @@ TEST_DB_URL = 'postgresql://postgres:postgres@localhost/say_test'
 @pytest.fixture
 def flask_app():
     app.testing = True
-    # limiter.enabled = False
+    limiter.enabled = False
     return app
 
 
