@@ -15,7 +15,7 @@ services:
       - postgres_volume:/var/lib/postgresql/data
 
   backend: &backend
-    image: ${CONTAINER_IMAGE:-api_backend}
+    image: ${CONTAINER_IMAGE:-backend}
     environment:
       SAY_ENVIRONMENT: ${ENVIRONMENT:-dev}
     expose:
