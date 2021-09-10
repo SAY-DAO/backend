@@ -72,6 +72,10 @@ services:
         order: start-first
         failure_action: rollback
 
+  slow-worker:
+    <<: *worker
+    command: celery -A say.celery worker --autoscale=4,1 --loglevel=WARNING -S redbeat.RedBeatScheduler -Q slow -Ofair
+
   flower:
     <<: *worker
     deploy:
