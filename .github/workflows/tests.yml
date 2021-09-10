@@ -58,10 +58,6 @@ jobs:
           -f docker-compose-dev.yml
           config > compose.yml
 
-      - name: Build Image
-        run: >
-          docker buildx bake -f compose.yml
-
       - name: Run Tests
         run: >
           docker-compose -f compose.yml
