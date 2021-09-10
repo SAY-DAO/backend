@@ -6,7 +6,6 @@ from say.validations import USERNAME_PATTERN
 
 class UserNameSchema(CamelModel):
     username: constr(regex=USERNAME_PATTERN)
-    is_installed: int
 
 
 class NewUserSchema(UserNameSchema):
