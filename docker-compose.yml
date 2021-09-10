@@ -15,12 +15,8 @@ services:
       - postgres_volume:/var/lib/postgresql/data
 
   backend: &backend
-
     environment:
       SAY_ENVIRONMENT: ${ENVIRONMENT:-dev}
-    networks:
-      - traefik-public
-      - default
     expose:
       - 5000
     volumes:
@@ -68,8 +64,7 @@ volumes:
   static_volume:
   flower_volume:
 
-networks:
-  traefik-public:
+
 
 configs:
   backned-config:

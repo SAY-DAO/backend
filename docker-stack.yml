@@ -174,3 +174,4 @@ secrets:
   flower-password:
     name: ${STACK_NAME}-flower-password
     external: true
+
