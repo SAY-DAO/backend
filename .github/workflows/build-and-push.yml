@@ -13,7 +13,8 @@ env:
   DEV_STACK_NAME: say-dev-backend
   STAGE_STACK_NAME: say-stag-backend
   PROD_STACK_NAME: say-backend
-  DOCKER_STACK_PATH: docker-compose.yml
+  DOCKER_COMPOSE_PATH: docker-compose.yml
+  DOCKER_STACK_PATH: docker-stack.yml
   OVERRIDE_STACK_FILE: -f docker-compose-prod.yml
 
 on:
@@ -58,7 +59,7 @@ jobs:
 
       - name: Login to GitHub Container Registry
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login -u ${{ github.repository_owner }} --password-stdin ${{ env.REGISTRY }}
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
@@ -86,8 +87,8 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-      
-    
+
+
   deploy_dev:
     name: Deploy to Development Server
     runs-on: ubuntu-latest
@@ -96,7 +97,7 @@ jobs:
     env:
       IMAGE_ID: ${{ needs.build_and_push.outputs.image_id }}
 
-    environment: 
+    environment:
       name: Development
       url: https://${{ env.DEV_DOMAIN }}
 
@@ -106,10 +107,13 @@ jobs:
 
       - name: Set Envars
         run: |
-          echo "STACK_FILE=docker-stack-${{ env.DEV_STACK_NAME }}-${{ github.sha }}.yml" >> $GITHUB_ENV  
+          echo "STACK_FILE=docker-stack-${{ env.DEV_STACK_NAME }}-${{ github.sha }}.yml" >> $GITHUB_ENV
 
       - name: Prepare Stack File
-        run: ENVIRONMENT=${{ env.DEVELOPMENT }} DOMAIN=${{ env.DEV_DOMAIN }} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${{ env.DEV_STACK_NAME }} docker-compose -f ${{ env.DOCKER_STACK_PATH }} config > ${{ env.STACK_FILE }}
+        run: >
+          ENVIRONMENT=${{ env.DEVELOPMENT }} DOMAIN=${{ env.DEV_DOMAIN }} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${{ env.DEV_STACK_NAME }}
+          docker-compose -f ${{ env.DOCKER_COMPOSE_PATH }} -f ${{ env.DOCKER_STACK_PATH }} config
+          > ${{ env.STACK_FILE }}
 
       - name: Move Stack File to Server
         uses: appleboy/scp-action@v0.1.1
@@ -120,7 +124,7 @@ jobs:
           port: ${{ secrets.DEV_SERVER_PORT }}
           source: ${{ env.STACK_FILE }}
           target: "/tmp"
-      
+
       - name: Deploy Stack
         uses: appleboy/ssh-action@v0.1.4
         with:
@@ -138,7 +142,7 @@ jobs:
     env:
       IMAGE_ID: ${{ needs.build_and_push.outputs.image_id }}
 
-    environment: 
+    environment:
       name: Staging
       url: https://${{ env.STAGE_DOMAIN }}
 
@@ -148,10 +152,13 @@ jobs:
 
       - name: Set Envars
         run: |
-          echo "STACK_FILE=docker-stack-${{ env.STAGE_STACK_NAME }}-${{ github.sha }}.yml" >> $GITHUB_ENV  
+          echo "STACK_FILE=docker-stack-${{ env.STAGE_STACK_NAME }}-${{ github.sha }}.yml" >> $GITHUB_ENV
 
       - name: Prepare Stack File
-        run: ENVIRONMENT=${{ env.STAGING }} DOMAIN=${{ env.STAGE_DOMAIN }} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${{ env.STAGE_STACK_NAME }} docker-compose -f ${{ env.DOCKER_STACK_PATH }} config > ${{ env.STACK_FILE }}
+        run: >
+          ENVIRONMENT=${{ env.STAGING }} DOMAIN=${{ env.STAGE_DOMAIN }} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${{ env.STAGE_STACK_NAME }}
+          docker-compose -f ${{ env.DOCKER_COMPOSE_PATH }} -f ${{ env.DOCKER_STACK_PATH }} config
+          > ${{ env.STACK_FILE }}
 
       - name: Move Stack File to Server
         uses: appleboy/scp-action@v0.1.1
@@ -162,7 +169,7 @@ jobs:
           port: ${{ secrets.STAGE_SERVER_PORT }}
           source: ${{ env.STACK_FILE }}
           target: "/tmp"
-      
+
       - name: Deploy Stack
         uses: appleboy/ssh-action@v0.1.4
         with:
@@ -180,7 +187,7 @@ jobs:
     env:
       IMAGE_ID: ${{ needs.build_and_push.outputs.image_id }}
 
-    environment: 
+    environment:
       name: Production
       url: https://${{ env.PROD_DOMAIN }}
 
@@ -190,7 +197,7 @@ jobs:
 
       - name: Set Envars
         run: |
-          echo "STACK_FILE=docker-stack-${{ env.PROD_STACK_NAME }}-${{ github.sha }}.yml" >> $GITHUB_ENV  
+          echo "STACK_FILE=docker-stack-${{ env.PROD_STACK_NAME }}-${{ github.sha }}.yml" >> $GITHUB_ENV
 
       - name: Prepare Stack File
         run: ENVIRONMENT=${{ env.PRODUCTION }} DOMAIN=${{ env.PROD_DOMAIN }} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${{ env.PROD_STACK_NAME }} docker-compose -f ${{ env.DOCKER_STACK_PATH }} ${{ env.OVERRIDE_STACK_FILE }} config > ${{ env.STACK_FILE }}
@@ -204,7 +211,7 @@ jobs:
           port: ${{ secrets.PROD_SERVER_PORT }}
           source: ${{ env.STACK_FILE }}
           target: "/tmp"
-      
+
       - name: Deploy Stack
         uses: appleboy/ssh-action@v0.1.4
         with:
