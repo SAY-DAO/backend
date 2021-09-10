@@ -61,8 +61,6 @@ volumes:
   static_volume:
   flower_volume:
 
-
-
 configs:
   backned-config:
     name: ${STACK_NAME:-say}.env
