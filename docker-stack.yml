@@ -59,6 +59,7 @@ services:
         - traefik.http.services.${STACK_NAME}-backend.loadbalancer.server.port=5000
 
   worker: &worker
+    <<: *backend
     deploy:
       placement:
         constraints:
