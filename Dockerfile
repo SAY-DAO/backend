@@ -35,5 +35,6 @@ CMD ["./scripts/run.sh"]
 FROM prod as development
 COPY requirements-dev.txt .
 RUN pip install -r requirements-dev.txt
-COPY .env* .env
+RUN touch .env
+COPY .env .
 CMD ["./scripts/dev-run.sh"]
