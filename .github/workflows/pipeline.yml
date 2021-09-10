@@ -37,9 +37,8 @@ jobs:
       - name: Remove old images
         uses: smartsquaregmbh/delete-old-packages@v0.3.1
         with:
-          names: backend
-          num-old-versions-to-delete: 3
-
+          names: |
+            backend
   #     - name: Git Checkout
   #       uses: actions/checkout@v2
 
