@@ -16,7 +16,6 @@ from say.models import SocialWorker
 from say.models import User
 from say.models import UserFamily
 from say.models.cart import Cart
-from tests.conftest import TEST_DB_URL
 
 
 LOGIN_URL = '/api/v2/auth/login'
@@ -31,7 +30,6 @@ class BaseTestClass:
 
     @pytest.fixture(scope='function', autouse=True)
     def init_class(self, db, client):
-        configs.dbUrl = TEST_DB_URL
         configs.UPLOAD_FOLDER = tempfile.mkdtemp()
         configs.TESTING = True
 

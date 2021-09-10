@@ -5,14 +5,13 @@ from urllib.parse import urlparse
 import psycopg2
 from sqlalchemy import create_engine
 
-
-admin_url = 'postgresql://postgres:postgres@localhost/postgres'
+from say.config import configs
 
 
 class PostgreSQLManager:
     connection = None
 
-    def __init__(self, url, admin_url=admin_url):
+    def __init__(self, url, admin_url=configs.postgres_admin_url):
         self.db_url = url
         self.db_name = urlparse(self.db_url).path.lstrip('/')
         self.admin_url = admin_url

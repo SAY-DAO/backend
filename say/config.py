@@ -13,19 +13,21 @@ class Config(object):
     TESTING = False
     DEBUG = True
     LOGLEVEL = DEBUG_LVL
-    POSTGRES_HOST = 'localhost'
+    POSTGRES_HOST = 'db'
     POSTGRES_PORT = '5432'
     POSTGRES_DB = 'say'
+    POSTGRES_TEST_DB = 'say_test'
+    POSTGRES_ADMIN_DB = 'postgres'
     POSTGRES_USER = 'postgres'
     POSTGRES_PASSWORD = 'postgres'
     BASE_URL = 'http://0.0.0.0:3100'
     API_URL = 'http://0.0.0.0:5000'
-    REDIS_HOST = 'localhost'
+    REDIS_HOST = 'redis'
     ADD_TO_HOME_URL = 'https://sayapp.company/add'
     UPLOAD_FOLDER = 'files'
     REDIS_PORT = '6379'
     JWT_SECRET_KEY = 'axcasdxaobisduba'
-    REVOKED_TOKEN_STORE_HOST = 'localhost'
+    REVOKED_TOKEN_STORE_HOST = 'redis'
     REVOKED_TOKEN_STORE_PORT = '6379'
     REVOKED_TOKEN_STORE_DB = 1
     SANDBOX = True
@@ -48,11 +50,6 @@ class Config(object):
     JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
     CACHE_TYPE = 'redis'  # Flask-Caching related configs
     CACHE_DEFAULT_TIMEOUT = 300
-    RABBITMQ_DEFAULT_USER = 'guest'
-    RABBITMQ_DEFAULT_PASS = 'guest'
-    RABBITMQ_VHOST = 'say'
-    RABBITMQ_HOST = 'localhost'
-    RABBITMQ_PORT = '5672'
     SENTRY_DSN = 'https://e7665a883afe47d082b3fa4e0b956c07@sentry.say.company/4'
     INFURA_URL = 'https://mainnet.infura.io/v3/0be880209fd94507a2b7b340f638f8a0'
     NAKAMA_ADDRESS = '0x052e909bd1a6b20d35c850d2a188fd515a738953'
@@ -86,9 +83,6 @@ class Config(object):
         self.POSTGRES_PASSWORD = get_secret(
             'postgres-password', self.POSTGRES_PASSWORD,
         )
-        self.RABBITMQ_DEFAULT_PASS = get_secret(
-            'rabbitmq-password', self.RABBITMQ_DEFAULT_PASS,
-        )
 
     def _cast(self, v):
         try:
@@ -117,31 +111,34 @@ class Config(object):
             f'/{self.POSTGRES_DB}'
 
     @property
+    def postgres_test_url(self):
+        return f'postgresql://' \
+            f'{self.POSTGRES_USER}' \
+            f':{self.POSTGRES_PASSWORD}' \
+            f'@{self.POSTGRES_HOST}' \
+            f':{self.POSTGRES_PORT}' \
+            f'/{self.POSTGRES_TEST_DB}'
+
+    @property
+    def postgres_admin_url(self):
+        return f'postgresql://' \
+            f'{self.POSTGRES_USER}' \
+            f':{self.POSTGRES_PASSWORD}' \
+            f'@{self.POSTGRES_HOST}' \
+            f':{self.POSTGRES_PORT}' \
+            f'/{self.POSTGRES_ADMIN_DB}'
+
+    @property
     def redis_url(self):
         return f'redis://{self.REDIS_HOST}:{self.REDIS_PORT}'
 
     @property
-    def rabbitmq_url(self):
-        return f'amqp://' \
-            f'{self.RABBITMQ_DEFAULT_USER}' \
-            f':{self.RABBITMQ_DEFAULT_PASS}' \
-            f'@{self.RABBITMQ_HOST}' \
-            f':{self.RABBITMQ_PORT}' \
-            f'/{self.RABBITMQ_VHOST}'
-
-    @property
     def broker_url(self):
-        if self.BROKER == 'redis':
-            return f'{self.redis_url}/0'
-        elif self.BROKER == 'rabbitmq':
-            return self.rabbitmq_url
+        return f'{self.redis_url}/0'
 
     @property
     def result_backend(self):
-        if self.BROKER == 'redis':
-            return f'{self.redis_url}/0'
-        elif self.BROKER == 'rabbitmq':
-            return 'rpc://'
+        return f'{self.redis_url}/0'
 
     @property
     def redbeat_redis_url(self):

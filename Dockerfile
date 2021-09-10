@@ -27,8 +27,13 @@ ENV PYTHONUNBUFFERED 1
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # check every 5s to ensure this service returns HTTP 200
-HEALTHCHECK --interval=5s --timeout=3s --start-period=30s --retries=3 \ 
+HEALTHCHECK --interval=10s --timeout=5s --start-period=60s --retries=3 \
     CMD curl -fs http://localhost:5000/api/healthz || exit 1
 
 CMD ["./scripts/run.sh"]
 
+FROM prod as development
+COPY requirements-dev.txt .
+RUN pip install -r requirements-dev.txt
+COPY .env .env
+CMD ["./scripts/dev-run.sh"]

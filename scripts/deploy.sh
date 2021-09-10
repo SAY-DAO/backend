@@ -11,12 +11,13 @@ fi
 
 docker-compose \
     -f docker-compose.yml \
+    -f docker-stack.yml \
     $OVERRIDE_IF_PROD \
-    config > docker-stack.yml
+    config > docker-stack-populated.yml
 
 docker stack deploy \
     --prune \
     --with-registry-auth \
     --resolve-image=always \
-    -c docker-stack.yml \
+    -c docker-stack-populated.yml \
     $STACK_NAME

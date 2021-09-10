@@ -28,9 +28,6 @@ from say.orm import setup_schema
 # client = app.test_client(authentication='Basic ....')
 
 
-TEST_DB_URL = 'postgresql://postgres:postgres@localhost/say_test'
-
-
 @pytest.fixture
 def flask_app():
     app.testing = True
@@ -52,23 +49,22 @@ def client(flask_app):
 @pytest.fixture(scope='function')
 def db():
     # Drop the previously created db if exists.
-    with DBManager(url=TEST_DB_URL) as m:
+    with DBManager(
+        url=configs.postgres_test_url, admin_url=configs.postgres_admin_url
+    ) as m:
         m.drop_database()
         m.create_database()
 
     # An engine to create db schema and bind future created sessions
     # NullPool used to disable Connection Pool
-    engine = create_engine(TEST_DB_URL, poolclass=NullPool)
+    engine = create_engine(configs.postgres_url, poolclass=NullPool)
 
     # A session factory to create and store session to close it on tear down
     sessions = []
 
     def _connect(*a, expire_on_commit=True, **kw):
         session_factory = sessionmaker(
-            bind=engine,
-            *a,
-            expire_on_commit=expire_on_commit,
-            **kw
+            bind=engine, *a, expire_on_commit=expire_on_commit, **kw
         )
         new_session = scoped_session(session_factory)
         sessions.append(new_session)
@@ -90,7 +86,6 @@ def db():
     # Removing the session to free the connection for future sessions.
     session.remove()
 
-
     # Preparing and binding the application shared scoped session, due the
     # some errors when a model trying use the mentioned session internally.
     init_model(engine)
@@ -105,5 +100,7 @@ def db():
     engine.dispose()
 
     # Dropping the previously created database
-    with DBManager(url=TEST_DB_URL) as m:
+    with DBManager(
+        url=configs.postgres_test_url, admin_url=configs.postgres_admin_url
+    ) as m:
         m.drop_database()
