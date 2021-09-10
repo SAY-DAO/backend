@@ -34,11 +34,10 @@ jobs:
       test_image_id: ${{ steps.image_id.outputs.test_image_id }}
     steps:
 
-      - name: Remove old images
-        uses: smartsquaregmbh/delete-old-packages@v0.3.1
+      - uses: actions/delete-package-versions@v1
         with:
-          names: |
-            backend
+          package-name: 'backend'
+          num-old-versions-to-delete: 3
   #     - name: Git Checkout
   #       uses: actions/checkout@v2
 
