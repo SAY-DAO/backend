@@ -128,7 +128,7 @@ jobs:
       - name: Run Tests
         run: >
           docker-compose -f compose.yml
-          run backend pytest
+          run --rm backend pytest
 
   deploy_dev:
     name: Deploy to Development Server
@@ -222,6 +222,11 @@ jobs:
           port: ${{ secrets.STAGE_SERVER_PORT }}
           script: docker stack deploy --prune --resolve-image=always --with-registry-auth -c /tmp/${{ env.STACK_FILE }} ${{ env.STAGE_STACK_NAME }}
 
+      - name: Remove old images
+        uses: smartsquaregmbh/delete-old-packages@v0.3.1
+        with:
+          names: backend
+
   deploy_production:
     name: Deploy to Production Server
     runs-on: ubuntu-latest
@@ -244,7 +249,10 @@ jobs:
           echo "STACK_FILE=docker-stack-${{ env.PROD_STACK_NAME }}-${{ github.sha }}.yml" >> $GITHUB_ENV
 
       - name: Prepare Stack File
-        run: ENVIRONMENT=${{ env.PRODUCTION }} DOMAIN=${{ env.PROD_DOMAIN }} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${{ env.PROD_STACK_NAME }} docker-compose -f ${{ env.DOCKER_STACK_PATH }} ${{ env.OVERRIDE_STACK_FILE }} config > ${{ env.STACK_FILE }}
+        run: >
+          ENVIRONMENT=${{ env.PRODUCTION }} DOMAIN=${{ env.PROD_DOMAIN }} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${{ env.PROD_STACK_NAME }}
+          docker-compose -f ${{ env.DOCKER_COMPOSE_PATH }} -f ${{ env.DOCKER_STACK_PATH }} ${{ env.OVERRIDE_STACK_FILE }}
+          config > ${{ env.STACK_FILE }}
 
       - name: Move Stack File to Server
         uses: appleboy/scp-action@v0.1.1
