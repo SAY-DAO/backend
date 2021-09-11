@@ -640,20 +640,7 @@ class NeedReceipts(Resource):
         if need is None:
             return HTTP_NOT_FOUND()
 
-        receipt = (
-            session.query(Receipt)
-            .filter(
-                Receipt.code == data.code,
-                Receipt.deleted.is_(None),
-            )
-            .one_or_none()
-        )
-
-        if data.code and receipt is not None:
-            return {'message': 'Code already exists'}, 400
-
         receipt = Receipt(**data.dict())
-
         need_receipt = NeedReceipt(
             need=need,
             receipt=receipt,
