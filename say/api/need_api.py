@@ -143,7 +143,7 @@ class GetAllNeeds(Resource):
             needs = needs.join(Child).filter(Child.id_ngo == data.ngo_id)
 
         needs = filter_by_privilege(needs, get=True)
-        needs = needs.options(selectinload('child.ngo'))
+        needs = needs.options(selectinload(Need.child)).options(selectinload('child.ngo'))
         result = OrderedDict(
             totalCount=needs.count(),
             needs=[],
