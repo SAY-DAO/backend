@@ -112,14 +112,6 @@ class GetAllNeeds(Resource):
     def get(self, data: AllNeedQuerySchema):
         sw_role = get_user_role()
 
-        # done = args.get('done', -1)
-        # status = args.get('status', None)
-        # ngo_id = args.get('ngoId', None)
-
-        # is_reported = args.get('isReported', None)
-        # type_ = args.get('type', None)
-        # is_child_confirmed = args.get('isChildConfirmed', None)
-
         needs = (
             session.query(Need)
             .filter(Need.isDeleted.is_(False))
@@ -151,7 +143,7 @@ class GetAllNeeds(Resource):
             needs = needs.join(Child).filter(Child.id_ngo == data.ngo_id)
 
         needs = filter_by_privilege(needs, get=True)
-        needs = needs.options(selectinload('child'))
+        needs = needs.options(selectinload('child.ngo'))
         result = OrderedDict(
             totalCount=needs.count(),
             needs=[],
