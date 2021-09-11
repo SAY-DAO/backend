@@ -55,7 +55,7 @@ responses:
       properties:
         totalCount:
           type: integer
-        children:
+        needs:
           type: array
           items:
             schema:
