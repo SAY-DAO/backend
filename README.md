@@ -1,6 +1,6 @@
-# backend
-Backend of SAY App and Panel
+# Backend of SAY App and Panel
 
+[![Build, Test and Deploy](https://github.com/SAY-DAO/backend/actions/workflows/pipeline.yml/badge.svg)](https://github.com/SAY-DAO/backend/actions/workflows/pipeline.yml)
 
 Setting up Development Environment on Linux
 
