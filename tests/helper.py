@@ -2,6 +2,7 @@ import tempfile
 from datetime import datetime
 from hashlib import md5
 from os import name
+from random import choice
 from random import randint
 
 import pytest
@@ -16,9 +17,11 @@ from say.models import SocialWorker
 from say.models import User
 from say.models import UserFamily
 from say.models.cart import Cart
+from say.roles import SUPER_ADMIN
 
 
 LOGIN_URL = '/api/v2/auth/login'
+PANEL_LOGIN_URL = '/api/v2/panel/auth/login'
 
 UNAUTHORIZED_ERROR_CODE = 401
 
@@ -78,8 +81,8 @@ class BaseTestClass:
         self.session.save(ngo)
         privilege = Privilege(
             id=seed,
-            name=f'{seed}',
-            privilege=2  # Social Worker
+            name=SUPER_ADMIN,
+            privilege=0  # Social Worker
         )
         self.session.save(privilege)
         social_worker = SocialWorker(
@@ -137,11 +140,11 @@ class BaseTestClass:
         self.session.save(user_family)
         return user_family
 
-    def _create_random_need(self, child=None, confirmed=True):
+    def _create_random_need(self, child=None, confirmed=True, **kwargs):
         child = child or self._create_random_child()
         seed = randint(1, 10 ** 3)
         randomstr = str(seed)
-        need = Need(
+        data = dict(
             child=child,
             name=randomstr,
             description=randomstr,
@@ -155,6 +158,8 @@ class BaseTestClass:
             confirmDate=confirmed and datetime.utcnow(),
             isUrgent=False,
         )
+        data.update(kwargs)
+        need = Need(**data)
         self.session.save(need)
         return need
 
@@ -187,6 +192,7 @@ class BaseTestClass:
             bioSummary=randomstr,
             voiceUrl=randomstr,
             generatedCode=randomstr,
+            isConfirmed=choice([True, False]),
         )
         self.session.save(sw)
         return child
@@ -251,3 +257,19 @@ class BaseTestClass:
         self._client.environ_base['HTTP_AUTHORIZATION'] = token
         self._client.environ_base[REFRESH_TOKEN_KEY] = refreshToken
         return token
+
+    def login_sw(self, username, password):
+        res = self.client.post(
+            PANEL_LOGIN_URL,
+            data={
+                'username': username,
+                'password': password,
+            },
+        )
+        assert res.status_code == 200
+        assert (token := res.json['access_token']) is not None
+        assert (refreshToken := res.json['refresh_token']) is not None
+        self._client.environ_base['HTTP_AUTHORIZATION'] = token
+        self._client.environ_base[REFRESH_TOKEN_KEY] = refreshToken
+        return token
+

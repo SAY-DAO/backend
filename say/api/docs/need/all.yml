@@ -17,35 +17,33 @@ parameters:
     required: true
     type: string
 
-  - in: path
-    name: confirm
-    required: true
-    type: integer
+  - in: query
+    name: isConfirmed
+    type: boolean
 
   - in: query
-    name: done
-    schema:
-      type: integer
+    name: isDone
+    type: boolean
 
   - in: query
     name: isReported
-    schema:
-      type: boolean
+    type: boolean
 
   - in: query
     name: status
-    schema:
-      type: integer
+    type: integer
 
   - in: query
     name: type
-    schema:
-      type: integer
+    type: integer
 
   - in: query
     name: ngoId
-    schema:
-      type: integer
+    type: integer
+
+  - in: query
+    name: isChildConfirmed
+    type: boolean
 
 responses:
   500:
@@ -55,10 +53,10 @@ responses:
     description: Ok
     schema:
       properties:
-        totalCount: 
+        totalCount:
           type: integer
-        children: 
+        children:
           type: array
           items:
-            schema: 
+            schema:
               id: need_model

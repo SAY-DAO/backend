@@ -5,10 +5,12 @@ from uuid import uuid4
 
 import ujson
 from flasgger import swag_from
+from flasgger.utils import validate
 from flask import request
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_restful import Resource
 from sqlalchemy import or_
+from sqlalchemy.orm import selectinload
 from werkzeug.utils import secure_filename
 
 from say.api.ext import api
@@ -20,6 +22,7 @@ from say.config import configs
 from say.constants import DEFAULT_CHILD_ID
 from say.date import parse_datetime
 from say.decorators import json
+from say.decorators import validate
 from say.exceptions import HTTP_NOT_FOUND
 from say.exceptions import HTTP_PERMISION_DENIED
 from say.models import commit
@@ -43,6 +46,7 @@ from say.roles import SUPER_ADMIN
 from say.roles import USER
 from say.schema import NewReceiptSchema
 from say.schema import ReceiptSchema
+from say.schema.need import AllNeedQuerySchema
 from say.validations import allowed_image
 
 from . import *
@@ -102,57 +106,52 @@ class GetAllNeeds(Resource):
     @authorize(
         SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
     )  # TODO: priv
+    @validate(AllNeedQuerySchema)
     @json
     @swag_from('./docs/need/all.yml')
-    def get(self, confirm):
+    def get(self, data: AllNeedQuerySchema):
         sw_role = get_user_role()
-        args = request.args
-        done = args.get('done', -1)
-        status = args.get('status', None)
-        ngo_id = args.get('ngoId', None)
 
-        is_reported = args.get('isReported', None)
-        type_ = args.get('type', None)
+        # done = args.get('done', -1)
+        # status = args.get('status', None)
+        # ngo_id = args.get('ngoId', None)
 
-        done = int(done)
+        # is_reported = args.get('isReported', None)
+        # type_ = args.get('type', None)
+        # is_child_confirmed = args.get('isChildConfirmed', None)
+
         needs = (
             session.query(Need)
             .filter(Need.isDeleted.is_(False))
             .order_by(Need.doneAt.desc())
         )
 
-        if int(confirm) == 1:
-            needs = needs.filter_by(isDeleted=False).filter_by(isConfirmed=True)
+        if data.is_confirmed is not None:
+            needs = needs.filter_by(isConfirmed=data.is_confirmed)
 
-        elif int(confirm) == 0:
-            needs = needs.filter_by(isDeleted=False).filter_by(isConfirmed=False)
+        if data.is_done is not None:
+            needs = needs.filter_by(isDone=data.is_done)
 
-        if done == 1:
-            needs = needs.filter_by(isDone=True)
+        if data.type is not None:
+            needs = needs.filter_by(type=data.type)
 
-        elif done == 0:
-            needs = needs.filter_by(isDone=False)
+        if data.status is not None:
+            needs = needs.filter_by(status=data.status)
 
-        if type_:
-            type_ = int(type_)
-            needs = needs.filter_by(type=type_)
+        if data.is_reported is not None:
+            needs = needs.filter_by(isReported=data.is_reported)
 
-        if status:
-            status = int(status)
-            needs = needs.filter_by(status=status)
-
-        if is_reported:
-            is_reported = bool(int(is_reported))
-            needs = needs.filter_by(isReported=is_reported)
-
-        if ngo_id and sw_role in [SUPER_ADMIN, SAY_SUPERVISOR, ADMIN]:
-            ngo_id = int(ngo_id)
-            needs = (
-                needs.join(Child).join(SocialWorker).filter(SocialWorker.id_ngo == ngo_id)
+        if data.is_child_confirmed is not None:
+            children_id = session.query(Child.id).filter(
+                Child.isConfirmed == data.is_child_confirmed,
             )
+            needs = needs.filter(Need.child_id.in_(children_id))
+
+        if data.ngo_id and sw_role in [SUPER_ADMIN, SAY_SUPERVISOR, ADMIN]:
+            needs = needs.join(Child).filter(Child.id_ngo == data.ngo_id)
 
         needs = filter_by_privilege(needs, get=True)
-
+        needs = needs.options(selectinload('child'))
         result = OrderedDict(
             totalCount=needs.count(),
             needs=[],
@@ -341,7 +340,7 @@ class UpdateNeedById(Resource):
                     need.oncePurchased = True
 
             if new_status != 5 and new_status - prev_status == 1:
-                if new_status == 4 and need.isReported != True:
+                if new_status == 4 and need.isReported is not True:
                     return {'message': 'Need has not been reported to ngo yet'}, 400
 
                 need.status = new_status
@@ -567,6 +566,7 @@ class AddNeed(Resource):
 
         if new_need.link:
             from say.tasks import update_need
+
             update_need.delay(new_need.id)
 
         return new_need
@@ -684,7 +684,7 @@ API URLs
 """
 
 api.add_resource(GetNeedById, '/api/v2/need/needId=<need_id>')
-api.add_resource(GetAllNeeds, '/api/v2/need/all/confirm=<confirm>')
+api.add_resource(GetAllNeeds, '/api/v2/needs')
 api.add_resource(UpdateNeedById, '/api/v2/need/update/needId=<need_id>')
 api.add_resource(DeleteNeedById, '/api/v2/need/delete/needId=<need_id>')
 api.add_resource(

@@ -42,7 +42,7 @@ class Need(base, Timestamp):
     purchase_cost = Column(Integer, nullable=True)
     link = Column(String, nullable=True)
     affiliateLinkUrl = Column(String, nullable=True)
-    isDone = Column(Boolean, nullable=False, default=False, index=True)
+    # isDone = Column(Boolean, nullable=False, default=False, index=True)
     isDeleted = Column(Boolean, nullable=False, default=False, index=True)
     receipts = Column(String, nullable=True)  # comma separated
     isConfirmed = Column(Boolean, nullable=False, default=False, index=True)
@@ -94,6 +94,14 @@ class Need(base, Timestamp):
             )
         )
     )
+
+    @property
+    def is_reported(self):
+        return self.isReported
+
+    @is_reported.setter
+    def is_reported(self, value):
+        self._x = value
 
     # TODO: Change this to @observers
     @hybrid_property

@@ -32,7 +32,6 @@ from say.orm import setup_schema
 def flask_app():
     app.testing = True
     limiter.enabled = False
-    configs.POSTGRES_DB = configs.POSTGRES_TEST_DB
     return app
 
 
@@ -58,7 +57,7 @@ def db():
 
     # An engine to create db schema and bind future created sessions
     # NullPool used to disable Connection Pool
-    engine = create_engine(configs.postgres_url, poolclass=NullPool)
+    engine = create_engine(configs.postgres_test_url, poolclass=NullPool)
 
     # A session factory to create and store session to close it on tear down
     sessions = []
