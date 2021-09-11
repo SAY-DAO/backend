@@ -1,3 +1,4 @@
+import html
 import re
 
 import requests
@@ -85,9 +86,12 @@ class Crawler:
         if self.patterns is None:
             return
 
-        self.c = requests.get(self.url).text
+        r = requests.get(self.url)
+        text = r.text
+        text = html.unescape(text)
+        self.c = text
+
         cost = self.parse_cost()
         title = self.parse_title()
         img = self.parse_img()
         return dict(cost=cost, img=img, title=title)
-

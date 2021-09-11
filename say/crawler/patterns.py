@@ -1,4 +1,3 @@
-from collections import namedtuple
 from typing import NamedTuple
 
 
@@ -24,12 +23,12 @@ stores = {
     ),
     'hodhod': Patterns(
         url='hodhod.com',
-        cost=r'<p class="price"><span class="woocommerce-Price-amount amount"><bdi>(.*?)0&()',
+        cost=r'<meta property="product:price:amount" content="(\d+)">()',
         discontinued='c-product__stock-status--stop-production',
         unavaliable=r'stock out-of-stock',
         product_status=r'c-product-stock__body">(.*?)<',
-        title=r'product_title entry-title\">(.*?)<',
-        img=r'woocommerce-product-gallery__image"><a href="(.*?)"',
+        title=r'<meta property="og:image:alt" content="([^"]+)">',
+        img=r'<meta property="og:image:secure_url" content="([^"]+)">',
     ),
 }
 
