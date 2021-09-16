@@ -1,6 +1,6 @@
 from datetime import datetime
-from hashlib import md5
 
+import argon2
 from flasgger import swag_from
 from flask import request
 from flask_jwt_extended import create_refresh_token
@@ -37,7 +37,7 @@ class PanelLogin(Resource):
             return {'message': 'username is needed!!!'}, 400
 
         if 'password' in request.form.keys():
-            password = md5(request.form['password'].encode()).hexdigest()
+            password = request.form['password']
         else:
             return {'message': 'password is needed!!!'}, 400
 
@@ -50,7 +50,9 @@ class PanelLogin(Resource):
         if social_worker is None:
             return {'message': 'Please Register First'}, 303
 
-        if social_worker.password != password:
+        try:
+            social_worker.validate_password(password)
+        except argon2.exceptions.VerifyMismatchError:
             return {'message': 'UserName or Password is Wrong'}, 303
 
         social_worker.lastLogin = datetime.utcnow()

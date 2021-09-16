@@ -5,7 +5,11 @@ services:
       POSTGRES_PASSWORD: postgres
 
   backend: &backend
-    build: .
+    build:
+      context: .
+      args:
+        USER_ID: ${USER_ID:-user}
+        GROUP_ID: ${GROUP_ID:-user}
     depends_on:
       - db
       - redis

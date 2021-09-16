@@ -1,12 +1,15 @@
+from argon2 import PasswordHasher
 from babel import Locale
 from celery import exceptions
 from sqlalchemy.orm import object_session
+from sqlalchemy.orm import synonym
 from sqlalchemy_utils import LocaleType
 
 from say.formatters import expose_datetime
 from say.locale import ChangeLocaleTo
 from say.render_template_i18n import render_template_i18n
 from say.utils import surname
+from say.validations import validate_password as _validate_password
 
 from . import *
 
@@ -30,7 +33,8 @@ class SocialWorker(base, Timestamp):
     firstName = Column(String, nullable=True)
     lastName = Column(String, nullable=False)
     userName = Column(String, nullable=False)  # ngoName + "-sw" + generatedCode
-    password = Column(String, nullable=False)
+    # password = Column(String, nullable=False)
+    _password = Column(String(256), nullable=False)
     birthCertificateNumber = Column(String, nullable=True)
     idNumber = Column(String, nullable=False)
     idCardUrl = Column(String, nullable=True)
@@ -61,6 +65,28 @@ class SocialWorker(base, Timestamp):
     privilege = relationship("Privilege", foreign_keys=id_type)
     ngo = relationship("Ngo", foreign_keys=id_ngo)
     children = relationship("Child", back_populates='social_worker')
+
+    def _set_password(self, password):
+        """Hash ``password`` on the fly and store its hashed version."""
+        if not _validate_password(password):
+            raise ValueError('Password must be at least 6 character')
+
+        ph = PasswordHasher()
+        self._password = ph.hash(password)
+
+    def _get_password(self):
+        """Return the hashed version of the password."""
+        return self._password
+
+    password = synonym(
+        '_password',
+        descriptor=property(_get_password, _set_password),
+        info=dict(protected=True),
+    )
+
+    def validate_password(self, password):
+        ph = PasswordHasher()
+        return ph.verify(self.password, password)
 
     def send_report(self):
         from say.app import app

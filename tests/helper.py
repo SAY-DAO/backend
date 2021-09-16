@@ -90,7 +90,7 @@ class BaseTestClass:
             generatedCode=seed,
             lastName=f'test{seed}',
             userName=f'test{seed}',
-            password=md5(password.encode()).hexdigest(),
+            password=password,
             avatarUrl='',
             emailAddress=f'{seed}test@test.com',
             phoneNumber='09121111111',
