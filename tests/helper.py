@@ -213,7 +213,7 @@ class BaseTestClass:
             avatarUrl=str(seed),
             emailAddress=f'{str(seed)}@email.com',
             phoneNumber=str(seed),
-            password='abc',
+            password='abcefg123',
             registerDate=datetime.utcnow(),
             lastLoginDate=datetime.utcnow(),
             privilege=Privilege(
