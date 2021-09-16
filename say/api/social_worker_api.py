@@ -527,8 +527,7 @@ class UpdateSocialWorker(Resource):
                 'bankAccountCardNumber']
 
         if 'password' in request.form.keys():
-            base_social_worker.password = md5(
-                request.form['password'].encode()).hexdigest()
+            base_social_worker.password = request.form['password']
 
         if ngo_change:
             that_ngo = (session.query(Ngo).filter_by(
