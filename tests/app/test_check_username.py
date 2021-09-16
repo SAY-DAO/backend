@@ -10,9 +10,24 @@ class TestCheckUsername(BaseTestClass):
 
     def test_check_username(self):
         res = self.client.get(
-            CHECK_USERNAME_URL % 'abc.de',
+            CHECK_USERNAME_URL % 'abc.d1',
         )
         assert res.status_code == 200
+
+        res = self.client.get(
+            CHECK_USERNAME_URL % 'abcef',
+        )
+        assert res.status_code == 710
+
+        res = self.client.get(
+            CHECK_USERNAME_URL % '1abcef',
+        )
+        assert res.status_code == 710
+
+        res = self.client.get(
+            CHECK_USERNAME_URL % '.abcef',
+        )
+        assert res.status_code == 710
 
         res = self.client.get(
             CHECK_USERNAME_URL % 'abc',

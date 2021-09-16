@@ -114,7 +114,7 @@ class BaseTestClass:
     def _create_random_user(self, password):
         seed = randint(10 ** 3, 10 ** 4)
         user = User(
-            userName=seed,
+            userName=f'user{seed}',
             emailAddress=f'{seed}test@test.com',
             phone_number=f'+9899{seed}',
             is_phonenumber_verified=True,
