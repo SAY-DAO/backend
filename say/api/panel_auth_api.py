@@ -9,6 +9,7 @@ from flask_jwt_extended import get_raw_jwt
 from flask_restful import Resource
 
 from say.api.ext import api
+from say.api.ext import limiter
 from say.authorization import authorize
 from say.authorization import authorize_refresh
 from say.authorization import create_sw_access_token
@@ -27,6 +28,7 @@ Panel Authentication APIs
 
 
 class PanelLogin(Resource):
+    decorators = [limiter.limit('10/minute')]
 
     @json
     @swag_from('./docs/panel_auth/login.yml')
