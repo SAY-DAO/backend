@@ -1,5 +1,3 @@
-from hashlib import md5
-
 from tests.helper import BaseTestClass
 
 
