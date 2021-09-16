@@ -38,8 +38,8 @@ HEALTHCHECK --interval=10s --timeout=5s --start-period=60s --retries=3 \
 CMD ["./scripts/run.sh"]
 
 FROM prod as development
-ARG USER_ID
-ARG GROUP_ID
+ARG USER_ID=1000
+ARG GROUP_ID=1000
 ARG USER=user
 
 RUN addgroup --gid $GROUP_ID $USER
