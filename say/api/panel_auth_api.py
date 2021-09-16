@@ -52,7 +52,7 @@ class PanelLogin(Resource):
 
         try:
             social_worker.validate_password(password)
-        except argon2.exceptions.VerifyMismatchError:
+        except (argon2.exceptions.VerifyMismatchError, argon2.exceptions.InvalidHash):
             return {'message': 'UserName or Password is Wrong'}, 303
 
         social_worker.lastLogin = datetime.utcnow()
