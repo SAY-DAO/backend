@@ -25,6 +25,7 @@ class UserFamily(base, Timestamp):
     username = association_proxy('user', 'userName')
     avatar_url = association_proxy('user', 'avatarUrl')
     role = synonym('userRole')
+    is_deleted = synonym('isDeleted')
 
     family = relationship(
         'Family',
@@ -39,7 +40,3 @@ class UserFamily(base, Timestamp):
         uselist=False,
         back_populates='user_families',
     )
-
-    @property
-    def is_deleted(self):
-        return self.isDeleted

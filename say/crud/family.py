@@ -17,7 +17,7 @@ def join_family(family_id, role, user):
     if not family or family.child.isDeleted:
         raise HTTPException(404, f'family {family_id} not found')
 
-    if not family.can_join(user, role):
+    if not family.can_join(role):
         raise HTTPException(744, 'Can not join this family')
 
     if not family.is_in_family(user):

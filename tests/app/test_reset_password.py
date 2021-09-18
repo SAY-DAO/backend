@@ -8,7 +8,7 @@ RESET_PASS_PHONE_URL = '/api/v2/auth/password/reset/phone'
 class TestResetPass(BaseTestClass):
     def mockup(self):
         self.password = '123456'
-        self.user = self.create_user(self.password)
+        self.user = self._create_random_user(password=self.password)
 
     def test_verify_phone(self):
         res = self.client.post(

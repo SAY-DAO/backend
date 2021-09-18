@@ -1,7 +1,8 @@
 import itertools
 import random
 
-from sqlalchemy.sql.expression import distinct, or_
+from sqlalchemy.sql.expression import distinct
+from sqlalchemy.sql.expression import or_
 from sqlalchemy.sql.functions import count
 
 from say.config import configs
@@ -60,6 +61,8 @@ def create_v3(child: Child, user_id, type):
 
 
 def select_random_child(user_id):
+    random_child = None
+    excluded = []
     user_children_ids_tuple = (
         session.query(Child.id)
         .join(Family)
@@ -70,37 +73,47 @@ def select_random_child(user_id):
 
     # Flating a nested list like [(1,), (2,)] to [1, 2]
     user_children_ids = list(itertools.chain.from_iterable(user_children_ids_tuple))
-    child_family_counts = (
-        session.query(Child.id, count(distinct(UserFamily.id_user)))
-        .filter(Child.isConfirmed.is_(True))
-        .filter(Child.isDeleted.is_(False))
-        .filter(Child.isMigrated.is_(False))
-        .filter(Child.existence_status == 1)
-        .join(Need)
-        .filter(Need.isConfirmed.is_(True))
-        .filter(Need.isDeleted.is_(False))
-        .join(Family)
-        .outerjoin(UserFamily)
-        .filter(Child.id.notin_(user_children_ids))
-        .filter(or_(
-            UserFamily.id.is_(None),
-            UserFamily.isDeleted.is_(False),
-        ))
-        .filter(Need.isDone.is_(False))
-        .group_by(Child.id, UserFamily.id_family)
-    )
 
-    if child_family_counts.count() == 0:
-        raise HTTPException(
-            499,
-            'Our database is not big as your heart T_T',
+    while True:
+        child_family_counts = addoptable_child_family_counts_query(
+            set([*user_children_ids, *excluded]),
         )
 
-    # weight is 1/(1 + family_count ^ FACTOR)
-    weights = [
-        1 / (1 + x[1]) ** configs.RANDOM_SEARCH_FACTOR for x in child_family_counts
-    ]
-    addoptable_children = [x[0] for x in child_family_counts]
-    selected_child_id = random.choices(addoptable_children, weights)[0]
-    random_child: Child = session.query(Child).get(selected_child_id)
+        if child_family_counts.count() == 0:
+            raise HTTPException(
+                499,
+                'Our database is not big as your heart T_T',
+            )
+
+        # weight is 1/(1 + family_count ^ FACTOR)
+        weights = [
+            1 / (1 + x[1]) ** configs.RANDOM_SEARCH_FACTOR for x in child_family_counts
+        ]
+        addoptable_children = [x[0] for x in child_family_counts]
+        selected_child_id = random.choices(addoptable_children, weights)[0]
+        random_child: Child = session.query(Child).get(selected_child_id)
+
+        if not random_child.family.is_previous_role_is_taken(user_id):
+            break
+
+        excluded.append(random_child.id)
+
     return random_child
+
+
+def addoptable_child_family_counts_query(excluded):
+    return (
+        session.query(Child.id, Family.members_count)
+        .join(Need)
+        .join(Family)
+        .filter(
+            Child.isConfirmed.is_(True),
+            Child.isDeleted.is_(False),
+            Child.isMigrated.is_(False),
+            Child.existence_status == 1,
+            Child.id.notin_(excluded),
+            Need.isConfirmed.is_(True),
+            Need.isDeleted.is_(False),
+            Need.isDone.is_(False),
+        )
+    )

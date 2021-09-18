@@ -1,17 +1,19 @@
+import pytest
+
 from tests.helper import BaseTestClass
 
 
-INVITE_URL = '/api/v3/invitations/'
+INVITE_V2_URL = '/api/v2/invitations/'
+INVITE_V3_URL = '/api/v3/invitations/'
 
 
-class TestCart(BaseTestClass):
+class TestInvite(BaseTestClass):
     def mockup(self):
         self.pw = '123456'
-        self.user = self.create_user(password=self.pw)
+        self.user = self._create_random_user(password=self.pw)
         self.child = self._create_random_child(
             isDeleted=False, isConfirmed=True, existence_status=1
         )
-        self._create_random_family(self.child)
         self._create_random_need(
             isDeleted=False,
             isConfirmed=True,
@@ -20,10 +22,11 @@ class TestCart(BaseTestClass):
             child=self.child,
         )
 
-    def test_get_cart(self):
+    @pytest.mark.parametrize('url', [INVITE_V2_URL, INVITE_V3_URL])
+    def test_post_invite(self, url):
         self.login(self.user.userName, self.pw)
         res = self.client.post(
-            INVITE_URL,
+            url,
             data=dict(
                 familyId=self.child.familyId,
                 role=0,
@@ -31,4 +34,5 @@ class TestCart(BaseTestClass):
         )
         assert res.status_code == 200
         assert res.json['token'] is not None
-        assert res.json['child'] is not None
+        if url == INVITE_V3_URL:
+            assert res.json['child'] is not None

@@ -5,7 +5,7 @@ from tests.helper import BaseTestClass
 class TestLogin(BaseTestClass):
     def mockup(self):
         self.password = '123456'
-        self.user = self.create_user(self.password)
+        self.user = self._create_random_user(password=self.password)
 
     def test_login_by_username(self):
         res = self.client.post(

@@ -1,11 +1,10 @@
 import tempfile
 from datetime import datetime
-from hashlib import md5
-from os import name
 from random import choice
 from random import randint
 
 import pytest
+import sqlalchemy
 
 from say.config import configs
 from say.models import Child
@@ -106,36 +105,37 @@ class BaseTestClass:
         self.session.save(social_worker)
         return social_worker
 
-    def create_user(self, password='password'):
-        user = self._create_random_user(password)
-        self.session.save(user)
-        return user
-
-    def _create_random_user(self, password='password'):
-        seed = randint(10 ** 3, 10 ** 4)
-        user = User(
-            userName=seed,
-            emailAddress=f'{seed}test@test.com',
-            phone_number=f'+9899{seed}',
-            is_phonenumber_verified=True,
-            password=password,
-            firstName=f'test{seed}',
-            lastName=f'test{seed}',
-            city=1,
-            country=1,
-            lastLogin=datetime.utcnow(),
-            cart=Cart(),
-        )
-        return user
+    def _create_random_user(self, **kwargs):
+        seed = randint(10 ** 10, 10 ** 12)
+        while True:
+            try:
+                data = dict(
+                    userName=seed,
+                    emailAddress=f'{seed}test@test.com',
+                    phone_number=f'+9899{seed}',
+                    is_phonenumber_verified=True,
+                    password='password',
+                    firstName=f'test{seed}',
+                    lastName=f'test{seed}',
+                    city=1,
+                    country=1,
+                    lastLogin=datetime.utcnow(),
+                    cart=Cart(),
+                )
+                data.update(kwargs)
+                user = User(**data)
+                self.session.save(user)
+                return user
+            except sqlalchemy.exc.IntegrityError:
+                continue
 
     def _create_user_family(self, user=None):
         family = self._create_random_family()
-        user = user or self.create_user()
-
+        user = user or self._create_random_user()
         user_family = UserFamily(
             user=user,
             family=family,
-            userRole=0,
+            userRole=2,
         )
         self.session.save(user_family)
         return user_family
@@ -164,13 +164,16 @@ class BaseTestClass:
         return need
 
     def _create_random_family(self, child=None, members=[]):
-        child = child or self._create_random_child()
-        family = Family(
-            child=child,
-            members=[
-                UserFamily(user=user, userRole=2) for user in members
-            ],
-        )
+        family = None
+
+        if child is None:
+            family = self._create_random_child().family
+        else:
+            family = Family(child=child)
+
+        family.members = [
+            UserFamily(user=user, userRole=2) for user in members
+        ]
         self.session.save(family)
         return family
 
@@ -196,6 +199,7 @@ class BaseTestClass:
             voiceUrl=randomstr,
             generatedCode=randomstr,
             isConfirmed=choice([True, False]),
+            family=Family(),
         )
         data.update(kwargs)
         child = Child(**data)

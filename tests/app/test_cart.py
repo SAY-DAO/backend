@@ -7,7 +7,7 @@ CART_URL = '/api/v2/mycart'
 class TestCart(BaseTestClass):
     def mockup(self):
         self.pw = '123456'
-        self.user = self.create_user(password=self.pw)
+        self.user = self._create_random_user(password=self.pw)
 
     def test_get_cart(self):
         self.login(self.user.userName, self.pw)

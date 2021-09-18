@@ -8,7 +8,7 @@ LOGOUT_URL = '/api/v2/auth/logout/token'
 class TestLogout(BaseTestClass):
     def mockup(self):
         self.password = '123456'
-        self.user = self.create_user(self.password)
+        self.user = self._create_random_user(password=self.password)
 
     def test_logout(self):
         token = self.login(self.user.userName, self.password)

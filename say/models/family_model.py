@@ -1,4 +1,7 @@
+from sqlalchemy.orm import column_property
+
 from . import *
+from .user_family_model import UserFamily
 
 
 """
@@ -34,6 +37,20 @@ class Family(base, Timestamp):
         back_populates='family',
     )
 
+    members_count = column_property(
+        select([
+            coalesce(
+                func.count(UserFamily.id_user),
+                0,
+            )
+        ])
+        .where(and_(
+            UserFamily.is_deleted.is_(False),
+            UserFamily.id_family == id,
+        ))
+        .correlate_except(UserFamily),
+    )
+
     def current_members(self):
         for member in self.members:
             if member.isDeleted:
@@ -46,11 +63,29 @@ class Family(base, Timestamp):
                 return False
         return True
 
-    def can_join(self, user, role):
+    def can_join(self, role):
         for member in self.members:
             # Child has father (xor mother)
-            if role in (0, 1) and member.userRole == role \
-                    and not member.isDeleted:
+            if role in (0, 1) and member.userRole == role and not member.isDeleted:
                 return False
 
         return True
+
+    def is_previous_role_is_taken(self, user_id):
+        previous_role = None
+        for member in self.members:
+            if member.id_user == user_id:
+                previous_role = member.role
+                break
+
+        if previous_role is None or previous_role not in (0, 1):
+            # User is new member or was not father or mother
+            return False
+
+        for member in self.members:
+            if member.role == previous_role and member.isDeleted is False:
+                return True
+
+        return False
+
+

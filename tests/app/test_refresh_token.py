@@ -9,7 +9,7 @@ REFRESH_TOKEN_URL = '/api/v2/auth/refresh'
 class TestRefreshToken(BaseTestClass):
     def mockup(self):
         self.password = '123456'
-        self.user = self.create_user(self.password)
+        self.user = self._create_random_user(password=self.password)
 
     def test_refresh_token(self):
         self.login(self.user.userName, self.password)

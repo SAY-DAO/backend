@@ -6,7 +6,7 @@ CHECK_PHONE_URL = '/api/v2/check/phone/%s'
 
 class TestCheckPhone(BaseTestClass):
     def mockup(self):
-        self.user = self.create_user()
+        self.user = self._create_random_user()
 
     def test_check_username(self):
         res = self.client.get(
