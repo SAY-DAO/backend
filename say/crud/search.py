@@ -1,10 +1,6 @@
 import itertools
 import random
 
-from sqlalchemy.sql.expression import distinct
-from sqlalchemy.sql.expression import or_
-from sqlalchemy.sql.functions import count
-
 from say.config import configs
 from say.exceptions import HTTPException
 from say.models import Child
@@ -24,11 +20,15 @@ from .user import get_say_id
 def create_v2(family_id, type_: SearchType):
     say_id = get_say_id()
 
-    invitation = session.query(Invitation).filter(
-        Invitation.family_id == family_id,
-        Invitation.role.is_(None),
-        Invitation.inviter_id == say_id,
-    ).one_or_none()
+    invitation = (
+        session.query(Invitation)
+        .filter(
+            Invitation.family_id == family_id,
+            Invitation.role.is_(None),
+            Invitation.inviter_id == say_id,
+        )
+        .one_or_none()
+    )
 
     if not invitation:
         invitation = Invitation(
@@ -63,12 +63,16 @@ def create_v3(child: Child, user_id, type):
 def select_random_child(user_id):
     random_child = None
     excluded = []
-    user_children_ids_tuple = (
+
+    all_user_children_ids_tuple = (
         session.query(Child.id)
         .join(Family)
         .join(UserFamily)
         .filter(UserFamily.id_user == user_id)
-        .filter(UserFamily.isDeleted.is_(False))
+    )
+
+    user_children_ids_tuple = all_user_children_ids_tuple.filter(
+        UserFamily.isDeleted.is_(False)
     )
 
     # Flating a nested list like [(1,), (2,)] to [1, 2]
@@ -85,10 +89,13 @@ def select_random_child(user_id):
                 'Our database is not big as your heart T_T',
             )
 
-        # weight is 1/(1 + family_count ^ FACTOR)
-        weights = [
-            1 / (1 + x[1]) ** configs.RANDOM_SEARCH_FACTOR for x in child_family_counts
-        ]
+        # weight is 1 for new users otherwise 1/(1 + family_count ^ FACTOR)
+        weights = calc_weights(
+            family_counts=[x[1] for x in child_family_counts],
+            user_children_count=all_user_children_ids_tuple.count(),
+            factor=configs.RANDOM_SEARCH_FACTOR,
+        )
+
         addoptable_children = [x[0] for x in child_family_counts]
         selected_child_id = random.choices(addoptable_children, weights)[0]
         random_child: Child = session.query(Child).get(selected_child_id)
@@ -117,3 +124,12 @@ def addoptable_child_family_counts_query(excluded):
             Need.isDone.is_(False),
         )
     )
+
+
+def calc_weights(family_counts, user_children_count, factor):
+    return [
+        1 / (1 + family_count) ** factor
+        if user_children_count != 0
+        else 1
+        for family_count in family_counts
+    ]

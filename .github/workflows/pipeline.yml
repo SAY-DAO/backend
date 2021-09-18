@@ -128,7 +128,7 @@ jobs:
       - name: Run Tests
         run: >
           docker-compose -f compose.yml
-          run --rm backend pytest
+          run --rm backend pytest -vvv
 
   deploy_dev:
     name: Deploy to Development Server

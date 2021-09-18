@@ -1,5 +1,6 @@
 import pytest
 
+from say.crud.search import calc_weights
 from say.models import UserFamily
 from tests.helper import BaseTestClass
 
@@ -97,3 +98,18 @@ class TestRandomSearch(BaseTestClass):
                 len(res.json['child']['childFamilyMembers'])
                 == another_child.family.members_count
             )
+
+    @pytest.mark.parametrize(
+        'user_children_count,expected', [(0, [1, 1, 1, 1]), (1, [1, 1, 1 / 2, 1 / 4])]
+    )
+    def test_calc_weights(self, user_children_count, expected):
+        family_counts = [0, 0, 1, 3]
+        factor = 1
+
+        assert (
+            calc_weights(
+                family_counts=family_counts,
+                user_children_count=user_children_count,
+                factor=factor,
+            ) == expected
+        )
