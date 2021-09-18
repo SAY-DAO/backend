@@ -163,20 +163,19 @@ class BaseTestClass:
         self.session.save(need)
         return need
 
-    def _create_random_family(self):
-
-        child = self._create_random_child()
+    def _create_random_family(self, child=None):
+        child = child or self._create_random_child()
         family = Family(
             child=child,
         )
         self.session.save(family)
         return family
 
-    def _create_random_child(self):
+    def _create_random_child(self, **kwargs):
         seed = randint(1, 10 ** 3)
         randomstr = str(seed)
         sw = self._create_random_sw()
-        child = Child(
+        data = dict(
             ngo=sw.ngo,
             social_worker=sw,
             firstName=randomstr,
@@ -190,11 +189,14 @@ class BaseTestClass:
             gender=False,
             bio=randomstr,
             bioSummary=randomstr,
+            birthDate=datetime.utcnow(),
             voiceUrl=randomstr,
             generatedCode=randomstr,
             isConfirmed=choice([True, False]),
         )
-        self.session.save(sw)
+        data.update(kwargs)
+        child = Child(**data)
+        self.session.save(child)
         return child
 
     def _create_random_sw(self):

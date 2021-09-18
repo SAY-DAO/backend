@@ -1,5 +1,5 @@
 from say.models.search import SearchType
-from say.schema.child import ChildSchemaV3
+from say.schema.child import ChildSchema
 
 from .base import CamelModel
 
@@ -7,7 +7,7 @@ from .base import CamelModel
 class SearchSchema(CamelModel):
     type: SearchType
     token: str
-    child: ChildSchemaV3
+    child: ChildSchema
 
     class Config:
         orm_mode = True

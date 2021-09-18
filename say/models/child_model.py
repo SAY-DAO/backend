@@ -79,8 +79,8 @@ class Child(base, Timestamp):
     migratedId = Column(Integer, nullable=True, index=True)
     migrateDate = Column(Date, nullable=True)
 
-    family_id = association_proxy('family', 'id')
-    social_worker_generated_code = association_proxy('social_worker', 'generatedCode')
+    familyId = association_proxy('family', 'id')
+    socialWorkerGeneratedCode = association_proxy('social_worker', 'generatedCode')
     family_members = association_proxy('family', 'members')
 
     @hybrid_property

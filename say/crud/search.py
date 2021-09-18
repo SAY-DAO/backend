@@ -1,7 +1,7 @@
 import itertools
 import random
 
-from sqlalchemy.sql.expression import distinct
+from sqlalchemy.sql.expression import distinct, or_
 from sqlalchemy.sql.functions import count
 
 from say.config import configs
@@ -80,9 +80,12 @@ def select_random_child(user_id):
         .filter(Need.isConfirmed.is_(True))
         .filter(Need.isDeleted.is_(False))
         .join(Family)
-        .join(UserFamily)
+        .outerjoin(UserFamily)
         .filter(Child.id.notin_(user_children_ids))
-        .filter(UserFamily.isDeleted.is_(False))
+        .filter(or_(
+            UserFamily.id.is_(None),
+            UserFamily.isDeleted.is_(False),
+        ))
         .filter(Need.isDone.is_(False))
         .group_by(Child.id, UserFamily.id_family)
     )

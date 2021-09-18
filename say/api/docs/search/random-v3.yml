@@ -34,7 +34,7 @@ responses:
           schema:
             id: user_child_model_v3
             properties:
-              avatarurl:
+              avatarUrl:
                 type: string
               bio:
                 type: string
@@ -64,14 +64,14 @@ responses:
                 type: string
               socialWorkerGeneratedCode:
                 type: string
-              familyMembers:
+              childFamilyMembers:
                 schema:
-                  id: family_members_v3
+                  id: family_members
                   items:
                     schema:
-                    id: family_member_v3
+                    id: family_member
                     properties:
-                      userRole:
+                      role:
                         type: integer
                       username:
                         type: string
