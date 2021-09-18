@@ -5,7 +5,7 @@ from pydantic.class_validators import validator
 
 from say.models.invite.invitation import TEXT_LENGHT
 from say.schema.base import CamelModel
-from say.schema.child import ChildSchemaV3
+from say.schema.child import ChildSchema
 from say.schema.family import JoinFamilySchema
 from say.validations import VALID_ROLES
 
@@ -35,7 +35,7 @@ class InvitationSchemaV3(CamelModel):
     token: str
     link: str
     link_v3: str
-    child: ChildSchemaV3
+    child: ChildSchema
 
     class Config:
         orm_mode = True

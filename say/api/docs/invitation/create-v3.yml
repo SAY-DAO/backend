@@ -30,9 +30,9 @@ parameters:
 
 responses:
   200:
-    description: Response contains the token that needed in Add-to-family API
+    description: Response contains the token that needed in accept API
     schema:
-      id: invitation_v3
+      id: invitation
 
   400:
     description: Invalid data
