@@ -29,6 +29,9 @@ class TestRandomSearch(BaseTestClass):
 
     @pytest.mark.parametrize('url', [RANDOM_SEARCH_V2_URL, RANDOM_SEARCH_V3_URL])
     def test_random_search(self, url):
+        res = self.client.post(url)
+        assert res.status_code == 200
+
         self.login(self.user.userName, self.pw)
 
         res = self.client.post(url)

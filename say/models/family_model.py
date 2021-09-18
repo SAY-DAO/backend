@@ -72,6 +72,9 @@ class Family(base, Timestamp):
         return True
 
     def is_previous_role_is_taken(self, user_id):
+        if user_id is None:
+            return False
+
         previous_role = None
         for member in self.members:
             if member.id_user == user_id:
@@ -87,5 +90,3 @@ class Family(base, Timestamp):
                 return True
 
         return False
-
-
