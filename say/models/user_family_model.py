@@ -24,6 +24,7 @@ class UserFamily(base, Timestamp):
 
     username = association_proxy('user', 'userName')
     avatar_url = association_proxy('user', 'avatarUrl')
+    role = synonym('userRole')
 
     family = relationship(
         'Family',

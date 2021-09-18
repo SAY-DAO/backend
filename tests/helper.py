@@ -111,7 +111,7 @@ class BaseTestClass:
         self.session.save(user)
         return user
 
-    def _create_random_user(self, password):
+    def _create_random_user(self, password='password'):
         seed = randint(10 ** 3, 10 ** 4)
         user = User(
             userName=seed,
@@ -163,10 +163,13 @@ class BaseTestClass:
         self.session.save(need)
         return need
 
-    def _create_random_family(self, child=None):
+    def _create_random_family(self, child=None, members=[]):
         child = child or self._create_random_child()
         family = Family(
             child=child,
+            members=[
+                UserFamily(user=user, userRole=2) for user in members
+            ],
         )
         self.session.save(family)
         return family

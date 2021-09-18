@@ -11,7 +11,8 @@ class TestCart(BaseTestClass):
         child = self._create_random_child(
             isDeleted=False, isConfirmed=True, existence_status=1
         )
-        self._create_random_family(child)
+        user1 = self._create_random_user()
+        self._create_random_family(child, members=[user1])
         self._create_random_need(
             isDeleted=False,
             isConfirmed=True,
@@ -29,3 +30,4 @@ class TestCart(BaseTestClass):
         assert res.status_code == 200
         assert res.json['token'] is not None
         assert res.json['child'] is not None
+        assert len(res.json['child']['childFamilyMembers']) == 1

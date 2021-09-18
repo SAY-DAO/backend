@@ -81,7 +81,7 @@ class Child(base, Timestamp):
 
     familyId = association_proxy('family', 'id')
     socialWorkerGeneratedCode = association_proxy('social_worker', 'generatedCode')
-    family_members = association_proxy('family', 'members')
+    childFamilyMembers = association_proxy('family', 'members')
 
     @hybrid_property
     def avatarUrl(self):
