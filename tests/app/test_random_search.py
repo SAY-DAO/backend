@@ -102,6 +102,7 @@ class TestRandomSearch(BaseTestClass):
                 == another_child.family.members_count
             )
             assert res.json['child']['childFamilyMembers'][0]['avatarUrl'] is not None
+            assert res.json['child']['childFamilyMembers'][0]['member_id'] is not None
 
     @pytest.mark.parametrize(
         'user_children_count,expected', [(0, [1, 1, 1, 1]), (1, [1, 1, 1 / 2, 1 / 4])]
