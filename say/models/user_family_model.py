@@ -23,7 +23,7 @@ class UserFamily(base, Timestamp):
     isDeleted = Column(Boolean, nullable=False, default=False)
 
     username = association_proxy('user', 'userName')
-    avatar_url = association_proxy('user', 'avatarUrl')
+    avatarUrl = association_proxy('user', 'avatarUrl')
     role = synonym('userRole')
     is_deleted = synonym('isDeleted')
 

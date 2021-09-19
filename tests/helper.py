@@ -117,6 +117,7 @@ class BaseTestClass:
                     password='password',
                     firstName=f'test{seed}',
                     lastName=f'test{seed}',
+                    avatarUrl=str(seed),
                     city=1,
                     country=1,
                     lastLogin=datetime.utcnow(),
