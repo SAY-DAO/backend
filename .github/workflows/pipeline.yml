@@ -139,7 +139,6 @@ jobs:
           files: ./coverage.xml
           flags: pytest
           name: say-codecov
-          path_to_write_report: ./coverage/codecov_report.txt
           verbose: true
 
   deploy_dev:

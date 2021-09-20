@@ -2,6 +2,8 @@
 
 [![Build, Test and Deploy](https://github.com/SAY-DAO/backend/actions/workflows/pipeline.yml/badge.svg)](https://github.com/SAY-DAO/backend/actions/workflows/pipeline.yml)
 
+[![codecov](https://codecov.io/gh/SAY-DAO/backend/branch/master/graph/badge.svg?token=RXJ4EXVIR0)](https://codecov.io/gh/SAY-DAO/backend)
+
 Setting up Development Environment on Linux
 
 ----------------------------------
@@ -22,9 +24,9 @@ source ~/.bashrc
 v.activate
 mkvirtualenv --python=$(which python3.8) --no-site-packages say_backend
 ```
-    
+
 #### Activating virtual environment
-    
+
 ```bash
 workon say_backend
 ```
