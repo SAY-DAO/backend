@@ -16,7 +16,7 @@ class TestRandomSearch(BaseTestClass):
         self.child = self._create_random_child(
             isDeleted=False, isConfirmed=True, existence_status=1
         )
-        self._create_random_need(
+        self.need = self._create_random_need(
             isDeleted=False,
             isConfirmed=True,
             status=0,
@@ -40,6 +40,36 @@ class TestRandomSearch(BaseTestClass):
         if url == RANDOM_SEARCH_V3_URL:
             assert res.json['child'] is not None
             assert len(res.json['child']['childFamilyMembers']) == 0
+
+        # if child is deleted
+        self.child.isDeleted = True
+        self.session.save(self.child)
+        res = self.client.post(url)
+        assert res.status_code == 499
+
+        # if child is unconfirmed
+        self.child.isDeleted = False
+        self.child.isConfirmed = False
+        self.session.save(self.child)
+        res = self.client.post(url)
+        assert res.status_code == 499
+
+        # if child is gone
+        self.child.isConfirmed = True
+        self.child.existence_status = 0
+        self.session.save(self.child)
+        res = self.client.post(url)
+        assert res.status_code == 499
+
+        # if child has no active needs
+        self.child.existence_status = 1
+        self.child.needs[0].isConfirmed = False
+        self.session.save(self.child)
+        res = self.client.post(url)
+        assert res.status_code == 499
+
+        self.child.needs[0].isConfirmed = True
+        self.session.save(self.child)
 
         # In family of all children
         user_family = UserFamily(
@@ -96,13 +126,15 @@ class TestRandomSearch(BaseTestClass):
         res = self.client.post(url)
         assert res.status_code == 200
         if url == RANDOM_SEARCH_V3_URL:
-            assert res.json['child']['id'] == another_child.id
-            assert (
-                len(res.json['child']['childFamilyMembers'])
-                == another_child.family.members_count
-            )
-            assert res.json['child']['childFamilyMembers'][0]['avatarUrl'] is not None
-            assert res.json['child']['childFamilyMembers'][0]['member_id'] is not None
+            assert res.json['child'] is not None
+            child = res.json['child']
+            assert child['id'] == another_child.id
+            assert child['childFamilyMembers'] is not None
+            child_family_members = child['childFamilyMembers']
+            assert len(child_family_members) == another_child.family.members_count
+            assert child_family_members[0]['avatarUrl'] is not None
+            assert child_family_members[0]['member_id'] is not None
+            assert child_family_members[0]['role'] is not None
 
     @pytest.mark.parametrize(
         'user_children_count,expected', [(0, [1, 1, 1, 1]), (1, [1, 1, 1 / 2, 1 / 4])]
