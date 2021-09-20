@@ -38,13 +38,14 @@ HEALTHCHECK --interval=10s --timeout=5s --start-period=60s --retries=3 \
 CMD ["./scripts/run.sh"]
 
 FROM prod as development
-ARG USER_ID=1000
-ARG GROUP_ID=1000
+ARG USER_ID=1001
+ARG GROUP_ID=1001
 ARG USER=user
 
 RUN addgroup --gid $GROUP_ID $USER
 RUN adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID $USER
-RUN chmod 775 -R /app
+
+COPY --from=prod --chown=$USER:$USER /app /app
 
 ENV VIRTUAL_ENV=/opt/venv
 COPY --from=base-dev $VIRTUAL_ENV $VIRTUAL_ENV
