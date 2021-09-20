@@ -117,7 +117,7 @@ def addoptable_child_family_counts_query(excluded):
             Child.isConfirmed.is_(True),
             Child.isDeleted.is_(False),
             Child.isMigrated.is_(False),
-            Child.existence_status == 1,
+            Child.is_gone.is_(False),
             Child.id.notin_(excluded),
             Need.isConfirmed.is_(True),
             Need.isDeleted.is_(False),

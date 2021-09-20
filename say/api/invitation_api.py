@@ -98,7 +98,7 @@ class InvitationsV3(Resource):
         child = (
             session.query(Child)
             .filter(Child.isDeleted.is_(False))
-            .filter(Child.existence_status == 1)
+            .filter(Child.is_gone.is_(False))
             .filter(Child.id == family.id_child)
             .options(selectinload('family.members.user'))
             .one_or_none()

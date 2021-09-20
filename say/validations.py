@@ -6,7 +6,7 @@ from flask.globals import request
 from sqlalchemy_utils import PhoneNumber
 
 
-VALID_ROLES = [*range(-1, 6)]
+VALID_ROLES = [*range(0, 6)]
 
 # TODO: Check the pattern with parsa and neda
 USERNAME_PATTERN = r'[A-Za-z0-9][.A-Za-z0-9]{3,11}$'

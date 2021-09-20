@@ -173,13 +173,15 @@ class Child(base, Timestamp):
 
         return (
             session.query(cls)
-            .filter_by(isConfirmed=True)
-            .filter_by(isDeleted=False)
-            .filter_by(isMigrated=False)
-            .filter_by(existence_status=1)
             .join(Need)
-            .filter(Need.isConfirmed.is_(True))
-            .filter(Need.isDeleted.is_(False))
+            .filter(
+                Child.isConfirmed.is_(True),
+                Child.isDeleted.is_(False),
+                Child.is_gone.is_(False),
+                Child.isMigrated.is_(False),
+                Need.isConfirmed.is_(True),
+                Need.isDeleted.is_(False),
+            )
         )
 
     def migrate(self, new_sw):
