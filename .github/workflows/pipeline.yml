@@ -128,7 +128,19 @@ jobs:
       - name: Run Tests
         run: >
           docker-compose -f compose.yml
-          run --rm backend pytest -vvv
+          run --rm backend pytest -vvv --cov=./ --cov-report=xml
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        directory: ./coverage/reports/
+        env_vars: OS,PYTHON
+        fail_ci_if_error: true
+        files: ./coverage1.xml,./coverage2.xml
+        flags: unittests
+        name: codecov-umbrella
+        path_to_write_report: ./coverage/codecov_report.txt
+        verbose: true
 
   deploy_dev:
     name: Deploy to Development Server

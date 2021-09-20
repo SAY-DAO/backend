@@ -1,3 +1,5 @@
 pytest
 pudb
 pytest-pudb
+pytest-cov
+
