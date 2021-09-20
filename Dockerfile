@@ -44,6 +44,7 @@ ARG USER=user
 
 RUN addgroup --gid $GROUP_ID $USER
 RUN adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID $USER
+RUN chmod 775 /app
 
 ENV VIRTUAL_ENV=/opt/venv
 COPY --from=base-dev $VIRTUAL_ENV $VIRTUAL_ENV
