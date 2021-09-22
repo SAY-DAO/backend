@@ -3,9 +3,6 @@
 # from say.models import User
 # from tests.helper import ApplicableTestCase
 #
-from datetime import datetime
-
-from say.models import User
 from tests.helper import BaseTestClass
 
 
@@ -32,7 +29,6 @@ USER_GET_URL = '/api/v2/user/userId=%s'
 
 
 class TestGetUser(BaseTestClass):
-
     def mockup(self):
         self.pw = '123456'
         self.user = self._create_random_user(password=self.pw)

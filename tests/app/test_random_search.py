@@ -148,5 +148,6 @@ class TestRandomSearch(BaseTestClass):
                 family_counts=family_counts,
                 user_children_count=user_children_count,
                 factor=factor,
-            ) == expected
+            )
+            == expected
         )

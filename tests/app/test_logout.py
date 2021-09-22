@@ -15,10 +15,7 @@ class TestLogout(BaseTestClass):
 
         headers = {"Authorization": token}
 
-        res = self.client.post(
-            LOGOUT_URL,
-            headers=headers
-        )
+        res = self.client.post(LOGOUT_URL, headers=headers)
         assert res.status_code == 200
 
     def test_logout_wrong_token(self):
@@ -26,16 +23,9 @@ class TestLogout(BaseTestClass):
 
         token = "gkshdfkasldjlsajdlshf"
 
-        res = self.client.post(
-            LOGOUT_URL,
-            headers={
-                "Authorization": token
-            }
-        )
+        res = self.client.post(LOGOUT_URL, headers={"Authorization": token})
         assert res.status_code == UNAUTHORIZED_ERROR_CODE
 
     def test_logout_without_token(self):
-        res = self.client.post(
-            LOGOUT_URL
-        )
+        res = self.client.post(LOGOUT_URL)
         assert res.status_code == UNAUTHORIZED_ERROR_CODE

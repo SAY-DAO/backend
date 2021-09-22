@@ -43,6 +43,7 @@ class BaseTestClass:
 
         # Disable Sentry
         import sentry_sdk
+
         sentry_sdk.init()
 
         # get client
@@ -75,14 +76,10 @@ class BaseTestClass:
             currentChildrenCount=1,
             registerDate=datetime.utcnow(),
             isActive=1,
-            isDeleted=0
+            isDeleted=0,
         )
         self.session.save(ngo)
-        privilege = Privilege(
-            id=seed,
-            name=SUPER_ADMIN,
-            privilege=0  # Social Worker
-        )
+        privilege = Privilege(id=seed, name=SUPER_ADMIN, privilege=0)  # Social Worker
         self.session.save(privilege)
         social_worker = SocialWorker(
             id=seed,
@@ -100,7 +97,7 @@ class BaseTestClass:
             telegramId='fuck',
             registerDate=datetime.utcnow(),
             lastLoginDate=datetime.utcnow(),
-            id_type=privilege.id
+            id_type=privilege.id,
         )
         self.session.save(social_worker)
         return social_worker
@@ -130,8 +127,8 @@ class BaseTestClass:
             except sqlalchemy.exc.IntegrityError:
                 continue
 
-    def _create_user_family(self, user=None):
-        family = self._create_random_family()
+    def _create_user_family(self, user=None, family=None):
+        family = family or self._create_random_family()
         user = user or self._create_random_user()
         user_family = UserFamily(
             user=user,
@@ -172,9 +169,7 @@ class BaseTestClass:
         else:
             family = Family(child=child)
 
-        family.members = [
-            UserFamily(user=user, userRole=2) for user in members
-        ]
+        family.members = [UserFamily(user=user, userRole=2) for user in members]
         self.session.save(family)
         return family
 
@@ -226,10 +221,7 @@ class BaseTestClass:
             password='abcefg123',
             registerDate=datetime.utcnow(),
             lastLoginDate=datetime.utcnow(),
-            privilege=Privilege(
-                name='admin',
-                privilege=1
-            ),
+            privilege=Privilege(name='admin', privilege=1),
         )
         self.session.save(sw)
         return sw
@@ -244,7 +236,7 @@ class BaseTestClass:
             phoneNumber=str(seed),
             logoUrl='',
             postalAddress=str(seed),
-            registerDate=datetime.utcnow()
+            registerDate=datetime.utcnow(),
         )
         self.session.save(ngo)
         return ngo
@@ -282,4 +274,3 @@ class BaseTestClass:
         self._client.environ_base['HTTP_AUTHORIZATION'] = token
         self._client.environ_base[REFRESH_TOKEN_KEY] = refreshToken
         return token
-

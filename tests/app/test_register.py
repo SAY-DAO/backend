@@ -7,7 +7,6 @@ REGISTER_URL = '/api/v2/auth/register'
 
 
 class TestRegister(BaseTestClass):
-
     def test_register_user(self):
         seed = randint(10 ** 3, 10 ** 4)
         res = self.client.post(
@@ -21,8 +20,8 @@ class TestRegister(BaseTestClass):
                 'firstName': f'test{seed}',
                 'lastName': f'test{seed}',
                 'verifyCode': '123',
-                'isInstalled': '0'
-            }
+                'isInstalled': '0',
+            },
         )
         assert res.status_code == 400
 

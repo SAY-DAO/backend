@@ -30,7 +30,7 @@ class TestInvite(BaseTestClass):
             data=dict(
                 familyId=self.child.familyId,
                 role=0,
-            )
+            ),
         )
         assert res.status_code == 200
         assert res.json['token'] is not None

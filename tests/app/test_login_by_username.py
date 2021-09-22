@@ -14,7 +14,7 @@ class TestLogin(BaseTestClass):
                 'username': self.user.userName,
                 'password': self.password,
                 'isInstalled': 0,
-            }
+            },
         )
         assert res.status_code == 200
         assert res.json['accessToken'] is not None
