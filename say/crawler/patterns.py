@@ -23,12 +23,12 @@ stores = {
     ),
     'hodhod': Patterns(
         url='hodhod.com',
-        cost=r'<meta property="product:price:amount" content="(\d+)">()',
+        cost=r'<meta property="product:price:amount" content="(\d+)0()"',
         discontinued='c-product__stock-status--stop-production',
         unavaliable=r'stock out-of-stock',
         product_status=r'c-product-stock__body">(.*?)<',
-        title=r'<meta property="og:image:alt" content="([^"]+)">',
-        img=r'<meta property="og:image:secure_url" content="([^"]+)">',
+        title=r'<meta property="og:image:alt" content="([^"]+)"',
+        img=r'<meta property="og:image:secure_url" content="([^"]+)"',
     ),
 }
 

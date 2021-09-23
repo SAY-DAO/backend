@@ -22,11 +22,7 @@ class Crawler:
         ):
             return 'unavailable'
 
-        elif raw_cost_text := re.search(
-            self.patterns.cost,
-            self.c,
-            re.DOTALL
-        ):
+        elif raw_cost_text := re.search(self.patterns.cost, self.c, re.DOTALL):
             cost_text = raw_cost_text.group(1, 2)
             cost_text = cost_text[0] if cost_text[0] else cost_text[1]
             cost_text = cost_text.strip().replace(',', '')
@@ -56,11 +52,7 @@ class Crawler:
 
         title = None
         try:
-            title = re.search(
-                self.patterns.title,
-                self.c,
-                re.DOTALL
-            ).group(1).strip()
+            title = re.search(self.patterns.title, self.c, re.DOTALL).group(1).strip()
         except (IndexError, AttributeError):
             pass
 
@@ -72,11 +64,7 @@ class Crawler:
 
         img = None
         try:
-            img = re.search(
-                self.patterns.img,
-                self.c,
-                re.DOTALL
-            ).group(1).strip()
+            img = re.search(self.patterns.img, self.c, re.DOTALL).group(1).strip()
         except (IndexError, AttributeError):
             pass
 
