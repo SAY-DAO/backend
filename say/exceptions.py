@@ -11,7 +11,9 @@ class HTTPException(Exception):
         return self.__dict__
 
 
-HTTP_PERMISION_DENIED = partial(HTTPException, message='Permission Denied', status_code=403)
+HTTP_PERMISION_DENIED = partial(
+    HTTPException, message='Permission Denied', status_code=403
+)
 HTTP_NOT_FOUND = partial(HTTPException, message='Not Found', status_code=404)
 
 

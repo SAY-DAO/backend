@@ -23,7 +23,7 @@ metadata = MetaData(
         "uq": "%(table_name)s_%(column_0_name)s_key",
         "ck": "%(table_name)s_%(constraint_name)s_check",
         "fk": "%(table_name)s_%(column_0_name)s_%(referred_table_name)s_fkey",
-        "pk": "%(table_name)s_pkey"
+        "pk": "%(table_name)s_pkey",
     }
 )
 
@@ -105,8 +105,7 @@ def obj_to_dict(obj, relationships=False):
     return result
 
 
-def columns(obj, relationships=False, synonyms=True, composites=False,
-                 hybrids=True):
+def columns(obj, relationships=False, synonyms=True, composites=False, hybrids=True):
     cls = obj.__class__
 
     mapper = inspect(cls)
@@ -118,9 +117,11 @@ def columns(obj, relationships=False, synonyms=True, composites=False,
         if c.extension_type == ASSOCIATION_PROXY:
             continue
 
-        if (not hybrids and c.extension_type == HYBRID_PROPERTY) \
-                or (not relationships and k in mapper.relationships) \
-                or (not synonyms and k in mapper.synonyms):
+        if (
+            (not hybrids and c.extension_type == HYBRID_PROPERTY)
+            or (not relationships and k in mapper.relationships)
+            or (not synonyms and k in mapper.synonyms)
+        ):
             continue
 
         yield k, getattr(cls, k)

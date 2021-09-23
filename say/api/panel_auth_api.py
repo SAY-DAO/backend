@@ -21,7 +21,7 @@ from say.orm import safe_commit
 from say.orm import session
 from say.roles import *
 
-    
+
 '''
 Panel Authentication APIs
 '''
@@ -43,11 +43,13 @@ class PanelLogin(Resource):
         else:
             return {'message': 'password is needed!!!'}, 400
 
-        social_worker = session.query(SocialWorker) \
-            .filter_by(isDeleted=False) \
-            .filter_by(isActive=True) \
-            .filter_by(userName=username) \
+        social_worker = (
+            session.query(SocialWorker)
+            .filter_by(isDeleted=False)
+            .filter_by(isActive=True)
+            .filter_by(userName=username)
             .one_or_none()
+        )
 
         if social_worker is None:
             return {'message': 'Please Register First'}, 303
@@ -74,7 +76,6 @@ class PanelLogin(Resource):
 
 
 class PanelTokenRefresh(Resource):
-
     @authorize_refresh
     @json
     @swag_from('./docs/panel_auth/refresh.yml')
@@ -94,8 +95,9 @@ class PanelTokenRefresh(Resource):
 
 
 class PanelLogoutAccess(Resource):
-    @authorize(SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN,
-               SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @authorize(
+        SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+    )  # TODO: priv
     @json
     @swag_from('./docs/panel_auth/logout-access.yml')
     def post(self):
@@ -117,6 +119,6 @@ api.add_resource(PanelLogin, '/api/v2/panel/auth/login')
 api.add_resource(PanelTokenRefresh, '/api/v2/panel/auth/refresh')
 api.add_resource(PanelLogoutAccess, '/api/v2/panel/auth/logout/token')
 api.add_resource(PanelLogoutRefresh, '/api/v2/panel/auth/logout/refresh')
-#api.add_resource(Logout, '/api/v2/panel/auth/logout/userid=<user_id>')
-#api.add_resource(Verify, '/api/v2/panel/auth/verify/userid=<user_id>')
-#api.add_resource(VerifyResend, '/api/v2/panel/auth/verify/resend/userid=<user_id>')
+# api.add_resource(Logout, '/api/v2/panel/auth/logout/userid=<user_id>')
+# api.add_resource(Verify, '/api/v2/panel/auth/verify/userid=<user_id>')
+# api.add_resource(VerifyResend, '/api/v2/panel/auth/verify/resend/userid=<user_id>')

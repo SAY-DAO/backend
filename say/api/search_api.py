@@ -1,4 +1,3 @@
-
 from flasgger import swag_from
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_restful import Resource

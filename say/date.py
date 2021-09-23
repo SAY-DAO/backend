@@ -9,10 +9,12 @@ DATE_FORMAT = '%Y-%m-%d'
 
 
 def format_jalali_date(date):
-    return f'{date.weekdayname()} ' \
-        f'{int(date.strftime("%d"))} ' \
-        f'{date.monthname()} ' \
+    return (
+        f'{date.weekdayname()} '
+        f'{int(date.strftime("%d"))} '
+        f'{date.monthname()} '
         f'ماه'
+    )
 
 
 def parse_datetime(datetime_string):

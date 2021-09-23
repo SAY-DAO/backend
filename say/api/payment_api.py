@@ -44,14 +44,15 @@ def validate_amount(need, amount):
 
 def generate_order_id(N=configs.PAYMENT_ORDER_ID_LENGTH):
     '''
-        Generate a random string containing lowercase, uppercase and digits
+    Generate a random string containing lowercase, uppercase and digits
     '''
 
     while True:
         order_id = ''.join(
             random.SystemRandom().choice(
                 string.ascii_uppercase + string.ascii_lowercase + string.digits
-            ) for _ in range(N)
+            )
+            for _ in range(N)
         )
 
         if not check_order_id_exist(order_id):
@@ -59,9 +60,7 @@ def generate_order_id(N=configs.PAYMENT_ORDER_ID_LENGTH):
 
 
 def check_order_id_exist(order_id):
-    return session.query(Payment) \
-        .filter(Payment.order_id == order_id) \
-        .one_or_none()
+    return session.query(Payment).filter(Payment.order_id == order_id).one_or_none()
 
 
 class GetAllPayment(Resource):
@@ -86,17 +85,14 @@ class GetAllPayment(Resource):
         except (ValueError, TypeError):
             return {'message': 'Invalid skip or take'}, 400
 
-        payments = session.query(Payment) \
-            .filter(Payment.verified.isnot(None))
+        payments = session.query(Payment).filter(Payment.verified.isnot(None))
 
         if need_id:
             payments = payments.filter_by(id_need=need_id)
 
         total_count = payments.count()
 
-        payments = payments \
-            .offset(skip) \
-            .limit(take)
+        payments = payments.offset(skip).limit(take)
 
         result = dict(
             totalCount=total_count,
@@ -122,7 +118,6 @@ class GetPayment(Resource):
 
 
 class AddPayment(Resource):
-
     @authorize
     @json
     @commit
@@ -162,10 +157,12 @@ class AddPayment(Resource):
         if user is None:
             return {'message': 'User Not Found'}
 
-        family = session.query(Family) \
-            .filter_by(id_child=need.child_id) \
-            .filter_by(isDeleted=False) \
+        family = (
+            session.query(Family)
+            .filter_by(id_child=need.child_id)
+            .filter_by(isDeleted=False)
             .one()
+        )
 
         if (
             session.query(UserFamily)
@@ -246,25 +243,24 @@ class VerifyPayment(Resource):
         if not payment_id or not order_id:
             return make_response(unsuccessful_response)
 
-        pending_payment = session.query(Payment).filter(
-            Payment.gateway_payment_id == payment_id,
-            Payment.order_id == order_id,
-            Payment.cart_payment_id.is_(None),
-            Payment.verified.is_(None),
-        ) \
-            .with_for_update() \
+        pending_payment = (
+            session.query(Payment)
+            .filter(
+                Payment.gateway_payment_id == payment_id,
+                Payment.order_id == order_id,
+                Payment.cart_payment_id.is_(None),
+                Payment.verified.is_(None),
+            )
+            .with_for_update()
             .one_or_none()
+        )
 
         if pending_payment is None:
             return make_response(unsuccessful_response)
 
-        user = session.query(User) \
-            .with_for_update() \
-            .get(pending_payment.id_user)
+        user = session.query(User).with_for_update().get(pending_payment.id_user)
 
-        need = session.query(Need) \
-            .with_for_update() \
-            .get(pending_payment.id_need)
+        need = session.query(Need).with_for_update().get(pending_payment.id_need)
 
         if need.isDone:
             return make_response(unsuccessful_response)
@@ -277,8 +273,15 @@ class VerifyPayment(Resource):
         except requests.exceptions.RequestException:
             return make_response(unsuccessful_response)
 
-        if not response or 'error_code' in response or response['status'] not in (
-            100, 101, 200,
+        if (
+            not response
+            or 'error_code' in response
+            or response['status']
+            not in (
+                100,
+                101,
+                200,
+            )
         ):
             return make_response(unsuccessful_response)
 
@@ -297,12 +300,14 @@ class VerifyPayment(Resource):
         )
 
         need.payments.append(pending_payment)
-        return make_response(render_template_i18n(
-            'successful_payment.html',
-            payment=pending_payment,
-            user=user,
-            locale=user.locale,
-        ))
+        return make_response(
+            render_template_i18n(
+                'successful_payment.html',
+                payment=pending_payment,
+                user=user,
+                locale=user.locale,
+            )
+        )
 
     @json
     @commit

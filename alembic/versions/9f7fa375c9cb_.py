@@ -18,14 +18,18 @@ depends_on = None
 
 
 def upgrade():
-     op.execute('''
+    op.execute(
+        '''
         ALTER TABLE payment
             ADD COLUMN donate INTEGER DEFAULT 0 NOT NULL;
-    ''')
+    '''
+    )
 
 
 def downgrade():
-     op.execute('''
+    op.execute(
+        '''
         ALTER TABLE payment
             DROP COLUMN donate;
-    ''')
+    '''
+    )

@@ -6,7 +6,6 @@ from flask import request
 
 
 def paginate(func):
-
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         try:
@@ -15,7 +14,7 @@ def paginate(func):
 
             request.skip = skip
             request.take = take
-            
+
         except ValueError as ex:
             return make_response(jsonify(message='Invaid skip or take'), 400)
 

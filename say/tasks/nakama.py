@@ -13,7 +13,8 @@ def update_nakama_txs(self):
 
     tx_ids = self.session.query(NakamaTx.id).filter(
         NakamaTx.is_confirmed == False,
-        NakamaTx.created > datetime.utcnow() - timedelta(days=configs.ORPHAN_NAKAMA_TX_RANGE)
+        NakamaTx.created
+        > datetime.utcnow() - timedelta(days=configs.ORPHAN_NAKAMA_TX_RANGE),
     )
     for tx_id in tx_ids:
         update_nakama_tx.delay(tx_id[0])

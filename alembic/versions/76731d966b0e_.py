@@ -18,32 +18,42 @@ depends_on = None
 
 
 def upgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE child
             ADD COLUMN "sleptAvatarUrl" TEXT;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         UPDATE child
             SET "sleptAvatarUrl" = "avatarUrl";
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE child
             ALTER COLUMN "sleptAvatarUrl" SET NOT NULL;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE child
             ALTER COLUMN "lastUpdate" TYPE TIMESTAMP WITH TIME ZONE;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE child
             ALTER COLUMN "createdAt" TYPE TIMESTAMP WITH TIME ZONE;
-    ''')
-
-
+    '''
+    )
 
 
 def downgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE child
             DROP COLUMN "sleptAvatarUrl";
-    ''')
+    '''
+    )

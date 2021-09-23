@@ -36,10 +36,10 @@ class NeedStatuses:
     }
 
     statuses = dict(
-        product_en = product_en,
-        product_fa = product_fa,
-        service_en = service_en,
-        service_fa = service_fa,
+        product_en=product_en,
+        product_fa=product_fa,
+        service_en=service_en,
+        service_fa=service_fa,
     )
 
     @classmethod

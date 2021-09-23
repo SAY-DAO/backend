@@ -18,13 +18,18 @@ depends_on = None
 
 
 def upgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE "user"
             RENAME COLUMN password TO _password;
-    ''')
+    '''
+    )
+
 
 def downgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE "user"
             RENAME COLUMN _password TO password;
-    ''')
+    '''
+    )

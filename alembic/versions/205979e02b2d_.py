@@ -23,7 +23,8 @@ def upgrade():
 
     op.create_index(
         op.f('revoked_tokens_jti_idx'),
-        'revoked_tokens', ['jti'],
+        'revoked_tokens',
+        ['jti'],
         postgresql_concurrently=True,
         unique=False,
     )

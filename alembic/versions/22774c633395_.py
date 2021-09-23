@@ -26,7 +26,7 @@ def upgrade():
     op.execute('ALTER TABLE "user" ALTER COLUMN is_nakama SET NOT NULL;')
     op.execute('ALTER TABLE "user" ALTER COLUMN is_nakama SET DEFAULT false;')
     op.execute('COMMIT;')
-    
+
     from say.models import User
     from say.orm import session
 
@@ -51,7 +51,7 @@ def upgrade():
     )
     session.add(nakama)
     session.commit()
-    
+
     # ### end Alembic commands ###
 
 

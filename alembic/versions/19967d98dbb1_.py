@@ -23,7 +23,8 @@ def upgrade():
 
     op.create_index(
         op.f('user_phone_number_idx'),
-        'user', ['phone_number'],
+        'user',
+        ['phone_number'],
         postgresql_concurrently=True,
         unique=True,
     )

@@ -8,6 +8,7 @@ from say.celery import celery
 @celery.task(base=celery.DBTask, bind=True, max_retries=2)
 def change_need_status_to_delivered(self, need_id):
     from say.models.need_model import Need
+
     try:
         need = self.session.query(Need).get(need_id)
         need.status = 5
@@ -16,7 +17,7 @@ def change_need_status_to_delivered(self, need_id):
     except Exception as ex:
         print(str(ex))
         self.session.rollback()
-        self.retry(countdown=3**self.request.retries)
+        self.retry(countdown=3 ** self.request.retries)
         raise
 
     return need.id
@@ -25,12 +26,12 @@ def change_need_status_to_delivered(self, need_id):
 @celery.task(base=celery.DBTask, bind=True)
 def delivere_to_child(self):
     from say.models.need_model import Need
-    needs_id = self.session.query(Need.id) \
-        .filter(
-            Need.type == 1,
-            Need.status == 4,
-            datetime.utcnow() - Need.ngo_delivery_date >= timedelta(hours=4),
-        )
+
+    needs_id = self.session.query(Need.id).filter(
+        Need.type == 1,
+        Need.status == 4,
+        datetime.utcnow() - Need.ngo_delivery_date >= timedelta(hours=4),
+    )
 
     t = []
     for need_id in needs_id:

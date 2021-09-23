@@ -5,6 +5,7 @@ from say.langs import LANGS
 
 int_formatter = lambda integer: format(integer, ',d')
 
+
 def expose_datetime(dt, locale, with_year=True):
     if locale == LANGS.en:
         if with_year:

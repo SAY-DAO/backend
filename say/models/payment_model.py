@@ -23,7 +23,9 @@ class Payment(base, Timestamp):
     id = Column(Integer, nullable=False, primary_key=True)
     id_need = Column(Integer, ForeignKey('need.id'), nullable=True, index=True)
     id_user = Column(Integer, ForeignKey('user.id'), nullable=False, index=True)
-    cart_payment_id = Column(Integer, ForeignKey('cart_payments.id'), nullable=True, index=True)
+    cart_payment_id = Column(
+        Integer, ForeignKey('cart_payments.id'), nullable=True, index=True
+    )
 
     gateway_payment_id = Column(String, nullable=True, index=True)
     gateway_track_id = Column(String, nullable=True, index=True)
@@ -68,11 +70,18 @@ class Payment(base, Timestamp):
         back_populates='payments',
     )
 
-    def verify(self, transaction_date=datetime.utcnow(), track_id=None,
-               verify_date=datetime.utcnow(), card_no=None,
-               hashed_card_no=None, is_say=False):
+    def verify(
+        self,
+        transaction_date=datetime.utcnow(),
+        track_id=None,
+        verify_date=datetime.utcnow(),
+        card_no=None,
+        hashed_card_no=None,
+        is_say=False,
+    ):
 
         from .need_family_model import NeedFamily
+
         session = object_session(self)
 
         self.transaction_date = transaction_date
@@ -106,23 +115,22 @@ class Payment(base, Timestamp):
         )
 
         if participant is None:
-            user_role = session.query(UserFamily.userRole) \
-                .filter(UserFamily.id_user==self.user.id) \
-                .filter(UserFamily.id_family==family.id) \
-                .filter(UserFamily.isDeleted==False) \
+            user_role = (
+                session.query(UserFamily.userRole)
+                .filter(UserFamily.id_user == self.user.id)
+                .filter(UserFamily.id_family == family.id)
+                .filter(UserFamily.isDeleted == False)
                 .one_or_none()
+            )
 
             if user_role:
-                user_role, = user_role
+                (user_role,) = user_role
             elif is_say:
                 user_role = SAY_ROLE
             else:
                 raise Exception('User not in family')
 
             new_participant = NeedFamily(
-                id_family=family.id,
-                user=self.user,
-                need=self.need,
-                user_role=user_role
+                id_family=family.id, user=self.user, need=self.need, user_role=user_role
             )
             session.add(new_participant)

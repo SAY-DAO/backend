@@ -1,4 +1,3 @@
-
 import contextlib
 from urllib.parse import urlparse
 
@@ -58,8 +57,5 @@ class PostgreSQLManager:
         connection.close()
 
     def table_exists(self, name):
-        with self.cursor(
-            f'select to_regclass(%s)',
-            (f'public.{name}',)
-        ) as c:
+        with self.cursor(f'select to_regclass(%s)', (f'public.{name}',)) as c:
             return c.fetchone()[0] is not None

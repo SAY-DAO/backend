@@ -23,7 +23,9 @@ class Receipt(base, Timestamp):
 
     id = Column(Integer, primary_key=True)
 
-    owner_id = Column(Integer, ForeignKey('social_worker.id'), nullable=False, index=True)
+    owner_id = Column(
+        Integer, ForeignKey('social_worker.id'), nullable=False, index=True
+    )
 
     attachment = Column(Unicode(256), nullable=False)
     code = Column(Unicode(128), nullable=True, index=True)
@@ -38,9 +40,7 @@ class Receipt(base, Timestamp):
         back_populates='receipts_',
     )
 
-    __table_args__ = (
-        UniqueConstraint('code', 'deleted'),
-    )
+    __table_args__ = (UniqueConstraint('code', 'deleted'),)
 
     @classmethod
     def _query(cls, session, role, user_id, ngo_id=-1, for_update=False, fields=None):
@@ -60,10 +60,10 @@ class Receipt(base, Timestamp):
         if role in [USER, None]:
             return query.filter(Receipt.is_public.is_(True))
 
-        return query \
-            .join(NeedReceipt) \
-            .join(Need) \
-            .join(Child) \
+        return (
+            query.join(NeedReceipt)
+            .join(Need)
+            .join(Child)
             .filter(
                 or_(
                     Child.id_social_worker == user_id,
@@ -72,6 +72,7 @@ class Receipt(base, Timestamp):
                 ),
                 cls.is_public.is_(False) if for_update else True,
             )
+        )
 
 
 class NeedReceipt(base, Timestamp):
@@ -100,6 +101,4 @@ class NeedReceipt(base, Timestamp):
         foreign_keys=sw_id,
     )
 
-    __table_args__ = (
-        UniqueConstraint('need_id', 'receipt_id', 'deleted'),
-    )
+    __table_args__ = (UniqueConstraint('need_id', 'receipt_id', 'deleted'),)

@@ -81,7 +81,8 @@ class Config(object):
             setattr(self, key, v)
 
         self.POSTGRES_PASSWORD = get_secret(
-            'postgres-password', self.POSTGRES_PASSWORD,
+            'postgres-password',
+            self.POSTGRES_PASSWORD,
         )
 
     def _cast(self, v):
@@ -103,30 +104,36 @@ class Config(object):
 
     @property
     def postgres_url(self):
-        return f'postgresql://' \
-            f'{self.POSTGRES_USER}' \
-            f':{self.POSTGRES_PASSWORD}' \
-            f'@{self.POSTGRES_HOST}' \
-            f':{self.POSTGRES_PORT}' \
+        return (
+            f'postgresql://'
+            f'{self.POSTGRES_USER}'
+            f':{self.POSTGRES_PASSWORD}'
+            f'@{self.POSTGRES_HOST}'
+            f':{self.POSTGRES_PORT}'
             f'/{self.POSTGRES_DB}'
+        )
 
     @property
     def postgres_test_url(self):
-        return f'postgresql://' \
-            f'{self.POSTGRES_USER}' \
-            f':{self.POSTGRES_PASSWORD}' \
-            f'@{self.POSTGRES_HOST}' \
-            f':{self.POSTGRES_PORT}' \
+        return (
+            f'postgresql://'
+            f'{self.POSTGRES_USER}'
+            f':{self.POSTGRES_PASSWORD}'
+            f'@{self.POSTGRES_HOST}'
+            f':{self.POSTGRES_PORT}'
             f'/{self.POSTGRES_TEST_DB}'
+        )
 
     @property
     def postgres_admin_url(self):
-        return f'postgresql://' \
-            f'{self.POSTGRES_USER}' \
-            f':{self.POSTGRES_PASSWORD}' \
-            f'@{self.POSTGRES_HOST}' \
-            f':{self.POSTGRES_PORT}' \
+        return (
+            f'postgresql://'
+            f'{self.POSTGRES_USER}'
+            f':{self.POSTGRES_PASSWORD}'
+            f'@{self.POSTGRES_HOST}'
+            f':{self.POSTGRES_PORT}'
             f'/{self.POSTGRES_ADMIN_DB}'
+        )
 
     @property
     def redis_url(self):

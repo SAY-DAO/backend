@@ -38,16 +38,20 @@ class Family(base, Timestamp):
     )
 
     members_count = column_property(
-        select([
-            coalesce(
-                func.count(UserFamily.id_user),
-                0,
+        select(
+            [
+                coalesce(
+                    func.count(UserFamily.id_user),
+                    0,
+                )
+            ]
+        )
+        .where(
+            and_(
+                UserFamily.is_deleted.is_(False),
+                UserFamily.id_family == id,
             )
-        ])
-        .where(and_(
-            UserFamily.is_deleted.is_(False),
-            UserFamily.id_family == id,
-        ))
+        )
         .correlate_except(UserFamily),
     )
 

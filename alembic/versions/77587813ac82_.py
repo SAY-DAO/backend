@@ -18,14 +18,18 @@ depends_on = None
 
 
 def upgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE need
             ADD COLUMN details TEXT;
-    ''')
+    '''
+    )
 
 
 def downgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE need
             DROP COLUMN details;
-    ''')
+    '''
+    )

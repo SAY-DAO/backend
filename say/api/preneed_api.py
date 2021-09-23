@@ -13,7 +13,6 @@ from say.schema.preneed import PreneedSummarySchema
 
 
 class PreNeedsAPi(Resource):
-
     @authorize(SOCIAL_WORKER, NGO_SUPERVISOR, ADMIN, SUPER_ADMIN)
     @json
     @swag_from('./docs/preneed/list.yml')
@@ -24,12 +23,11 @@ class PreNeedsAPi(Resource):
             Need.cost,
             Need.title,
             Need.type,
-            Need.details
-        ) \
-            .filter(
-                Need.child_id == DEFAULT_CHILD_ID,
-                Need.isDeleted == False,    
-            )
+            Need.details,
+        ).filter(
+            Need.child_id == DEFAULT_CHILD_ID,
+            Need.isDeleted == False,
+        )
 
         return PreneedSummarySchema.from_query_list(preneeds)
 

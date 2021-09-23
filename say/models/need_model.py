@@ -34,7 +34,9 @@ class Need(base, Timestamp):
     description = translation_hybrid(description_translations)
 
     imageUrl = Column(String, nullable=False)
-    category = Column(Integer, nullable=False)  # 0:Growth | 1:Joy | 2:Health | 3:Surroundings
+    category = Column(
+        Integer, nullable=False
+    )  # 0:Growth | 1:Joy | 2:Health | 3:Surroundings
     isUrgent = Column(Boolean, nullable=False)
     details = Column(Text, nullable=True)
     informations = Column(String(1024), nullable=True)
@@ -72,10 +74,7 @@ class Need(base, Timestamp):
     unconfirmed_at = Column(DateTime, nullable=True)
 
     paid = column_property(
-        select([coalesce(
-            func.sum(Payment.need_amount),
-            0,
-        )]).where(
+        select([coalesce(func.sum(Payment.need_amount), 0,)]).where(
             and_(
                 Payment.verified.isnot(None),
                 Payment.id_need == id,
@@ -84,10 +83,7 @@ class Need(base, Timestamp):
     )
 
     donated = column_property(
-        select([coalesce(
-            func.sum(Payment.donation_amount),
-            0,
-        )]).where(
+        select([coalesce(func.sum(Payment.donation_amount), 0,)]).where(
             and_(
                 Payment.verified.isnot(None),
                 Payment.id_need == id,
@@ -154,7 +150,10 @@ class Need(base, Timestamp):
     @hybrid_property
     def unpayable(self):
         return bool(
-            self.unavailable_from and self.unavailable_from < datetime.utcnow() - timedelta(
+            self.unavailable_from
+            and self.unavailable_from
+            < datetime.utcnow()
+            - timedelta(
                 days=configs.PRODUCT_UNPAYABLE_PERIOD,
             )
         )
@@ -163,9 +162,8 @@ class Need(base, Timestamp):
     def unpayable(cls):
         return and_(
             cls.unavailable_from.isnot(None),
-            cls.unavailable_from < datetime.utcnow() - timedelta(
-                days=configs.PRODUCT_UNPAYABLE_PERIOD
-            ),
+            cls.unavailable_from
+            < datetime.utcnow() - timedelta(days=configs.PRODUCT_UNPAYABLE_PERIOD),
         )
 
     @hybrid_property
@@ -173,16 +171,14 @@ class Need(base, Timestamp):
         if not self.unavailable_from:
             return None
 
-        return self.unavailable_from \
-            + timedelta(days=configs.PRODUCT_UNPAYABLE_PERIOD)
+        return self.unavailable_from + timedelta(days=configs.PRODUCT_UNPAYABLE_PERIOD)
 
     @unpayable_from.expression
     def unpayable_from(cls):
         if not cls.unavailable_from:
             return None
 
-        return cls.unavailable_from \
-            + timedelta(days=configs.PRODUCT_UNPAYABLE_PERIOD)
+        return cls.unavailable_from + timedelta(days=configs.PRODUCT_UNPAYABLE_PERIOD)
 
     @hybrid_property
     def progress(self):
@@ -190,9 +186,9 @@ class Need(base, Timestamp):
             return 100
 
         try:
-           return str(format(self.paid / self.cost * 100, '.1f')) \
-               .rstrip('0') \
-               .rstrip('.')
+            return (
+                str(format(self.paid / self.cost * 100, '.1f')).rstrip('0').rstrip('.')
+            )
 
         except:
             return 0
@@ -216,7 +212,7 @@ class Need(base, Timestamp):
                 if keyword_index == 0:
                     continue
 
-                return self.title[: keyword_index].strip()
+                return self.title[:keyword_index].strip()
 
         return self.title
 
@@ -251,7 +247,9 @@ class Need(base, Timestamp):
             '''
             return raw_status % need_name
 
-        elif (self.type == 1 and self.status == 5) or (self.type == 0 and self.status == 4):
+        elif (self.type == 1 and self.status == 5) or (
+            self.type == 0 and self.status == 4
+        ):
             '''
             p5s4 need status condition
             کالا به دست اصغر رسید
@@ -305,10 +303,7 @@ class Need(base, Timestamp):
 
     @property
     def family(self):
-        return {
-            member.user
-            for member in self.child.family.current_members()
-        }
+        return {member.user for member in self.child.family.current_members()}
 
     def delete_from_carts(self):
         for cart in self.carts:
@@ -321,8 +316,7 @@ class Need(base, Timestamp):
         if total_refund <= 0:
             return
 
-        participants = session.query(NeedFamily) \
-            .filter(NeedFamily.id_need == self.id)
+        participants = session.query(NeedFamily).filter(NeedFamily.id_need == self.id)
 
         total_reminder = Decimal(0)
         refunds = []
@@ -366,9 +360,7 @@ class Need(base, Timestamp):
         extra_cost = self.purchase_cost - self.paid
 
         session = object_session(self)
-        say_user = session.query(User) \
-            .filter_by(userName='SAY') \
-            .one()
+        say_user = session.query(User).filter_by(userName='SAY').one()
 
         say_payment = Payment(
             need=self,
@@ -385,9 +377,9 @@ class Need(base, Timestamp):
     @property
     def current_participants(self):
         past_participation = NeedFamily(
-                user_role=-1,
-                paid=0,
-            )
+            user_role=-1,
+            paid=0,
+        )
 
         for p in self.participants:
             if p.isDeleted:
@@ -404,6 +396,7 @@ class Need(base, Timestamp):
 
     def update(self):
         from say.crawler import Crawler
+
         data = Crawler(self.link).get_data()
 
         if data is None:
@@ -432,8 +425,9 @@ class Need(base, Timestamp):
     def child_delivery_product(self):
         from say.tasks import change_need_status_to_delivered
 
-        deliver_to_child_delay = datetime.utcnow() \
-            + timedelta(seconds=configs.DELIVER_TO_CHILD_DELAY)
+        deliver_to_child_delay = datetime.utcnow() + timedelta(
+            seconds=configs.DELIVER_TO_CHILD_DELAY
+        )
 
         change_need_status_to_delivered.apply_async(
             (self.id,),
@@ -507,8 +501,8 @@ def status_event(need, new_status, old_status, initiator):
 
             if not (
                 need.expected_delivery_date
-                <= need.ngo_delivery_date <=
-                datetime.utcnow()
+                <= need.ngo_delivery_date
+                <= datetime.utcnow()
             ):
                 raise Exception('Invalid ngo_delivery_date')
 

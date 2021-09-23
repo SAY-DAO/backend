@@ -15,10 +15,16 @@ class InvitationAccept(base):
     id = Column(Integer, primary_key=True)
 
     invtee_id = Column(
-        Integer, ForeignKey('user.id'), nullable=False, index=True,
+        Integer,
+        ForeignKey('user.id'),
+        nullable=False,
+        index=True,
     )
     invitation_id = Column(
-        Integer, ForeignKey('invitations.id'), nullable=False, index=True,
+        Integer,
+        ForeignKey('invitations.id'),
+        nullable=False,
+        index=True,
     )
 
     created = Column(DateTime, default=datetime.utcnow, nullable=False)

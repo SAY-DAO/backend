@@ -24,7 +24,7 @@ class MeliPayamak:
                     'username': self.username,
                     'password': self.password,
                     'from': self.from_,
-                    **kwargs
+                    **kwargs,
                 },
                 headers=self.headers,
             )

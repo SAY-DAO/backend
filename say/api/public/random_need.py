@@ -18,34 +18,37 @@ from .. import swag_from
 
 
 class RandomNeed(Resource):
-
     @json
     @swag_from('../docs/public/random_need.yml')
     def get(self):
-        need = session.query(
-            Need.id,
-            Need.name,
-            Need.imageUrl,
-            Need.cost,
-            Child.avatarUrl,
-            Child.sayName,
-            Need.type,
-            Need.link,
-            Need.img,
-            Need.description,
-        ).filter(
-            Need.status.in_([0, 1]),
-            Need.name.isnot(None),
-            Need.isConfirmed.is_(True),
-            Need.isDeleted.is_(False),
-            Child.isConfirmed.is_(True),
-        ).join(
-            Child,
-            Child.id == Need.child_id,
-        ) \
-            .order_by(func.random()) \
-            .limit(1) \
+        need = (
+            session.query(
+                Need.id,
+                Need.name,
+                Need.imageUrl,
+                Need.cost,
+                Child.avatarUrl,
+                Child.sayName,
+                Need.type,
+                Need.link,
+                Need.img,
+                Need.description,
+            )
+            .filter(
+                Need.status.in_([0, 1]),
+                Need.name.isnot(None),
+                Need.isConfirmed.is_(True),
+                Need.isDeleted.is_(False),
+                Child.isConfirmed.is_(True),
+            )
+            .join(
+                Child,
+                Child.id == Need.child_id,
+            )
+            .order_by(func.random())
+            .limit(1)
             .first()
+        )
 
         return dict(
             id=need[0],

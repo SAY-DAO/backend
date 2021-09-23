@@ -24,10 +24,7 @@ class NeedFamily(base, Timestamp):
     user_role = Column(Integer, nullable=True)
 
     paid = column_property(
-        select([coalesce(
-            func.sum(Payment.need_amount),
-            0,
-        )]).where(
+        select([coalesce(func.sum(Payment.need_amount), 0,)]).where(
             and_(
                 Payment.verified.isnot(None),
                 Payment.id_user == id_user,

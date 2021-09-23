@@ -16,46 +16,66 @@ depends_on = None
 
 
 def upgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE need
             ALTER COLUMN delivery_date TYPE TIMESTAMP;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE need
             RENAME COLUMN delivery_date TO ngo_delivery_date;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE need
             ADD COLUMN purchase_date TIMESTAMP;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE need
             ADD COLUMN child_delivery_date TIMESTAMP;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE need
             ADD COLUMN expected_delivery_date TIMESTAMP;
-    ''')
+    '''
+    )
 
 
 def downgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE need
             RENAME COLUMN ngo_delivery_date TO delivery_date;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE need
             ALTER COLUMN delivery_date TYPE DATE;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE need
             DROP COLUMN purchase_date;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE need
             DROP COLUMN child_delivery_date;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE need
             DROP COLUMN expected_delivery_date;
-    ''')
+    '''
+    )

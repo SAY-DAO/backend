@@ -18,12 +18,14 @@ depends_on = None
 
 
 def upgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE ngo
         ADD CONSTRAINT ngo_coordinator_id_fkey FOREIGN KEY ("coordinatorId")
             REFERENCES social_worker (id)
             ON DELETE CASCADE;
-    ''')
+    '''
+    )
 
 
 def downgrade():

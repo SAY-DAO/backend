@@ -18,16 +18,20 @@ depends_on = None
 
 
 def upgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE child
         RENAME COLUMN "avatarUrl"
            TO "awakeAvatarUrl";
-    ''')
+    '''
+    )
 
 
 def downgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE child
         RENAME COLUMN "awakeAvatarUrl"
             TO "avatarUrl";
-    ''')
+    '''
+    )

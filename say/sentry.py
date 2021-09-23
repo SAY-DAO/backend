@@ -37,6 +37,7 @@ def before_send(event, hint):
 def setup_sentry():
     # Monkypatching max string sent to sentry to get the full db transactions
     from sentry_sdk import utils
+
     utils.MAX_STRING_LENGTH = 4000
 
     sentry_sdk.init(

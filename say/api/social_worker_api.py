@@ -34,19 +34,18 @@ Social Worker APIs
 
 
 class GetAllSocialWorkers(Resource):
-
-    @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @authorize(
+        COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+    )  # TODO: priv
     @json
     @swag_from('./docs/social_worker/all.yml')
     def get(self):
-        social_workers = session.query(SocialWorker) \
-            .filter_by(isDeleted=False)
+        social_workers = session.query(SocialWorker).filter_by(isDeleted=False)
 
         if get_user_role() in [COORDINATOR, NGO_SUPERVISOR]:  # TODO: priv
             user_id = get_user_id()
             user = session.query(SocialWorker).get(user_id)
-            social_workers = social_workers \
-                .filter_by(id_ngo=user.id_ngo)
+            social_workers = social_workers.filter_by(id_ngo=user.id_ngo)
 
         fetch = {}
         for social_worker in social_workers:
@@ -81,8 +80,7 @@ class AddSocialWorker(Resource):
             first_name = None
 
         if 'birthCertificateNumber' in request.form.keys():
-            birth_certificate_number = request.form[
-                'birthCertificateNumber']
+            birth_certificate_number = request.form['birthCertificateNumber']
         else:
             birth_certificate_number = None
 
@@ -102,14 +100,12 @@ class AddSocialWorker(Resource):
             bank_account_number = None
 
         if 'bankAccountShebaNumber' in request.form.keys():
-            bank_account_sheba_number = request.form[
-                'bankAccountShebaNumber']
+            bank_account_sheba_number = request.form['bankAccountShebaNumber']
         else:
             bank_account_sheba_number = None
 
         if 'bankAccountCardNumber' in request.form.keys():
-            bank_account_card_number = request.form[
-                'bankAccountCardNumber']
+            bank_account_card_number = request.form['bankAccountCardNumber']
         else:
             bank_account_card_number = None
 
@@ -132,18 +128,22 @@ class AddSocialWorker(Resource):
         last_login_date = datetime.utcnow()
 
         if id_ngo != 0:
-            ngo = (session.query(Ngo).filter_by(
-                isDeleted=False).filter_by(id=id_ngo).first())
+            ngo = (
+                session.query(Ngo)
+                .filter_by(isDeleted=False)
+                .filter_by(id=id_ngo)
+                .first()
+            )
             generated_code = format(id_ngo, '03d') + format(
-                ngo.socialWorkerCount + 1, '03d')
+                ngo.socialWorkerCount + 1, '03d'
+            )
 
             ngo.socialWorkerCount += 1
             ngo.currentSocialWorkerCount += 1
 
         else:
             self.panel_users += 1
-            generated_code = format(id_ngo, '03d') + format(
-                self.panel_users, '03d')
+            generated_code = format(id_ngo, '03d') + format(self.panel_users, '03d')
 
         username = f'sw{generated_code}'
 
@@ -200,14 +200,15 @@ class AddSocialWorker(Resource):
             filename3 = generated_code + '.' + filename.split('.')[-1]
 
             temp_avatar_path = os.path.join(
-                configs.UPLOAD_FOLDER,
-                str(current_id) + '-socialworker')
+                configs.UPLOAD_FOLDER, str(current_id) + '-socialworker'
+            )
 
             if not os.path.isdir(temp_avatar_path):
                 os.makedirs(temp_avatar_path, exist_ok=True)
 
-            avatar = os.path.join(temp_avatar_path,
-                                  str(current_id) + '-avatar_' + filename3)
+            avatar = os.path.join(
+                temp_avatar_path, str(current_id) + '-avatar_' + filename3
+            )
 
             file3.save(avatar)
             avatar = '/' + avatar
@@ -223,19 +224,19 @@ class AddSocialWorker(Resource):
                 filename1 = generated_code + '.' + filename.split('.')[-1]
 
                 temp_idcard_path = os.path.join(
-                    configs.UPLOAD_FOLDER,
-                    str(current_id) + '-socialworker')
+                    configs.UPLOAD_FOLDER, str(current_id) + '-socialworker'
+                )
 
                 if not os.path.isdir(temp_idcard_path):
                     os.makedirs(temp_idcard_path, exist_ok=True)
 
                 id_card = os.path.join(
-                    temp_idcard_path,
-                    str(current_id) + '-idcard_' + filename1)
+                    temp_idcard_path, str(current_id) + '-idcard_' + filename1
+                )
 
                 file1.save(id_card)
 
-            id_card_url = '/' +  id_card
+            id_card_url = '/' + id_card
 
         else:
             id_card_url = None
@@ -248,19 +249,18 @@ class AddSocialWorker(Resource):
 
             if file2 and allowed_image(file2.filename):
                 filename = secure_filename(file2.filename)
-                filename2 = str(current_id) + '.' + filename.split(
-                    '.')[-1]
+                filename2 = str(current_id) + '.' + filename.split('.')[-1]
 
                 temp_passport_path = os.path.join(
-                    configs.UPLOAD_FOLDER,
-                    str(current_id) + '-socialworker')
+                    configs.UPLOAD_FOLDER, str(current_id) + '-socialworker'
+                )
 
                 if not os.path.isdir(temp_passport_path):
                     os.makedirs(temp_passport_path, exist_ok=True)
 
                 passport = os.path.join(
-                    temp_passport_path,
-                    str(current_id) + '-passport_' + filename2)
+                    temp_passport_path, str(current_id) + '-passport_' + filename2
+                )
 
                 file2.save(passport)
 
@@ -271,29 +271,31 @@ class AddSocialWorker(Resource):
 
         avatar_url = avatar
 
-        new_social_worker.password = password,
-        new_social_worker.passportUrl = passport_url,
-        new_social_worker.avatarUrl = avatar_url,
-        new_social_worker.idCardUrl = id_card_url,
+        new_social_worker.password = (password,)
+        new_social_worker.passportUrl = (passport_url,)
+        new_social_worker.avatarUrl = (avatar_url,)
+        new_social_worker.idCardUrl = (id_card_url,)
         safe_commit(session)
         return new_social_worker
 
 
 class GetSocialWorkerById(Resource):
-
-    @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @authorize(
+        COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+    )  # TODO: priv
     @json
     @swag_from('./docs/social_worker/id.yml')
     def get(self, social_worker_id):
-        social_worker_query = session.query(SocialWorker) \
-            .filter_by(id=social_worker_id) \
+        social_worker_query = (
+            session.query(SocialWorker)
+            .filter_by(id=social_worker_id)
             .filter_by(isDeleted=False)
+        )
 
         if get_user_role() in [COORDINATOR, NGO_SUPERVISOR]:  # TODO: priv
             user_id = get_user_id()
             user = session.query(SocialWorker).get(user_id)
-            social_worker_query = social_worker_query \
-                .filter_by(id_ngo=user.id_ngo)
+            social_worker_query = social_worker_query.filter_by(id_ngo=user.id_ngo)
 
         social_worker = social_worker_query.first()
 
@@ -307,15 +309,18 @@ class GetSocialWorkerById(Resource):
 
 
 class GetSocialWorkerByNgoId(Resource):
-
-    @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @authorize(
+        COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+    )  # TODO: priv
     @json
     @swag_from('./docs/social_worker/ngo.yml')
     def get(self, ngo_id):
         ngo_id = int(ngo_id)
-        social_workers = session.query(SocialWorker) \
-            .filter_by(id_ngo=ngo_id) \
+        social_workers = (
+            session.query(SocialWorker)
+            .filter_by(id_ngo=ngo_id)
             .filter_by(isDeleted=False)
+        )
 
         if get_user_role() in [COORDINATOR, NGO_SUPERVISOR]:  # TODO: priv
             user_id = get_user_id()
@@ -330,7 +335,9 @@ class GetSocialWorkerByNgoId(Resource):
 
             data = obj_to_dict(social_worker)
             data['typeName'] = social_worker.privilege.name
-            data['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
+            data['ngoName'] = (
+                social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
+            )
 
             fetch[str(social_worker.id)] = data
 
@@ -338,17 +345,20 @@ class GetSocialWorkerByNgoId(Resource):
 
 
 class UpdateSocialWorker(Resource):
-
-    @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @authorize(
+        COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+    )  # TODO: priv
     @json
     @swag_from('./docs/social_worker/update.yml')
     def patch(self, social_worker_id):
         ngo_change = False
         previous_ngo = None
-        base_social_worker = session.query(SocialWorker) \
-            .filter_by(id=social_worker_id) \
-            .filter_by(isDeleted=False) \
+        base_social_worker = (
+            session.query(SocialWorker)
+            .filter_by(id=social_worker_id)
+            .filter_by(isDeleted=False)
             .first()
+        )
 
         if get_user_role() in [COORDINATOR, NGO_SUPERVISOR]:  # TODO: priv
             user_id = get_user_id()
@@ -364,8 +374,9 @@ class UpdateSocialWorker(Resource):
 
             if file1 and allowed_image(file1.filename):
                 filename = secure_filename(file1.filename)
-                filename1 = (base_social_worker.generatedCode + '.'
-                             + filename.split('.')[-1])
+                filename1 = (
+                    base_social_worker.generatedCode + '.' + filename.split('.')[-1]
+                )
 
                 temp_idcard_path = os.path.join(
                     configs.UPLOAD_FOLDER,
@@ -386,8 +397,7 @@ class UpdateSocialWorker(Resource):
                 )
 
                 file1.save(base_social_worker.idCardUrl)
-                base_social_worker.idCardUrl = \
-                    '/' + base_social_worker.idCardUrl
+                base_social_worker.idCardUrl = '/' + base_social_worker.idCardUrl
 
         if 'passportUrl' in request.files.keys():
             file2 = request.files['passportUrl']
@@ -397,8 +407,9 @@ class UpdateSocialWorker(Resource):
 
             if file2 and allowed_image(file2.filename):
                 filename = secure_filename(file1.filename)
-                filename2 = (base_social_worker.generatedCode + '.' +
-                             filename.split('.')[-1])
+                filename2 = (
+                    base_social_worker.generatedCode + '.' + filename.split('.')[-1]
+                )
 
                 temp_passport_path = os.path.join(
                     configs.UPLOAD_FOLDER,
@@ -430,8 +441,9 @@ class UpdateSocialWorker(Resource):
 
             if file3 and allowed_image(file3.filename):
                 filename = secure_filename(file1.filename)
-                filename3 = (base_social_worker.generatedCode + '.' +
-                             filename.split('.')[-1])
+                filename3 = (
+                    base_social_worker.generatedCode + '.' + filename.split('.')[-1]
+                )
 
                 temp_avatar_path = os.path.join(
                     configs.UPLOAD_FOLDER,
@@ -452,8 +464,7 @@ class UpdateSocialWorker(Resource):
                 )
 
                 file3.save(base_social_worker.avatarUrl)
-                base_social_worker.avatarUrl = \
-                    '/' + base_social_worker.avatarUrl
+                base_social_worker.avatarUrl = '/' + base_social_worker.avatarUrl
 
         if 'id_ngo' in request.form.keys():
             previous_ngo = base_social_worker.id_ngo
@@ -480,29 +491,32 @@ class UpdateSocialWorker(Resource):
 
         if 'birthCertificateNumber' in request.form.keys():
             base_social_worker.birthCertificateNumber = request.form[
-                'birthCertificateNumber']
+                'birthCertificateNumber'
+            ]
 
         if 'idNumber' in request.form.keys():
             base_social_worker.idNumber = request.form['idNumber']
 
         if 'passportNumber' in request.form.keys():
-            base_social_worker.passportNumber = request.form[
-                'passportNumber']
+            base_social_worker.passportNumber = request.form['passportNumber']
 
         if 'gender' in request.form.keys():
             base_social_worker.gender = (
-                True if request.form['gender'] == 'true' else False)
+                True if request.form['gender'] == 'true' else False
+            )
 
         if 'birthDate' in request.form.keys():
             base_social_worker.birthDate = datetime.strptime(
-                request.form['birthDate'], '%Y-%m-%d')
+                request.form['birthDate'], '%Y-%m-%d'
+            )
 
         if 'phoneNumber' in request.form.keys():
             base_social_worker.phoneNumber = request.form['phoneNumber']
 
         if 'emergencyPhoneNumber' in request.form.keys():
             base_social_worker.emergencyPhoneNumber = request.form[
-                'emergencyPhoneNumber']
+                'emergencyPhoneNumber'
+            ]
 
         if 'emailAddress' in request.form.keys():
             base_social_worker.emailAddress = request.form['emailAddress']
@@ -511,30 +525,37 @@ class UpdateSocialWorker(Resource):
             base_social_worker.telegramId = request.form['telegramId']
 
         if 'postalAddress' in request.form.keys():
-            base_social_worker.postalAddress = request.form[
-                'postalAddress']
+            base_social_worker.postalAddress = request.form['postalAddress']
 
         if 'bankAccountNumber' in request.form.keys():
-            base_social_worker.bankAccountNumber = request.form[
-                'bankAccountNumber']
+            base_social_worker.bankAccountNumber = request.form['bankAccountNumber']
 
         if 'bankAccountShebaNumber' in request.form.keys():
             base_social_worker.bankAccountShebaNumber = request.form[
-                'bankAccountShebaNumber']
+                'bankAccountShebaNumber'
+            ]
 
         if 'bankAccountCardNumber' in request.form.keys():
             base_social_worker.bankAccountCardNumber = request.form[
-                'bankAccountCardNumber']
+                'bankAccountCardNumber'
+            ]
 
         if 'password' in request.form.keys():
             base_social_worker.password = request.form['password']
 
         if ngo_change:
-            that_ngo = (session.query(Ngo).filter_by(
-                id=previous_ngo).filter_by(isDeleted=False).first())
-            this_ngo = (session.query(Ngo).filter_by(
-                id=base_social_worker.id_ngo).filter_by(
-                    isDeleted=False).first())
+            that_ngo = (
+                session.query(Ngo)
+                .filter_by(id=previous_ngo)
+                .filter_by(isDeleted=False)
+                .first()
+            )
+            this_ngo = (
+                session.query(Ngo)
+                .filter_by(id=base_social_worker.id_ngo)
+                .filter_by(isDeleted=False)
+                .first()
+            )
 
             that_ngo.currentChildrenCount -= base_social_worker.currentChildCount
             that_ngo.currentSocialWorkerCount -= 1
@@ -551,19 +572,24 @@ class UpdateSocialWorker(Resource):
 
 
 class DeleteSocialWorker(Resource):
-
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @json
     @swag_from('./docs/social_worker/delete.yml')
     def patch(self, social_worker_id):
-        base_social_worker = (session.query(SocialWorker).filter_by(
-            id=social_worker_id).filter_by(isDeleted=False).first())
+        base_social_worker = (
+            session.query(SocialWorker)
+            .filter_by(id=social_worker_id)
+            .filter_by(isDeleted=False)
+            .first()
+        )
 
         base_social_worker.isDeleted = True
-        this_ngo = session.query(Ngo) \
-            .filter_by(id=base_social_worker.id_ngo) \
-            .filter_by(isDeleted=False) \
+        this_ngo = (
+            session.query(Ngo)
+            .filter_by(id=base_social_worker.id_ngo)
+            .filter_by(isDeleted=False)
             .one_or_none()
+        )
 
         this_ngo.currentChildrenCount -= base_social_worker.currentChildCount
         this_ngo.currentSocialWorkerCount -= 1
@@ -573,37 +599,39 @@ class DeleteSocialWorker(Resource):
 
 
 class DeactivateSocialWorker(Resource):
-
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @json
     @commit
     @swag_from('./docs/social_worker/deactivate.yml')
     def patch(self, social_worker_id):
 
-        sw = session.query(SocialWorker) \
-            .filter_by(id=social_worker_id) \
-            .filter_by(isDeleted=False) \
-            .filter_by(isActive=True) \
-            .with_for_update() \
+        sw = (
+            session.query(SocialWorker)
+            .filter_by(id=social_worker_id)
+            .filter_by(isDeleted=False)
+            .filter_by(isActive=True)
+            .with_for_update()
             .one_or_none()
+        )
 
         if not sw:
             return {
                 'message': f'Social worker {social_worker_id} not found',
             }, 404
 
-        has_active_child = session.query(Child.id) \
-            .filter(Child.id_social_worker==social_worker_id) \
-            .filter(Child.isConfirmed.is_(True)) \
-            .filter(Child.isDeleted.is_(False)) \
-            .filter(Child.isMigrated.is_(False)) \
+        has_active_child = (
+            session.query(Child.id)
+            .filter(Child.id_social_worker == social_worker_id)
+            .filter(Child.isConfirmed.is_(True))
+            .filter(Child.isDeleted.is_(False))
+            .filter(Child.isMigrated.is_(False))
             .count()
+        )
 
         if has_active_child:
             return {
-                'message':
-                    f'Social worker {social_worker_id} has active'
-                    f' children and can not deactivate',
+                'message': f'Social worker {social_worker_id} has active'
+                f' children and can not deactivate',
             }, 400
 
         sw.isActive = False
@@ -611,15 +639,16 @@ class DeactivateSocialWorker(Resource):
 
 
 class ActivateSocialWorker(Resource):
-
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @json
     @swag_from('./docs/social_worker/activate.yml')
     def patch(self, social_worker_id):
-        base_social_worker = session.query(SocialWorker) \
-            .filter_by(id=social_worker_id) \
-            .filter_by(isDeleted=False) \
+        base_social_worker = (
+            session.query(SocialWorker)
+            .filter_by(id=social_worker_id)
+            .filter_by(isDeleted=False)
             .first()
+        )
 
         base_social_worker.isActive = True
 
@@ -628,7 +657,6 @@ class ActivateSocialWorker(Resource):
 
 
 class MigrateSocialWorkerChildren(Resource):
-
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @json
     @commit
@@ -644,34 +672,40 @@ class MigrateSocialWorkerChildren(Resource):
         if data.destination_social_worker_id == id:
             return {'message': 'Can not migrate to same sw'}, 400
 
-        sw = session.query(SocialWorker) \
-            .filter_by(id=id) \
-            .filter_by(isDeleted=False) \
-            .filter_by(isActive=True) \
-            .with_for_update(SocialWorker) \
+        sw = (
+            session.query(SocialWorker)
+            .filter_by(id=id)
+            .filter_by(isDeleted=False)
+            .filter_by(isActive=True)
+            .with_for_update(SocialWorker)
             .one_or_none()
+        )
 
         if not sw:
             return {
                 'message': f'Social worker {id} not found',
             }, 404
 
-        destination_sw = session.query(SocialWorker) \
-            .filter_by(id=data.destination_social_worker_id) \
-            .filter_by(isDeleted=False) \
-            .filter_by(isActive=True) \
-            .with_for_update() \
+        destination_sw = (
+            session.query(SocialWorker)
+            .filter_by(id=data.destination_social_worker_id)
+            .filter_by(isDeleted=False)
+            .filter_by(isActive=True)
+            .with_for_update()
             .one_or_none()
+        )
 
         if not destination_sw:
             return {
                 'message': f'destination social worker not found',
             }, 400
 
-        children = session.query(Child) \
-            .filter(Child.id_social_worker == id) \
-            .filter(Child.isDeleted.is_(False)) \
+        children = (
+            session.query(Child)
+            .filter(Child.id_social_worker == id)
+            .filter(Child.isDeleted.is_(False))
             .with_for_update()
+        )
 
         resp = []
         for child in children:

@@ -18,9 +18,7 @@ depends_on = None
 
 
 def upgrade():
-    op.execute(
-        'UPDATE need SET deleted_at = updated WHERE "isDeleted" = true;'
-    )
+    op.execute('UPDATE need SET deleted_at = updated WHERE "isDeleted" = true;')
 
 
 def downgrade():

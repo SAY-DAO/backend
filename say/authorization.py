@@ -1,4 +1,3 @@
-
 import functools
 from logging import getLogger
 
@@ -56,7 +55,7 @@ def create_user_access_token(user, fresh=False):
             firstName=user.firstName,
             lastName=user.lastName,
             avatarUrl=user.avatarUrl,
-        )
+        ),
     )
 
 
@@ -71,12 +70,11 @@ def create_sw_access_token(social_worker, fresh=False):
             avatarUrl=social_worker.avatarUrl,
             role=social_worker.privilege.name,
             ngoId=social_worker.id_ngo,
-        )
+        ),
     )
 
 
 def authorize_refresh(func):
-
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         try:
@@ -90,17 +88,17 @@ def authorize_refresh(func):
 
 
 def authorize(*roles):
-
     def decorator(func):
-
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             try:
                 verify_jwt_in_request()
-                set_user(dict(
-                    id=get_jwt_identity(),
-                    role=get_user_role(),
-                ))
+                set_user(
+                    dict(
+                        id=get_jwt_identity(),
+                        role=get_user_role(),
+                    )
+                )
             except (PyJWTError, JWTExtendedException) as ex:
                 getLogger().info(ex)
                 return make_response(jsonify(message=f'Unauthorized, {ex}'), 401)
@@ -134,5 +132,7 @@ def get_sw_ngo_id():
 
 def revoke_jwt(jti, expire):
     get_revoked_store().set(
-        jti, 'true', expire,
+        jti,
+        'true',
+        expire,
     )

@@ -18,10 +18,12 @@ depends_on = None
 
 
 def upgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE need
             ADD COLUMN donated INTEGER DEFAULT 0 NOT NULL;
-    ''')
+    '''
+    )
 
 
 def downgrade():

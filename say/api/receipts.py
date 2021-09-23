@@ -149,7 +149,9 @@ class AttachReceiptAPI(Resource):
         if not need_id:
             abort(404)
 
-        need_receipt = NeedReceipt(need_id=need_id, receipt_id=receipt_id, sw_id=user_id)
+        need_receipt = NeedReceipt(
+            need_id=need_id, receipt_id=receipt_id, sw_id=user_id
+        )
         session.add(need_receipt)
         safe_commit(session)
         return need_receipt
@@ -181,7 +183,9 @@ class ListReceiptsAPI(Resource):
                 Need.isDeleted.is_(False),
                 Receipt.deleted.is_(None),
                 or_(
-                    True if user_role in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR] else False,
+                    True
+                    if user_role in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR]
+                    else False,
                     Receipt.is_public.is_(True),
                     Receipt.owner_id == user_id
                     if user_role not in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR]

@@ -45,9 +45,11 @@ class DashboardDataFeed(Resource):
     def get(self):
         user_id = get_user_id()
 
-        user = session.query(
-            *[getattr(User, c) for c in dashboard_user_fields]
-        ).filter(User.id==user_id).one_or_none()
+        user = (
+            session.query(*[getattr(User, c) for c in dashboard_user_fields])
+            .filter(User.id == user_id)
+            .one_or_none()
+        )
 
         if user is None:
             raise HTTP_NOT_FOUND()
@@ -55,23 +57,19 @@ class DashboardDataFeed(Resource):
         user_dict = dict(zip(dashboard_user_fields, user))
 
         # id, avatarUrl, sayName, done_needs_count, spent_credit
-        children = session.query(
-            *[getattr(Child, c) for c in dashboard_child_fields]
-        ) \
-            .join(Family, Family.id_child == Child.id) \
-            .join(UserFamily, UserFamily.id_family == Family.id) \
+        children = (
+            session.query(*[getattr(Child, c) for c in dashboard_child_fields])
+            .join(Family, Family.id_child == Child.id)
+            .join(UserFamily, UserFamily.id_family == Family.id)
             .filter(
                 UserFamily.id_user == user_id,
                 UserFamily.isDeleted == False,
-            ) \
-            .order_by(UserFamily.created) \
-
+            )
+            .order_by(UserFamily.created)
+        )
         children_dict = [dict(zip(dashboard_child_fields, child)) for child in children]
 
-        result = DashboardSchema(
-            user=user_dict,
-            children=children_dict
-        )
+        result = DashboardSchema(user=user_dict, children=children_dict)
         return obj_to_dict(result)
 
 

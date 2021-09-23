@@ -18,11 +18,11 @@ depends_on = None
 
 
 def upgrade():
-    op.execute('UPDATE "user" SET "avatarUrl" = \'/public/resources/img/default-avatar.png\' WHERE "avatarUrl" is NULL')
-    op.alter_column('user', 'avatarUrl',
-               existing_type=sa.VARCHAR(),
-               nullable=False
+    op.execute(
+        'UPDATE "user" SET "avatarUrl" = \'/public/resources/img/default-avatar.png\' WHERE "avatarUrl" is NULL'
     )
+    op.alter_column('user', 'avatarUrl', existing_type=sa.VARCHAR(), nullable=False)
+
 
 def downgrade():
     pass

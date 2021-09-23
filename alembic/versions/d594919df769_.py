@@ -18,14 +18,18 @@ depends_on = None
 
 
 def upgrade():
-     op.execute('''
+    op.execute(
+        '''
         ALTER TABLE need
             ADD COLUMN "oncePurchased" BOOLEAN DEFAULT false;
-    ''')
+    '''
+    )
 
 
 def downgrade():
-     op.execute('''
+    op.execute(
+        '''
         ALTER TABLE need
             DROP COLUMN "oncePurchased";
-    ''')
+    '''
+    )

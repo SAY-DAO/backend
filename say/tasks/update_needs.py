@@ -7,16 +7,16 @@ from say.orm import safe_commit
 @celery.task(base=celery.DBTask, bind=True, queue='slow')
 def update_needs(self):
     from say.models.need_model import Need
-    needs = self.session.query(Need) \
-        .filter(
-            Need.type == 1,
-            or_(
-                Need.status < 4,
-                Need.title.is_(None),
-            ),
-            Need.isDeleted==False,
-            Need.link.isnot(None),
-        )
+
+    needs = self.session.query(Need).filter(
+        Need.type == 1,
+        or_(
+            Need.status < 4,
+            Need.title.is_(None),
+        ),
+        Need.isDeleted == False,
+        Need.link.isnot(None),
+    )
 
     t = []
     for need in needs:
@@ -36,6 +36,7 @@ def update_needs(self):
 )
 def update_need(self, need_id, force=False):
     from say.models.need_model import Need
+
     need = self.session.query(Need).get(need_id)
 
     data = need.update()

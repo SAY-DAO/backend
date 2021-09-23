@@ -18,22 +18,31 @@ depends_on = None
 
 
 def upgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE need
             ADD COLUMN "doneAt" TIMESTAMP WITH TIME ZONE;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE need
             ALTER COLUMN "createdAt" TYPE TIMESTAMP WITH TIME ZONE;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE need
             ALTER COLUMN "confirmDate" TYPE TIMESTAMP WITH TIME ZONE;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE need
             ALTER COLUMN "lastUpdate" TYPE TIMESTAMP WITH TIME ZONE;
-    ''')
+    '''
+    )
+
 
 def downgrade():
     pass

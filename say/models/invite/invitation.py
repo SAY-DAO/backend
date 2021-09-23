@@ -21,10 +21,16 @@ class Invitation(base, Timestamp):
 
     id = Column(Integer, nullable=False, primary_key=True)
     inviter_id = Column(
-        Integer, ForeignKey('user.id'), nullable=True, index=True,
+        Integer,
+        ForeignKey('user.id'),
+        nullable=True,
+        index=True,
     )
     family_id = Column(
-        Integer, ForeignKey('family.id'), nullable=False, index=True,
+        Integer,
+        ForeignKey('family.id'),
+        nullable=False,
+        index=True,
     )
 
     role = Column(Integer, nullable=True)
@@ -60,7 +66,8 @@ class Invitation(base, Timestamp):
     @hybrid_property
     def link(self):
         return urljoin(
-            configs.BASE_URL, configs.INVITATION_URL % self.token,
+            configs.BASE_URL,
+            configs.INVITATION_URL % self.token,
         )
 
     @link.expression
@@ -70,10 +77,10 @@ class Invitation(base, Timestamp):
     @hybrid_property
     def link_v3(self):
         return urljoin(
-            configs.BASE_URL, configs.INVITATION_V3_URL % self.token,
+            configs.BASE_URL,
+            configs.INVITATION_V3_URL % self.token,
         )
 
     @link_v3.expression
     def link_v3(cls):
         return None
-

@@ -71,9 +71,7 @@ class AddNgo(Resource):
 
         if file and allowed_image(file.filename):
             filename = secure_filename(file.filename)
-            filename = (
-                    format(current_id, '03d') + '.' + filename.split('.')[-1]
-            )
+            filename = format(current_id, '03d') + '.' + filename.split('.')[-1]
 
             temp_logo_path = os.path.join(
                 configs.UPLOAD_FOLDER, str(current_id) + '-ngo'
@@ -82,9 +80,7 @@ class AddNgo(Resource):
             if not os.path.isdir(temp_logo_path):
                 os.makedirs(temp_logo_path, exist_ok=True)
 
-            path = os.path.join(
-                temp_logo_path, str(current_id) + '-logo_' + filename
-            )
+            path = os.path.join(temp_logo_path, str(current_id) + '-logo_' + filename)
 
             file.save(path)
             path = '/' + path
@@ -139,10 +135,12 @@ class GetNgoById(Resource):
     @json
     @swag_from('./docs/ngo/id.yml')
     def get(self, ngo_id):
-        base_ngo = session.query(Ngo) \
-            .filter_by(id=ngo_id) \
-            .filter_by(isDeleted=False) \
+        base_ngo = (
+            session.query(Ngo)
+            .filter_by(id=ngo_id)
+            .filter_by(isDeleted=False)
             .one_or_none()
+        )
 
         if not base_ngo:
             return {'message': 'sth went wrong!'}, 400
@@ -152,18 +150,21 @@ class GetNgoById(Resource):
         res['coordinatorLastName'] = None
 
         if base_ngo.coordinatorId:
-            coordinator = session.query(
-                SocialWorker.firstName,
-                SocialWorker.lastName,
-            ) \
-                .filter_by(id=base_ngo.coordinatorId) \
-                .filter_by(isDeleted=False) \
+            coordinator = (
+                session.query(
+                    SocialWorker.firstName,
+                    SocialWorker.lastName,
+                )
+                .filter_by(id=base_ngo.coordinatorId)
+                .filter_by(isDeleted=False)
                 .one_or_none()
+            )
 
             res['coordinatorFirstName'] = coordinator[0]
             res['coordinatorLastName'] = coordinator[1]
 
-        res['socialWorkers'] = sw_list(session.query(SocialWorker)
+        res['socialWorkers'] = sw_list(
+            session.query(SocialWorker)
             .filter_by(id_ngo=base_ngo.id)
             .filter_by(isDeleted=False)
             .all()
@@ -176,10 +177,12 @@ class UpdateNgo(Resource):
     @json
     @swag_from('./docs/ngo/update.yml')
     def patch(self, ngo_id):
-        base_ngo = session.query(Ngo) \
-            .filter_by(id=ngo_id) \
-            .filter_by(isDeleted=False) \
+        base_ngo = (
+            session.query(Ngo)
+            .filter_by(id=ngo_id)
+            .filter_by(isDeleted=False)
             .one_or_none()
+        )
 
         if base_ngo is None:
             raise HTTP_NOT_FOUND()
@@ -219,10 +222,7 @@ class UpdateNgo(Resource):
 
             if file and allowed_image(file.filename):
                 filename = secure_filename(file.filename)
-                filename = (
-                        format(base_ngo.id, '03d') + '.' +
-                        filename.split('.')[-1]
-                )
+                filename = format(base_ngo.id, '03d') + '.' + filename.split('.')[-1]
                 temp_logo_path = os.path.join(
                     configs.UPLOAD_FOLDER, str(base_ngo.id) + '-ngo'
                 )
@@ -252,10 +252,12 @@ class DeleteNgo(Resource):
     @json
     @swag_from('./docs/ngo/delete.yml')
     def patch(self, ngo_id):
-        base_ngo = session.query(Ngo) \
-            .filter_by(id=ngo_id) \
-            .filter_by(isDeleted=False) \
+        base_ngo = (
+            session.query(Ngo)
+            .filter_by(id=ngo_id)
+            .filter_by(isDeleted=False)
             .one_or_none()
+        )
 
         if base_ngo is None:
             raise HTTP_NOT_FOUND()
@@ -271,11 +273,13 @@ class DeactivateNgo(Resource):
     @json
     @swag_from('./docs/ngo/deactivate.yml')
     def patch(self, ngo_id):
-        base_ngo = session.query(Ngo) \
-            .filter_by(id=ngo_id) \
-            .filter_by(isActive=True) \
-            .filter_by(isDeleted=False) \
+        base_ngo = (
+            session.query(Ngo)
+            .filter_by(id=ngo_id)
+            .filter_by(isActive=True)
+            .filter_by(isDeleted=False)
             .one_or_none()
+        )
 
         if base_ngo is None:
             raise HTTP_NOT_FOUND()
@@ -290,11 +294,13 @@ class ActivateNgo(Resource):
     @json
     @swag_from('./docs/ngo/activate.yml')
     def patch(self, ngo_id):
-        base_ngo = session.query(Ngo) \
-            .filter_by(id=ngo_id) \
-            .filter_by(isActive=False) \
-            .filter_by(isDeleted=False) \
+        base_ngo = (
+            session.query(Ngo)
+            .filter_by(id=ngo_id)
+            .filter_by(isActive=False)
+            .filter_by(isDeleted=False)
             .one_or_none()
+        )
 
         if base_ngo is None:
             raise HTTP_NOT_FOUND()

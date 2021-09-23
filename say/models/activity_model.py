@@ -28,6 +28,6 @@ class Activity(base, Timestamp):
     # 18: update receipt
 
     social_worker = relationship(
-        'SocialWorker', 
+        'SocialWorker',
         foreign_keys='Activity.id_social_worker',
     )

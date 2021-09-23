@@ -7,7 +7,6 @@ from .en import ContentEN
 
 
 class Content:
-
     def __getitem__(self, key):
         locale = get_locale()
 
@@ -18,5 +17,6 @@ class Content:
             return getattr(ContentEN, key)
 
         raise InvalidLocale(f'Invalid locale: {locale}')
+
 
 content = Content()

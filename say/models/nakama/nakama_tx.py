@@ -29,7 +29,9 @@ class NakamaTx(base, Timestamp):
 
     id = Column(Unicode(120), nullable=False, primary_key=True)
 
-    sender_address = Column(Unicode(64), ForeignKey('nakama_owners.address'), nullable=True)
+    sender_address = Column(
+        Unicode(64), ForeignKey('nakama_owners.address'), nullable=True
+    )
     need_id = Column(Integer, ForeignKey('need.id'), nullable=True)
 
     value = Column(BigInteger, nullable=True)

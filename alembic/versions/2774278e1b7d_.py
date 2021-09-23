@@ -18,10 +18,12 @@ depends_on = None
 
 
 def upgrade():
-    op.execute('''
+    op.execute(
+        '''
         CREATE UNIQUE INDEX user_username_key
         ON "user" (lower("userName"));
-    ''')
+    '''
+    )
 
 
 def downgrade():

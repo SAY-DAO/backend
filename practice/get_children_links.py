@@ -38,7 +38,6 @@ def get_child(id):
     return res.json()
 
 
-
 def get_invitation(family_id):
     res = request(
         'POST',
@@ -57,10 +56,10 @@ def get_families():
     ).json()
 
     families = [
-        dict(child_id=f['ChildId'], id=f['FamilyId'])
-        for _, f in ugly_list.items()
+        dict(child_id=f['ChildId'], id=f['FamilyId']) for _, f in ugly_list.items()
     ]
     return families
+
 
 print('admin username: ')
 user = input()

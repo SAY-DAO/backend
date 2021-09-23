@@ -128,8 +128,6 @@ def addoptable_child_family_counts_query(excluded):
 
 def calc_weights(family_counts, user_children_count, factor):
     return [
-        1 / (1 + family_count) ** factor
-        if user_children_count != 0
-        else 1
+        1 / (1 + family_count) ** factor if user_children_count != 0 else 1
         for family_count in family_counts
     ]

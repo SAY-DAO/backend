@@ -18,18 +18,25 @@ depends_on = None
 
 
 def upgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE payment
             ALTER COLUMN "date" TYPE TIMESTAMP WITH TIME ZONE;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE payment
             ALTER COLUMN "createdAt" TYPE TIMESTAMP WITH TIME ZONE;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE payment
             ALTER COLUMN "verfied_date" TYPE TIMESTAMP WITH TIME ZONE;
-    ''')
+    '''
+    )
+
 
 def downgrade():
     pass

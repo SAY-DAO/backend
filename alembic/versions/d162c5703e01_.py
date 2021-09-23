@@ -18,14 +18,18 @@ depends_on = None
 
 
 def upgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE need
             RENAME COLUMN cost TO _cost;
-    ''')
+    '''
+    )
 
 
 def downgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE need
             RENAME COLUMN _cost TO cost;
-    ''')
+    '''
+    )

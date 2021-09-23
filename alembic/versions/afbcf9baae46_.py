@@ -18,9 +18,11 @@ depends_on = None
 
 
 def upgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE "user" ADD UNIQUE ("emailAddress");
-    ''')
+    '''
+    )
 
 
 def downgrade():

@@ -29,7 +29,6 @@ from .ext import api
 
 
 class InvitationAPI(Resource):
-
     @json
     @commit
     @swag_from('./docs/invitation/create.yml')

@@ -26,7 +26,9 @@ def upgrade():
 
     init_model(op.get_bind())
 
-    op.execute('alter table receipt alter column attachment type character varying(256);')
+    op.execute(
+        'alter table receipt alter column attachment type character varying(256);'
+    )
     op.execute('alter table receipt alter column code type character varying(128);')
 
     needs = session.query(Need)

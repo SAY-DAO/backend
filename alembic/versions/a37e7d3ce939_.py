@@ -16,15 +16,20 @@ down_revision = 'df912c582af4'
 branch_labels = None
 depends_on = None
 
+
 def upgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE need
             RENAME COLUMN "delivereDate" TO delivery_date;
-    ''')
+    '''
+    )
 
 
 def downgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE need
             RENAME COLUMN delivery_date TO "delivereDate";
-    ''')
+    '''
+    )

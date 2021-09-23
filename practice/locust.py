@@ -7,7 +7,7 @@ from locust.contrib.fasthttp import FastHttpUser
 
 
 class PerformanceTest(FastHttpUser):
-    wait_time = between(0, .1)
+    wait_time = between(0, 0.1)
 
     user_id = None
 

@@ -41,7 +41,9 @@ def validate(model):
                     status=400,
                 )
             return func(*_args, **_kwargs)
+
         return inner
+
     return wrapper
 
 

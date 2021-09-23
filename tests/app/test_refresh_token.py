@@ -19,7 +19,9 @@ class TestRefreshToken(BaseTestClass):
 
     def test_invalid_refresh_token(self):
         self.login(self.user.userName, self.password)
-        headers = {"Authorization": self._client.environ_base[REFRESH_TOKEN_KEY] + "fake"}
+        headers = {
+            "Authorization": self._client.environ_base[REFRESH_TOKEN_KEY] + "fake"
+        }
         res = self.client.post(REFRESH_TOKEN_URL, headers=headers)
 
         assert res.status_code == UNAUTHORIZED_ERROR_CODE

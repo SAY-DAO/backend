@@ -58,7 +58,6 @@ from say.orm import session
 
 # FIXME: CIRITICAL
 def commit(func):
-
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
 

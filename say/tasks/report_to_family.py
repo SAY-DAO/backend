@@ -39,41 +39,45 @@ def report_to_family(self, family_id):
     with app.app_context(), ChangeLocaleTo(LANGS.fa):
         family = session.query(Family).get(family_id)
 
-        child_id, child_sayName = session.query(Child.id, Child.sayName) \
-            .filter_by(id=family.id_child) \
-            .one()
+        child_id, child_sayName = (
+            session.query(Child.id, Child.sayName).filter_by(id=family.id_child).one()
+        )
 
         # TODO: Getting whole need object beacuse of hybrid status_descrption
         # Getting needs that status of them updated in from yesterday
-        needs = session.query(Need) \
-            .filter_by(child_id=child_id) \
-            .filter(Need.status_updated_at > yesterday) \
-            .filter(Need.status >= 2) \
-            .filter(or_(Need.type == 0, Need.status != 4)) \
-            .order_by(Need.status) \
+        needs = (
+            session.query(Need)
+            .filter_by(child_id=child_id)
+            .filter(Need.status_updated_at > yesterday)
+            .filter(Need.status >= 2)
+            .filter(or_(Need.type == 0, Need.status != 4))
+            .order_by(Need.status)
             .all()
+        )
 
         if len(needs) == 0:
             return
 
         # Joining by NeedFamily and geting distinct emails
         to_members_email = [
-            u.emailAddress for u in session.query(User.emailAddress) \
-            .filter(User.id==NeedFamily.id_user) \
-            .filter(User.emailAddress.isnot(None)) \
-            .filter(NeedFamily.id_family==family_id) \
-            .filter(NeedFamily.id_need.in_([need.id for need in needs])) \
+            u.emailAddress
+            for u in session.query(User.emailAddress)
+            .filter(User.id == NeedFamily.id_user)
+            .filter(User.emailAddress.isnot(None))
+            .filter(NeedFamily.id_family == family_id)
+            .filter(NeedFamily.id_need.in_([need.id for need in needs]))
             .distinct()
         ]
 
         # Joining by UserFamily and geting distinct emails
         all_members_email = [
-            u.emailAddress for u in session.query(User.emailAddress) \
-                .filter(User.id==UserFamily.id_user) \
-                .filter(User.emailAddress.isnot(None)) \
-                .filter(UserFamily.id_family==family_id) \
-                .filter(UserFamily.isDeleted==False) \
-                .distinct()
+            u.emailAddress
+            for u in session.query(User.emailAddress)
+            .filter(User.id == UserFamily.id_user)
+            .filter(User.emailAddress.isnot(None))
+            .filter(UserFamily.id_family == family_id)
+            .filter(UserFamily.isDeleted == False)
+            .distinct()
         ]
 
         cc_members_email = list(set(all_members_email) - set(to_members_email))
@@ -84,7 +88,7 @@ def report_to_family(self, family_id):
         child_page = os.path.join(base_url, 'childPage', str(child_id), '0')
 
         report_email = partial(
-            send_embeded_subject_email.delay,             
+            send_embeded_subject_email.delay,
             html=render_template_i18n(
                 'status_update_to_family.html',
                 child_sayName=child_sayName,
@@ -98,7 +102,7 @@ def report_to_family(self, family_id):
 
         for email in to_members_email:
             report_email(to=email)
-        
+
         for email in cc_members_email:
             report_email(
                 to=configs.FAMILY_REPORT_EMAIL,

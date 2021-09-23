@@ -16,7 +16,9 @@ depends_on = None
 
 
 def upgrade():
-    op.execute('''UPDATE "user" set "emailAddress" = regexp_replace("emailAddress", '\s', '', 'g');''')
+    op.execute(
+        '''UPDATE "user" set "emailAddress" = regexp_replace("emailAddress", '\s', '', 'g');'''
+    )
 
 
 def downgrade():

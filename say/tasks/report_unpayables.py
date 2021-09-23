@@ -13,25 +13,34 @@ def report_unpayables(self):
     from say.models import Need
     from say.models import Ngo
 
-    unpayables = self.session.query(Need).filter(
-        Need.unavailable_from.isnot(None),  # < datetime.utcnow(),
-        Need.unpayable_from < datetime.utcnow(),
-        Need.unpayable_from > datetime.utcnow() - timedelta(days=1),
-        Need.isDeleted.is_(False),
-        Need.isConfirmed == True,
-        Need.isDone != True,
-    ).all()
+    unpayables = (
+        self.session.query(Need)
+        .filter(
+            Need.unavailable_from.isnot(None),  # < datetime.utcnow(),
+            Need.unpayable_from < datetime.utcnow(),
+            Need.unpayable_from > datetime.utcnow() - timedelta(days=1),
+            Need.isDeleted.is_(False),
+            Need.isConfirmed == True,
+            Need.isDone != True,
+        )
+        .all()
+    )
 
     if len(unpayables) == 0:
         return
 
-    say = self.session.query(Ngo).filter(
-        Ngo.name == 'SAY',
-    ).one()
+    say = (
+        self.session.query(Ngo)
+        .filter(
+            Ngo.name == 'SAY',
+        )
+        .one()
+    )
 
     say_coordinator = say.coordinator.emailAddress
 
     from say.app import app
+
     with app.app_context():
         send_embeded_subject_email.delay(
             to=say_coordinator,

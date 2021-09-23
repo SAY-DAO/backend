@@ -317,14 +317,17 @@ class VerifyPhone(Resource):
         except PhoneNumberParseException:
             return {'message': 'phone_number is invalid'}, 400
 
-        user = session.query(User).filter(User.phone_number == phone_number).one_or_none()
+        user = (
+            session.query(User).filter(User.phone_number == phone_number).one_or_none()
+        )
 
         if user:
             return {'message': 'phone_number already exixst'}, 422
 
         verification = PhoneVerification(
             phone_number=phone_number,
-            expire_at=datetime.utcnow() + timedelta(
+            expire_at=datetime.utcnow()
+            + timedelta(
                 minutes=configs.VERIFICATION_MAXAGE,
             ),
         )
@@ -398,7 +401,8 @@ class VerifyEmail(Resource):
 
         verification = EmailVerification(
             email=email,
-            expire_at=datetime.utcnow() + timedelta(
+            expire_at=datetime.utcnow()
+            + timedelta(
                 minutes=configs.VERIFICATION_MAXAGE,
             ),
         )
@@ -451,9 +455,9 @@ class ResetPasswordByEmailApi(Resource):
         user = session.query(User).filter_by(emailAddress=email).first()
 
         if user:
-            session.query(ResetPassword).filter(ResetPassword.user_id == user.id).update(
-                {'is_used': True}
-            )
+            session.query(ResetPassword).filter(
+                ResetPassword.user_id == user.id
+            ).update({'is_used': True})
 
             reset_password = ResetPassword(user=user)
             session.add(reset_password)
@@ -487,9 +491,9 @@ class ResetPasswordByPhoneApi(Resource):
         user = session.query(User).filter_by(phone_number=phone_number).first()
 
         if user:
-            session.query(ResetPassword).filter(ResetPassword.user_id == user.id).update(
-                {'is_used': True}
-            )
+            session.query(ResetPassword).filter(
+                ResetPassword.user_id == user.id
+            ).update({'is_used': True})
 
             reset_password = ResetPassword(user=user)
             session.add(reset_password)
@@ -507,7 +511,9 @@ class ConfirmResetPassword(Resource):
     @swag_from('./docs/auth/confirm_reset_password.yml')
     def post(self, token):
         token = clean_input(token)
-        reset_password = session.query(ResetPassword).filter_by(token=token).one_or_none()
+        reset_password = (
+            session.query(ResetPassword).filter_by(token=token).one_or_none()
+        )
 
         if reset_password is None:
             raise HTTPException(404, t('reset_password.4o4'))

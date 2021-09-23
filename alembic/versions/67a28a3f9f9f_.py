@@ -18,8 +18,12 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column('need', sa.Column('informations', sa.String(length=1024), nullable=True))
-    op.execute('UPDATE need set informations = details, details = null where need.type = 1;')
+    op.add_column(
+        'need', sa.Column('informations', sa.String(length=1024), nullable=True)
+    )
+    op.execute(
+        'UPDATE need set informations = details, details = null where need.type = 1;'
+    )
     # op.execute('UPDATE need set details = null where need.type = 1;')
     # ### end Alembic commands ###
 

@@ -16,29 +16,33 @@ from .. import swag_from
 
 
 class PublicNeed(Resource):
-
     @json
     @swag_from('../docs/public/get_need.yml')
     def get(self, id):
         with ChangeLocaleTo(LANGS.en):
-            need = session.query(
-                Need.id,
-                Need.name,
-                Need.imageUrl,
-                Need.cost,
-                Child.avatarUrl,
-                Child.sayName,
-                Need.type,
-                Need.link,
-                Need.img,
-                Need.description,
-            ).filter(
-                Need.id == id,
-                Need.isDeleted.is_(False),
-            ).join(
-                Child,
-                Child.id == Need.child_id,
-            ).one_or_none()
+            need = (
+                session.query(
+                    Need.id,
+                    Need.name,
+                    Need.imageUrl,
+                    Need.cost,
+                    Child.avatarUrl,
+                    Child.sayName,
+                    Need.type,
+                    Need.link,
+                    Need.img,
+                    Need.description,
+                )
+                .filter(
+                    Need.id == id,
+                    Need.isDeleted.is_(False),
+                )
+                .join(
+                    Child,
+                    Child.id == Need.child_id,
+                )
+                .one_or_none()
+            )
 
         if not need:
             raise HTTP_NOT_FOUND()

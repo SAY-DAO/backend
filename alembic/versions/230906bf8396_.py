@@ -19,19 +19,25 @@ depends_on = None
 
 def upgrade():
 
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE need
             ADD COLUMN child_id INTEGER REFERENCES child(id) ON DELETE CASCADE;
-    ''')
+    '''
+    )
 
-    op.execute('''
+    op.execute(
+        '''
         UPDATE need n SET  child_id = cn.id_child
             FROM child_need cn where n.id = cn.id_need;
-    ''')
+    '''
+    )
 
 
 def downgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE need
             DROP COLUMN child_id;
-    ''')
+    '''
+    )

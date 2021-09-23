@@ -21,10 +21,11 @@ from ..orm import base
 
 
 class CartNeed(base, Timestamp):
-    """ Cart Needs Table
+    """Cart Needs Table
     Need will be deleted from cart when get done/delete/unconfirm
     #TODO: what happen if a need become unpayable?
     """
+
     __tablename__ = 'cart_needs'
 
     id = Column(Integer, primary_key=True)
@@ -39,9 +40,7 @@ class CartNeed(base, Timestamp):
     paid = association_proxy('need', 'paid')
     deleted = Column(DateTime, nullable=True)
 
-    amount = column_property(
-        select([Need.cost - Need.paid]).where(Need.id == need_id)
-    )
+    amount = column_property(select([Need.cost - Need.paid]).where(Need.id == need_id))
 
     cart = relationship(
         'Cart',
@@ -119,8 +118,14 @@ class CartPayment(base, Timestamp):
     )
     payments = relationship('Payment', back_populates='cart_payment')
 
-    def verify(self, transaction_date=datetime.utcnow(), track_id=None,
-               verify_date=datetime.utcnow(), card_no=None, hashed_card_no=None):
+    def verify(
+        self,
+        transaction_date=datetime.utcnow(),
+        track_id=None,
+        verify_date=datetime.utcnow(),
+        card_no=None,
+        hashed_card_no=None,
+    ):
 
         self.transaction_date = transaction_date
         self.verified = verify_date

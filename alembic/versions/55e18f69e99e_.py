@@ -18,13 +18,18 @@ depends_on = None
 
 
 def upgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE need
             ADD COLUMN doing_duration INTEGER DEFAULT 5 NOT NULL;
-    ''')
+    '''
+    )
+
 
 def downgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE need
             DROP COLUMN doing_duration;
-    ''')
+    '''
+    )

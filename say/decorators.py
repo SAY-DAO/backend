@@ -49,5 +49,7 @@ def validate(schema):
                 return e.json(), 400
 
             return func(*args, **kwargs, data=data)
+
         return wrapper
+
     return decorator

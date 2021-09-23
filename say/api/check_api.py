@@ -18,7 +18,6 @@ Check APIs
 
 
 class CheckUsername(Resource):
-
     @json
     @swag_from('./docs/check/username.yml')
     def get(self, username):
@@ -27,9 +26,11 @@ class CheckUsername(Resource):
         except ValueError as e:
             return e.json(), 710
 
-        user = session.query(User) \
-            .filter_by(formated_username=data.username.lower()) \
+        user = (
+            session.query(User)
+            .filter_by(formated_username=data.username.lower())
             .one_or_none()
+        )
 
         if user:
             return {'message': 'Username Exists'}, 711
@@ -38,7 +39,6 @@ class CheckUsername(Resource):
 
 
 class CheckEmail(Resource):
-
     @json
     @swag_from('./docs/check/email.yml')
     def get(self, email):
@@ -46,9 +46,7 @@ class CheckEmail(Resource):
             return {'message': 'Invalid Email'}, 720
 
         email = clean_input(email).lower()
-        user = session.query(User) \
-            .filter_by(emailAddress=email) \
-            .one_or_none()
+        user = session.query(User).filter_by(emailAddress=email).one_or_none()
 
         if user:
             return {'message': 'Email Exists'}, 721
@@ -57,7 +55,6 @@ class CheckEmail(Resource):
 
 
 class CheckPhone(Resource):
-
     @json
     @swag_from('./docs/check/phone.yml')
     def get(self, phone):
@@ -65,9 +62,7 @@ class CheckPhone(Resource):
             return {'message': 'Invalid Phone'}, 730
 
         phone = clean_input(phone)
-        user = session.query(User) \
-            .filter_by(phone_number=phone) \
-            .one_or_none()
+        user = session.query(User).filter_by(phone_number=phone).one_or_none()
 
         if user:
             return {'message': 'Phone Exists'}, 731

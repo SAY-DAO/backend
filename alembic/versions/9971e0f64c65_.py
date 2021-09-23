@@ -18,13 +18,17 @@ depends_on = None
 
 
 def upgrade():
-    op.execute('''
+    op.execute(
+        '''
         UPDATE need set expected_delivery_date = ngo_delivery_date;
-    ''')
+    '''
+    )
 
-    op.execute('''
+    op.execute(
+        '''
         UPDATE need set child_delivery_date = ngo_delivery_date;
-    ''')
+    '''
+    )
 
 
 def downgrade():

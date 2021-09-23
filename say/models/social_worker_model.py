@@ -26,7 +26,9 @@ class SocialWorker(base, Timestamp):
     generatedCode = Column(String, nullable=False)
 
     id_ngo = Column(Integer, ForeignKey('ngo.id'), nullable=False, index=True)
-    id_type = Column(Integer, ForeignKey('social_worker_type.id'), nullable=False, index=True)
+    id_type = Column(
+        Integer, ForeignKey('social_worker_type.id'), nullable=False, index=True
+    )
 
     country = Column(Integer, nullable=True)
     city = Column(Integer, nullable=True)
@@ -101,18 +103,19 @@ class SocialWorker(base, Timestamp):
         session = object_session(self)
         needs = None
         with app.app_context(), ChangeLocaleTo(self.locale):
-            needs = session.query(Need) \
-                .filter(Need.isReported != True) \
-                .filter(Need.status == 3) \
-                .join(ChildNeed) \
-                .join(Child) \
-                .filter(Child.id_social_worker==self.id) \
+            needs = (
+                session.query(Need)
+                .filter(Need.isReported != True)
+                .filter(Need.status == 3)
+                .join(ChildNeed)
+                .join(Child)
+                .filter(Child.id_social_worker == self.id)
                 .order_by(
                     Child.firstName,
                     Child.lastName,
                     Need.expected_delivery_date,
-                ) \
-
+                )
+            )
             services = []
             products = []
             for need in needs:
@@ -143,7 +146,7 @@ class SocialWorker(base, Timestamp):
                         date=date,
                         locale=locale,
                     ),
-                 )
+                )
 
                 for need in services:
                     need.isReported = True
@@ -163,11 +166,12 @@ class SocialWorker(base, Timestamp):
                         surname=surname(self.gender),
                         date=date,
                         use_plural=use_plural,
-                        date_formater=
-                            lambda dt: expose_datetime(dt, locale=get_locale()),
+                        date_formater=lambda dt: expose_datetime(
+                            dt, locale=get_locale()
+                        ),
                         locale=locale,
                     ),
-                 )
+                )
 
                 for need in products:
                     need.isReported = True

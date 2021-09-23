@@ -27,7 +27,7 @@ def upgrade():
             sqlalchemy_utils.types.locale.LocaleType(),
             nullable=False,
             server_default='fa',
-        )
+        ),
     )
     # ### end Alembic commands ###
 

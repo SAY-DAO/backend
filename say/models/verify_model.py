@@ -15,7 +15,7 @@ Verify Model
 
 
 def generate_6_digit_secret():
-    return secrets.SystemRandom().randint(1000 * 100, 1000 * 1000 -1)
+    return secrets.SystemRandom().randint(1000 * 100, 1000 * 1000 - 1)
 
 
 class Verification(base, Timestamp):
@@ -33,7 +33,7 @@ class Verification(base, Timestamp):
 
     @property
     def is_expired(self):
-        return datetime.utcnow() > self.expire_at 
+        return datetime.utcnow() > self.expire_at
 
 
 class PhoneVerification(Verification):

@@ -17,7 +17,7 @@ class TestUpdateSw(BaseTestClass):
             SW_URL % self.user.id,
             data={
                 'password': new_pass,
-            }
+            },
         )
         assert res.status_code == 200
 

@@ -26,39 +26,37 @@ def filter_by_priv(query):
     ngo_id = get_sw_ngo_id()
     sw_role = get_user_role()
 
-    query = query \
-        .filter(Need.isDeleted == False) \
-        .filter(Need.isConfirmed == True)
+    query = query.filter(Need.isDeleted == False).filter(Need.isConfirmed == True)
 
     if sw_role == SOCIAL_WORKER:
-        query = query \
-            .join(Child, Child.id == Need.child_id) \
-            .filter(Child.id_social_worker == sw_id)
+        query = query.join(Child, Child.id == Need.child_id).filter(
+            Child.id_social_worker == sw_id
+        )
 
     elif sw_role == NGO_SUPERVISOR:
-        query = query \
-            .join(Child, Child.id == Need.child_id) \
-            .filter(Child.id_ngo == ngo_id)
+        query = query.join(Child, Child.id == Need.child_id).filter(
+            Child.id_ngo == ngo_id
+        )
 
     return query
 
 
 def get_need(need_id=None):
-    query = filter_by_priv(session.query(Need)) \
-        .filter(Need.id == need_id)
+    query = filter_by_priv(session.query(Need)).filter(Need.id == need_id)
 
     return query
 
 
 class PendingChangeCostAPi(Resource):
-
     @authorize(SOCIAL_WORKER, NGO_SUPERVISOR, ADMIN, SUPER_ADMIN)
     @json
     @swag_from('./docs/change_cost/pending.yml')
     def get(self):
-        change_costs = session.query(ChangeCost, Need) \
-            .filter_by(status = ChangeCostStatus.pending) \
+        change_costs = (
+            session.query(ChangeCost, Need)
+            .filter_by(status=ChangeCostStatus.pending)
             .join(Need, Need.id == ChangeCost.need_id)
+        )
 
         change_costs = filter_by_priv(change_costs)
 
@@ -66,7 +64,6 @@ class PendingChangeCostAPi(Resource):
 
 
 class ChangeCostAPi(Resource):
-
     @authorize(SOCIAL_WORKER, NGO_SUPERVISOR, ADMIN, SUPER_ADMIN)
     @json
     @swag_from('./docs/change_cost/list_for_need.yml')
@@ -75,10 +72,9 @@ class ChangeCostAPi(Resource):
         if not need:
             raise HTTP_NOT_FOUND()
 
-        change_costs = session.query(ChangeCost) \
-            .filter_by(
-                need_id = need.id,
-            )
+        change_costs = session.query(ChangeCost).filter_by(
+            need_id=need.id,
+        )
 
         return change_costs
 
@@ -100,11 +96,14 @@ class ChangeCostAPi(Resource):
         if not need:
             raise HTTP_NOT_FOUND()
 
-        change_cost = session.query(ChangeCost) \
+        change_cost = (
+            session.query(ChangeCost)
             .filter_by(
-                status = ChangeCostStatus.pending,
-                need_id = need.id,
-            ).one_or_none()
+                status=ChangeCostStatus.pending,
+                need_id=need.id,
+            )
+            .one_or_none()
+        )
 
         if not change_cost:
             change_cost = ChangeCost(
@@ -115,7 +114,7 @@ class ChangeCostAPi(Resource):
         change_cost.from_ = need.cost
         change_cost.requester_id = sw_id
         change_cost.to = to
-        change_cost.description = description,
+        change_cost.description = (description,)
 
         return change_cost
 
@@ -135,14 +134,19 @@ class ChangeCostRejectApi(Resource):
         if not need:
             raise HTTP_NOT_FOUND()
 
-        change_cost = session.query(ChangeCost) \
+        change_cost = (
+            session.query(ChangeCost)
             .filter(
                 ChangeCost.id == id,
-                ChangeCost.status.in_([
-                    ChangeCostStatus.pending,
-                    ChangeCostStatus.rejected,
-                ]),
-            ).one_or_none()
+                ChangeCost.status.in_(
+                    [
+                        ChangeCostStatus.pending,
+                        ChangeCostStatus.rejected,
+                    ]
+                ),
+            )
+            .one_or_none()
+        )
 
         if not change_cost:
             raise HTTP_NOT_FOUND()
@@ -171,20 +175,23 @@ class ChangeCostAcceptApi(Resource):
         except ValueError as e:
             return e.json(), 400
 
-        need = get_need(need_id) \
-            .with_for_update() \
-            .one_or_none()
+        need = get_need(need_id).with_for_update().one_or_none()
 
         if not need:
             raise HTTP_NOT_FOUND()
 
-        change_cost = session.query(ChangeCost) \
+        change_cost = (
+            session.query(ChangeCost)
             .filter(
                 ChangeCost.id == id,
-                ChangeCost.status.in_([
-                    ChangeCostStatus.pending,
-                ]),
-            ).one_or_none()
+                ChangeCost.status.in_(
+                    [
+                        ChangeCostStatus.pending,
+                    ]
+                ),
+            )
+            .one_or_none()
+        )
 
         if not change_cost or change_cost.need_id != need_id:
             raise HTTP_NOT_FOUND()

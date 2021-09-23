@@ -140,7 +140,8 @@ class JoinFamilyV3(Resource):
 
         try:
             data = JoinFamilySchema(
-                **request.form.to_dict(), family_id=family_id,
+                **request.form.to_dict(),
+                family_id=family_id,
             )
         except ValueError as ex:
             return ex.json(), 400

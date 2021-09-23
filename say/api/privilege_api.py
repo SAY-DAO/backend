@@ -19,7 +19,6 @@ Privilege APIs
 
 
 class GetAllPrivileges(Resource):
-
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @json
     @swag_from('./docs/privilege/all.yml')
@@ -35,7 +34,6 @@ class GetAllPrivileges(Resource):
 
 
 class AddPrivilege(Resource):
-
     @authorize(SUPER_ADMIN)  # TODO: priv
     @json
     @swag_from('./docs/privilege/add.yml')
@@ -51,7 +49,6 @@ class AddPrivilege(Resource):
 
 
 class GetPrivilegeByName(Resource):
-
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @json
     @swag_from('./docs/privilege/name.yml')
@@ -67,14 +64,11 @@ class GetPrivilegeByName(Resource):
 
 
 class GetPrivilegeById(Resource):
-
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @json
     @swag_from('./docs/privilege/id.yml')
     def get(self, privilege_id):
-        privilege = session.query(Privilege) \
-            .filter_by(id=privilege_id) \
-            .one_or_none()
+        privilege = session.query(Privilege).filter_by(id=privilege_id).one_or_none()
 
         if not privilege:
             raise HTTP_NOT_FOUND()
@@ -83,15 +77,14 @@ class GetPrivilegeById(Resource):
 
 
 class GetPrivilegeByPrivilege(Resource):
-
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @json
     @swag_from('./docs/privilege/privilege.yml')
     def get(self, privilege_type):
 
-        privilege_list = session.query(Privilege) \
-            .filter_by(privilege=privilege_type) \
-            .all()
+        privilege_list = (
+            session.query(Privilege).filter_by(privilege=privilege_type).all()
+        )
 
         result = {}
         for privilege in privilege_list:
@@ -102,14 +95,11 @@ class GetPrivilegeByPrivilege(Resource):
 
 
 class UpdatePrivilege(Resource):
-
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @json
     @swag_from('./docs/privilege/update.yml')
     def patch(self, privilege_id):
-        privilege = session.query(Privilege) \
-            .filter_by(id=privilege_id)\
-            .one_or_none()
+        privilege = session.query(Privilege).filter_by(id=privilege_id).one_or_none()
 
         if not privilege:
             raise HTTP_NOT_FOUND()

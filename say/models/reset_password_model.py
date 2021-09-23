@@ -15,8 +15,7 @@ Reset Password Model
 
 
 def expire_at():
-    return datetime.utcnow() \
-        + timedelta(seconds=configs.RESET_PASSWORD_EXPIRE_TIME)
+    return datetime.utcnow() + timedelta(seconds=configs.RESET_PASSWORD_EXPIRE_TIME)
 
 
 class ResetPassword(base):
@@ -27,9 +26,7 @@ class ResetPassword(base):
     token = Column(
         String,
         nullable=False,
-        default=lambda: secrets.token_urlsafe(
-            configs.RESET_PASSWORD_TOKEN_LENGTH
-        ),
+        default=lambda: secrets.token_urlsafe(configs.RESET_PASSWORD_TOKEN_LENGTH),
         unique=True,
         index=True,
     )
@@ -45,8 +42,7 @@ class ResetPassword(base):
     @property
     def link(self):
         return urljoin(
-            configs.BASE_URL,
-            configs.SET_PASSWORD_URL + f'?token={self.token}'
+            configs.BASE_URL, configs.SET_PASSWORD_URL + f'?token={self.token}'
         )
 
     def send_email(self, language):
@@ -59,7 +55,7 @@ class ResetPassword(base):
                 user=self.user,
                 link=self.link,
                 locale=language,
-            )
+            ),
         )
 
     def send_sms(self, language):
@@ -67,6 +63,5 @@ class ResetPassword(base):
 
         with ChangeLocaleTo(language):
             send_sms.delay(
-                self.user.phone_number.e164,
-                content['RESET_PASSWORD'] % self.link
+                self.user.phone_number.e164, content['RESET_PASSWORD'] % self.link
             )

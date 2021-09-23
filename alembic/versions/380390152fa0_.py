@@ -18,14 +18,18 @@ depends_on = None
 
 
 def upgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE ngo
             ALTER COLUMN "registerDate" TYPE TIMESTAMP;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE ngo
             ALTER COLUMN "lastUpdateDate" TYPE TIMESTAMP;
-    ''')
+    '''
+    )
 
 
 def downgrade():

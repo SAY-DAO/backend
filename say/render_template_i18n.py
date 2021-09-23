@@ -27,8 +27,5 @@ def render_template_i18n(path, *args, locale=None, date_with_year=True, **kwargs
                 )
 
         return render_template(
-            locale_path,
-            *args,
-            int_formatter=int_formatter,
-            **kwargs
+            locale_path, *args, int_formatter=int_formatter, **kwargs
         )

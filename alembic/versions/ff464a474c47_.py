@@ -18,21 +18,25 @@ depends_on = None
 
 
 def upgrade():
-    op.execute('''
+    op.execute(
+        '''
         update need_family nf set paid = s.paid from (
             select sum(p.need_amount) as paid, p.id_need as in, p.id_user as iu
             from payment p
             where p.verified is not NULL group by p.id_need, id_user
         ) as s where s.in = nf.id_need and s.iu = nf.id_user;
-    ''')
+    '''
+    )
 
-    op.execute('''
+    op.execute(
+        '''
         update need n set donated = s.donated from (
             select sum(p.donation_amount) as donated, p.id_need as in
             from payment p
             where p.verified is not NULL group by p.id_need
         ) as s where s.in = n.id;
-    ''')
+    '''
+    )
     pass
 
 

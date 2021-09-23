@@ -55,6 +55,7 @@ setup_sentry()
 @app.before_first_request
 def setup_i18n():
     from say.i18n import setup
+
     setup()
 
 

@@ -18,21 +18,30 @@ depends_on = None
 
 
 def upgrade():
-     op.execute('''
+    op.execute(
+        '''
         ALTER TABLE need
             ADD COLUMN "isReported" BOOLEAN;
-    ''')
-     op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE need
             ADD COLUMN "delivereDate" DATE;
-    ''')
+    '''
+    )
+
 
 def downgrade():
-     op.execute('''
+    op.execute(
+        '''
         ALTER TABLE need
             DROP COLUMN "isReported";
-    ''')
-     op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE need
             DROP COLUMN "delivereDate";
-    ''')
+    '''
+    )

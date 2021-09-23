@@ -25,7 +25,9 @@ def upgrade():
             'status_updated_at',
             sa.DateTime(),
             nullable=True,
-            server_default=sa.text(u"TIMEZONE('utc', CURRENT_TIMESTAMP) - interval '1 day'"),
+            server_default=sa.text(
+                u"TIMEZONE('utc', CURRENT_TIMESTAMP) - interval '1 day'"
+            ),
         ),
     )
     # ### end Alembic commands ###

@@ -16,29 +16,42 @@ depends_on = None
 
 
 def upgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE activity
             ADD COLUMN diff JSONB;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE activity
             ADD COLUMN model TEXT;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE activity
             ADD COLUMN created_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
-    ''')
+    '''
+    )
+
 
 def downgrade():
-    op.execute('''
+    op.execute(
+        '''
         ALTER TABLE activity
             DROP COLUMN diff ;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE activity
             DROP COLUMN model ;
-    ''')
-    op.execute('''
+    '''
+    )
+    op.execute(
+        '''
         ALTER TABLE activity
             DROP COLUMN created_at;
-    ''')
+    '''
+    )

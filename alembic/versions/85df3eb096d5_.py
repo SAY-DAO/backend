@@ -107,7 +107,10 @@ def upgrade():
     )
     op.add_column('payment', sa.Column('cart_payment_id', sa.Integer(), nullable=True))
     op.create_index(
-        op.f('payment_cart_payment_id_idx'), 'payment', ['cart_payment_id'], unique=False
+        op.f('payment_cart_payment_id_idx'),
+        'payment',
+        ['cart_payment_id'],
+        unique=False,
     )
     op.create_index(
         op.f('payment_gateway_payment_id_idx'),
@@ -148,7 +151,9 @@ def downgrade():
         ),
     )
     op.drop_constraint(
-        op.f('payment_cart_payment_id_cart_payments_fkey'), 'payment', type_='foreignkey'
+        op.f('payment_cart_payment_id_cart_payments_fkey'),
+        'payment',
+        type_='foreignkey',
     )
     op.create_unique_constraint('payment_order_id_key', 'payment', ['order_id'])
     op.drop_index(op.f('payment_order_id_idx'), table_name='payment')
@@ -159,7 +164,9 @@ def downgrade():
     op.drop_index(op.f('cart_needs_need_id_idx'), table_name='cart_needs')
     op.drop_index(op.f('cart_needs_cart_id_idx'), table_name='cart_needs')
     op.drop_table('cart_needs')
-    op.drop_index(op.f('cart_payments_gateway_track_id_idx'), table_name='cart_payments')
+    op.drop_index(
+        op.f('cart_payments_gateway_track_id_idx'), table_name='cart_payments'
+    )
     op.drop_index(
         op.f('cart_payments_gateway_payment_id_idx'), table_name='cart_payments'
     )

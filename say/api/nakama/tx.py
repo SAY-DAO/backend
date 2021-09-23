@@ -12,7 +12,6 @@ from .. import swag_from
 
 
 class SubmitTx(Resource):
-
     @json
     @swag_from('../docs/nakama/submit_tx.yml')
     def post(self, tx_hash):

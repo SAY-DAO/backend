@@ -309,7 +309,9 @@ class GetChildByInvitationToken(Resource):
         if not user_id:
             child_dict['id'] = None
 
-        child_family_members = [x for x in crud.child.get_family_members(child.id, True)]
+        child_family_members = [
+            x for x in crud.child.get_family_members(child.id, True)
+        ]
 
         result = UserChildSchema(**child_dict, childFamilyMembers=child_family_members)
         return result
