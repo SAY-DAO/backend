@@ -202,10 +202,11 @@ class BaseTestClass:
         self.session.save(child)
         return child
 
-    def _create_random_sw(self):
+    def _create_random_sw(self, **kwargs):
         seed = randint(1, 10 ** 3)
         ngo = self._create_random_ngo()
-        sw = SocialWorker(
+
+        data = dict(
             ngo=ngo,
             generatedCode=str(seed),
             firstName=str(seed),
@@ -223,6 +224,8 @@ class BaseTestClass:
             lastLoginDate=datetime.utcnow(),
             privilege=Privilege(name='admin', privilege=1),
         )
+        data.update(kwargs)
+        sw = SocialWorker(**data)
         self.session.save(sw)
         return sw
 

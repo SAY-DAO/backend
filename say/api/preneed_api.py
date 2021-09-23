@@ -6,9 +6,11 @@ from say.authorization import authorize
 from say.constants import DEFAULT_CHILD_ID
 from say.decorators import json
 from say.models import Need
-from say.models import commit
 from say.orm import session
-from say.roles import *
+from say.roles import ADMIN
+from say.roles import NGO_SUPERVISOR
+from say.roles import SOCIAL_WORKER
+from say.roles import SUPER_ADMIN
 from say.schema.preneed import PreneedSummarySchema
 
 
@@ -26,7 +28,7 @@ class PreNeedsAPi(Resource):
             Need.details,
         ).filter(
             Need.child_id == DEFAULT_CHILD_ID,
-            Need.isDeleted == False,
+            Need.isDeleted.is_(False),
         )
 
         return PreneedSummarySchema.from_query_list(preneeds)
