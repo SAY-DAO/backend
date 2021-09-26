@@ -3,39 +3,31 @@
 [![Build, Test and Deploy](https://github.com/SAY-DAO/backend/actions/workflows/pipeline.yml/badge.svg)](https://github.com/SAY-DAO/backend/actions/workflows/pipeline.yml)
 [![codecov](https://codecov.io/gh/SAY-DAO/backend/branch/master/graph/badge.svg?token=RXJ4EXVIR0)](https://codecov.io/gh/SAY-DAO/backend)
 
-Setting up Development Environment on Linux
 
-----------------------------------
-### Installing Dependencies
+### Prerequis
 
-    $ sudo apt-get install libass-dev libpq-dev postgresql \
-        build-essential redis-server redis-tools
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker-Compose](https://docs.docker.com/compose/install/)
 
-### Setup Python environment
+### Run
 
-- Make sure you have `python3.8`
+#### Server
 
 ```bash
-sudo pip3 install virtualenvwrapper
-echo "export VIRTUALENVWRAPPER_PYTHON=`which python3.8`" >> ~/.bashrc
-echo "alias v.activate=\"source $(which virtualenvwrapper.sh)\"" >> ~/.bashrc
-source ~/.bashrc
-v.activate
-mkvirtualenv --python=$(which python3.8) --no-site-packages say_backend
+./scripts/up.sh
 ```
+Server Address: http://127.0.0.1:5000/
 
-#### Activating virtual environment
+API Doc: http://127.0.0.1:5000/apidocs/#/
 
+
+#### Tests
 ```bash
-workon say_backend
+./scripts/test.sh
 ```
 
-### Installing dependencies
-
+#### Shell
 ```bash
-pip install -r requirements.txt
+./scripts/bash.sh
 ```
 
-### Run Local Server
-
-    ./scripts/dev-run.sh
