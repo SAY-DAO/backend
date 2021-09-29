@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/gh/SAY-DAO/backend/branch/master/graph/badge.svg?token=RXJ4EXVIR0)](https://codecov.io/gh/SAY-DAO/backend)
 
 
-### Prerequis
+### Requirements
 
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker-Compose](https://docs.docker.com/compose/install/)
