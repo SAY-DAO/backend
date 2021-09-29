@@ -25,13 +25,13 @@ def report_to_families(self):
 
 @celery.task(base=celery.DBTask, bind=True)
 def report_to_family(self, family_id):
-    from say.models.user_model import User
-    from say.models.need_model import Need
+    from say.app import app
     from say.models.child_model import Child
     from say.models.family_model import Family
-    from say.models.user_family_model import UserFamily
     from say.models.need_family_model import NeedFamily
-    from say.app import app
+    from say.models.need_model import Need
+    from say.models.user_family_model import UserFamily
+    from say.models.user_model import User
 
     session = self.session
     yesterday = datetime.utcnow() - timedelta(days=1)
@@ -64,6 +64,7 @@ def report_to_family(self, family_id):
             for u in session.query(User.emailAddress)
             .filter(User.id == NeedFamily.id_user)
             .filter(User.emailAddress.isnot(None))
+            .filter(User.receive_email.is_(True))
             .filter(NeedFamily.id_family == family_id)
             .filter(NeedFamily.id_need.in_([need.id for need in needs]))
             .distinct()
@@ -75,8 +76,9 @@ def report_to_family(self, family_id):
             for u in session.query(User.emailAddress)
             .filter(User.id == UserFamily.id_user)
             .filter(User.emailAddress.isnot(None))
+            .filter(User.receive_email.is_(True))
             .filter(UserFamily.id_family == family_id)
-            .filter(UserFamily.isDeleted == False)
+            .filter(UserFamily.isDeleted.is_(False))
             .distinct()
         ]
 
