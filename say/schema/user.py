@@ -15,3 +15,7 @@ class NewUserSchema(UserNameSchema):
 class UserSearchSchema(CamelModel):
     user_name: str
     avatar_url: str
+
+
+class UpdateUserSchema(CamelModel):
+    receive_email: bool = None

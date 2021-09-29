@@ -49,6 +49,8 @@ class User(base, Timestamp):
     locale = Column(LocaleType, default=Locale('fa'), nullable=False)
     is_installed = Column(Boolean, default=False, nullable=False)
     is_nakama = Column(Boolean, default=False, nullable=False, index=True)
+    receive_email = Column(Boolean, default=True, nullable=False)
+    receiveEmail = synonym('receive_email')
 
     @hybrid_property
     def formated_username(self):

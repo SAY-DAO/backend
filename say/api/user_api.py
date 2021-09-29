@@ -10,6 +10,7 @@ from sqlalchemy import func
 from werkzeug.utils import secure_filename
 
 from say.gender import Gender
+from say.models import commit
 from say.models import obj_to_dict
 from say.models.family_model import Family
 from say.models.need_family_model import NeedFamily
@@ -26,9 +27,12 @@ from ..authorization import get_user_id
 from ..authorization import get_user_role
 from ..config import configs
 from ..decorators import json
+from ..decorators import validate
 from ..exceptions import HTTP_NOT_FOUND
 from ..exceptions import HTTP_PERMISION_DENIED
+from ..exceptions import HTTPException
 from ..roles import *
+from ..schema.user import UpdateUserSchema
 from ..schema.user import UserNameSchema
 from ..schema.user import UserSearchSchema
 from .ext import api
@@ -106,12 +110,20 @@ class GetUserChildren(Resource):
 class UpdateUserById(Resource):
     @authorize(USER, ADMIN, SUPER_ADMIN)
     @me_or_user_id
+    @validate(UpdateUserSchema)
     @json
+    @commit
     @swag_from('./docs/user/update.yml')
-    def patch(self, user_id):
-        primary_user = (
-            session.query(User).filter_by(id=user_id).filter_by(isDeleted=False).first()
+    def patch(self, user_id, data: UpdateUserSchema):
+        user = (
+            session.query(User)
+            .filter_by(id=user_id)
+            .filter_by(isDeleted=False)
+            .one_or_none()
         )
+
+        if user is None:
+            raise HTTP_NOT_FOUND()
 
         if 'avatarUrl' in request.files.keys():
             file = request.files['avatarUrl']
@@ -120,33 +132,30 @@ class UpdateUserById(Resource):
 
             if file and allowed_image(file.filename):
                 filename = secure_filename(file.filename)
-                filename = str(primary_user.id) + '.' + filename.split('.')[-1]
+                filename = str(user.id) + '.' + filename.split('.')[-1]
 
                 temp_user_path = os.path.join(
                     configs.UPLOAD_FOLDER,
-                    str(primary_user.id) + '-user',
+                    str(user.id) + '-user',
                 )
 
                 if not os.path.isdir(temp_user_path):
                     os.makedirs(temp_user_path, exist_ok=True)
 
                 for obj in os.listdir(temp_user_path):
-                    check = str(primary_user.id) + '-avatar'
+                    check = str(user.id) + '-avatar'
                     if obj.split('_')[0] == check:
                         os.remove(os.path.join(temp_user_path, obj))
 
-                primary_user.avatarUrl = os.path.join(
+                user.avatarUrl = os.path.join(
                     temp_user_path,
-                    str(primary_user.id)
-                    + str(randint(1000, 100000))
-                    + '-avatar_'
-                    + filename,
+                    str(user.id) + str(randint(1000, 100000)) + '-avatar_' + filename,
                 )
-                file.save(primary_user.avatarUrl)
-                primary_user.avatarUrl = '/' + primary_user.avatarUrl
+                file.save(user.avatarUrl)
+                user.avatarUrl = '/' + user.avatarUrl
 
-        raw_username = request.form.get('userName', primary_user.userName)
-        if raw_username != primary_user.userName:
+        raw_username = request.form.get('userName', user.userName)
+        if raw_username != user.userName:
             try:
                 username = UserNameSchema(username=raw_username).username
             except ValueError as ex:
@@ -156,19 +165,17 @@ class UpdateUserById(Resource):
             username_exist = (
                 session.query(User.id)
                 .filter(User.formated_username == username.lower())
-                .filter(User.id != primary_user.id)
-                .filter(User.isDeleted == False)
+                .filter(User.id != user.id)
+                .filter(User.isDeleted.is_(False))
                 .scalar()
             )
 
             if username_exist:
                 return {'message': 'Username exists'}, 400
 
-            primary_user.userName = username
+            user.userName = username
 
-        if (
-            email := request.form.get('emailAddress')
-        ) and not primary_user.is_email_verified:
+        if (email := request.form.get('emailAddress')) and not user.is_email_verified:
 
             if not validate_email(email):
                 return {'message': 'Invalid email'}, 400
@@ -176,38 +183,38 @@ class UpdateUserById(Resource):
             email_exist = (
                 session.query(User.id)
                 .filter(func.lower(User.emailAddress) == email.lower())
-                .filter(User.id != primary_user.id)
-                .filter(User.isDeleted == False)
+                .filter(User.id != user.id)
+                .filter(User.isDeleted.is_(False))
                 .scalar()
             )
 
             if email_exist:
                 return {'message': 'Email exists'}
 
-            primary_user.emailAddress = email
+            user.emailAddress = email
 
         if 'password' in request.form.keys():
-            primary_user.password = request.form['password']
+            user.password = request.form['password']
 
         if 'firstName' in request.form.keys():
-            primary_user.firstName = request.form['firstName']
+            user.firstName = request.form['firstName']
 
         if 'lastName' in request.form.keys():
-            primary_user.lastName = request.form['lastName']
+            user.lastName = request.form['lastName']
 
         if 'country_code' in request.form.keys():
-            primary_user.country_code = request.form['country_code']
+            user.country_code = request.form['country_code']
 
         if 'city' in request.form.keys():
-            primary_user.city = int(request.form['city'])
+            user.city = int(request.form['city'])
 
         if 'postal_address' in request.form.keys():
-            primary_user.postal_address = request.form['postal_address']
+            user.postal_address = request.form['postal_address']
 
         if 'postal_code' in request.form.keys():
             postal_code_temp = request.form['postal_code']
             if is_int(postal_code_temp) and len(postal_code_temp) == 10:
-                primary_user.postal_code = postal_code_temp
+                user.postal_code = postal_code_temp
             else:
                 return (
                     dict(
@@ -217,14 +224,14 @@ class UpdateUserById(Resource):
                 )
 
         if 'birthPlace' in request.form.keys():
-            primary_user.birthPlace = int(request.form['birthPlace'])
+            user.birthPlace = int(request.form['birthPlace'])
 
         if 'locale' in request.form.keys():
-            primary_user.locale = request.form['locale'].lower()
+            user.locale = request.form['locale'].lower()
 
         if (
             phone := request.form.get('phoneNumber')
-        ) and not primary_user.is_phonenumber_verified:
+        ) and not user.is_phonenumber_verified:
 
             if not validate_phone(phone):
                 return {'message': 'Invalid phone'}, 400
@@ -232,20 +239,21 @@ class UpdateUserById(Resource):
             phone_exist = (
                 session.query(User.id)
                 .filter(User.phone_number == phone)
-                .filter(User.id != primary_user.id)
-                .filter(User.isDeleted == False)
+                .filter(User.id != user.id)
+                .filter(User.isDeleted.is_(False))
                 .scalar()
             )
 
             if phone_exist:
                 return {'message': 'Phone exists'}, 400
 
-            primary_user.phone_number = phone
+            user.phone_number = phone
 
         if 'birthDate' in request.form.keys():
-            primary_user.birthDate = datetime.strptime(
-                request.form['birthDate'], '%Y-%m-%d'
-            )
+            try:
+                user.birthDate = datetime.strptime(request.form['birthDate'], '%Y-%m-%d')
+            except ValueError:
+                raise HTTPException(status_code=400, message='Invalid birth date')
 
         if 'gender' in request.form.keys():
             gender = request.form['gender']
@@ -258,12 +266,12 @@ class UpdateUserById(Resource):
                     498,
                 )
 
-            primary_user.gender = request.form['gender']
+            user.gender = request.form['gender']
 
-        secondary_user = obj_to_dict(primary_user)
+        if data.receive_email is not None:
+            user.receive_email = data.receive_email
 
-        safe_commit(session)
-        return secondary_user
+        return user
 
 
 class DeleteUserById(Resource):
@@ -440,8 +448,7 @@ class SearchUserAPI(Resource):
         )
 
         return [
-            UserSearchSchema(user_name=r.userName, avatar_url=r.avatarUrl)
-            for r in result
+            UserSearchSchema(user_name=r.userName, avatar_url=r.avatarUrl) for r in result
         ]
 
 
