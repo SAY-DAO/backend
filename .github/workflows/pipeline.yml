@@ -1,3 +1,5 @@
+name: "CI/CD"
+
 env:
   REGISTRY: ghcr.io
   DEVELOPMENT: dev
