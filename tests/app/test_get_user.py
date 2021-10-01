@@ -1,31 +1,7 @@
-# from datetime import datetime
-#
-# from say.models import User
-# from tests.helper import ApplicableTestCase
-#
 from tests.helper import BaseTestClass
 
 
 USER_GET_URL = '/api/v2/user/userId=%s'
-
-
-# def test_user_get(db, client):
-#     session = db()
-#     user = _create_random_user()
-#     session.save(user)
-#
-#     res = client.post(
-#         LOGIN_URL,
-#         data={
-#             'username': user.userName,
-#             'password': password,
-#             'isInstalled': 0,
-#         },
-#     )
-#     assert res.status_code == 200
-#     assert res.json['accessToken'] is not None
-#     assert res.json['refreshToken'] is not None
-#     assert res.json['user']['id'] is not None
 
 
 class TestGetUser(BaseTestClass):
