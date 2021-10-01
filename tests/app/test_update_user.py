@@ -14,6 +14,7 @@ class TestUpdateUser(BaseTestClass):
         self.pw = '123456'
         self.user = self._create_random_user(password=self.pw)
 
+    # TODO: Write test for errors
     @pytest.mark.parametrize(
         'field,value,expected',
         [
