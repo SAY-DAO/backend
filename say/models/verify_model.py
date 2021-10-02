@@ -1,8 +1,11 @@
 import secrets
+from datetime import datetime
+from datetime import timedelta
 
 from sqlalchemy_utils import EmailType
 from sqlalchemy_utils import PhoneNumberType
 
+from say.config import configs
 from say.content import content
 from say.render_template_i18n import render_template_i18n
 
@@ -18,12 +21,18 @@ def generate_6_digit_secret():
     return secrets.SystemRandom().randint(1000 * 100, 1000 * 1000 - 1)
 
 
+def expire_at():
+    return datetime.utcnow() + timedelta(
+        minutes=configs.VERIFICATION_MAXAGE,
+    )
+
+
 class Verification(base, Timestamp):
     __tablename__ = "verification"
 
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
     _code = Column(Unicode(6), nullable=False, default=generate_6_digit_secret)
-    expire_at = Column(DateTime, nullable=False)
+    expire_at = Column(DateTime, nullable=False, default=expire_at)
     type = Column(Unicode(10), nullable=False)
     verified = Column(Boolean, default=False, nullable=False)
 

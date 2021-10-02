@@ -8,9 +8,11 @@ import sqlalchemy
 
 from say.config import configs
 from say.models import Child
+from say.models import EmailVerification
 from say.models import Family
 from say.models import Need
 from say.models import Ngo
+from say.models import PhoneVerification
 from say.models import Privilege
 from say.models import SocialWorker
 from say.models import User
@@ -243,6 +245,26 @@ class BaseTestClass:
         )
         self.session.save(ngo)
         return ngo
+
+    def _create_phone_verification(self, **kwargs):
+        seed = randint(1, 10 ** 3)
+        data = dict(
+            phone_number=f'+9899{seed}',
+        )
+        data.update(kwargs)
+        phone_verification = PhoneVerification(**data)
+        self.session.save(phone_verification)
+        return phone_verification
+
+    def _create_email_verification(self, **kwargs):
+        seed = randint(1, 10 ** 3)
+        data = dict(
+            email=f'{seed}@test.test',
+        )
+        data.update(kwargs)
+        email_verification = EmailVerification(**data)
+        self.session.save(email_verification)
+        return email_verification
 
     def logout(self):
         del self._client.environ_base['HTTP_AUTHORIZATION']
