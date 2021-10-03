@@ -5,13 +5,45 @@ from tests.helper import BaseTestClass
 class TestLogin(BaseTestClass):
     def mockup(self):
         self.password = '123456'
-        self.user = self._create_random_user(password=self.password)
+        self.user = self._create_random_user(
+            password=self.password,
+            is_email_verified=True,
+            is_phonenumber_verified=True,
+        )
 
     def test_login_by_username(self):
         res = self.client.post(
             LOGIN_URL,
             data={
                 'username': self.user.userName,
+                'password': self.password,
+                'isInstalled': 0,
+            },
+        )
+        assert res.status_code == 200
+        assert res.json['accessToken'] is not None
+        assert res.json['refreshToken'] is not None
+        assert res.json['user']['id'] is not None
+
+    def test_login_by_email(self):
+        res = self.client.post(
+            LOGIN_URL,
+            data={
+                'username': self.user.emailAddress,
+                'password': self.password,
+                'isInstalled': 0,
+            },
+        )
+        assert res.status_code == 200
+        assert res.json['accessToken'] is not None
+        assert res.json['refreshToken'] is not None
+        assert res.json['user']['id'] is not None
+
+    def test_login_by_phone(self):
+        res = self.client.post(
+            LOGIN_URL,
+            data={
+                'username': self.user.phone_number.e164,
                 'password': self.password,
                 'isInstalled': 0,
             },
