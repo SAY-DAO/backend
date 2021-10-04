@@ -25,33 +25,73 @@ class TestLogin(BaseTestClass):
         assert res.json['refreshToken'] is not None
         assert res.json['user']['id'] is not None
 
-    def test_login_by_email(self):
         res = self.client.post(
             LOGIN_URL,
             data={
-                'username': self.user.emailAddress,
+                'username': self.user.userName.upper(),
                 'password': self.password,
                 'isInstalled': 0,
             },
+        )
+        assert res.status_code == 200
+
+        res = self.client.post(
+            LOGIN_URL,
+            data={
+                'username': self.user.userName.lower(),
+                'password': self.password,
+                'isInstalled': 0,
+            },
+        )
+        assert res.status_code == 200
+
+    def test_login_by_email(self):
+        data = {
+            'username': self.user.emailAddress,
+            'password': self.password,
+            'isInstalled': 0,
+        }
+
+        res = self.client.post(
+            LOGIN_URL,
+            data=data,
         )
         assert res.status_code == 200
         assert res.json['accessToken'] is not None
         assert res.json['refreshToken'] is not None
         assert res.json['user']['id'] is not None
 
-    def test_login_by_phone(self):
+        self.user.is_email_verified = False
+        self.session.save(self.user)
         res = self.client.post(
             LOGIN_URL,
-            data={
-                'username': self.user.phone_number.e164,
-                'password': self.password,
-                'isInstalled': 0,
-            },
+            data=data,
+        )
+        assert res.status_code == 400
+
+    def test_login_by_phone(self):
+        data = {
+            'username': self.user.phone_number.e164,
+            'password': self.password,
+            'isInstalled': 0,
+        }
+
+        res = self.client.post(
+            LOGIN_URL,
+            data=data,
         )
         assert res.status_code == 200
         assert res.json['accessToken'] is not None
         assert res.json['refreshToken'] is not None
         assert res.json['user']['id'] is not None
+
+        self.user.is_phonenumber_verified = False
+        self.session.save(self.user)
+        res = self.client.post(
+            LOGIN_URL,
+            data=data,
+        )
+        assert res.status_code == 400
 
     def test_login_by_username_wrong_password(self):
         # when password is wrong
@@ -71,6 +111,24 @@ class TestLogin(BaseTestClass):
             data={
                 'username': self.user.userName,
                 'password': self.password,
+            },
+        )
+        assert res.status_code == 400
+
+        res = self.client.post(
+            LOGIN_URL,
+            data={
+                'username': self.user.userName,
+                'isInstalled': 0,
+            },
+        )
+        assert res.status_code == 400
+
+        res = self.client.post(
+            LOGIN_URL,
+            data={
+                'password': self.password,
+                'isInstalled': 0,
             },
         )
         assert res.status_code == 400
