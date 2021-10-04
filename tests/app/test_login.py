@@ -61,6 +61,33 @@ class TestLogin(BaseTestClass):
         assert res.json['refreshToken'] is not None
         assert res.json['user']['id'] is not None
 
+        res = self.client.post(
+            LOGIN_URL,
+            data={
+                **data,
+                'username': self.user.emailAddress.lower(),
+            },
+        )
+        assert res.status_code == 200
+
+        res = self.client.post(
+            LOGIN_URL,
+            data={
+                **data,
+                'username': self.user.emailAddress.upper(),
+            },
+        )
+        assert res.status_code == 200
+
+        res = self.client.post(
+            LOGIN_URL,
+            data={
+                **data,
+                'username': ' ' + self.user.emailAddress + ' ',
+            },
+        )
+        assert res.status_code == 200
+
         self.user.is_email_verified = False
         self.session.save(self.user)
         res = self.client.post(
@@ -84,6 +111,15 @@ class TestLogin(BaseTestClass):
         assert res.json['accessToken'] is not None
         assert res.json['refreshToken'] is not None
         assert res.json['user']['id'] is not None
+
+        res = self.client.post(
+            LOGIN_URL,
+            data={
+                **data,
+                'username': ' ' + self.user.phone_number.e164 + ' ',
+            },
+        )
+        assert res.status_code == 200
 
         self.user.is_phonenumber_verified = False
         self.session.save(self.user)
