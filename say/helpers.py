@@ -4,6 +4,9 @@ from urllib.parse import urlparse
 from humps import camel
 
 
+SECRET_PATH = '/run/secrets/'
+
+
 def to_camel(string):
     return camel.case(string)
 
@@ -16,7 +19,8 @@ def strip_scheme(url):
 
 def get_secret(secret_name, default=None):
     try:
-        with open(f'/run/secrets/{secret_name}', 'r') as secret_file:
+        secret_file_path = os.path.join(SECRET_PATH, secret_name)
+        with open(secret_file_path, 'r') as secret_file:
             return secret_file.read().strip()
     except IOError:
         env_name = secret_name.upper().replace('-', '_')
