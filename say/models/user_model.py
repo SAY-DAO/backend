@@ -163,7 +163,7 @@ class User(base, Timestamp):
         hashed_pass.update((password + self.password[:64]).encode('utf-8'))
         return self.password[64:] == hashed_pass.hexdigest()
 
-    def charge(self, amount):
+    def charge_wallet(self, amount):
         from . import Payment
 
         session = object_session(self)

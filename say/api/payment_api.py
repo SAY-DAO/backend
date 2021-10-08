@@ -18,14 +18,17 @@ from say.models.payment_model import Payment
 from say.models.user_family_model import UserFamily
 from say.models.user_model import User
 from say.render_template_i18n import render_template_i18n
+from say.schema.payment import NewPaymentSchema
 
 from ..authorization import authorize
 from ..authorization import get_user_id
 from ..config import configs
 from ..decorators import json
+from ..decorators import validate
 from ..exceptions import HTTP_NOT_FOUND
 from ..exceptions import AmountTooHigh
 from ..exceptions import AmountTooLow
+from ..exceptions import HTTPException
 from ..orm import session
 from ..roles import ADMIN
 from ..roles import SAY_SUPERVISOR
@@ -121,36 +124,24 @@ class GetPayment(Resource):
 
 class AddPayment(Resource):
     @authorize
+    @validate(NewPaymentSchema)
     @json
     @commit
     @swag_from('./docs/payment/new_payment.yml')
-    def post(self):
+    def post(self, data: NewPaymentSchema):
         user_id = get_user_id()
 
-        if 'needId' not in request.json:
-            return {'message': 'needId is required'}, 400
-
-        if 'amount' not in request.json:
-            return {'message': 'amount is required'}, 400
-
-        need_amount = request.json['amount']
-        need_id = request.json['needId']
-
-        use_credit = bool(request.json.get('useCredit', True))
-
-        donation = 0
-        if 'donate' in request.json:
-            donation = int(request.json['donate'])
-
-        if donation < 0:
-            return {'message': 'Donation Can Not Be Negetive'}
+        need_amount = data.amount
+        need_id = data.need_id
+        donation = data.donate
+        use_credit = data.use_credit
 
         need = session.query(Need).get(need_id)
         if need is None or need.isDeleted:
-            return {'message': 'Need Not Found'}
+            return {'message': 'Need Not Found'}, 400
 
         if need.isDone:
-            return {'message': 'Need is already done'}
+            return {'message': 'Need is already done'}, 422
 
         if not need.isConfirmed:
             return {'message': 'error: need is not confirmed yet!'}, 422
@@ -226,7 +217,10 @@ class AddPayment(Resource):
 
         transaction = idpay.new_transaction(**api_data)
         if 'error_code' in transaction:
-            raise Exception(idpay.ERRORS[transaction['error_code']])
+            raise HTTPException(
+                status_code=422,
+                message=idpay.ERRORS[transaction['error_code']],
+            )
 
         payment.gateway_payment_id = transaction['id']
         payment.link = transaction['link']

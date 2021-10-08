@@ -6,12 +6,14 @@ from random import randint
 import pytest
 import sqlalchemy
 
+from say.api.payment_api import generate_order_id
 from say.config import configs
 from say.models import Child
 from say.models import EmailVerification
 from say.models import Family
 from say.models import Need
 from say.models import Ngo
+from say.models import Payment
 from say.models import PhoneVerification
 from say.models import Privilege
 from say.models import SocialWorker
@@ -265,6 +267,24 @@ class BaseTestClass:
         email_verification = EmailVerification(**data)
         self.session.save(email_verification)
         return email_verification
+
+    def _create_payment(self, need=None, user=None, **kwargs):
+        need = need or self._create_random_need()
+        user = user or self._create_random_user()
+        data = dict(
+            user=user,
+            need=need,
+            need_amount=need.cost - need.paid,
+            donation_amount=0,
+            credit_amount=0,
+            desc='',
+            order_id=generate_order_id(),
+            verified=datetime.utcnow(),
+        )
+        data.update(**kwargs)
+        payment = Payment(**data)
+        self.session.save(payment)
+        return payment
 
     def logout(self):
         del self._client.environ_base['HTTP_AUTHORIZATION']

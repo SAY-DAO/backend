@@ -186,9 +186,7 @@ class Need(base, Timestamp):
             return 100
 
         try:
-            return (
-                str(format(self.paid / self.cost * 100, '.1f')).rstrip('0').rstrip('.')
-            )
+            return str(format(self.paid / self.cost * 100, '.1f')).rstrip('0').rstrip('.')
 
         except:
             return 0
@@ -199,7 +197,7 @@ class Need(base, Timestamp):
 
     @hybrid_property
     def isDone(self):
-        return self.status >= 2
+        return self.cost == self.paid
 
     @hybrid_property
     def clean_title(self):
@@ -495,14 +493,10 @@ def status_event(need, new_status, old_status, initiator):
             if old_status == new_status:
                 return
 
-            need.ngo_delivery_date = parse_datetime(
-                request.form.get('ngo_delivery_date')
-            )
+            need.ngo_delivery_date = parse_datetime(request.form.get('ngo_delivery_date'))
 
             if not (
-                need.expected_delivery_date
-                <= need.ngo_delivery_date
-                <= datetime.utcnow()
+                need.expected_delivery_date <= need.ngo_delivery_date <= datetime.utcnow()
             ):
                 raise Exception('Invalid ngo_delivery_date')
 

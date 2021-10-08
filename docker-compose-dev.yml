@@ -1,4 +1,4 @@
-version: '3.6'
+version: "3.6"
 services:
   db:
     environment:
@@ -15,7 +15,7 @@ services:
       - redis
     volumes:
       - ./:/app/
-      - pudb_volume:/root/.config/pudb/
+      - pudb_volume:/home/user/.config/pudb/
     ports:
       - 127.0.0.1:5000:5000
 
