@@ -23,3 +23,11 @@ class InvalidLocale(Exception):
 
 class PaidUnverifiedPaymentError(Exception):
     """Raise when a paid unverified payment found"""
+
+
+class AmountTooLow(ValueError):
+    pass
+
+
+class AmountTooHigh(ValueError):
+    pass

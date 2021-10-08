@@ -24,6 +24,8 @@ from ..authorization import get_user_id
 from ..config import configs
 from ..decorators import json
 from ..exceptions import HTTP_NOT_FOUND
+from ..exceptions import AmountTooHigh
+from ..exceptions import AmountTooLow
 from ..orm import session
 from ..roles import ADMIN
 from ..roles import SAY_SUPERVISOR
@@ -36,9 +38,9 @@ def validate_amount(need, amount):
     amount = int(amount)
     need_unpaid = need.cost - need.paid
     if int(amount) > need_unpaid:
-        raise ValueError(f'Amount can not be greater that {need_unpaid}')
+        raise AmountTooHigh(f'Amount can not be greater that {need_unpaid}')
     if int(amount) < configs.MIN_BANK_AMOUNT:
-        raise ValueError(f'Amount can not be smaller than {configs.MIN_BANK_AMOUNT}')
+        raise AmountTooLow(f'Amount can not be smaller than {configs.MIN_BANK_AMOUNT}')
     return amount
 
 

@@ -8,7 +8,7 @@ from say.config import configs
 from say.exceptions import PaidUnverifiedPaymentError
 
 
-@celery.task(base=celery.DBTask, bind=True, max_retries=3, queue='slow')
+@celery.task(base=celery.DBTask, bind=True, max_retries=5, queue='slow')
 def check_unverified_payment(self, id):
     from say.models import Payment
     from say.payment import IDPay
