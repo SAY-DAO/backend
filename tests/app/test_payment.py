@@ -25,19 +25,6 @@ class TestPayment(BaseTestClass):
         self.user = self._create_random_user(password=self.pw)
         self.user_family = self._create_user_family(self.user, self.need.child.family)
 
-    def test_validate_amount(self):
-        assert validate_amount(self.need, self.min_amount) == self.min_amount
-        assert validate_amount(self.need, self.need.cost) == self.need.cost
-
-        with pytest.raises(AmountTooLow):
-            validate_amount(self.need, self.min_amount - 1)
-
-        with pytest.raises(AmountTooLow):
-            validate_amount(self.need, -1)
-
-        with pytest.raises(AmountTooHigh):
-            validate_amount(self.need, self.need.cost + 1)
-
     @staticmethod
     def _mocked_idpay_new_tx(**kwargs):
         return {
@@ -50,6 +37,19 @@ class TestPayment(BaseTestClass):
         return {
             'error_code': list(idpay.ERRORS.keys())[0],
         }
+
+    def test_validate_amount(self):
+        assert validate_amount(self.need, self.min_amount) == self.min_amount
+        assert validate_amount(self.need, self.need.cost) == self.need.cost
+
+        with pytest.raises(AmountTooLow):
+            validate_amount(self.need, self.min_amount - 1)
+
+        with pytest.raises(AmountTooLow):
+            validate_amount(self.need, -1)
+
+        with pytest.raises(AmountTooHigh):
+            validate_amount(self.need, self.need.cost + 1)
 
     def test_add_payment(self, mocker):
         mocker.patch.object(
@@ -150,7 +150,7 @@ class TestPayment(BaseTestClass):
 
         data = {
             'needId': self.need.id,
-            'amount': self.need.cost - self.need.paid,
+            'amount': self.need.unpaid_cost ,
         }
 
         res = self.client.post(
@@ -161,7 +161,7 @@ class TestPayment(BaseTestClass):
 
         res = self.client.post(
             PAYMENT_V2_URL,
-            json={**data, 'amount': self.need.cost - self.need.paid + 1},
+            json={**data, 'amount': self.need.unpaid_cost  + 1},
         )
         assert res.status_code == 422
 
@@ -258,3 +258,93 @@ class TestPayment(BaseTestClass):
             json=data,
         )
         assert res.status_code == 422
+
+    def test_add_payment_by_credit(self, mocker):
+        mocker.patch.object(
+            idpay,
+            'new_transaction',
+            self._mocked_idpay_new_tx,
+        )
+
+        self.login(self.user.userName, self.pw)
+
+        credit_amount = self.need.cost / 2
+        self.user.charge_wallet(credit_amount)
+        self.session.save(self.user)
+
+        data = {
+            'needId': self.need.id,
+            'amount': self.need.cost,
+            'useCredit': True,
+        }
+
+        res = self.client.post(
+            PAYMENT_V2_URL,
+            json=data,
+        )
+        assert res.status_code == 200
+        payment = res.json
+        assert payment['link'] is not None
+        assert payment['credit_amount'] == credit_amount
+        assert payment['bank_amount'] == self.need.unpaid_cost - credit_amount
+
+    def test_add_payment_by_credit_when_bank_amount_less_than_min_allowed(self, mocker):
+        mocker.patch.object(
+            idpay,
+            'new_transaction',
+            self._mocked_idpay_new_tx,
+        )
+
+        self.login(self.user.userName, self.pw)
+
+        credit_amount = self.need.cost - configs.MIN_BANK_AMOUNT + 1
+        self.user.charge_wallet(credit_amount)
+        self.session.save(self.user)
+
+        data = {
+            'needId': self.need.id,
+            'amount': self.need.cost,
+            'useCredit': True,
+        }
+
+        res = self.client.post(
+            PAYMENT_V2_URL,
+            json=data,
+        )
+        assert res.status_code == 200
+        payment = res.json
+        assert payment['link'] is not None
+        assert payment['credit_amount'] == self.need.unpaid_cost - configs.MIN_BANK_AMOUNT
+        assert payment['bank_amount'] == configs.MIN_BANK_AMOUNT
+
+    def test_full_payment_by_credit(self, mocker):
+        mocker.patch.object(
+            idpay,
+            'new_transaction',
+            self._mocked_idpay_new_tx,
+        )
+
+        self.login(self.user.userName, self.pw)
+
+        credit_amount = self.need.cost * 3
+        self.user.charge_wallet(credit_amount)
+        self.session.save(self.user)
+
+        data = {
+            'needId': self.need.id,
+            'amount': self.need.cost,
+            'useCredit': True,
+        }
+
+        res = self.client.post(
+            PAYMENT_V2_URL,
+            json=data,
+        )
+        assert res.status_code == 299
+        assert res.json['response'] is not None
+
+        self.session.expire_all()
+        assert self.user.credit == credit_amount - self.need.cost
+        assert self.need.is_done is True
+        assert self.need.unpaid_cost == 0
+        assert self.need.status == 2

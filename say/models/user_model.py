@@ -170,7 +170,9 @@ class User(base, Timestamp):
 
         payment = Payment(
             credit_amount=-amount,
+            user=self,
         )
+        session.add(payment)
         payment.verify()
         self.payments.append(payment)
         session.add(payment)

@@ -121,6 +121,10 @@ class Need(base, Timestamp):
     )
 
     @hybrid_property
+    def unpaid_cost(self):
+        return self.cost - self.paid
+
+    @hybrid_property
     def pretty_cost(self):
         return int_formatter(self.cost)
 
@@ -197,6 +201,10 @@ class Need(base, Timestamp):
 
     @hybrid_property
     def isDone(self):
+        return self.cost == self.paid
+
+    @hybrid_property
+    def is_done(self):
         return self.cost == self.paid
 
     @hybrid_property
