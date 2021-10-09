@@ -1,7 +1,9 @@
 from random import randint
 
+import email_validator
 import pytest
 
+from say.api import auth_api
 from tests.helper import BaseTestClass
 
 
@@ -26,6 +28,17 @@ class TestRegister(BaseTestClass):
             'countryCode': 'ir',
             'verifyCode': self.phone_verification._code,
             'isInstalled': '0',
+        }
+
+    @staticmethod
+    def _mocked_subscribe_email(*args, **kwargs):
+        pass
+
+    @staticmethod
+    def _mocked_validate_email_deliverability(*args, **kwargs):
+        return {
+            "mx": 'mtas',
+            "mx-fallback": 'mx_fallback',
         }
 
     def test_register_user_by_phone(self):
@@ -59,7 +72,19 @@ class TestRegister(BaseTestClass):
         res = self.client.post(REGISTER_URL, data=self.data)
         assert res.status_code == 422
 
-    def test_register_user_by_email(self):
+    def test_register_user_by_email(self, mocker):
+        mocker.patch.object(
+            auth_api.subscribe_email,
+            'delay',
+            self._mocked_subscribe_email,
+        )
+
+        mocker.patch.object(
+            email_validator,
+            'validate_email_deliverability',
+            self._mocked_validate_email_deliverability,
+        )
+
         del self.data['phoneNumber']
         self.data['email'] = self.email
 
