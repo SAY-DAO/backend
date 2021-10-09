@@ -13,6 +13,7 @@ from ..config import configs
 from . import *
 from .need_family_model import NeedFamily
 from .payment_model import Payment
+from .receipt import NeedReceipt
 
 
 """
@@ -87,6 +88,15 @@ class Need(base, Timestamp):
             and_(
                 Payment.verified.isnot(None),
                 Payment.id_need == id,
+            )
+        )
+    )
+
+    receipt_count = column_property(
+        select([coalesce(func.count(1), 0)]).where(
+            and_(
+                NeedReceipt.need_id == id,
+                NeedReceipt.deleted.is_(None),
             )
         )
     )

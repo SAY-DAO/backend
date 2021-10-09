@@ -5,7 +5,6 @@ from uuid import uuid4
 
 import ujson
 from flasgger import swag_from
-from flasgger.utils import validate
 from flask import request
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_restful import Resource
@@ -87,9 +86,7 @@ def filter_by_privilege(query, get=False):  # TODO: priv
             )
         else:
             query = (
-                query.join(Child)
-                .join(SocialWorker)
-                .filter(SocialWorker.id_ngo == ngo_id)
+                query.join(Child).join(SocialWorker).filter(SocialWorker.id_ngo == ngo_id)
             )
 
     elif user_role in [USER]:
@@ -104,7 +101,7 @@ def filter_by_privilege(query, get=False):  # TODO: priv
     return query
 
 
-class GetAllNeeds(Resource):
+class ListNeeds(Resource):
     @authorize(
         SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
     )  # TODO: priv
@@ -145,9 +142,7 @@ class GetAllNeeds(Resource):
             needs = needs.join(Child).filter(Child.id_ngo == data.ngo_id)
 
         needs = filter_by_privilege(needs, get=True)
-        needs = needs.options(selectinload(Need.child)).options(
-            selectinload('child.ngo')
-        )
+        needs = needs.options(selectinload(Need.child)).options(selectinload('child.ngo'))
         result = OrderedDict(
             totalCount=needs.count(),
             needs=[],
@@ -184,9 +179,7 @@ class GetNeedById(Resource):
     @json
     @swag_from('./docs/need/id.yml')
     def get(self, need_id):
-        need_query = (
-            session.query(Need).filter_by(isDeleted=False).filter_by(id=need_id)
-        )
+        need_query = session.query(Need).filter_by(isDeleted=False).filter_by(id=need_id)
 
         need = filter_by_privilege(need_query, get=True).one_or_none()
 
@@ -386,9 +379,7 @@ class DeleteNeedById(Resource):
             need.delete()
             return {'message': 'need deleted'}
         else:
-            return {
-                'message': 'need has arrived to the child so can not be deleted'
-            }, 422
+            return {'message': 'need has arrived to the child so can not be deleted'}, 422
 
 
 class ConfirmNeed(Resource):
@@ -597,9 +588,7 @@ class NeedReceipts(Resource):
                 NeedReceipt.deleted.is_(None),
                 Need.id == id,
                 or_(
-                    True
-                    if user_role in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR]
-                    else False,
+                    True if user_role in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR] else False,
                     Receipt.is_public.is_(True),
                     Receipt.owner_id == user_id
                     if user_role not in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR]
@@ -686,7 +675,7 @@ API URLs
 """
 
 api.add_resource(GetNeedById, '/api/v2/need/needId=<need_id>')
-api.add_resource(GetAllNeeds, '/api/v2/needs')
+api.add_resource(ListNeeds, '/api/v2/needs')
 api.add_resource(UpdateNeedById, '/api/v2/need/update/needId=<need_id>')
 api.add_resource(DeleteNeedById, '/api/v2/need/delete/needId=<need_id>')
 api.add_resource(

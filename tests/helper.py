@@ -16,10 +16,12 @@ from say.models import Ngo
 from say.models import Payment
 from say.models import PhoneVerification
 from say.models import Privilege
+from say.models import Receipt
 from say.models import SocialWorker
 from say.models import User
 from say.models import UserFamily
 from say.models.cart import Cart
+from say.models.receipt import NeedReceipt
 from say.roles import SUPER_ADMIN
 
 
@@ -164,6 +166,35 @@ class BaseTestClass:
         need = Need(**data)
         self.session.save(need)
         return need
+
+    def _create_random_receipt(self, owner=None, **kwargs):
+        owner = self._create_random_sw()
+
+        seed = randint(1, 10 ** 3)
+        randomstr = str(seed)
+        data = dict(
+            owner=owner,
+            attachment=randomstr,
+            title=randomstr,
+        )
+        data.update(kwargs)
+        receipt = Receipt(**data)
+        self.session.save(receipt)
+        return receipt
+
+    def _create_need_receipt(self, need=None, sw=None, receipt=None, **kwargs):
+        need = need or self._create_random_need()
+        sw = self._create_random_sw()
+        receipt = self._create_random_receipt()
+        data = dict(
+            need=need,
+            sw=sw,
+            receipt=receipt,
+        )
+        data.update(kwargs)
+        need_receipt = NeedReceipt(**data)
+        self.session.save(need_receipt)
+        return need_receipt
 
     def _create_random_family(self, child=None, members=[]):
         family = None

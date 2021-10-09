@@ -23,9 +23,7 @@ class Receipt(base, Timestamp):
 
     id = Column(Integer, primary_key=True)
 
-    owner_id = Column(
-        Integer, ForeignKey('social_worker.id'), nullable=False, index=True
-    )
+    owner_id = Column(Integer, ForeignKey('social_worker.id'), nullable=False, index=True)
 
     attachment = Column(Unicode(256), nullable=False)
     code = Column(Unicode(128), nullable=True, index=True)
@@ -39,6 +37,8 @@ class Receipt(base, Timestamp):
         secondary='need_receipt',
         back_populates='receipts_',
     )
+
+    owner = relationship('SocialWorker', foreign_keys=[owner_id], uselist=False)
 
     __table_args__ = (UniqueConstraint('code', 'deleted'),)
 
