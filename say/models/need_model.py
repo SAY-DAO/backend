@@ -211,7 +211,7 @@ class Need(base, Timestamp):
 
     @hybrid_property
     def isDone(self):
-        return self.cost == self.paid
+        return self.status >= 2
 
     @hybrid_property
     def is_done(self):

@@ -87,6 +87,13 @@ class TestPayment(BaseTestClass):
         )
         assert res.status_code == 400
 
+        # When donation is zero
+        res = self.client.post(
+            PAYMENT_V2_URL,
+            json={**data, 'donate': 0},
+        )
+        assert res.status_code == 200
+
         # When donation negative
         res = self.client.post(
             PAYMENT_V2_URL,
@@ -150,7 +157,7 @@ class TestPayment(BaseTestClass):
 
         data = {
             'needId': self.need.id,
-            'amount': self.need.unpaid_cost ,
+            'amount': self.need.unpaid_cost,
         }
 
         res = self.client.post(
@@ -161,7 +168,7 @@ class TestPayment(BaseTestClass):
 
         res = self.client.post(
             PAYMENT_V2_URL,
-            json={**data, 'amount': self.need.unpaid_cost  + 1},
+            json={**data, 'amount': self.need.unpaid_cost + 1},
         )
         assert res.status_code == 422
 
