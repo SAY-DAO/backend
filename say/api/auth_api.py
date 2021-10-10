@@ -192,6 +192,12 @@ class RegisterUser(Resource):
             is_installed=is_installed,
             is_nakama=False,
         )
+        
+        if isinstance(verification, EmailVerification):
+            new_user.is_email_verified = True
+        else:
+            new_user.is_phonenumber_verified = True
+
         session.add(new_user)
         new_user.create_cart()
         session.flush()

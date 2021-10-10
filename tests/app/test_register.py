@@ -67,6 +67,7 @@ class TestRegister(BaseTestClass):
             },
         )
         assert res.status_code == 200
+        self.data['is_phonenumber_verified'] = True
 
         # Phone exists
         res = self.client.post(REGISTER_URL, data=self.data)
@@ -87,6 +88,7 @@ class TestRegister(BaseTestClass):
 
         del self.data['phoneNumber']
         self.data['email'] = self.email
+        self.data['is_email_verified'] = True
 
         # Email is not verified
         res = self.client.post(REGISTER_URL, data=self.data)
