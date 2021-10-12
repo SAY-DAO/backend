@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from sqlalchemy.orm import query
+
 from tests.helper import BaseTestClass
 
 
@@ -29,3 +31,24 @@ class TestListNeeds(BaseTestClass):
         needs = res.json['needs']
         assert len(needs) == len(self.needs)
         assert needs[0]['receipt_count'] == 2
+
+    def test_list_needs_filtering(self):
+        self.login_sw(self.user.userName, self.password)
+
+        res = self.client.get(
+            LIST_NEEDS_URL,
+            query_string=dict(is_confirmed=True),
+        )
+        assert res.status_code == 200
+        assert len(res.json['needs']) == len(
+            list(filter(lambda n: n.isConfirmed is True, self.needs))
+        )
+
+        res = self.client.get(
+            LIST_NEEDS_URL,
+            query_string=dict(is_confirmed=False),
+        )
+        assert res.status_code == 200
+        assert len(res.json['needs']) == len(
+            list(filter(lambda n: n.isConfirmed is False, self.needs))
+        )
