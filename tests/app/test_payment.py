@@ -14,7 +14,6 @@ PAYMENT_V2_URL = '/api/v2/payment'
 class TestPayment(BaseTestClass):
     def mockup(self):
         self.min_amount = configs.MIN_BANK_AMOUNT
-        self.pw = '123456'
         self.need = self._create_random_need(
             isDeleted=False,
             isConfirmed=True,
@@ -22,7 +21,7 @@ class TestPayment(BaseTestClass):
             type=1,
             cost=configs.MIN_BANK_AMOUNT * 10,
         )
-        self.user = self._create_random_user(password=self.pw)
+        self.user = self._create_random_user()
         self.user_family = self._create_user_family(self.user, self.need.child.family)
 
     @staticmethod
@@ -58,7 +57,7 @@ class TestPayment(BaseTestClass):
             self._mocked_idpay_new_tx,
         )
 
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
 
         data = {
             'needId': self.need.id,
@@ -145,7 +144,7 @@ class TestPayment(BaseTestClass):
             self._mocked_idpay_new_tx,
         )
 
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
 
         p1 = self._create_payment(
             need=self.need,
@@ -179,7 +178,7 @@ class TestPayment(BaseTestClass):
             self._mocked_idpay_new_tx,
         )
 
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
 
         p1 = self._create_payment(
             need=self.need,
@@ -207,7 +206,7 @@ class TestPayment(BaseTestClass):
             self._mocked_idpay_new_tx,
         )
 
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
         self.need.unconfirm()
         self.session.save(self.need)
 
@@ -229,7 +228,7 @@ class TestPayment(BaseTestClass):
             self._mocked_idpay_new_tx,
         )
 
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
         self.need.delete()
         self.session.save(self.need)
 
@@ -251,7 +250,7 @@ class TestPayment(BaseTestClass):
             self._mocked_idpay_new_tx,
         )
 
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
         self.user_family.isDeleted = True
         self.session.save(self.user_family)
 
@@ -273,7 +272,7 @@ class TestPayment(BaseTestClass):
             self._mocked_idpay_new_tx,
         )
 
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
 
         credit_amount = self.need.cost / 2
         self.user.charge_wallet(credit_amount)
@@ -302,7 +301,7 @@ class TestPayment(BaseTestClass):
             self._mocked_idpay_new_tx,
         )
 
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
 
         credit_amount = self.need.cost - configs.MIN_BANK_AMOUNT + 1
         self.user.charge_wallet(credit_amount)
@@ -331,7 +330,7 @@ class TestPayment(BaseTestClass):
             self._mocked_idpay_new_tx,
         )
 
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
 
         credit_amount = self.need.cost * 3
         self.user.charge_wallet(credit_amount)

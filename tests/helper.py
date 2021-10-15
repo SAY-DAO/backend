@@ -5,8 +5,11 @@ from random import randint
 
 import pytest
 import sqlalchemy
+from flask_jwt_extended.utils import create_refresh_token
 
 from say.api.payment_api import generate_order_id
+from say.authorization import create_sw_access_token
+from say.authorization import create_user_access_token
 from say.config import configs
 from say.models import Child
 from say.models import EmailVerification
@@ -22,7 +25,6 @@ from say.models import User
 from say.models import UserFamily
 from say.models.cart import Cart
 from say.models.receipt import NeedReceipt
-from say.roles import ADMIN
 from say.roles import SUPER_ADMIN
 
 
@@ -321,38 +323,32 @@ class BaseTestClass:
     def logout(self):
         del self._client.environ_base['HTTP_AUTHORIZATION']
 
-    def login(self, username, password, is_installed=1):
-        res = self.client.post(
-            LOGIN_URL,
-            data={
-                'username': username,
-                'password': password,
-                'isInstalled': is_installed,
-            },
-        )
-        assert res.status_code == 200
-        assert (token := res.json['accessToken']) is not None
-        assert (refreshToken := res.json['refreshToken']) is not None
-        self._client.environ_base['HTTP_AUTHORIZATION'] = token
-        self._client.environ_base[REFRESH_TOKEN_KEY] = refreshToken
-        return token
+    def login(self, user):
+        _user = user or self._create_random_user()
 
-    def login_sw(self, username, password):
-        res = self.client.post(
-            PANEL_LOGIN_URL,
-            data={
-                'username': username,
-                'password': password,
-            },
-        )
-        assert res.status_code == 200
-        assert (token := res.json['access_token']) is not None
-        assert (refreshToken := res.json['refresh_token']) is not None
-        self._client.environ_base['HTTP_AUTHORIZATION'] = token
-        self._client.environ_base[REFRESH_TOKEN_KEY] = refreshToken
-        return token
+        with self.client.application.app_context():
+            access_token = 'Bearer ' + create_user_access_token(_user)
+            refresh_token = 'Bearer ' + create_refresh_token(_user.id)
+
+        self._client.environ_base['HTTP_AUTHORIZATION'] = access_token
+        self._client.environ_base[REFRESH_TOKEN_KEY] = refresh_token
+        return access_token
+
+    def login_sw(self, sw=None):
+        _sw = sw or self._create_random_sw()
+
+        with self.client.application.app_context():
+            access_token = 'Bearer ' + create_sw_access_token(_sw)
+            refresh_token = 'Bearer ' + create_refresh_token(_sw.id)
+
+        self._client.environ_base['HTTP_AUTHORIZATION'] = access_token
+        self._client.environ_base[REFRESH_TOKEN_KEY] = refresh_token
+        return access_token
 
     def login_as(self, role):
-        pw = 'password'
-        sw = self._create_random_sw(password=pw, role=role)
-        self.login_sw(sw.userName, pw)
+        sw = self._create_random_sw(role=role)
+        self.login_sw(sw)
+
+    def login_as_user(self):
+        user = self._create_random_user()
+        self.login(user)

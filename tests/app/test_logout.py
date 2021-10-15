@@ -7,11 +7,10 @@ LOGOUT_URL = '/api/v2/auth/logout/token'
 
 class TestLogout(BaseTestClass):
     def mockup(self):
-        self.password = '123456'
-        self.user = self._create_random_user(password=self.password)
+        self.user = self._create_random_user()
 
     def test_logout(self):
-        token = self.login(self.user.userName, self.password)
+        token = self.login(self.user)
 
         headers = {"Authorization": token}
 
@@ -19,7 +18,7 @@ class TestLogout(BaseTestClass):
         assert res.status_code == 200
 
     def test_logout_wrong_token(self):
-        self.login(self.user.userName, self.password)
+        self.login(self.user)
 
         token = "gkshdfkasldjlsajdlshf"
 

@@ -10,7 +10,7 @@ INVITE_V3_URL = '/api/v3/invitations/'
 class TestInvite(BaseTestClass):
     def mockup(self):
         self.pw = '123456'
-        self.user = self._create_random_user(password=self.pw)
+        self.user = self._create_random_user()
         self.child = self._create_random_child(
             isDeleted=False, isConfirmed=True, existence_status=1
         )
@@ -24,7 +24,7 @@ class TestInvite(BaseTestClass):
 
     @pytest.mark.parametrize('url', [INVITE_V2_URL, INVITE_V3_URL])
     def test_post_invite(self, url):
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
         res = self.client.post(
             url,
             data=dict(

@@ -11,7 +11,6 @@ PRENEED_V2_URL = '/api/v2/preneeds/'
 
 class TestPreNeed(BaseTestClass):
     def mockup(self):
-        self.pw = '123456'
         self.child = self._create_random_child(
             id=DEFAULT_CHILD_ID,
             isDeleted=False,
@@ -26,14 +25,14 @@ class TestPreNeed(BaseTestClass):
             child=self.child,
         )
 
-        self.sw = self._create_random_sw(password=self.pw)
+        self.sw = self._create_random_sw()
 
     @pytest.mark.parametrize('url', [PRENEED_V2_URL])
     def test_list_preneed(self, url):
         res = self.client.get(url)
         assert res.status_code == 401
 
-        self.login_sw(self.sw.userName, self.pw)
+        self.login_sw(self.sw)
         res = self.client.get(url)
         assert res.status_code == 200
         assert len(res.json) == len(self.child.needs)

@@ -6,11 +6,10 @@ CART_URL = '/api/v2/mycart'
 
 class TestCart(BaseTestClass):
     def mockup(self):
-        self.pw = '123456'
-        self.user = self._create_random_user(password=self.pw)
+        self.user = self._create_random_user()
 
     def test_get_cart(self):
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
 
         res = self.client.get(
             CART_URL,
@@ -19,7 +18,7 @@ class TestCart(BaseTestClass):
         assert res.json['id'] is not None
 
     def test_put_cart_invalid_input(self):
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
 
         res = self.client.put(
             CART_URL,
@@ -27,7 +26,7 @@ class TestCart(BaseTestClass):
         assert res.status_code == 400
 
     def test_put_cart(self):
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
 
         ok_needs = [
             self._create_random_need(self._create_user_family(self.user).family.child)

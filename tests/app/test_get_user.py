@@ -7,10 +7,10 @@ USER_GET_URL = '/api/v2/user/userId=%s'
 class TestGetUser(BaseTestClass):
     def mockup(self):
         self.pw = '123456'
-        self.user = self._create_random_user(password=self.pw)
+        self.user = self._create_random_user()
 
     def test_user_get_me(self):
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
 
         res = self.client.get(
             USER_GET_URL % 'me',

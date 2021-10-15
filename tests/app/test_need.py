@@ -17,11 +17,10 @@ class TestNeed(BaseTestClass):
             )
 
     def mockup(self):
-        self.pw = '123456'
-        self.sw = self.create_panel_user(self.pw)
+        self.sw = self.create_panel_user()
 
     def test_get_needs(self):
-        self.login_sw(self.sw.userName, self.pw)
+        self.login_sw(self.sw)
 
         needs = [
             self._create_random_need(

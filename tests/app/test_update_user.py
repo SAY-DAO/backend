@@ -12,7 +12,7 @@ USER_UPDATE_URL = '/api/v2/user/update/userId=%s'
 class TestUpdateUser(BaseTestClass):
     def mockup(self):
         self.pw = '123456'
-        self.user = self._create_random_user(password=self.pw)
+        self.user = self._create_random_user()
 
     # TODO: Write test for errors
     @pytest.mark.parametrize(
@@ -33,7 +33,7 @@ class TestUpdateUser(BaseTestClass):
         ],
     )
     def test_user_update_me(self, field, value, expected):
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
 
         res = self.client.patch(
             USER_UPDATE_URL % 'me',

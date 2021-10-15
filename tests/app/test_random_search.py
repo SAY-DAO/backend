@@ -11,8 +11,7 @@ RANDOM_SEARCH_V3_URL = '/api/v3/search/random'
 
 class TestRandomSearch(BaseTestClass):
     def mockup(self):
-        self.pw = '123456'
-        self.user = self._create_random_user(password=self.pw)
+        self.user = self._create_random_user()
         self.child = self._create_random_child(
             isDeleted=False, isConfirmed=True, existence_status=1
         )
@@ -32,7 +31,7 @@ class TestRandomSearch(BaseTestClass):
         res = self.client.post(url)
         assert res.status_code == 200
 
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
 
         res = self.client.post(url)
         assert res.status_code == 200

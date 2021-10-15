@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from say.roles import ADMIN
+from say.roles import SAY_SUPERVISOR
 from say.roles import SOCIAL_WORKER
 from say.roles import SUPER_ADMIN
 from tests.helper import BaseTestClass
@@ -11,8 +13,7 @@ RECEIPT_URL = '/api/v2/receipts/'
 
 class TestNeedReceipts(BaseTestClass):
     def mockup(self):
-        self.password = 'password'
-        self.user = self.create_panel_user(password=self.password)
+        self.sw = self.create_panel_user()
 
         self.need = self._create_random_need()
         self.r1 = self._create_need_receipt(need=self.need)
@@ -26,7 +27,7 @@ class TestNeedReceipts(BaseTestClass):
         )
 
     def test_receipts_count(self):
-        self.login_sw(self.user.userName, self.password)
+        self.login_sw(self.sw)
 
         res = self.client.get(
             LIST_NEEDS_URL,
@@ -42,22 +43,31 @@ class TestNeedReceipts(BaseTestClass):
         assert res.status_code == 200
         assert res.json['ownerId'] is None
 
-        self.login_as(SUPER_ADMIN)
+        self.login_as_user()
         res = self.client.get(
             RECEIPT_URL + str(self.public_receipt.id),
         )
         assert res.status_code == 200
-        assert res.json['ownerId'] is not None
+        assert res.json['ownerId'] is None
 
-        # self.login_as(SOCIAL_WORKER)
-        # res = self.client.get(
-        #     RECEIPT_URL + str(self.public_receipt.id),
-        # )
-        # assert res.status_code == 200
-        # assert res.json['ownerId'] is None
+        for role in [SAY_SUPERVISOR, ADMIN, SUPER_ADMIN]:
+            self.login_as(role)
+            res = self.client.get(
+                RECEIPT_URL + str(self.public_receipt.id),
+            )
+            assert res.status_code == 200
+            assert res.json['ownerId'] is not None
+
+        # Social workers only can see their receipts
+        # (their child, or as NGO supervisio children of their ngo)
+        self.login_as(SOCIAL_WORKER)
+        res = self.client.get(
+            RECEIPT_URL + str(self.public_receipt.id),
+        )
+        assert res.status_code == 404
 
     def test_get_receipt(self):
-        self.login_sw(self.user.userName, self.password)
+        self.login_as(SUPER_ADMIN)
 
         res = self.client.get(
             RECEIPT_URL + str(self.r1.id),
@@ -69,3 +79,9 @@ class TestNeedReceipts(BaseTestClass):
             RECEIPT_URL + str(self.deleted_receipt),
         )
         assert res.status_code == 404
+
+        # self.
+        # receipt = self._create_need_receipt(
+        #     need=self.need,
+        #     receipt=self._create_random_receipt(is_public=True),
+        # )

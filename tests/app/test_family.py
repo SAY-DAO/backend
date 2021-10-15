@@ -10,8 +10,7 @@ FAMILY_V3_URL = '/api/v3/families/%s'
 class TestJoinFamily(BaseTestClass):
     def mockup(self):
         self.url = FAMILY_V3_URL + '/join'
-        self.pw = '123456'
-        self.user = self._create_random_user(password=self.pw)
+        self.user = self._create_random_user()
         self.child = self._create_random_child(
             isDeleted=False, isConfirmed=True, existence_status=1
         )
@@ -22,7 +21,7 @@ class TestJoinFamily(BaseTestClass):
         res = self.client.post(self.url % self.child.family.id, data=data)
         assert res.status_code == 401
 
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
 
         res = self.client.post(self.url % self.child.family.id, data=data)
         assert res.status_code == 200
@@ -42,19 +41,19 @@ class TestJoinFamily(BaseTestClass):
     )
     def test_join_family_role_taken(self, role, code):
         data = dict(role=role)
-        another_user = self._create_random_user(password=self.pw)
-        self.login(another_user.userName, self.pw)
+        another_user = self._create_random_user()
+        self.login(another_user)
         res = self.client.post(self.url % self.child.family.id, data=data)
         assert res.status_code == 200
 
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
         res = self.client.post(self.url % self.child.family.id, data=data)
         assert res.status_code == code
 
     @pytest.mark.parametrize('role,code', [(-1, 400), (1000, 400)])
     def test_join_family_invalid_role(self, role, code):
         data = dict(role=role)
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
         res = self.client.post(self.url % self.child.family.id, data=data)
         assert res.status_code == code
 
@@ -71,7 +70,7 @@ class TestJoinFamily(BaseTestClass):
         self.session.save(self.child)
 
         data = dict(role=0)
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
         res = self.client.post(self.url % self.child.family.id, data=data)
         assert res.status_code == code
 
@@ -80,7 +79,7 @@ class TestLeaveFamily(BaseTestClass):
     def mockup(self):
         self.url = FAMILY_V2_URL + '/leave'
         self.pw = '123456'
-        self.user = self._create_random_user(password=self.pw)
+        self.user = self._create_random_user()
         self.child = self._create_random_child(
             isDeleted=False, isConfirmed=True, existence_status=1
         )
@@ -91,7 +90,7 @@ class TestLeaveFamily(BaseTestClass):
         res = self.client.patch(self.url % self.child.family.id)
         assert res.status_code == 401
 
-        self.login(self.user.userName, self.pw)
+        self.login(self.user)
 
         res = self.client.patch(self.url % self.child.family.id)
         assert res.status_code == 200
