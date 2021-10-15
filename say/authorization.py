@@ -10,11 +10,17 @@ from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import verify_jwt_in_request
 from flask_jwt_extended import verify_jwt_refresh_token_in_request
 from flask_jwt_extended.exceptions import JWTExtendedException
+from flask_jwt_extended.utils import create_refresh_token
 from jwt.exceptions import PyJWTError
 from sentry_sdk import set_user
+from sqlalchemy_utils.utils import starts_with
 
 from say.api.ext import jwt
 from say.config import configs
+from say.constants import BEARER
+from say.constants import REFRESH_TOKEN_SW_PREFIX
+from say.constants import REFRESH_TOKEN_USER_PREFIX
+from say.exceptions import HTTP_UNAUTHORIZED
 from say.roles import *
 
 
@@ -46,8 +52,16 @@ def check_if_token_is_revoked(decrypted_token):
     return True if entry else False
 
 
+def get_refresh_identity(prefix):
+    raw_id = get_jwt_identity()
+    if raw_id is None or not raw_id.startswith(prefix):
+        return None
+
+    return raw_id.replace(prefix, '')
+
+
 def create_user_access_token(user, fresh=False):
-    return create_access_token(
+    return BEARER + create_access_token(
         identity=user.id,
         fresh=fresh,
         user_claims=dict(
@@ -59,8 +73,21 @@ def create_user_access_token(user, fresh=False):
     )
 
 
+def create_user_refresh_token(user):
+    id = REFRESH_TOKEN_USER_PREFIX + str(user.id)
+    return BEARER + create_refresh_token(identity=id)
+
+
+def user_identity_refresh_token():
+    return get_refresh_identity(REFRESH_TOKEN_USER_PREFIX)
+
+
+def sw_identity_refresh_token():
+    return get_refresh_identity(REFRESH_TOKEN_SW_PREFIX)
+
+
 def create_sw_access_token(social_worker, fresh=False):
-    return create_access_token(
+    return BEARER + create_access_token(
         identity=social_worker.id,
         fresh=fresh,
         user_claims=dict(
@@ -74,14 +101,36 @@ def create_sw_access_token(social_worker, fresh=False):
     )
 
 
-def authorize_refresh(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            verify_jwt_refresh_token_in_request()
-        except (PyJWTError, JWTExtendedException) as ex:
-            return make_response(jsonify(message='Unauthorized'), 401)
+def create_sw_refresh_token(social_worker):
+    id = REFRESH_TOKEN_SW_PREFIX + str(social_worker.id)
+    return BEARER + create_refresh_token(identity=id)
 
+
+def verify_refresh_token(prefix):
+    try:
+        verify_jwt_refresh_token_in_request()
+        id = get_jwt_identity()
+        if id is None:
+            raise HTTP_UNAUTHORIZED()
+
+        if not id.startswith(prefix):
+            raise HTTP_UNAUTHORIZED()
+
+    except (PyJWTError, JWTExtendedException):
+        raise HTTP_UNAUTHORIZED()
+
+
+def authorize_refresh(func):
+    def wrapper(*args, **kwargs):
+        verify_refresh_token(REFRESH_TOKEN_USER_PREFIX)
+        return func(*args, **kwargs)
+
+    return wrapper
+
+
+def authorize_refresh_sw(func):
+    def wrapper(*args, **kwargs):
+        verify_refresh_token(REFRESH_TOKEN_SW_PREFIX)
         return func(*args, **kwargs)
 
     return wrapper

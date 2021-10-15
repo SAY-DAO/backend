@@ -51,7 +51,7 @@ class TestNeedReceipts(BaseTestClass):
         assert res.json['ownerId'] is None
 
         for role in [SAY_SUPERVISOR, ADMIN, SUPER_ADMIN]:
-            self.login_as(role)
+            self.login_as_sw(role)
             res = self.client.get(
                 RECEIPT_URL + str(self.public_receipt.id),
             )
@@ -60,14 +60,14 @@ class TestNeedReceipts(BaseTestClass):
 
         # Social workers only can see their receipts
         # (their child, or as NGO supervisio children of their ngo)
-        self.login_as(SOCIAL_WORKER)
+        self.login_as_sw(SOCIAL_WORKER)
         res = self.client.get(
             RECEIPT_URL + str(self.public_receipt.id),
         )
         assert res.status_code == 404
 
     def test_get_receipt(self):
-        self.login_as(SUPER_ADMIN)
+        self.login_as_sw(SUPER_ADMIN)
 
         res = self.client.get(
             RECEIPT_URL + str(self.r1.id),

@@ -5,11 +5,12 @@ from random import randint
 
 import pytest
 import sqlalchemy
-from flask_jwt_extended.utils import create_refresh_token
 
 from say.api.payment_api import generate_order_id
 from say.authorization import create_sw_access_token
+from say.authorization import create_sw_refresh_token
 from say.authorization import create_user_access_token
+from say.authorization import create_user_refresh_token
 from say.config import configs
 from say.models import Child
 from say.models import EmailVerification
@@ -327,8 +328,8 @@ class BaseTestClass:
         _user = user or self._create_random_user()
 
         with self.client.application.app_context():
-            access_token = 'Bearer ' + create_user_access_token(_user)
-            refresh_token = 'Bearer ' + create_refresh_token(_user.id)
+            access_token = create_user_access_token(_user)
+            refresh_token = create_user_refresh_token(user)
 
         self._client.environ_base['HTTP_AUTHORIZATION'] = access_token
         self._client.environ_base[REFRESH_TOKEN_KEY] = refresh_token
@@ -338,14 +339,14 @@ class BaseTestClass:
         _sw = sw or self._create_random_sw()
 
         with self.client.application.app_context():
-            access_token = 'Bearer ' + create_sw_access_token(_sw)
-            refresh_token = 'Bearer ' + create_refresh_token(_sw.id)
+            access_token = create_sw_access_token(_sw)
+            refresh_token = create_sw_refresh_token(_sw)
 
         self._client.environ_base['HTTP_AUTHORIZATION'] = access_token
         self._client.environ_base[REFRESH_TOKEN_KEY] = refresh_token
         return access_token
 
-    def login_as(self, role):
+    def login_as_sw(self, role=SUPER_ADMIN):
         sw = self._create_random_sw(role=role)
         self.login_sw(sw)
 

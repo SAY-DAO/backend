@@ -1,5 +1,4 @@
 from datetime import datetime
-from datetime import timedelta
 from os import abort
 
 import phonenumbers
@@ -8,8 +7,6 @@ from email_validator import EmailNotValidError
 from email_validator import validate_email
 from flasgger import swag_from
 from flask import request
-from flask_jwt_extended import create_refresh_token
-from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import get_raw_jwt
 from flask_restful import Resource
 from sqlalchemy_utils import Country
@@ -37,7 +34,9 @@ from say.validations import validate_username
 from ..authorization import authorize
 from ..authorization import authorize_refresh
 from ..authorization import create_user_access_token
+from ..authorization import create_user_refresh_token
 from ..authorization import revoke_jwt
+from ..authorization import user_identity_refresh_token
 from ..config import configs
 from ..decorators import json
 from ..i18n import t
@@ -192,7 +191,7 @@ class RegisterUser(Resource):
             is_installed=is_installed,
             is_nakama=False,
         )
-        
+
         if isinstance(verification, EmailVerification):
             new_user.is_email_verified = True
         else:
@@ -202,7 +201,7 @@ class RegisterUser(Resource):
         new_user.create_cart()
         session.flush()
         access_token = create_user_access_token(new_user)
-        refresh_token = create_refresh_token(identity=new_user.id)
+        refresh_token = create_user_refresh_token(new_user)
 
         resp = {
             'message': 'User successfully created',
@@ -278,7 +277,7 @@ class Login(Resource):
         safe_commit(session)
 
         access_token = create_user_access_token(user)
-        refresh_token = create_refresh_token(identity=user.id)
+        refresh_token = create_user_refresh_token(user)
 
         return {
             'message': 'Login Successful',
@@ -414,18 +413,20 @@ class TokenRefresh(Resource):
     @json
     @swag_from('./docs/auth/refresh.yml')
     def post(self):
-        id = get_jwt_identity()
+        id = user_identity_refresh_token()
+        if id is None:
+            abort(401)
+
         user = session.query(User).get(id)
-        session.close()
         access_token = create_user_access_token(user, fresh=True)
-        refresh_token = create_refresh_token(identity=user.id)
+        refresh_token = create_user_refresh_token(user)
 
         jti = get_raw_jwt()['jti']
         revoke_jwt(jti, int(configs.JWT_REFRESH_TOKEN_EXPIRES * 1.1))
 
         return {
-            'accessToken': f'Bearer {access_token}',
-            'refreshToken': f'Bearer {refresh_token}',
+            'accessToken': access_token,
+            'refreshToken': refresh_token,
         }
 
 
@@ -532,7 +533,7 @@ class ConfirmResetPassword(Resource):
         reset_password.is_used = True
 
         access_token = create_user_access_token(user)
-        refresh_token = create_refresh_token(identity=user.id)
+        refresh_token = create_user_refresh_token(user)
 
         return {
             'message': 'Password Changed Successfully',

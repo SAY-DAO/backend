@@ -20,3 +20,7 @@ DIGIKALA_TITLE_SEP = {
 MAX_NEED_COST = 2147483647
 ALPHABET = string.ascii_letters + string.digits
 DEFAULT_CHILD_ID = 104  # TODO: Remove this after implementing pre needs
+
+BEARER = 'Bearer '
+REFRESH_TOKEN_USER_PREFIX = 'user_'
+REFRESH_TOKEN_SW_PREFIX = 'sw_'

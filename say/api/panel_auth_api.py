@@ -1,10 +1,9 @@
 from datetime import datetime
+from os import abort
 
 import argon2
 from flasgger import swag_from
 from flask import request
-from flask_jwt_extended import create_refresh_token
-from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import get_raw_jwt
 from flask_restful import Resource
 
@@ -12,8 +11,11 @@ from say.api.ext import api
 from say.api.ext import limiter
 from say.authorization import authorize
 from say.authorization import authorize_refresh
+from say.authorization import authorize_refresh_sw
 from say.authorization import create_sw_access_token
+from say.authorization import create_sw_refresh_token
 from say.authorization import revoke_jwt
+from say.authorization import sw_identity_refresh_token
 from say.config import configs
 from say.decorators import json
 from say.models.social_worker_model import SocialWorker
@@ -63,34 +65,34 @@ class PanelLogin(Resource):
         safe_commit(session)
 
         access_token = create_sw_access_token(social_worker)
-
-        refresh_token = create_refresh_token(
-            identity=social_worker.id,
-        )
+        refresh_token = create_sw_refresh_token(social_worker)
 
         return {
             'message': 'Login Successful',
-            'access_token': f'Bearer {access_token}',
-            'refresh_token': f'Bearer {refresh_token}',
+            'access_token': access_token,
+            'refresh_token': refresh_token,
         }
 
 
 class PanelTokenRefresh(Resource):
-    @authorize_refresh
+    @authorize_refresh_sw
     @json
     @swag_from('./docs/panel_auth/refresh.yml')
     def post(self):
-        id = get_jwt_identity()
+        id = sw_identity_refresh_token()
+        if id is None:
+            abort(401)
+
         social_worker = session.query(SocialWorker).get(id)
         access_token = create_sw_access_token(social_worker, fresh=True)
-        refresh_token = create_refresh_token(identity=social_worker.id)
+        refresh_token = create_sw_refresh_token(social_worker)
 
         jti = get_raw_jwt()['jti']
         revoke_jwt(jti, int(configs.JWT_REFRESH_TOKEN_EXPIRES * 1.1))
 
         return {
-            'access_token': f'Bearer {access_token}',
-            'refresh_token': f'Bearer {refresh_token}',
+            'access_token': access_token,
+            'refresh_token': refresh_token,
         }
 
 
