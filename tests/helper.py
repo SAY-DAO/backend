@@ -22,6 +22,7 @@ from say.models import User
 from say.models import UserFamily
 from say.models.cart import Cart
 from say.models.receipt import NeedReceipt
+from say.roles import ADMIN
 from say.roles import SUPER_ADMIN
 
 
@@ -237,7 +238,7 @@ class BaseTestClass:
         self.session.save(child)
         return child
 
-    def _create_random_sw(self, **kwargs):
+    def _create_random_sw(self, role=SUPER_ADMIN, **kwargs):
         seed = randint(1, 10 ** 3)
         ngo = self._create_random_ngo()
 
@@ -257,7 +258,7 @@ class BaseTestClass:
             password='abcefg123',
             registerDate=datetime.utcnow(),
             lastLoginDate=datetime.utcnow(),
-            privilege=Privilege(name='admin', privilege=1),
+            privilege=Privilege(name=role, privilege=1),
         )
         data.update(kwargs)
         sw = SocialWorker(**data)
@@ -350,3 +351,8 @@ class BaseTestClass:
         self._client.environ_base['HTTP_AUTHORIZATION'] = token
         self._client.environ_base[REFRESH_TOKEN_KEY] = refreshToken
         return token
+
+    def login_as(self, role):
+        pw = 'password'
+        sw = self._create_random_sw(password=pw, role=role)
+        self.login_sw(sw.userName, pw)

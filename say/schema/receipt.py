@@ -5,6 +5,7 @@ from typing import Optional
 from urllib.parse import urljoin
 from uuid import uuid4
 
+from flask_jwt_extended.exceptions import NoAuthorizationError
 from pydantic import constr
 from pydantic import validator
 from werkzeug.datastructures import FileStorage
@@ -88,7 +89,11 @@ class ReceiptSchema(NewReceiptSchema):
 
     @validator('owner_id')
     def owner_id_validator(cls, v):
-        role = get_user_role()
-        if role not in [SUPER_ADMIN, SAY_SUPERVISOR, ADMIN] and v is True:
+        try:
+            role = get_user_role()
+        except NoAuthorizationError:
+            role = None
+
+        if role not in [SUPER_ADMIN, SAY_SUPERVISOR, ADMIN]:
             return None
         return v
