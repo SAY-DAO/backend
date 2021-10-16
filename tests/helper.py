@@ -172,7 +172,7 @@ class BaseTestClass:
         return need
 
     def _create_random_receipt(self, owner=None, **kwargs):
-        owner = self._create_random_sw()
+        owner = owner or self._create_random_sw()
 
         seed = randint(1, 10 ** 3)
         randomstr = str(seed)
@@ -188,8 +188,8 @@ class BaseTestClass:
 
     def _create_need_receipt(self, need=None, sw=None, receipt=None, **kwargs):
         need = need or self._create_random_need()
-        sw = self._create_random_sw()
-        receipt = self._create_random_receipt()
+        sw = sw or self._create_random_sw()
+        receipt = receipt or self._create_random_receipt()
         data = dict(
             need=need,
             sw=sw,
@@ -241,9 +241,9 @@ class BaseTestClass:
         self.session.save(child)
         return child
 
-    def _create_random_sw(self, role=SUPER_ADMIN, **kwargs):
+    def _create_random_sw(self, role=SUPER_ADMIN, ngo=None, **kwargs):
         seed = randint(1, 10 ** 3)
-        ngo = self._create_random_ngo()
+        ngo = ngo or self._create_random_ngo()
 
         data = dict(
             ngo=ngo,
@@ -349,7 +349,9 @@ class BaseTestClass:
     def login_as_sw(self, role=SUPER_ADMIN):
         sw = self._create_random_sw(role=role)
         self.login_sw(sw)
+        return sw
 
     def login_as_user(self):
         user = self._create_random_user()
         self.login(user)
+        return user
