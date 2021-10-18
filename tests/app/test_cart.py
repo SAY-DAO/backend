@@ -2,6 +2,7 @@ from tests.helper import BaseTestClass
 
 
 CART_URL = '/api/v2/mycart'
+CART_NEEDS_URL = CART_URL + '/needs'
 
 
 class TestCart(BaseTestClass):
@@ -56,3 +57,21 @@ class TestCart(BaseTestClass):
         )
         assert res.status_code == 200
         assert set([n['id'] for n in res.json['needs']]) == set(ok_need_ids)
+
+    def test_add_need_to_cart(self):
+        self.login(self.user)
+
+        need = self._create_random_need(self._create_user_family(self.user).family.child)
+        res = self.client.post(
+            CART_NEEDS_URL,
+            data=dict(needId=need.id),
+        )
+        assert res.status_code == 200
+
+        # unpayable need
+        unpayable_need = self._create_random_need()
+        res = self.client.post(
+            CART_NEEDS_URL,
+            data=dict(needId=unpayable_need.id),
+        )
+        assert res.status_code == 400
