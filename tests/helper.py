@@ -25,6 +25,7 @@ from say.models import SocialWorker
 from say.models import User
 from say.models import UserFamily
 from say.models.cart import Cart
+from say.models.cart import CartNeed
 from say.models.receipt import NeedReceipt
 from say.roles import SUPER_ADMIN
 
@@ -112,6 +113,16 @@ class BaseTestClass:
         self.session.save(social_worker)
         return social_worker
 
+    def _create_random_cart(self, user=None, **kwargs):
+        user = user or self._create_random_user()
+        data = dict(
+            user=user,
+        )
+        data.update(kwargs)
+        cart = Cart(**data)
+        self.session.save(cart)
+        return cart
+
     def _create_random_user(self, **kwargs):
         seed = randint(10 ** 10, 10 ** 12)
         while True:
@@ -136,6 +147,19 @@ class BaseTestClass:
                 return user
             except sqlalchemy.exc.IntegrityError:
                 continue
+
+    def _create_random_cart_need(self, cart=None, need=None, **kwargs):
+        need = need or self._create_random_need()
+        cart = cart or self._create_random_cart()
+
+        data = dict(
+            need=need,
+            cart=cart,
+        )
+        data.update(kwargs)
+        cart_need = CartNeed(**data)
+        self.session.save(cart_need)
+        return cart_need
 
     def _create_user_family(self, user=None, family=None):
         family = family or self._create_random_family()

@@ -75,3 +75,28 @@ class TestCart(BaseTestClass):
             data=dict(needId=unpayable_need.id),
         )
         assert res.status_code == 400
+
+    def test_delete_need_from_cart(self):
+        self.login(self.user)
+
+        cart_need = self._create_random_cart_need(cart=self.user.cart)
+        res = self.client.delete(
+            CART_NEEDS_URL,
+            data=dict(needId=cart_need.need.id),
+        )
+        assert res.status_code == 200
+
+        # need not in cart
+        new_need = self._create_random_need()
+        res = self.client.delete(
+            CART_NEEDS_URL,
+            data=dict(needId=new_need.id),
+        )
+        assert res.status_code == 404
+
+        # invalid need id
+        res = self.client.delete(
+            CART_NEEDS_URL,
+            data=dict(needId='not-int'),
+        )
+        assert res.status_code == 400
