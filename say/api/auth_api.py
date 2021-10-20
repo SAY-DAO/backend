@@ -205,8 +205,8 @@ class RegisterUser(Resource):
 
         resp = {
             'message': 'User successfully created',
-            'accessToken': f'Bearer {access_token}',
-            'refreshToken': f'Bearer {refresh_token}',
+            'accessToken': access_token,
+            'refreshToken': refresh_token,
             'user': obj_to_dict(new_user),
         }
 
@@ -281,8 +281,8 @@ class Login(Resource):
 
         return {
             'message': 'Login Successful',
-            'accessToken': f'Bearer {access_token}',
-            'refreshToken': f'Bearer {refresh_token}',
+            'accessToken': access_token,
+            'refreshToken': refresh_token,
             'user': obj_to_dict(user),
         }
 
@@ -537,8 +537,8 @@ class ConfirmResetPassword(Resource):
 
         return {
             'message': 'Password Changed Successfully',
-            'accessToken': f'Bearer {access_token}',
-            'refreshToken': f'Bearer {refresh_token}',
+            'accessToken': access_token,
+            'refreshToken': refresh_token,
             'user': obj_to_dict(user),
         }
 

@@ -21,6 +21,7 @@ class TestLogin(BaseTestClass):
             },
         )
         assert res.status_code == 200
+        from pudb import set_trace; set_trace()
         assert res.json['accessToken'] is not None
         assert res.json['refreshToken'] is not None
         assert res.json['user']['id'] is not None
