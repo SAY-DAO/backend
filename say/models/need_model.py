@@ -7,6 +7,7 @@ from sqlalchemy.orm import column_property
 from sqlalchemy.orm import object_session
 
 from say.constants import DIGIKALA_TITLE_SEP
+from say.constants import SAY_USER
 from say.statuses import NeedStatuses
 
 from ..config import configs
@@ -374,9 +375,8 @@ class Need(base, Timestamp):
         from .user_model import User
 
         extra_cost = self.purchase_cost - self.paid
-
         session = object_session(self)
-        say_user = session.query(User).filter_by(userName='SAY').one()
+        say_user = session.query(User).filter_by(userName=SAY_USER).one()
 
         say_payment = Payment(
             need=self,
@@ -388,7 +388,7 @@ class Need(base, Timestamp):
         self.payments.append(say_payment)
         say_payment.verify(is_say=True)
 
-        return
+        return say_payment
 
     @property
     def current_participants(self):
