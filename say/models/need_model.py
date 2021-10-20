@@ -368,7 +368,7 @@ class Need(base, Timestamp):
 
             refund.verify()
 
-        return
+        return refunds
 
     def say_extra_payment(self):
         from .user_model import User

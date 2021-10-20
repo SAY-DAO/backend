@@ -16,6 +16,7 @@ from say.models import Child
 from say.models import EmailVerification
 from say.models import Family
 from say.models import Need
+from say.models import NeedFamily
 from say.models import Ngo
 from say.models import Payment
 from say.models import PhoneVerification
@@ -343,7 +344,26 @@ class BaseTestClass:
         data.update(**kwargs)
         payment = Payment(**data)
         self.session.save(payment)
+
+        need_family = self._create_need_family(need=need, user=user)
+        self.session.save(need_family)
         return payment
+
+    def _create_need_family(self, need=None, family=None, user=None, **kwargs):
+        need = need or self._create_random_need()
+        user = user or self._create_random_user()
+        family = family or self._create_random_family()
+
+        data = dict(
+            need=need,
+            user=user,
+            family=family,
+            type='app',
+        )
+        data.update(kwargs)
+        need_family = NeedFamily(**data)
+        self.session.save(need_family)
+        return need_family
 
     def logout(self):
         del self._client.environ_base['HTTP_AUTHORIZATION']
