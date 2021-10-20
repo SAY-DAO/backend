@@ -31,7 +31,7 @@ def user_id_from_header():
         # Any other error
         logger.info('random search: bad jwt')
         logger.info(str(e))
-        abort(403)
+        abort(401)
 
     return user_id
 

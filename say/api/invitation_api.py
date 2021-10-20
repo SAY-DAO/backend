@@ -43,7 +43,7 @@ class InvitationAPI(Resource):
             # Any other error
             logger.info('random search: bad jwt')
             logger.info(str(e))
-            abort(403)
+            abort(401)
 
         try:
             data = NewInvitationSchema(
