@@ -81,7 +81,9 @@ class TestLeaveFamily(BaseTestClass):
         self.pw = '123456'
         self.user = self._create_random_user()
         self.child = self._create_random_child(
-            isDeleted=False, isConfirmed=True, existence_status=1
+            isDeleted=False,
+            isConfirmed=True,
+            existence_status=1,
         )
         self.family = self.child.family
         self._create_user_family(user=self.user, family=self.family)
