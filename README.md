@@ -8,9 +8,9 @@
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker-Compose](https://docs.docker.com/compose/install/)
 
-### Run
+### Commands
 
-#### Server
+#### Run Server
 
 ```bash
 ./scripts/up.sh
@@ -19,7 +19,7 @@
     Server Address: http://127.0.0.1:5000/
     API Doc: http://127.0.0.1:5000/apidocs/#/
 
-#### Build
+#### Build Image
 
 You need build manually when changing `DOCKERFILE` or `requirements`.
 
@@ -27,13 +27,13 @@ You need build manually when changing `DOCKERFILE` or `requirements`.
 ./scripts/build.sh
 ```
 
-#### Tests
+#### Run Tests
 
 ```bash
 ./scripts/test.sh
 ```
 
-#### Shell
+#### Access Shell
 
 ```bash
 ./scripts/bash.sh
