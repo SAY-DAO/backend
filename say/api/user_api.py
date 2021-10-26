@@ -404,7 +404,7 @@ class AddUser(Resource):
         session.flush()
 
         if 'avatarUrl' in request.files:
-            file = request.files['avatarUrl']
+            file = secure_filename(request.files['avatarUrl'])
 
             if file.filename == '':
                 return {'message': 'ERROR OCCURRED --> EMPTY FILE!'}, 400
