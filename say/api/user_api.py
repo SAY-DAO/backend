@@ -411,7 +411,7 @@ class AddUser(Resource):
                 return {'message': 'ERROR OCCURRED --> EMPTY FILE!'}, 400
 
             if file and allowed_image(filename):
-                filename = str(phone_number) + '.' + filename.split('.')[-1]
+                filename = filename.split('.')[-1]
                 temp_user_path = os.path.join(
                     configs.UPLOAD_FOLDER, str(new_user.id) + '-user'
                 )
