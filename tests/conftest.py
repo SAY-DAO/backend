@@ -1,4 +1,5 @@
 import os
+import shutil
 import tempfile
 
 import pytest
@@ -43,7 +44,7 @@ def client(flask_app):
 
         yield client
 
-    os.rmdir(configs.UPLOAD_FOLDER)
+    shutil.rmtree(configs.UPLOAD_FOLDER)
 
 
 @pytest.fixture(scope='function')

@@ -538,10 +538,11 @@ class AddNeed(Resource):
 
         if 'imageUrl' in request.files:
             file = request.files['imageUrl']
-            if not allowed_image(file.filename):
+            filename = secure_filename(file.filename)
+            if not allowed_image(filename):
                 return {'message': 'Invalid image'}, 400
 
-            filename = str(new_need.id) + '.' + file.filename.split('.')[-1]
+            filename = str(new_need.id) + '.' + filename.split('.')[-1]
 
             if not os.path.isdir(temp_need_path):
                 os.makedirs(temp_need_path, exist_ok=True)

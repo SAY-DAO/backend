@@ -1,3 +1,4 @@
+import io
 import tempfile
 from datetime import datetime
 from random import choice
@@ -68,6 +69,9 @@ class BaseTestClass:
     def mockup(self):
         # Override this method to add mockup data
         pass
+
+    def create_test_file(self, name):
+        return (io.BytesIO(b"abcdef"), name)
 
     def create_panel_user(self, password='password'):
         seed = randint(10 ** 3, 10 ** 4)
