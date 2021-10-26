@@ -17,6 +17,7 @@ from flask_restful import Resource
 from flask_restful import abort
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
+from werkzeug.utils import secure_filename
 
 from say import crud
 from say.api.ext import api
@@ -309,9 +310,7 @@ class GetChildByInvitationToken(Resource):
         if not user_id:
             child_dict['id'] = None
 
-        child_family_members = [
-            x for x in crud.child.get_family_members(child.id, True)
-        ]
+        child_family_members = [x for x in crud.child.get_family_members(child.id, True)]
 
         result = UserChildSchema(**child_dict, childFamilyMembers=child_family_members)
         return result
@@ -607,7 +606,7 @@ class AddChild(Resource):
             os.makedirs(need_path, exist_ok=True)
 
         if file1 and allowed_voice(file1.filename):
-            filename1 = code + '.' + file1.filename.split('.')[-1]
+            filename1 = secure_filename(code + '.' + file1.filename.split('.')[-1])
 
             voice_path = os.path.join(
                 child_path,
@@ -617,7 +616,7 @@ class AddChild(Resource):
             new_child.voiceUrl = '/' + voice_path
 
         if file2 and allowed_image(file2.filename):
-            filename2 = code + '.' + file2.filename.split('.')[-1]
+            filename2 = secure_filename(code + '.' + file2.filename.split('.')[-1])
 
             avatar_path = os.path.join(
                 child_path,
@@ -627,7 +626,7 @@ class AddChild(Resource):
             new_child.awakeAvatarUrl = '/' + avatar_path
 
         if file3 and allowed_image(file3.filename):
-            filename3 = code + '.' + file3.filename.split('.')[-1]
+            filename3 = secure_filename(code + '.' + file3.filename.split('.')[-1])
 
             slept_avatar_path = os.path.join(
                 child_path,
@@ -714,7 +713,7 @@ class UpdateChildById(Resource):
                 return {'message': 'ERROR OCCURRED --> EMPTY AVATAR!'}, 500
 
             if file2 and allowed_image(file2.filename):
-                filename2 = (
+                filename2 = secure_filename(
                     primary_child.generatedCode + '.' + file2.filename.split('.')[-1]
                 )
 
@@ -743,7 +742,7 @@ class UpdateChildById(Resource):
                 return {'message': 'ERROR OCCURRED --> EMPTY SLEPT AVATAR!'}, 500
 
             if file3 and allowed_image(file3.filename):
-                filename2 = (
+                filename2 = secure_filename(
                     primary_child.generatedCode + '.' + file3.filename.split('.')[-1]
                 )
 
@@ -772,7 +771,7 @@ class UpdateChildById(Resource):
                 return {'message': 'ERROR OCCURRED --> EMPTY VOICE!'}, 500
 
             if file1 and allowed_voice(file1.filename):
-                filename1 = (
+                filename1 = secure_filename(
                     primary_child.generatedCode + '.' + file1.filename.split('.')[-1]
                 )
 

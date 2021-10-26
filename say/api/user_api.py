@@ -2,6 +2,7 @@ import functools
 import os
 from datetime import datetime
 from random import randint
+from uuid import uuid4
 
 from flasgger import swag_from
 from flask import request
@@ -404,13 +405,13 @@ class AddUser(Resource):
         session.flush()
 
         if 'avatarUrl' in request.files:
-            file = secure_filename(request.files['avatarUrl'])
-
-            if file.filename == '':
+            file = request.files['avatarUrl']
+            filename = secure_filename(file.filename)
+            if filename == '':
                 return {'message': 'ERROR OCCURRED --> EMPTY FILE!'}, 400
 
-            if file and allowed_image(file.filename):
-                filename = str(phone_number) + '.' + file.filename.split('.')[-1]
+            if file and allowed_image(filename):
+                filename = str(phone_number) + '.' + filename.split('.')[-1]
                 temp_user_path = os.path.join(
                     configs.UPLOAD_FOLDER, str(new_user.id) + '-user'
                 )
@@ -418,10 +419,7 @@ class AddUser(Resource):
                 if not os.path.isdir(temp_user_path):
                     os.makedirs(temp_user_path, exist_ok=True)
 
-                path = os.path.join(
-                    temp_user_path, f'{randint(1000, 100000)}-avatar_{filename}'
-                )
-
+                path = os.path.join(temp_user_path, f'{uuid4().hex}-avatar_{filename}')
                 file.save(path)
 
             avatar_url = path
