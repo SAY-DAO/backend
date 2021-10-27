@@ -19,6 +19,9 @@ from say.models.user_family_model import UserFamily
 from say.models.user_model import User
 from say.orm import safe_commit
 from say.orm import session
+from say.roles import ADMIN
+from say.roles import SUPER_ADMIN
+from say.roles import USER
 from say.validations import allowed_image
 from say.validations import validate_email
 from say.validations import validate_phone
@@ -32,7 +35,6 @@ from ..decorators import validate
 from ..exceptions import HTTP_NOT_FOUND
 from ..exceptions import HTTP_PERMISION_DENIED
 from ..exceptions import HTTPException
-from ..roles import *
 from ..schema.user import UpdateUserSchema
 from ..schema.user import UserNameSchema
 from ..schema.user import UserSearchSchema
@@ -90,7 +92,8 @@ class GetUserChildren(Resource):
     @swag_from('./docs/user/children.yml')
     def get(self, user_id):
         user = session.query(User).get(user_id)
-        if user.isDeleted:
+
+        if user is None or user.isDeleted:
             raise HTTP_NOT_FOUND()
 
         children = []
