@@ -33,3 +33,4 @@ class TestUserChildren(BaseTestClass):
         assert 'children' in res.json
         assert isinstance(res.json['children'], list)
         assert len(res.json['children']) == 1
+        assert res.json['children'][0]['id'] == self.child1.id

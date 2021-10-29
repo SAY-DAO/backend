@@ -1,8 +1,6 @@
 import pytest
 
 from say.constants import DEFAULT_CHILD_ID
-from say.crud.search import calc_weights
-from say.models import UserFamily
 from tests.helper import BaseTestClass
 
 
