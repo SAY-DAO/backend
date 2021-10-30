@@ -617,7 +617,9 @@ class NeedReceipts(Resource):
 
         try:
             data = NewReceiptSchema(
-                **request.form.to_dict(), **request.files, owner_id=sw_id
+                **request.form.to_dict(),
+                **request.files,
+                owner_id=sw_id,
             )
         except ValueError as e:
             return e.json(), 400
