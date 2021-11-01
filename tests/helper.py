@@ -23,6 +23,7 @@ from say.models import Payment
 from say.models import PhoneVerification
 from say.models import Privilege
 from say.models import Receipt
+from say.models import ResetPassword
 from say.models import SocialWorker
 from say.models import User
 from say.models import UserFamily
@@ -368,6 +369,17 @@ class BaseTestClass:
         need_family = NeedFamily(**data)
         self.session.save(need_family)
         return need_family
+
+    def _create_reset_pass(self, user=None, **kwargs):
+        user = user or self._create_random_user()
+        data = dict(
+            user=user,
+            is_used=False,
+        )
+        data.update(kwargs)
+        reset_pass = ResetPassword(**data)
+        self.session.save(reset_pass)
+        return reset_pass
 
     def logout(self):
         del self._client.environ_base['HTTP_AUTHORIZATION']
