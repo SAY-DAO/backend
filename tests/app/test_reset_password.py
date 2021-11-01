@@ -1,6 +1,7 @@
 from datetime import datetime
 from datetime import timedelta
 
+from say.models.reset_password_model import ResetPassword
 from tests.helper import BaseTestClass
 
 
@@ -13,21 +14,44 @@ class TestResetPass(BaseTestClass):
     def mockup(self):
         self.user = self._create_random_user()
 
-    def test_reset_pass_phone(self):
-        res = self.client.post(RESET_PASS_PHONE_URL, data={'phoneNumber': '+989999999'})
+    def test_reset_pass_phone(self, mocker):
+        mocked_send_sms = mocker.patch.object(
+            ResetPassword,
+            'send_sms',
+        )
+        res = self.client.post(
+            RESET_PASS_PHONE_URL,
+            data={'phoneNumber': self.user.phone_number.e164},
+        )
         print(res.json['message'])
         assert res.status_code == 200
+        assert mocked_send_sms.called is True
 
     def test_reset_pass_wrong_phone(self):
-        res = self.client.post(RESET_PASS_PHONE_URL, data={'phoneNumber': '0127616539'})
+        res = self.client.post(
+            RESET_PASS_PHONE_URL,
+            data={'phoneNumber': '0127616539'},
+        )
         assert res.status_code == 400
 
-    def test_reset_pass_email(self):
-        res = self.client.post(RESET_PASS_EMAIL_URL, data={'email': 'test@test.com'})
+    def test_reset_pass_email(self, mocker):
+        mocked_send_email = mocker.patch.object(
+            ResetPassword,
+            'send_email',
+        )
+
+        res = self.client.post(
+            RESET_PASS_EMAIL_URL,
+            data={'email': self.user.emailAddress},
+        )
         assert res.status_code == 200
+        assert mocked_send_email.called is True
 
     def test_reset_pass_wrong_email(self):
-        res = self.client.post(RESET_PASS_EMAIL_URL, data={'email': 'test@test'})
+        res = self.client.post(
+            RESET_PASS_EMAIL_URL,
+            data={'email': 'test@test'},
+        )
         assert res.status_code == 400
 
     def test_confirm_reset_pass(self):
@@ -96,4 +120,3 @@ class TestResetPass(BaseTestClass):
             },
         )
         assert res.status_code == 404
-
