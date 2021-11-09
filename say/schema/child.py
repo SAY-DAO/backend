@@ -97,3 +97,4 @@ class NeedSummary(BaseModel):
     participants: List[Participant] = []
     created: datetime
     doneAt: datetime = None
+    unpayable: bool = None

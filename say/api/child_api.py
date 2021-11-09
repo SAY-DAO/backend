@@ -372,8 +372,6 @@ class GetChildNeeds(Resource):
 
 
 # id, imageUrl, name, participants.user_avatar, progress, cost, isDone, isUrgent, category
-
-
 class GetChildNeedsSummary(Resource):
     @authorize(
         USER,
