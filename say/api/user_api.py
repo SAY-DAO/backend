@@ -8,7 +8,6 @@ from flasgger import swag_from
 from flask import request
 from flask_restful import Resource
 from sqlalchemy import func
-from werkzeug.utils import secure_filename
 
 from say.gender import Gender
 from say.models import commit
@@ -22,7 +21,7 @@ from say.orm import session
 from say.roles import ADMIN
 from say.roles import SUPER_ADMIN
 from say.roles import USER
-from say.validations import allowed_image
+from say.validations import valid_image_extension
 from say.validations import validate_email
 from say.validations import validate_phone
 
@@ -134,9 +133,8 @@ class UpdateUserById(Resource):
             if file.filename == '':
                 return {'message': 'ERROR OCCURRED --> EMPTY FILE!'}, 400
 
-            if file and allowed_image(file.filename):
-                filename = secure_filename(file.filename)
-                filename = str(user.id) + '.' + filename.split('.')[-1]
+            if extension := valid_image_extension(file):
+                filename = str(user.id) + extension
 
                 temp_user_path = os.path.join(
                     configs.UPLOAD_FOLDER,
@@ -157,6 +155,8 @@ class UpdateUserById(Resource):
                 )
                 file.save(user.avatarUrl)
                 user.avatarUrl = '/' + user.avatarUrl
+            else:
+                return {'message': 'invalid avatar file!'}, 400
 
         raw_username = request.form.get('userName', user.userName)
         if raw_username != user.userName:
@@ -409,12 +409,7 @@ class AddUser(Resource):
 
         if 'avatarUrl' in request.files:
             file = request.files['avatarUrl']
-            filename = secure_filename(file.filename)
-            if filename == '':
-                return {'message': 'ERROR OCCURRED --> EMPTY FILE!'}, 400
-
-            if file and allowed_image(filename):
-                filename = filename.split('.')[-1]
+            if extension := valid_image_extension(file):
                 temp_user_path = os.path.join(
                     configs.UPLOAD_FOLDER, str(new_user.id) + '-user'
                 )
@@ -422,9 +417,10 @@ class AddUser(Resource):
                 if not os.path.isdir(temp_user_path):
                     os.makedirs(temp_user_path, exist_ok=True)
 
-                path = os.path.join(temp_user_path, f'{uuid4().hex}-avatar_{filename}')
+                path = os.path.join(temp_user_path, f'{uuid4().hex}-avatar{extension}')
                 file.save(path)
-
+            else:
+                return {'message': 'invalid  file!'}, 400
             avatar_url = path
         else:
             avatar_url = None

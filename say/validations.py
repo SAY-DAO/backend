@@ -1,3 +1,4 @@
+import os
 import re
 
 import phonenumbers
@@ -48,23 +49,47 @@ def validate(model):
 
 
 def allowed_voice(filename):
-    if (
-        "." in filename
-        and filename.rsplit(".", 1)[1].lower() in ALLOWED_VOICE_EXTENSIONS
-    ):
+    if "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_VOICE_EXTENSIONS:
         return True
 
     raise TypeError('Wrong voice format')
 
 
 def allowed_image(filename):
-    if (
-        "." in filename
-        and filename.rsplit(".", 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
-    ):
+    if "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS:
         return True
 
     raise TypeError('Wrong image format')
+
+
+def valid_image_extension(file):
+    if not file or not file.filename:
+        return None
+
+    _, extension = os.path.splitext(file.filename)
+    if extension.replace('.', '') in ALLOWED_IMAGE_EXTENSIONS:
+        return extension
+    return None
+
+
+def valid_voice_extension(file):
+    if not file or not file.filename:
+        return None
+
+    _, extension = os.path.splitext(file.filename)
+    if extension.replace('.', '') in ALLOWED_VOICE_EXTENSIONS:
+        return extension
+    return None
+
+
+def valid_receipt_extension(file):
+    if not file or not file.filename:
+        return None
+
+    _, extension = os.path.splitext(file.filename)
+    if extension.replace('.', '') in ALLOWED_RECEIPT_EXTENSIONS:
+        return extension
+    return None
 
 
 def allowed_receipt(filename):

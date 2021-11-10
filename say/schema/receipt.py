@@ -9,7 +9,6 @@ from flask_jwt_extended.exceptions import NoAuthorizationError
 from pydantic import constr
 from pydantic import validator
 from werkzeug.datastructures import FileStorage
-from werkzeug.utils import secure_filename
 
 from say.authorization import get_user_role
 from say.config import configs
@@ -18,7 +17,7 @@ from say.roles import SAY_SUPERVISOR
 from say.roles import SUPER_ADMIN
 from say.schema.base import CamelModel
 from say.validations import ALLOWED_RECEIPT_EXTENSIONS
-from say.validations import allowed_receipt
+from say.validations import valid_receipt_extension
 
 
 class UpdateReceiptSchema(CamelModel):
@@ -32,7 +31,8 @@ class UpdateReceiptSchema(CamelModel):
         if not isinstance(v, FileStorage):
             raise ValueError('attachment must be file')
 
-        if not allowed_receipt(v.filename):
+        _, extension = os.path.splitext(v.filename)
+        if not valid_receipt_extension(extension):
             raise ValueError(f'attachment must be {ALLOWED_RECEIPT_EXTENSIONS}')
 
         receipt_path = os.path.join(
@@ -42,8 +42,8 @@ class UpdateReceiptSchema(CamelModel):
 
         os.makedirs(receipt_path, exist_ok=True)
 
-        v.filename = secure_filename(str(v.filename))
-        v.filepath = f'{receipt_path}/{uuid4().hex}-{v.filename}'
+        v.filename = uuid4().hex + extension
+        v.filepath = f'{receipt_path}/'
 
         return v
 

@@ -1,11 +1,11 @@
 import os
 from datetime import datetime
 from hashlib import md5
+from uuid import uuid4
 
 from flasgger import swag_from
 from flask import request
 from flask_restful import Resource
-from werkzeug.utils import secure_filename
 
 from say.models import Child
 from say.models import commit
@@ -24,7 +24,7 @@ from ..exceptions import HTTP_NOT_FOUND
 from ..exceptions import HTTP_PERMISION_DENIED
 from ..roles import *
 from ..schema.social_worker import MigrateSocialWorkerChildrenSchema
-from ..validations import allowed_image
+from ..validations import valid_image_extension
 from .ext import api
 
 
@@ -129,10 +129,7 @@ class AddSocialWorker(Resource):
 
         if id_ngo != 0:
             ngo = (
-                session.query(Ngo)
-                .filter_by(isDeleted=False)
-                .filter_by(id=id_ngo)
-                .first()
+                session.query(Ngo).filter_by(isDeleted=False).filter_by(id=id_ngo).first()
             )
             generated_code = format(id_ngo, '03d') + format(
                 ngo.socialWorkerCount + 1, '03d'
@@ -195,9 +192,8 @@ class AddSocialWorker(Resource):
         if file3.filename == '':
             return {'message': 'ERROR OCCURRED --> EMPTY AVATAR!'}, 400
 
-        if file3 and allowed_image(file3.filename):
-            filename = secure_filename(file3.filename)
-            filename3 = generated_code + '.' + filename.split('.')[-1]
+        if extension := valid_image_extension(file3):
+            filename3 = generated_code + extension
 
             temp_avatar_path = os.path.join(
                 configs.UPLOAD_FOLDER, str(current_id) + '-socialworker'
@@ -207,11 +203,13 @@ class AddSocialWorker(Resource):
                 os.makedirs(temp_avatar_path, exist_ok=True)
 
             avatar = os.path.join(
-                temp_avatar_path, str(current_id) + '-avatar_' + filename3
+                temp_avatar_path, str(current_id) + uuid4().hex + '-avatar_' + filename3
             )
 
             file3.save(avatar)
             avatar = '/' + avatar
+        else:
+            return {'message': 'invalid avatar file!'}, 400
 
         if 'idCardUrl' in request.files:
             file1 = request.files['idCardUrl']
@@ -219,9 +217,8 @@ class AddSocialWorker(Resource):
             if file1.filename == '':
                 return {'message': 'ERROR OCCURRED --> EMPTY ID CARD!'}, 400
 
-            if file1 and allowed_image(file1.filename):
-                filename = secure_filename(file1.filename)
-                filename1 = generated_code + '.' + filename.split('.')[-1]
+            if extension := valid_image_extension(file1):
+                filename1 = generated_code + extension
 
                 temp_idcard_path = os.path.join(
                     configs.UPLOAD_FOLDER, str(current_id) + '-socialworker'
@@ -231,7 +228,8 @@ class AddSocialWorker(Resource):
                     os.makedirs(temp_idcard_path, exist_ok=True)
 
                 id_card = os.path.join(
-                    temp_idcard_path, str(current_id) + '-idcard_' + filename1
+                    temp_idcard_path,
+                    str(current_id) + '-idcard_' + uuid4().hex + filename1,
                 )
 
                 file1.save(id_card)
@@ -247,9 +245,8 @@ class AddSocialWorker(Resource):
             if file2.filename == '':
                 return {'message': 'ERROR OCCURRED --> EMPTY PASSPORT!'}, 400
 
-            if file2 and allowed_image(file2.filename):
-                filename = secure_filename(file2.filename)
-                filename2 = str(current_id) + '.' + filename.split('.')[-1]
+            if extension := valid_image_extension(file2):
+                filename2 = str(current_id) + extension
 
                 temp_passport_path = os.path.join(
                     configs.UPLOAD_FOLDER, str(current_id) + '-socialworker'
@@ -259,7 +256,8 @@ class AddSocialWorker(Resource):
                     os.makedirs(temp_passport_path, exist_ok=True)
 
                 passport = os.path.join(
-                    temp_passport_path, str(current_id) + '-passport_' + filename2
+                    temp_passport_path,
+                    str(current_id) + uuid4().hex + '-passport_' + filename2,
                 )
 
                 file2.save(passport)
@@ -372,11 +370,8 @@ class UpdateSocialWorker(Resource):
             if file1.filename == '':
                 return {'message': 'ERROR OCCURRED --> EMPTY VOICE!'}, 400
 
-            if file1 and allowed_image(file1.filename):
-                filename = secure_filename(file1.filename)
-                filename1 = (
-                    base_social_worker.generatedCode + '.' + filename.split('.')[-1]
-                )
+            if extension := valid_image_extension(file1):
+                filename1 = base_social_worker.generatedCode + extension
 
                 temp_idcard_path = os.path.join(
                     configs.UPLOAD_FOLDER,
@@ -393,11 +388,13 @@ class UpdateSocialWorker(Resource):
 
                 base_social_worker.idCardUrl = os.path.join(
                     temp_idcard_path,
-                    str(base_social_worker.id) + '-idcard_' + filename1,
+                    str(base_social_worker.id) + '-idcard_' + uuid4().hex + filename1,
                 )
 
                 file1.save(base_social_worker.idCardUrl)
                 base_social_worker.idCardUrl = '/' + base_social_worker.idCardUrl
+            else:
+                return {'message': 'invalid idcard file!'}, 400
 
         if 'passportUrl' in request.files.keys():
             file2 = request.files['passportUrl']
@@ -405,11 +402,8 @@ class UpdateSocialWorker(Resource):
             if file2.filename == '':
                 return {'message': 'ERROR OCCURRED --> EMPTY Passport!'}, 400
 
-            if file2 and allowed_image(file2.filename):
-                filename = secure_filename(file1.filename)
-                filename2 = (
-                    base_social_worker.generatedCode + '.' + filename.split('.')[-1]
-                )
+            if extension := valid_image_extension(file2):
+                filename2 = base_social_worker.generatedCode + uuid4().hex + extension
 
                 temp_passport_path = os.path.join(
                     configs.UPLOAD_FOLDER,
@@ -432,6 +426,8 @@ class UpdateSocialWorker(Resource):
                 file2.save(base_social_worker.passportUrl)
 
                 base_social_worker.passportUrl = '/' + base_social_worker.passportUrl
+            else:
+                return {'message': 'invalid passport file!'}, 400
 
         if 'avatarUrl' in request.files.keys():
             file3 = request.files['avatarUrl']
@@ -439,11 +435,8 @@ class UpdateSocialWorker(Resource):
             if file3.filename == '':
                 return {'message': 'ERROR OCCURRED --> EMPTY Avatar!'}, 400
 
-            if file3 and allowed_image(file3.filename):
-                filename = secure_filename(file1.filename)
-                filename3 = (
-                    base_social_worker.generatedCode + '.' + filename.split('.')[-1]
-                )
+            if extension := valid_image_extension(file3):
+                filename3 = base_social_worker.generatedCode + uuid4().hex + extension
 
                 temp_avatar_path = os.path.join(
                     configs.UPLOAD_FOLDER,
@@ -465,6 +458,8 @@ class UpdateSocialWorker(Resource):
 
                 file3.save(base_social_worker.avatarUrl)
                 base_social_worker.avatarUrl = '/' + base_social_worker.avatarUrl
+            else:
+                return {'message': 'invalid avatar file!'}, 400
 
         if 'id_ngo' in request.form.keys():
             previous_ngo = base_social_worker.id_ngo
@@ -514,9 +509,7 @@ class UpdateSocialWorker(Resource):
             base_social_worker.phoneNumber = request.form['phoneNumber']
 
         if 'emergencyPhoneNumber' in request.form.keys():
-            base_social_worker.emergencyPhoneNumber = request.form[
-                'emergencyPhoneNumber'
-            ]
+            base_social_worker.emergencyPhoneNumber = request.form['emergencyPhoneNumber']
 
         if 'emailAddress' in request.form.keys():
             base_social_worker.emailAddress = request.form['emailAddress']

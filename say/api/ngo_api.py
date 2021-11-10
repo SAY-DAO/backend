@@ -1,10 +1,10 @@
 import os
 from datetime import datetime
+from uuid import uuid4
 
 from flasgger import swag_from
 from flask import request
 from flask_restful import Resource
-from werkzeug.utils import secure_filename
 
 from say.api.ext import api
 from say.authorization import authorize
@@ -17,7 +17,7 @@ from say.models.social_worker_model import SocialWorker
 from say.orm import safe_commit
 from say.orm import session
 from say.roles import *
-from say.validations import allowed_image
+from say.validations import valid_image_extension
 
 
 '''
@@ -69,13 +69,10 @@ class AddNgo(Resource):
         if file.filename == '':
             return {'message': 'ERROR OCCURRED --> EMPTY FILE!'}, 400
 
-        if file and allowed_image(file.filename):
-            filename = secure_filename(file.filename)
-            filename = format(current_id, '03d') + '.' + filename.split('.')[-1]
+        if extension := valid_image_extension(file):
+            filename = format(current_id, '03d') + uuid4().hex + extension
 
-            temp_logo_path = os.path.join(
-                configs.UPLOAD_FOLDER, str(current_id) + '-ngo'
-            )
+            temp_logo_path = os.path.join(configs.UPLOAD_FOLDER, str(current_id) + '-ngo')
 
             if not os.path.isdir(temp_logo_path):
                 os.makedirs(temp_logo_path, exist_ok=True)
@@ -84,6 +81,8 @@ class AddNgo(Resource):
 
             file.save(path)
             path = '/' + path
+        else:
+            return {'message': 'invalid image file!'}, 400
 
         logo_url = path
         country = int(request.form['country'])
@@ -220,9 +219,8 @@ class UpdateNgo(Resource):
             if file.filename == '':
                 return {'message': 'ERROR OCCURRED --> EMPTY FILE!'}, 400
 
-            if file and allowed_image(file.filename):
-                filename = secure_filename(file.filename)
-                filename = format(base_ngo.id, '03d') + '.' + filename.split('.')[-1]
+            if extension := valid_image_extension(file):
+                filename = format(base_ngo.id, '03d') + extension
                 temp_logo_path = os.path.join(
                     configs.UPLOAD_FOLDER, str(base_ngo.id) + '-ngo'
                 )
@@ -242,6 +240,8 @@ class UpdateNgo(Resource):
 
                 file.save(base_ngo.logoUrl)
                 base_ngo.logoUrl = '/' + base_ngo.logoUrl
+            else:
+                return {'message': 'invalid image file!'}, 400
 
         safe_commit(session)
         return base_ngo

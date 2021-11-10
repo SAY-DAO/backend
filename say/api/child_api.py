@@ -51,8 +51,8 @@ from say.roles import SUPER_ADMIN
 from say.roles import USER
 from say.schema.child import NeedSummary
 from say.schema.child import UserChildSchema
-from say.validations import allowed_image
-from say.validations import allowed_voice
+from say.validations import valid_image_extension
+from say.validations import valid_voice_extension
 
 
 def filter_by_confirm(child_query, confirm):
@@ -603,8 +603,8 @@ class AddChild(Resource):
         if not os.path.isdir(need_path):
             os.makedirs(need_path, exist_ok=True)
 
-        if file1 and allowed_voice(file1.filename):
-            filename1 = secure_filename(code + '.' + file1.filename.split('.')[-1])
+        if extension := valid_voice_extension(file1):
+            filename1 = secure_filename(code + extension)
 
             voice_path = os.path.join(
                 child_path,
@@ -612,9 +612,11 @@ class AddChild(Resource):
             )
             file1.save(voice_path)
             new_child.voiceUrl = '/' + voice_path
+        else:
+            return {'message': 'invalid voice file!'}, 400
 
-        if file2 and allowed_image(file2.filename):
-            filename2 = secure_filename(code + '.' + file2.filename.split('.')[-1])
+        if extension := valid_image_extension(file2):
+            filename2 = secure_filename(code + extension)
 
             avatar_path = os.path.join(
                 child_path,
@@ -622,9 +624,11 @@ class AddChild(Resource):
             )
             file2.save(avatar_path)
             new_child.awakeAvatarUrl = '/' + avatar_path
+        else:
+            return {'message': 'invalid awake avatar file!'}, 400
 
-        if file3 and allowed_image(file3.filename):
-            filename3 = secure_filename(code + '.' + file3.filename.split('.')[-1])
+        if extension := valid_image_extension(file3):
+            filename3 = secure_filename(code + extension)
 
             slept_avatar_path = os.path.join(
                 child_path,
@@ -632,6 +636,8 @@ class AddChild(Resource):
             )
             file3.save(slept_avatar_path)
             new_child.sleptAvatarUrl = '/' + slept_avatar_path
+        else:
+            return {'message': 'invalid sleep avatar file!'}, 400
 
         new_child.ngo.childrenCount += 1
         new_child.social_worker.childCount += 1
@@ -710,10 +716,8 @@ class UpdateChildById(Resource):
             if file2.filename == '':
                 return {'message': 'ERROR OCCURRED --> EMPTY AVATAR!'}, 500
 
-            if file2 and allowed_image(file2.filename):
-                filename2 = secure_filename(
-                    primary_child.generatedCode + '.' + file2.filename.split('.')[-1]
-                )
+            if extension := valid_image_extension(file2):
+                filename2 = secure_filename(primary_child.generatedCode + extension)
 
                 temp_avatar_path = os.path.join(
                     configs.UPLOAD_FOLDER, str(primary_child.id) + '-child'
@@ -732,6 +736,8 @@ class UpdateChildById(Resource):
 
                 file2.save(primary_child.awakeAvatarUrl)
                 primary_child.awakeAvatarUrl = '/' + primary_child.awakeAvatarUrl
+            else:
+                return {'message': 'invalid awake avatar file!'}, 400
 
         if 'sleptAvatarUrl' in request.files.keys():
             file3 = request.files['sleptAvatarUrl']
@@ -739,10 +745,8 @@ class UpdateChildById(Resource):
             if file3.filename == '':
                 return {'message': 'ERROR OCCURRED --> EMPTY SLEPT AVATAR!'}, 500
 
-            if file3 and allowed_image(file3.filename):
-                filename2 = secure_filename(
-                    primary_child.generatedCode + '.' + file3.filename.split('.')[-1]
-                )
+            if extension := valid_image_extension(file3):
+                filename2 = secure_filename(primary_child.generatedCode + extension)
 
                 temp_sleptAvatar_path = os.path.join(
                     configs.UPLOAD_FOLDER, str(primary_child.id) + '-child'
@@ -761,6 +765,8 @@ class UpdateChildById(Resource):
 
                 file3.save(primary_child.sleptAvatarUrl)
                 primary_child.sleptAvatarUrl = '/' + primary_child.sleptAvatarUrl
+            else:
+                return {'message': 'invalid slept avatar file!'}, 400
 
         if 'voiceUrl' in request.files.keys():
             file1 = request.files['voiceUrl']
@@ -768,11 +774,8 @@ class UpdateChildById(Resource):
             if file1.filename == '':
                 return {'message': 'ERROR OCCURRED --> EMPTY VOICE!'}, 500
 
-            if file1 and allowed_voice(file1.filename):
-                filename1 = secure_filename(
-                    primary_child.generatedCode + '.' + file1.filename.split('.')[-1]
-                )
-
+            if extension := valid_image_extension(file1):
+                filename1 = secure_filename(primary_child.generatedCode + extension)
                 temp_voice_path = os.path.join(
                     configs.UPLOAD_FOLDER,
                     str(primary_child.id) + '-child',
@@ -791,6 +794,8 @@ class UpdateChildById(Resource):
 
                 file1.save(primary_child.voiceUrl)
                 primary_child.voiceUrl = '/' + primary_child.voiceUrl
+            else:
+                return {'message': 'voice image file!'}, 400
 
         if 'phoneNumber' in request.form.keys():
             primary_child.phoneNumber = request.form['phoneNumber']

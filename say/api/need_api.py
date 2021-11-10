@@ -10,7 +10,6 @@ from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_restful import Resource
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
-from werkzeug.utils import secure_filename
 
 from say.api.ext import api
 from say.authorization import authorize
@@ -46,7 +45,7 @@ from say.roles import USER
 from say.schema import NewReceiptSchema
 from say.schema import ReceiptSchema
 from say.schema.need import AllNeedQuerySchema
-from say.validations import allowed_image
+from say.validations import valid_image_extension
 
 from . import *
 
@@ -246,9 +245,8 @@ class UpdateNeedById(Resource):
             if file.filename == '':
                 return {'message': 'ERROR OCCURRED --> EMPTY FILE!'}, 400
 
-            if file and allowed_image(file.filename):
-                filename = secure_filename(file.filename)
-                filename = str(need.id) + '.' + filename.split('.')[-1]
+            if extension := valid_image_extension(file):
+                filename = str(need.id) + extension
                 for obj in os.listdir(temp_need_path):
                     check = str(need.id) + '-image'
 
@@ -260,6 +258,8 @@ class UpdateNeedById(Resource):
                 )
                 file.save(need.imageUrl)
                 need.imageUrl = '/' + need.imageUrl
+            else:
+                return {'message': 'invalid image file!'}, 400
 
         if 'category' in request.form.keys():
             need.category = int(request.form['category'])
@@ -538,12 +538,11 @@ class AddNeed(Resource):
 
         if 'imageUrl' in request.files:
             file = request.files['imageUrl']
-            filename = secure_filename(file.filename)
-            if not allowed_image(filename):
+            if not valid_image_extension(file):
                 return {'message': 'Invalid image'}, 400
 
-            filename = str(new_need.id) + '.' + filename.split('.')[-1]
-
+            _, extension = os.path.splitext(file.filename)
+            filename = str(new_need.id) + extension
             if not os.path.isdir(temp_need_path):
                 os.makedirs(temp_need_path, exist_ok=True)
 
