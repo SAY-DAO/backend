@@ -774,7 +774,7 @@ class UpdateChildById(Resource):
             if file1.filename == '':
                 return {'message': 'ERROR OCCURRED --> EMPTY VOICE!'}, 500
 
-            if extension := valid_image_extension(file1):
+            if extension := valid_voice_extension(file1):
                 filename1 = secure_filename(primary_child.generatedCode + extension)
                 temp_voice_path = os.path.join(
                     configs.UPLOAD_FOLDER,
@@ -795,7 +795,7 @@ class UpdateChildById(Resource):
                 file1.save(primary_child.voiceUrl)
                 primary_child.voiceUrl = '/' + primary_child.voiceUrl
             else:
-                return {'message': 'voice image file!'}, 400
+                return {'message': 'invalid voice file!'}, 400
 
         if 'phoneNumber' in request.form.keys():
             primary_child.phoneNumber = request.form['phoneNumber']
