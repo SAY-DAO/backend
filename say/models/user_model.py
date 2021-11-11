@@ -8,6 +8,7 @@ from sqlalchemy_utils import PhoneNumberType
 from say.content import content
 from say.gender import Gender
 from say.locale import ChangeLocaleTo
+from say.orm.types import ResourceURL
 from say.render_template_i18n import render_template_i18n
 from say.validations import validate_password as _validate_password
 
@@ -30,8 +31,7 @@ class User(base, Timestamp):
     firstName = Column(String, nullable=False)
     lastName = Column(String, nullable=False)
     userName = Column(String, nullable=False, unique=True)
-    avatarUrl = Column(String, nullable=True)
-    flagUrl = Column(String, nullable=True)
+    avatarUrl = Column(ResourceURL, nullable=True)
     phone_number = Column(PhoneNumberType(), unique=True, index=True, nullable=True)
     country = Column(CountryType, nullable=True)
     city = Column(Integer, nullable=False)  # 1:tehran | 2:karaj

@@ -1,7 +1,6 @@
 import functools
 import os
 from datetime import datetime
-from random import randint
 from uuid import uuid4
 
 from flasgger import swag_from
@@ -134,27 +133,21 @@ class UpdateUserById(Resource):
                 return {'message': 'ERROR OCCURRED --> EMPTY FILE!'}, 400
 
             if extension := valid_image_extension(file):
-                filename = str(user.id) + extension
+                filename = uuid4().hex + extension
 
                 temp_user_path = os.path.join(
                     configs.UPLOAD_FOLDER,
-                    str(user.id) + '-user',
+                    'avatars',
                 )
 
                 if not os.path.isdir(temp_user_path):
                     os.makedirs(temp_user_path, exist_ok=True)
 
-                for obj in os.listdir(temp_user_path):
-                    check = str(user.id) + '-avatar'
-                    if obj.split('_')[0] == check:
-                        os.remove(os.path.join(temp_user_path, obj))
-
                 user.avatarUrl = os.path.join(
                     temp_user_path,
-                    str(user.id) + str(randint(1000, 100000)) + '-avatar_' + filename,
+                    filename,
                 )
                 file.save(user.avatarUrl)
-                user.avatarUrl = '/' + user.avatarUrl
             else:
                 return {'message': 'invalid avatar file!'}, 400
 
