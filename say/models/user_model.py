@@ -31,7 +31,7 @@ class User(base, Timestamp):
     firstName = Column(String, nullable=False)
     lastName = Column(String, nullable=False)
     userName = Column(String, nullable=False, unique=True)
-    avatarUrl = Column(ResourceURL, nullable=True)
+    avatarUrl = Column(Unicode, nullable=True)
     phone_number = Column(PhoneNumberType(), unique=True, index=True, nullable=True)
     country = Column(CountryType, nullable=True)
     city = Column(Integer, nullable=False)  # 1:tehran | 2:karaj

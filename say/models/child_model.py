@@ -44,8 +44,8 @@ class Child(base, Timestamp):
         Integer, nullable=False
     )  # 1:tehran | 2:karaj / [must be change after using real country/city api]
 
-    awakeAvatarUrl = Column(ResourceURL, nullable=False)
-    sleptAvatarUrl = Column(ResourceURL, nullable=False)
+    awakeAvatarUrl = Column(Unicode, nullable=False)
+    sleptAvatarUrl = Column(Unicode, nullable=False)
 
     gender = Column(Boolean, nullable=False)  # true:male | false:female
 
@@ -55,7 +55,7 @@ class Child(base, Timestamp):
     bio_summary_translations = Column(HSTORE)
     bioSummary = translation_hybrid(bio_summary_translations)
     sayFamilyCount = Column(Integer, nullable=False, default=0)
-    voiceUrl = Column(ResourceURL, nullable=False)
+    voiceUrl = Column(Unicode, nullable=False)
     birthPlace = Column(
         Text, nullable=True
     )  # 1:tehran | 2:karaj / [must be change after using real country/city api]

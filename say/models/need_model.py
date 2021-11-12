@@ -36,7 +36,7 @@ class Need(base, Timestamp):
     description_translations = Column(HSTORE)
     description = translation_hybrid(description_translations)
 
-    imageUrl = Column(ResourceURL, nullable=False)
+    imageUrl = Column(Unicode, nullable=False)
     category = Column(
         Integer, nullable=False
     )  # 0:Growth | 1:Joy | 2:Health | 3:Surroundings

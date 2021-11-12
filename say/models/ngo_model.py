@@ -22,7 +22,7 @@ class Ngo(base, Timestamp):
     emailAddress = Column(String, nullable=False)
     phoneNumber = Column(String, nullable=False)
     website = Column(String, nullable=True)
-    logoUrl = Column(ResourceURL, nullable=False)
+    logoUrl = Column(Unicode, nullable=False)
     balance = Column(Integer, nullable=False, default=0)
     socialWorkerCount = Column(Integer, nullable=False, default=0)
     currentSocialWorkerCount = Column(Integer, nullable=False, default=0)
