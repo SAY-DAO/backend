@@ -58,14 +58,14 @@ class TestUpdateUser(BaseTestClass):
             data={'avatarUrl': self.create_test_file('test.jpg')},
         )
         assert res.status_code == 200
-        assert res.json.get('avatarUrl').startswith(configs.BASE_URL)
+        assert res.json.get('avatarUrl').startswith(configs.BASE_RESOURCE_URL)
 
         res = self.client.patch(
             USER_UPDATE_URL % 'me',
             data={'avatarUrl': self.create_test_file('test.png')},
         )
         assert res.status_code == 200
-        assert res.json.get('avatarUrl').startswith(configs.BASE_URL)
+        assert res.json.get('avatarUrl').startswith(configs.BASE_RESOURCE_URL)
 
         res = self.client.patch(
             USER_UPDATE_URL % 'me',
