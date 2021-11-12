@@ -84,17 +84,28 @@ class Payment(base, Timestamp):
 
         session = object_session(self)
 
+        self.transaction_date = transaction_date
+        self.gateway_track_id = track_id or self.order_id
+        self.verified = verify_date
+        self.card_no = card_no
+        self.hashed_card_no = hashed_card_no
+
+        # To update need.paid
+        session.flush()
+        session.expire_all()
+
         if self.id_need is None:
-            self._verify(transaction_date, track_id, verify_date, card_no, hashed_card_no)
             return
 
-        if self.need.paid + self.need_amount >= self.need.cost:
+        session.expire(self.need)
+
+        if self.need.paid >= self.need.cost:
             self.need.done()
         else:
             self.need.status = 1
 
-        self._verify(transaction_date, track_id, verify_date, card_no, hashed_card_no)
         family = self.need.child.family
+
         participant = (
             session.query(NeedFamily)
             .filter_by(id_need=self.id_need)
@@ -123,10 +134,3 @@ class Payment(base, Timestamp):
                 id_family=family.id, user=self.user, need=self.need, user_role=user_role
             )
             session.add(new_participant)
-
-    def _verify(self, transaction_date, track_id, verify_date, card_no, hashed_card_no):
-        self.transaction_date = transaction_date
-        self.gateway_track_id = track_id or self.order_id
-        self.verified = verify_date
-        self.card_no = card_no
-        self.hashed_card_no = hashed_card_no

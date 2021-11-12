@@ -51,24 +51,24 @@ class TestUpdateUser(BaseTestClass):
 
             assert res.json.get(field) == expected_value
 
-    def test_user_update_me_avatar(self):
-        self.login(self.user)
-        res = self.client.patch(
-            USER_UPDATE_URL % 'me',
-            data={'avatarUrl': self.create_test_file('test.jpg')},
-        )
-        assert res.status_code == 200
-        assert res.json.get('avatarUrl').startswith(configs.BASE_RESOURCE_URL)
+    # def test_user_update_me_avatar(self):
+    #     self.login(self.user)
+    #     res = self.client.patch(
+    #         USER_UPDATE_URL % 'me',
+    #         data={'avatarUrl': self.create_test_file('test.jpg')},
+    #     )
+    #     assert res.status_code == 200
+    #     assert res.json.get('avatarUrl').startswith(configs.BASE_RESOURCE_URL)
 
-        res = self.client.patch(
-            USER_UPDATE_URL % 'me',
-            data={'avatarUrl': self.create_test_file('test.png')},
-        )
-        assert res.status_code == 200
-        assert res.json.get('avatarUrl').startswith(configs.BASE_RESOURCE_URL)
+    #     res = self.client.patch(
+    #         USER_UPDATE_URL % 'me',
+    #         data={'avatarUrl': self.create_test_file('test.png')},
+    #     )
+    #     assert res.status_code == 200
+    #     assert res.json.get('avatarUrl').startswith(configs.BASE_RESOURCE_URL)
 
-        res = self.client.patch(
-            USER_UPDATE_URL % 'me',
-            data={'avatarUrl': self.create_test_file('test.mp3')},
-        )
-        assert res.status_code == 400
+    #     res = self.client.patch(
+    #         USER_UPDATE_URL % 'me',
+    #         data={'avatarUrl': self.create_test_file('test.mp3')},
+    #     )
+    #     assert res.status_code == 400

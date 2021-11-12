@@ -348,7 +348,6 @@ class Need(base, Timestamp):
             reminder = refund_amount - int(refund_amount)
             total_reminder += reminder
             refund_amount = refund_amount - reminder
-
             refund_payment = Payment(
                 need=self,
                 user=participant.user,
