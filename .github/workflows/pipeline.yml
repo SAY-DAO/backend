@@ -6,8 +6,8 @@ env:
   STAGING: stag
   PRODUCTION: prod
   MAIN_BRANCH: master
-  DEV_DOMAIN: d.sayapp.company
-  STAGE_DOMAIN: s.sayapp.company
+  DEV_DOMAIN: api.d.sayapp.company
+  STAGE_DOMAIN: api.s.sayapp.company
   PROD_DOMAIN: sayapp.company
   TARGET_LAYER: prod
   TEST_TARGET_LAYER: development
@@ -21,9 +21,9 @@ env:
 on:
   push:
     branches:
-      - 'master'
-      - 'develop'
-      - 'release*'
+      - "master"
+      - "develop"
+      - "release*"
 
 jobs:
   build_and_push:
