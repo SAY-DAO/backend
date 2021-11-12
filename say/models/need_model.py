@@ -8,6 +8,7 @@ from sqlalchemy.orm import object_session
 
 from say.constants import DIGIKALA_TITLE_SEP
 from say.constants import SAY_USER
+from say.orm.types import ResourceURL
 from say.statuses import NeedStatuses
 
 from ..config import configs
@@ -35,7 +36,7 @@ class Need(base, Timestamp):
     description_translations = Column(HSTORE)
     description = translation_hybrid(description_translations)
 
-    imageUrl = Column(String, nullable=False)
+    imageUrl = Column(ResourceURL, nullable=False)
     category = Column(
         Integer, nullable=False
     )  # 0:Growth | 1:Joy | 2:Health | 3:Surroundings

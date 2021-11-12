@@ -240,24 +240,11 @@ class UpdateNeedById(Resource):
             need.cost = new_cost
 
         if 'imageUrl' in request.files.keys():
-            file = request.files['imageUrl']
-
-            if file.filename == '':
-                return {'message': 'ERROR OCCURRED --> EMPTY FILE!'}, 400
-
-            if extension := valid_image_extension(file):
-                filename = str(need.id) + extension
-                for obj in os.listdir(temp_need_path):
-                    check = str(need.id) + '-image'
-
-                    if obj.split('_')[0] == check:
-                        os.remove(os.path.join(temp_need_path, obj))
-
-                need.imageUrl = os.path.join(
-                    temp_need_path, str(need.id) + '-image_' + uuid4().hex + filename
-                )
-                file.save(need.imageUrl)
-                need.imageUrl = '/' + need.imageUrl
+            image_file = request.files['imageUrl']
+            if extension := valid_image_extension(image_file):
+                filename = uuid4().hex + extension
+                need.imageUrl = os.path.join(temp_need_path, filename)
+                image_file.save(need.imageUrl)
             else:
                 return {'message': 'invalid image file!'}, 400
 
@@ -534,24 +521,19 @@ class AddNeed(Resource):
             os.makedirs(needs_path, exist_ok=True)
 
         need_dir = str(new_need.id) + '-need'
-        temp_need_path = os.path.join(needs_path, need_dir)
+        need_path = os.path.join(needs_path, need_dir)
 
         if 'imageUrl' in request.files:
-            file = request.files['imageUrl']
-            if not valid_image_extension(file):
+            image_file = request.files['imageUrl']
+            if extension := valid_image_extension(image_file):
+                image_name = uuid4().hex + extension
+                if not os.path.isdir(need_path):
+                    os.makedirs(need_path, exist_ok=True)
+
+                new_need.imageUrl = os.path.join(need_path, image_name)
+                image_file.save(new_need.imageUrl)
+            else:
                 return {'message': 'Invalid image'}, 400
-
-            _, extension = os.path.splitext(file.filename)
-            filename = str(new_need.id) + extension
-            if not os.path.isdir(temp_need_path):
-                os.makedirs(temp_need_path, exist_ok=True)
-
-            image_path = os.path.join(
-                temp_need_path, str(new_need.id) + '-image_' + filename
-            )
-
-            file.save(image_path)
-            new_need.imageUrl = '/' + image_path
 
         safe_commit(session)
 
