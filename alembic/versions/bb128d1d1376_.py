@@ -63,7 +63,7 @@ def upgrade():
     for ngo in ngos:
         ngo.logoUrl = fix_path(ngo.logoUrl)
 
-    raise
+    session.commit()
 
 
 def downgrade():
