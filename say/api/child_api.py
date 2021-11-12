@@ -17,7 +17,6 @@ from flask_restful import Resource
 from flask_restful import abort
 from sqlalchemy import or_
 from sqlalchemy.orm import selectinload
-from werkzeug.utils import secure_filename
 
 from say import crud
 from say.api.ext import api
@@ -482,12 +481,6 @@ class AddChild(Resource):
 
         code = sw.generatedCode + format(sw.childCount + 1, '04d')
 
-        avatar_path, slept_avatar_path, voice_path = (
-            'wrong avatar',
-            'wrong avatar',
-            'wrong voice',
-        )
-
         if 'nationality' in request.form.keys():
             nationality = int(request.form['nationality'])
         else:
@@ -549,8 +542,8 @@ class AddChild(Resource):
         new_child = Child(
             phoneNumber=phone_number,
             nationality=nationality,
-            awakeAvatarUrl=avatar_path,
-            sleptAvatarUrl=slept_avatar_path,
+            awakeAvatarUrl='',
+            sleptAvatarUrl='',
             housingStatus=housing_status,
             firstName_translations=first_name_translations,
             lastName_translations=last_name_translations,
@@ -559,7 +552,7 @@ class AddChild(Resource):
             birthPlace=birth_place,
             birthDate=birth_date,
             address=address,
-            voiceUrl=voice_path,
+            voiceUrl='',
             id_ngo=ngo_id,
             id_social_worker=sw_id,
             sayname_translations=sayname_translations,
@@ -575,21 +568,16 @@ class AddChild(Resource):
         session.add(new_child)
         session.flush()
 
-        if 'voiceUrl' not in request.files or 'awakeAvatarUrl' not in request.files:
+        if (
+            'voiceUrl' not in request.files
+            or 'awakeAvatarUrl' not in request.files
+            or 'sleptAvatarUrl' not in request.files
+        ):
             return {'message': 'error occured in file uploading!'}, 400
 
-        file1 = request.files['voiceUrl']
-        file2 = request.files['awakeAvatarUrl']
-        file3 = request.files['sleptAvatarUrl']
-
-        if file1.filename == '':
-            return {'message': 'ERROR OCCURRED --> EMPTY VOICE!'}, 400
-
-        if file2.filename == '':
-            return {'message': 'error occurred --> empty avatar!'}, 500
-
-        if file3.filename == '':
-            return {'message': 'error occurred --> empty slept avatar!'}, 500
+        voice_file = request.files['voiceUrl']
+        awake_avatar_file = request.files['awakeAvatarUrl']
+        slpet_avatar_file = request.files['sleptAvatarUrl']
 
         child_path = os.path.join(
             configs.UPLOAD_FOLDER,
@@ -603,47 +591,30 @@ class AddChild(Resource):
         if not os.path.isdir(need_path):
             os.makedirs(need_path, exist_ok=True)
 
-        if extension := valid_voice_extension(file1):
-            filename1 = secure_filename(code + extension)
-
-            voice_path = os.path.join(
-                child_path,
-                str(new_child.id) + '-voice_' + filename1,
-            )
-            file1.save(voice_path)
-            new_child.voiceUrl = '/' + voice_path
+        if extension := valid_voice_extension(voice_file):
+            voice_name = uuid4().hex + extension
+            new_child.voiceUrl = os.path.join(child_path, voice_name)
+            voice_file.save(new_child.voiceUrl)
         else:
             return {'message': 'invalid voice file!'}, 400
 
-        if extension := valid_image_extension(file2):
-            filename2 = secure_filename(code + extension)
-
-            avatar_path = os.path.join(
-                child_path,
-                str(new_child.id) + '-avatar_' + filename2,
-            )
-            file2.save(avatar_path)
-            new_child.awakeAvatarUrl = '/' + avatar_path
+        if extension := valid_image_extension(awake_avatar_file):
+            awake_avatar_name = uuid4().hex + extension
+            new_child.awakeAvatarUrl = os.path.join(child_path, awake_avatar_name)
+            awake_avatar_file.save(new_child.awakeAvatarUrl)
         else:
             return {'message': 'invalid awake avatar file!'}, 400
 
-        if extension := valid_image_extension(file3):
-            filename3 = secure_filename(code + extension)
-
-            slept_avatar_path = os.path.join(
-                child_path,
-                str(new_child.id) + '-slept-avatar_' + filename3,
-            )
-            file3.save(slept_avatar_path)
-            new_child.sleptAvatarUrl = '/' + slept_avatar_path
+        if extension := valid_image_extension(slpet_avatar_file):
+            slept_avatar_name = uuid4().hex + extension
+            new_child.sleptAvatarUrl = os.path.join(child_path, slept_avatar_name)
+            slpet_avatar_file.save(new_child.sleptAvatarUrl)
         else:
             return {'message': 'invalid sleep avatar file!'}, 400
 
         new_child.ngo.childrenCount += 1
         new_child.social_worker.childCount += 1
-
         safe_commit(session)
-
         return new_child
 
 
@@ -711,89 +682,48 @@ class UpdateChildById(Resource):
             os.makedirs(need_path, exist_ok=True)
 
         if 'awakeAvatarUrl' in request.files.keys():
-            file2 = request.files['awakeAvatarUrl']
-
-            if file2.filename == '':
-                return {'message': 'ERROR OCCURRED --> EMPTY AVATAR!'}, 500
-
-            if extension := valid_image_extension(file2):
-                filename2 = secure_filename(primary_child.generatedCode + extension)
+            awake_avatar_file = request.files['awakeAvatarUrl']
+            if extension := valid_image_extension(awake_avatar_file):
+                awake_avatar_name = uuid4().hex + extension
 
                 temp_avatar_path = os.path.join(
                     configs.UPLOAD_FOLDER, str(primary_child.id) + '-child'
                 )
 
-                for obj in os.listdir(temp_avatar_path):
-                    check = str(primary_child.id) + '-avatar'
-
-                    if obj.split('_')[0] == check:
-                        os.remove(os.path.join(temp_avatar_path, obj))
-
                 primary_child.awakeAvatarUrl = os.path.join(
                     temp_avatar_path,
-                    str(primary_child.id) + '-avatar_' + uuid4().hex + filename2,
+                    str(primary_child.id) + awake_avatar_name,
                 )
 
-                file2.save(primary_child.awakeAvatarUrl)
-                primary_child.awakeAvatarUrl = '/' + primary_child.awakeAvatarUrl
+                awake_avatar_file.save(primary_child.awakeAvatarUrl)
             else:
                 return {'message': 'invalid awake avatar file!'}, 400
 
         if 'sleptAvatarUrl' in request.files.keys():
-            file3 = request.files['sleptAvatarUrl']
-
-            if file3.filename == '':
-                return {'message': 'ERROR OCCURRED --> EMPTY SLEPT AVATAR!'}, 500
-
-            if extension := valid_image_extension(file3):
-                filename2 = secure_filename(primary_child.generatedCode + extension)
-
-                temp_sleptAvatar_path = os.path.join(
+            slept_avatar_file = request.files['sleptAvatarUrl']
+            if extension := valid_image_extension(slept_avatar_file):
+                slept_avatar_name = uuid4().hex + extension
+                slept_avatar_path = os.path.join(
                     configs.UPLOAD_FOLDER, str(primary_child.id) + '-child'
                 )
 
-                for obj in os.listdir(temp_sleptAvatar_path):
-                    check = str(primary_child.id) + '-sleptAvatar'
-
-                    if obj.split('_')[0] == check:
-                        os.remove(os.path.join(temp_sleptAvatar_path, obj))
-
                 primary_child.sleptAvatarUrl = os.path.join(
-                    temp_sleptAvatar_path,
-                    str(primary_child.id) + '-sleptAvatar_' + uuid4().hex + filename2,
+                    slept_avatar_path, slept_avatar_name
                 )
-
-                file3.save(primary_child.sleptAvatarUrl)
-                primary_child.sleptAvatarUrl = '/' + primary_child.sleptAvatarUrl
+                slept_avatar_file.save(primary_child.sleptAvatarUrl)
             else:
                 return {'message': 'invalid slept avatar file!'}, 400
 
         if 'voiceUrl' in request.files.keys():
-            file1 = request.files['voiceUrl']
-
-            if file1.filename == '':
-                return {'message': 'ERROR OCCURRED --> EMPTY VOICE!'}, 500
-
-            if extension := valid_voice_extension(file1):
-                filename1 = secure_filename(primary_child.generatedCode + extension)
-                temp_voice_path = os.path.join(
+            voice_file = request.files['voiceUrl']
+            if extension := valid_voice_extension(voice_file):
+                voice_name = uuid4().hex + extension
+                voice_path = os.path.join(
                     configs.UPLOAD_FOLDER,
                     str(primary_child.id) + '-child',
                 )
-
-                for obj in os.listdir(temp_voice_path):
-                    check = str(primary_child.id) + '-voice'
-
-                    if obj.split('_')[0] == check:
-                        os.remove(os.path.join(temp_voice_path, obj))
-
-                primary_child.voiceUrl = os.path.join(
-                    temp_voice_path,
-                    str(primary_child.id) + '-voice_' + uuid4().hex + filename1,
-                )
-
-                file1.save(primary_child.voiceUrl)
-                primary_child.voiceUrl = '/' + primary_child.voiceUrl
+                primary_child.voiceUrl = os.path.join(voice_path, voice_name)
+                voice_file.save(primary_child.voiceUrl)
             else:
                 return {'message': 'invalid voice file!'}, 400
 

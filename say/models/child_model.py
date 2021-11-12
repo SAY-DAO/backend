@@ -5,6 +5,8 @@ from sqlalchemy.dialects.postgresql import HSTORE
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import column_property
 
+from say.orm.types import ResourceURL
+
 from ..orm import session
 from . import *
 from .need_model import Need
@@ -42,8 +44,8 @@ class Child(base, Timestamp):
         Integer, nullable=False
     )  # 1:tehran | 2:karaj / [must be change after using real country/city api]
 
-    awakeAvatarUrl = Column(String, nullable=False)
-    sleptAvatarUrl = Column(String, nullable=False)
+    awakeAvatarUrl = Column(ResourceURL, nullable=False)
+    sleptAvatarUrl = Column(ResourceURL, nullable=False)
 
     gender = Column(Boolean, nullable=False)  # true:male | false:female
 
@@ -53,7 +55,7 @@ class Child(base, Timestamp):
     bio_summary_translations = Column(HSTORE)
     bioSummary = translation_hybrid(bio_summary_translations)
     sayFamilyCount = Column(Integer, nullable=False, default=0)
-    voiceUrl = Column(String, nullable=False)
+    voiceUrl = Column(ResourceURL, nullable=False)
     birthPlace = Column(
         Text, nullable=True
     )  # 1:tehran | 2:karaj / [must be change after using real country/city api]
