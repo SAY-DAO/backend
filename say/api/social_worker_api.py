@@ -123,6 +123,7 @@ class AddSocialWorker(Resource):
         phone_number = request.form['phoneNumber']
         emergency_phone_number = request.form['emergencyPhoneNumber']
         email_address = request.form['emailAddress']
+        password = request.form['password']
 
         register_date = datetime.utcnow()
         last_login_date = datetime.utcnow()
@@ -152,6 +153,7 @@ class AddSocialWorker(Resource):
             firstName=first_name,
             lastName=last_name,
             userName=username,
+            password=password,
             birthCertificateNumber=birth_certificate_number,
             idNumber=id_number,
             gender=gender,
@@ -168,7 +170,6 @@ class AddSocialWorker(Resource):
             lastLoginDate=last_login_date,
             passportNumber=passport_number,
             generatedCode=generated_code,
-            password='',
             passportUrl='',
             avatarUrl='',
             idCardUrl='',
@@ -176,103 +177,65 @@ class AddSocialWorker(Resource):
 
         session.add(new_social_worker)
         session.flush()
-        current_id = new_social_worker.id
 
-        password = md5(('SayPanel' + str(current_id)).encode()).hexdigest()
-
-        id_card, passport, avatar = (
-            'wrong id card',
-            'wrong passport',
-            'wrong avatar',
-        )
         if 'avatarUrl' not in request.files:
-            return {'message': 'ERROR OCCURRED IN FILE UPLOADING!'}, 400
+            return {'message': 'Avatar is needed'}, 400
 
-        file3 = request.files['avatarUrl']
-        if file3.filename == '':
-            return {'message': 'ERROR OCCURRED --> EMPTY AVATAR!'}, 400
-
-        if extension := valid_image_extension(file3):
-            filename3 = generated_code + extension
-
-            temp_avatar_path = os.path.join(
-                configs.UPLOAD_FOLDER, str(current_id) + '-socialworker'
+        avatar_file = request.files['avatarUrl']
+        if extension := valid_image_extension(avatar_file):
+            avatar_name = uuid4().hex + extension
+            avatar_path = os.path.join(
+                configs.UPLOAD_FOLDER,
+                'social-workers/avatars',
             )
 
-            if not os.path.isdir(temp_avatar_path):
-                os.makedirs(temp_avatar_path, exist_ok=True)
+            if not os.path.isdir(avatar_path):
+                os.makedirs(avatar_path, exist_ok=True)
 
-            avatar = os.path.join(
-                temp_avatar_path, str(current_id) + uuid4().hex + '-avatar_' + filename3
-            )
-
-            file3.save(avatar)
-            avatar = '/' + avatar
+            avatar = os.path.join((avatar_path, avatar_name))
+            avatar_file.save(avatar)
+            new_social_worker.avatarUrl = avatar
         else:
             return {'message': 'invalid avatar file!'}, 400
 
         if 'idCardUrl' in request.files:
-            file1 = request.files['idCardUrl']
+            id_card_file = request.files['idCardUrl']
 
-            if file1.filename == '':
-                return {'message': 'ERROR OCCURRED --> EMPTY ID CARD!'}, 400
+            if extension := valid_image_extension(id_card_file):
+                id_card_name = uuid4().hex + extension
 
-            if extension := valid_image_extension(file1):
-                filename1 = generated_code + extension
-
-                temp_idcard_path = os.path.join(
-                    configs.UPLOAD_FOLDER, str(current_id) + '-socialworker'
+                id_card_path = os.path.join(
+                    configs.UPLOAD_FOLDER, 'social-workers/id-cards'
                 )
 
-                if not os.path.isdir(temp_idcard_path):
-                    os.makedirs(temp_idcard_path, exist_ok=True)
+                if not os.path.isdir(id_card_path):
+                    os.makedirs(id_card_path, exist_ok=True)
 
-                id_card = os.path.join(
-                    temp_idcard_path,
-                    str(current_id) + '-idcard_' + uuid4().hex + filename1,
-                )
-
-                file1.save(id_card)
-
-            id_card_url = '/' + id_card
-
-        else:
-            id_card_url = None
+                id_card = os.path.join(id_card_path, id_card_name)
+                id_card_file.save(id_card)
+                new_social_worker.idCardUrl = id_card
+            else:
+                return {'message': 'invalid id card file!'}, 400
 
         if 'passportUrl' in request.files:
-            file2 = request.files['passportUrl']
+            passport_file = request.files['passportUrl']
 
-            if file2.filename == '':
-                return {'message': 'ERROR OCCURRED --> EMPTY PASSPORT!'}, 400
+            if extension := valid_image_extension(passport_file):
+                passport_name = uuid4().hex + extension
 
-            if extension := valid_image_extension(file2):
-                filename2 = str(current_id) + extension
-
-                temp_passport_path = os.path.join(
-                    configs.UPLOAD_FOLDER, str(current_id) + '-socialworker'
+                passport_path = os.path.join(
+                    configs.UPLOAD_FOLDER, 'social-workers/passports'
                 )
 
-                if not os.path.isdir(temp_passport_path):
-                    os.makedirs(temp_passport_path, exist_ok=True)
+                if not os.path.isdir(passport_path):
+                    os.makedirs(passport_path, exist_ok=True)
 
-                passport = os.path.join(
-                    temp_passport_path,
-                    str(current_id) + uuid4().hex + '-passport_' + filename2,
-                )
+                passport = os.path.join(passport_path, passport_name)
+                passport_file.save(passport)
+                new_social_worker.passportUrl = passport
+            else:
+                return {'message': 'invalid passport file!'}, 400
 
-                file2.save(passport)
-
-            passport_url = '/' + passport
-
-        else:
-            passport_url = None
-
-        avatar_url = avatar
-
-        new_social_worker.password = (password,)
-        new_social_worker.passportUrl = (passport_url,)
-        new_social_worker.avatarUrl = (avatar_url,)
-        new_social_worker.idCardUrl = (id_card_url,)
         safe_commit(session)
         return new_social_worker
 

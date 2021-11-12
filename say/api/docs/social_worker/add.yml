@@ -6,7 +6,6 @@ You have to insert the international codes for countries and cities.
 Adding birthCertificateNumber, idCardUrl, passportNumber, passportUrl, birthDate, postalAddress, bankAccountNumber, bankAccountShebaNumber and bankAccountCardNumber is optional.
 For idCardUrl, passportUrl and avatarUrl you have to upload a file.
 ---
-
 tags:
   - Social Worker API
 
@@ -19,7 +18,7 @@ parameters:
     description: Access Token
     required: true
     type: string
-   
+
   - name: id_ngo
     in: formData
     type: integer
@@ -36,6 +35,11 @@ parameters:
   - name: id_type
     in: formData
     type: integer
+    required: true
+
+  - name: password
+    in: formData
+    type: string
     required: true
 
   - name: firstName

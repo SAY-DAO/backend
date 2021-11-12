@@ -1,12 +1,12 @@
 from argon2 import PasswordHasher
 from babel import Locale
-from celery import exceptions
 from sqlalchemy.orm import object_session
 from sqlalchemy.orm import synonym
 from sqlalchemy_utils import LocaleType
 
 from say.formatters import expose_datetime
 from say.locale import ChangeLocaleTo
+from say.orm.types import ResourceURL
 from say.render_template_i18n import render_template_i18n
 from say.utils import surname
 from say.validations import validate_password as _validate_password
@@ -39,9 +39,9 @@ class SocialWorker(base, Timestamp):
     _password = Column(String(256), nullable=False)
     birthCertificateNumber = Column(String, nullable=True)
     idNumber = Column(String, nullable=False)
-    idCardUrl = Column(String, nullable=True)
+    idCardUrl = Column(ResourceURL, nullable=True)
     passportNumber = Column(String, nullable=True)
-    passportUrl = Column(String, nullable=True)
+    passportUrl = Column(ResourceURL, nullable=True)
     gender = Column(Boolean, nullable=False)
     birthDate = Column(Date, nullable=True)
     phoneNumber = Column(String, nullable=False)
@@ -49,7 +49,7 @@ class SocialWorker(base, Timestamp):
     emailAddress = Column(String, nullable=False)
     telegramId = Column(String, nullable=False)
     postalAddress = Column(Text, nullable=True)
-    avatarUrl = Column(String, nullable=False)
+    avatarUrl = Column(ResourceURL, nullable=False)
     childCount = Column(Integer, nullable=False, default=0)
     currentChildCount = Column(Integer, nullable=False, default=0)
     needCount = Column(Integer, nullable=False, default=0)
@@ -166,9 +166,7 @@ class SocialWorker(base, Timestamp):
                         surname=surname(self.gender),
                         date=date,
                         use_plural=use_plural,
-                        date_formater=lambda dt: expose_datetime(
-                            dt, locale=get_locale()
-                        ),
+                        date_formater=lambda dt: expose_datetime(dt, locale=get_locale()),
                         locale=locale,
                     ),
                 )
