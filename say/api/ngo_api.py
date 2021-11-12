@@ -55,36 +55,22 @@ class AddNgo(Resource):
     @json
     @swag_from('./docs/ngo/add.yml')
     def post(self):
-        if len(session.query(Ngo).all()):
-            last_ngo = session.query(Ngo).order_by(Ngo.id.desc()).first()
-            current_id = last_ngo.id + 1
-        else:
-            current_id = 1
-
-        path = 'some wrong url'
         if 'logoUrl' not in request.files:
-            return {'message': 'ERROR OCCURRED IN FILE UPLOADING!'}, 400
+            return {'message': 'Logo is required!'}, 400
 
-        file = request.files['logoUrl']
-        if file.filename == '':
-            return {'message': 'ERROR OCCURRED --> EMPTY FILE!'}, 400
+        logo_file = request.files['logoUrl']
+        if extension := valid_image_extension(logo_file):
+            logo_name = uuid4().hex + extension
+            logo_path = os.path.join(configs.UPLOAD_FOLDER, 'ngos/logos')
 
-        if extension := valid_image_extension(file):
-            filename = format(current_id, '03d') + uuid4().hex + extension
+            if not os.path.isdir(logo_path):
+                os.makedirs(logo_path, exist_ok=True)
 
-            temp_logo_path = os.path.join(configs.UPLOAD_FOLDER, str(current_id) + '-ngo')
-
-            if not os.path.isdir(temp_logo_path):
-                os.makedirs(temp_logo_path, exist_ok=True)
-
-            path = os.path.join(temp_logo_path, str(current_id) + '-logo_' + filename)
-
-            file.save(path)
-            path = '/' + path
+            logo = os.path.join(logo_path, logo_name)
+            logo_file.save(logo)
         else:
             return {'message': 'invalid image file!'}, 400
 
-        logo_url = path
         country = int(request.form['country'])
         city = int(request.form['city'])
         try:
@@ -118,7 +104,7 @@ class AddNgo(Resource):
             postalAddress=postal_address,
             emailAddress=email_address,
             phoneNumber=phone_number,
-            logoUrl=logo_url,
+            logoUrl=logo,
             balance=balance,
             registerDate=register_date,
             website=website,
@@ -214,32 +200,17 @@ class UpdateNgo(Resource):
             base_ngo.balance = request.form['balance']
 
         if 'logoUrl' in request.files.keys():
-            file = request.files['logoUrl']
+            logo_file = request.files['logoUrl']
+            if extension := valid_image_extension(logo_file):
+                logo_name = uuid4().hex + extension
+                logo_path = os.path.join(configs.UPLOAD_FOLDER, 'ngos/logos')
 
-            if file.filename == '':
-                return {'message': 'ERROR OCCURRED --> EMPTY FILE!'}, 400
+                if not os.path.isdir(logo_path):
+                    os.makedirs(logo_path, exist_ok=True)
 
-            if extension := valid_image_extension(file):
-                filename = format(base_ngo.id, '03d') + extension
-                temp_logo_path = os.path.join(
-                    configs.UPLOAD_FOLDER, str(base_ngo.id) + '-ngo'
-                )
-
-                if not os.path.isdir(temp_logo_path):
-                    os.makedirs(temp_logo_path, exist_ok=True)
-
-                for obj in os.listdir(temp_logo_path):
-                    check = str(base_ngo.id) + '-logo'
-
-                    if obj.split('_')[0] == check:
-                        os.remove(os.path.join(temp_logo_path, obj))
-
-                base_ngo.logoUrl = os.path.join(
-                    temp_logo_path, str(base_ngo.id) + '-logo_' + filename
-                )
-
-                file.save(base_ngo.logoUrl)
-                base_ngo.logoUrl = '/' + base_ngo.logoUrl
+                logo = os.path.join(logo_path, logo_name)
+                logo_file.save(logo)
+                base_ngo.logoUrl = logo
             else:
                 return {'message': 'invalid image file!'}, 400
 

@@ -318,109 +318,73 @@ class UpdateSocialWorker(Resource):
             session.query(SocialWorker)
             .filter_by(id=social_worker_id)
             .filter_by(isDeleted=False)
-            .first()
+            .one_or_none()
         )
+        if base_social_worker is None:
+            raise HTTP_NOT_FOUND()
 
         if get_user_role() in [COORDINATOR, NGO_SUPERVISOR]:  # TODO: priv
             user_id = get_user_id()
-            user = session.query(SocialWorker).get(user_id)
-            if user.id_ngo != base_social_worker.id_ngo:
+            user = session.query(SocialWorker).one_or_none(user_id)
+            if user is None or user.id_ngo != base_social_worker.id_ngo:
                 raise HTTP_PERMISION_DENIED()
 
         if 'idCardUrl' in request.files.keys():
-            file1 = request.files['idCardUrl']
+            id_card_file = request.files['idCardUrl']
 
-            if file1.filename == '':
+            if id_card_file.filename == '':
                 return {'message': 'ERROR OCCURRED --> EMPTY VOICE!'}, 400
 
-            if extension := valid_image_extension(file1):
-                filename1 = base_social_worker.generatedCode + extension
-
-                temp_idcard_path = os.path.join(
+            if extension := valid_image_extension(id_card_file):
+                id_card_name = uuid4().hex + extension
+                id_card_path = os.path.join(
                     configs.UPLOAD_FOLDER,
-                    str(base_social_worker.id) + '-socialworker',
+                    'social-workers/id-cards',
                 )
 
-                if not os.path.isdir(temp_idcard_path):
-                    os.makedirs(temp_idcard_path, exist_ok=True)
+                if not os.path.isdir(id_card_path):
+                    os.makedirs(id_card_path, exist_ok=True)
 
-                for obj in os.listdir(temp_idcard_path):
-                    check = str(base_social_worker.id) + '-idcard'
-                    if obj.split('_')[0] == check:
-                        os.remove(os.path.join(temp_idcard_path, obj))
-
-                base_social_worker.idCardUrl = os.path.join(
-                    temp_idcard_path,
-                    str(base_social_worker.id) + '-idcard_' + uuid4().hex + filename1,
-                )
-
-                file1.save(base_social_worker.idCardUrl)
-                base_social_worker.idCardUrl = '/' + base_social_worker.idCardUrl
+                base_social_worker.idCardUrl = os.path.join(id_card_path, id_card_name)
+                id_card_file.save(base_social_worker.idCardUrl)
             else:
-                return {'message': 'invalid idcard file!'}, 400
+                return {'message': 'invalid id card file!'}, 400
 
         if 'passportUrl' in request.files.keys():
-            file2 = request.files['passportUrl']
-
-            if file2.filename == '':
-                return {'message': 'ERROR OCCURRED --> EMPTY Passport!'}, 400
-
-            if extension := valid_image_extension(file2):
-                filename2 = base_social_worker.generatedCode + uuid4().hex + extension
-
-                temp_passport_path = os.path.join(
+            passport_file = request.files['passportUrl']
+            if extension := valid_image_extension(passport_file):
+                passport_name = uuid4().hex + extension
+                passport_path = os.path.join(
                     configs.UPLOAD_FOLDER,
-                    str(base_social_worker.id) + '-socialworker',
+                    'social-workers/passports',
                 )
 
-                if not os.path.isdir(temp_passport_path):
-                    os.makedirs(temp_passport_path, exist_ok=True)
-
-                for obj in os.listdir(temp_passport_path):
-                    check = str(base_social_worker.id) + '-passport'
-                    if obj.split('_')[0] == check:
-                        os.remove(os.path.join(temp_passport_path, obj))
+                if not os.path.isdir(passport_path):
+                    os.makedirs(passport_path, exist_ok=True)
 
                 base_social_worker.passportUrl = os.path.join(
-                    temp_passport_path,
-                    str(base_social_worker.id) + '-passport_' + filename2,
+                    passport_path, passport_name
                 )
 
-                file2.save(base_social_worker.passportUrl)
-
-                base_social_worker.passportUrl = '/' + base_social_worker.passportUrl
+                passport_file.save(base_social_worker.passportUrl)
             else:
                 return {'message': 'invalid passport file!'}, 400
 
         if 'avatarUrl' in request.files.keys():
-            file3 = request.files['avatarUrl']
+            avatar_file = request.files['avatarUrl']
+            if extension := valid_image_extension(avatar_file):
+                avatar_name = uuid4().hex + extension
 
-            if file3.filename == '':
-                return {'message': 'ERROR OCCURRED --> EMPTY Avatar!'}, 400
-
-            if extension := valid_image_extension(file3):
-                filename3 = base_social_worker.generatedCode + uuid4().hex + extension
-
-                temp_avatar_path = os.path.join(
+                avatar_path = os.path.join(
                     configs.UPLOAD_FOLDER,
-                    str(base_social_worker.id) + '-socialworker',
+                    'social-workers/avatars',
                 )
 
-                if not os.path.isdir(temp_avatar_path):
-                    os.makedirs(temp_avatar_path, exist_ok=True)
+                if not os.path.isdir(avatar_path):
+                    os.makedirs(avatar_path, exist_ok=True)
 
-                for obj in os.listdir(temp_avatar_path):
-                    check = str(base_social_worker.id) + '-avatar'
-                    if obj.split('_')[0] == check:
-                        os.remove(os.path.join(temp_avatar_path, obj))
-
-                base_social_worker.avatarUrl = os.path.join(
-                    temp_avatar_path,
-                    str(base_social_worker.id) + '-avatar_' + filename3,
-                )
-
-                file3.save(base_social_worker.avatarUrl)
-                base_social_worker.avatarUrl = '/' + base_social_worker.avatarUrl
+                base_social_worker.avatarUrl = os.path.join(avatar_path, avatar_name)
+                avatar_file.save(base_social_worker.avatarUrl)
             else:
                 return {'message': 'invalid avatar file!'}, 400
 
