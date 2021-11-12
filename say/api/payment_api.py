@@ -255,7 +255,6 @@ class VerifyPayment(Resource):
             return make_response(unsuccessful_response)
 
         user = session.query(User).with_for_update().get(pending_payment.id_user)
-
         need = session.query(Need).with_for_update().get(pending_payment.id_need)
 
         if need.isDone:

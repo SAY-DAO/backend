@@ -5,6 +5,7 @@ from say.api.payment_api import validate_amount
 from say.config import configs
 from say.exceptions import AmountTooHigh
 from say.exceptions import AmountTooLow
+from say.models import Payment
 from tests.helper import BaseTestClass
 
 
@@ -150,6 +151,7 @@ class TestPayment(BaseTestClass):
             need=self.need,
             user=self.user,
             need_amount=self.need.cost / 2,
+            verified=None,
         )
         p1.verify()
         self.session.save(p1)
@@ -164,12 +166,21 @@ class TestPayment(BaseTestClass):
             json=data,
         )
         assert res.status_code == 200
+        self.session.expire(p1.need)
+        assert p1.need.isDone is False
+        assert p1.need.status == 1
+        p2 = self.session.query(Payment).get(res.json['id'])
 
         res = self.client.post(
             PAYMENT_V2_URL,
             json={**data, 'amount': self.need.unpaid_cost + 1},
         )
         assert res.status_code == 422
+
+        p2.verify()
+        self.session.expire(p2.need)
+        assert p1.need.isDone is True
+        assert p1.need.status == 2
 
     def test_add_payment_done_need(self, mocker):
         mocker.patch.object(
