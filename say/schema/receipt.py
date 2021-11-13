@@ -42,7 +42,7 @@ class UpdateReceiptSchema(CamelModel):
         os.makedirs(receipt_path, exist_ok=True)
         _, extension = os.path.splitext(v.filename)
         v.filename = uuid4().hex + extension
-        v.filepath = f'{receipt_path}/'
+        v.filepath = f'{receipt_path}/{v.filename}'
 
         return v
 
