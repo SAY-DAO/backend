@@ -31,8 +31,7 @@ class UpdateReceiptSchema(CamelModel):
         if not isinstance(v, FileStorage):
             raise ValueError('attachment must be file')
 
-        _, extension = os.path.splitext(v.filename)
-        if not valid_receipt_extension(extension):
+        if not valid_receipt_extension(v):
             raise ValueError(f'attachment must be {ALLOWED_RECEIPT_EXTENSIONS}')
 
         receipt_path = os.path.join(
@@ -41,7 +40,7 @@ class UpdateReceiptSchema(CamelModel):
         )
 
         os.makedirs(receipt_path, exist_ok=True)
-
+        _, extension = os.path.splitext(v.filename)
         v.filename = uuid4().hex + extension
         v.filepath = f'{receipt_path}/'
 
