@@ -1,6 +1,7 @@
 from hashlib import sha256
 from os.path import join
 
+from _pytest import config
 from sqlalchemy.orm import column_property
 from sqlalchemy_utils import CountryType
 from sqlalchemy_utils import LocaleType
@@ -35,7 +36,7 @@ class User(base, Timestamp):
     lastName = Column(String, nullable=False)
     userName = Column(String, nullable=False, unique=True)
     avatarUrl = Column(
-        LocalFile(dst=join(configs.UPLOAD_FOLDER, __tablename__, 'avatars')),
+        LocalFile(dst='users/avatars'),
         nullable=True,
         unique=True,
     )

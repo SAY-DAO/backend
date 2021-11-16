@@ -1,22 +1,11 @@
-import os
 import shutil
 import tempfile
 
 import pytest
 import sqlalchemy.orm.session
-from flask.testing import FlaskClient
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
-
-from say.api.ext import limiter
-from say.app import app
-from say.config import configs
-from say.db import PostgreSQLManager as DBManager
-from say.orm import create_engine
-from say.orm import init_model
-from say.orm import session
-from say.orm import setup_schema
 
 
 # class CustomClient(FlaskClient):
@@ -31,6 +20,11 @@ from say.orm import setup_schema
 
 @pytest.fixture
 def flask_app():
+    from say.api.ext import limiter
+    from say.app import app
+    from say.config import configs
+
+    configs.UPLOAD_FOLDER = tempfile.mkdtemp()
     app.testing = True
     limiter.enabled = False
     return app
@@ -38,6 +32,10 @@ def flask_app():
 
 @pytest.fixture
 def client(flask_app):
+    print(2)
+    from say.app import app
+    from say.config import configs
+
     with app.test_client() as client:
         # if token := client._authorization:
         #     client.environ_base['Authorization'] = f'Bearer {token}'
@@ -49,6 +47,12 @@ def client(flask_app):
 
 @pytest.fixture(scope='function')
 def db():
+    from say.config import configs
+    from say.db import PostgreSQLManager as DBManager
+    from say.orm import create_engine
+    from say.orm import init_model
+    from say.orm import setup_schema
+
     # Drop the previously created db if exists.
     with DBManager(
         url=configs.postgres_test_url, admin_url=configs.postgres_admin_url

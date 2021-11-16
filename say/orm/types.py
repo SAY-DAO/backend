@@ -40,7 +40,8 @@ class LocalFile(types.TypeDecorator):
 
     params:
         base_url: the base url to use for the file url
-        dst: the destination folder to store the file
+        base_dir: the base directory to use for the file path
+        dst: the destination folder inside base_dir to store the file
         keep_name: whether to keep the original filename or not
         filename_length: the length of the random filename
 
@@ -49,12 +50,14 @@ class LocalFile(types.TypeDecorator):
     def __init__(
         self,
         base_url=configs.BASE_RESOURCE_URL,
-        dst=configs.UPLOAD_FOLDER,
+        base_dir=None,
+        dst=None,
         keep_name=False,
         filename_length=8,
         **kwargs,
     ):
         self.base_url = base_url
+        self.base_dir = base_dir
         self.dst = dst
         self.keep_name = keep_name
         self.filename_length = filename_length
@@ -77,10 +80,15 @@ class LocalFile(types.TypeDecorator):
                 _, extension = os.path.splitext(value.filename)
                 name = f'{random_string(self.filename_length)}{extension}'
 
-            if not os.path.isdir(self.dst):
-                os.makedirs(self.dst, exist_ok=True)
+            base_path = os.path.join(
+                self.base_dir or configs.UPLOAD_FOLDER,
+                self.dst or '',
+            )
 
-            path = os.path.join(self.dst, name)
+            if not os.path.isdir(base_path):
+                os.makedirs(base_path, exist_ok=True)
+
+            path = os.path.join(base_path, name)
             value.save(path)
             return path
 
