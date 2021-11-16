@@ -1,3 +1,7 @@
+import secrets
+import string
+
+
 def surname(gender):
     surname = ''
 
@@ -11,3 +15,8 @@ def surname(gender):
 
 def clean_input(input: str):
     return input.strip()
+
+
+def random_string(length=10):
+    letters = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(letters) for i in range(length))

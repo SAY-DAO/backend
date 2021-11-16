@@ -132,24 +132,10 @@ class UpdateUserById(Resource):
             if file.filename == '':
                 return {'message': 'ERROR OCCURRED --> EMPTY FILE!'}, 400
 
-            if extension := valid_image_extension(file):
-                filename = uuid4().hex + extension
-
-                temp_user_path = os.path.join(
-                    configs.UPLOAD_FOLDER,
-                    'avatars',
-                )
-
-                if not os.path.isdir(temp_user_path):
-                    os.makedirs(temp_user_path, exist_ok=True)
-
-                user.avatarUrl = os.path.join(
-                    temp_user_path,
-                    filename,
-                )
-                file.save(user.avatarUrl)
-            else:
+            if not valid_image_extension(file):
                 return {'message': 'invalid avatar file!'}, 400
+
+            user.avatarUrl = file
 
         raw_username = request.form.get('userName', user.userName)
         if raw_username != user.userName:
