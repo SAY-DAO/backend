@@ -1,3 +1,4 @@
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import column_property
 
 from . import *
@@ -18,10 +19,10 @@ class NeedFamily(base, Timestamp):
     id_user = Column(Integer, ForeignKey('user.id'), nullable=True, index=True)
     id_need = Column(Integer, ForeignKey('need.id'), nullable=False, index=True)
     isDeleted = Column(Boolean, nullable=False, default=False, index=True)
-    username = Column(Text, nullable=False, default='')
     type = Column(Text, nullable=False)
-    user_avatar = Column(Text, nullable=True)
     user_role = Column(Integer, nullable=True)
+    user_avatar = association_proxy('user', 'avatarUrl')
+    username = association_proxy('user', 'userName')
 
     paid = column_property(
         select([coalesce(func.sum(Payment.need_amount), 0,)]).where(
@@ -32,14 +33,6 @@ class NeedFamily(base, Timestamp):
             )
         )
     )
-
-    @observes('user.avatarUrl')
-    def user_avatar_observer(self, avatar):
-        self.user_avatar = avatar
-
-    @observes('user.userName')
-    def username_observer(self, username):
-        self.username = username
 
     family = relationship(
         "Family",
