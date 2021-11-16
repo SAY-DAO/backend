@@ -1,7 +1,6 @@
 from hashlib import sha256
 from os.path import join
 
-from _pytest import config
 from sqlalchemy.orm import column_property
 from sqlalchemy_utils import CountryType
 from sqlalchemy_utils import LocaleType
