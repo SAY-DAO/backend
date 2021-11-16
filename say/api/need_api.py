@@ -179,7 +179,6 @@ class GetNeedById(Resource):
     @swag_from('./docs/need/id.yml')
     def get(self, need_id):
         need_query = session.query(Need).filter_by(isDeleted=False).filter_by(id=need_id)
-
         need = filter_by_privilege(need_query, get=True).one_or_none()
 
         if need is None:
@@ -187,7 +186,9 @@ class GetNeedById(Resource):
 
         need_dict = obj_to_dict(need)
 
-        need_dict['participants'] = [obj_to_dict(p) for p in need.current_participants]
+        need_dict['participants'] = [
+            obj_to_dict(p, proxys=True) for p in need.current_participants
+        ]
         return need_dict
 
 

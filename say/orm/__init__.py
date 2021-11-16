@@ -59,7 +59,7 @@ def init_model(engine):
 
 
 # this function converts an object to a python dictionary
-def obj_to_dict(obj, relationships=False):
+def obj_to_dict(obj, relationships=False, proxys=False):
     if isinstance(obj, dict):
         return obj
 
@@ -73,7 +73,7 @@ def obj_to_dict(obj, relationships=False):
         return obj
 
     result = {}
-    for k, c in columns(obj, relationships):
+    for k, c in columns(obj, relationships, proxys=proxys):
         key, value = k, getattr(obj, k)
 
         if key.startswith('_'):
@@ -105,7 +105,9 @@ def obj_to_dict(obj, relationships=False):
     return result
 
 
-def columns(obj, relationships=False, synonyms=True, composites=False, hybrids=True):
+def columns(
+    obj, relationships=False, synonyms=True, composites=False, hybrids=True, proxys=False
+):
     cls = obj.__class__
 
     mapper = inspect(cls)
@@ -114,13 +116,11 @@ def columns(obj, relationships=False, synonyms=True, composites=False, hybrids=T
         if k == '__mapper__':
             continue
 
-        if c.extension_type == ASSOCIATION_PROXY:
-            continue
-
         if (
             (not hybrids and c.extension_type == HYBRID_PROPERTY)
             or (not relationships and k in mapper.relationships)
             or (not synonyms and k in mapper.synonyms)
+            or (not proxys and c.extension_type == ASSOCIATION_PROXY)
         ):
             continue
 
