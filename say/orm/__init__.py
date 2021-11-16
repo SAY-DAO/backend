@@ -106,7 +106,12 @@ def obj_to_dict(obj, relationships=False, proxys=False):
 
 
 def columns(
-    obj, relationships=False, synonyms=True, composites=False, hybrids=True, proxys=False
+    obj,
+    relationships=False,
+    synonyms=True,
+    composites=False,
+    hybrids=True,
+    proxys=True,
 ):
     cls = obj.__class__
 
