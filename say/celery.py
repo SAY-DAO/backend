@@ -43,7 +43,7 @@ beat = {
     },
     'check_unverified_payments': {
         'task': 'say.tasks.check_unverified_payments.check_unverified_payments',
-        'schedule': crontab(hour=1),
+        'schedule': crontab(minute=59),
     },
 }
 
