@@ -36,12 +36,12 @@ def upgrade():
         raw_user = list(filter(lambda u: u[0] == user.id, user_avatars))[0]
         avatar = raw_user[1]
 
-        if (
-            avatar is None
-            or avatar == ''
-            or avatar == '/public/resources/img/default-avatar.png'
-        ):
+        if avatar is None:
+            continue
+
+        if avatar == '' or avatar == '/public/resources/img/default-avatar.png':
             user.avatarUrl = None
+            session.commit()
             continue
 
         avatar = avatar[1:]
