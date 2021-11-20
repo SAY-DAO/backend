@@ -49,7 +49,7 @@ def check_unverified_payments(self):
     unverified_payments = self.session.query(Payment.id).filter(
         Payment.link.isnot(None),
         Payment.verified.is_(None),
-        datetime.utcnow() - Payment.created <= timedelta(hours=24 * 7),
+        datetime.utcnow() - Payment.created <= timedelta(hours=4),
     )
 
     t = []
