@@ -105,7 +105,7 @@ class SocialWorker(base, Timestamp):
         with app.app_context(), ChangeLocaleTo(self.locale):
             needs = (
                 session.query(Need)
-                .filter(Need.isReported != True)
+                .filter(Need.isReported.isnot(True))
                 .filter(Need.status == 3)
                 .join(ChildNeed)
                 .join(Child)
