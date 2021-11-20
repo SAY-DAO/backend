@@ -95,4 +95,7 @@ class LocalFile(types.TypeDecorator):
         raise ValueError("Unsupported type for LocalFile")
 
     def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+            
         return urljoin(self.base_url, value)
