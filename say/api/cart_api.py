@@ -72,6 +72,7 @@ class CartAPI(Resource):
 
     @authorize(USER)
     @json
+    @commit
     @swag_from('./docs/cart/put.yml')
     def put(self):
         try:
@@ -191,9 +192,7 @@ class CartPaymentAPI(Resource):
             return e.json(), 400
 
         user_id = get_user_id()
-        cart = (
-            session.query(Cart).filter(Cart.user_id == user_id).with_for_update().one()
-        )
+        cart = session.query(Cart).filter(Cart.user_id == user_id).with_for_update().one()
 
         order_id = generate_order_id()
         if len(cart.needs) == 0:
