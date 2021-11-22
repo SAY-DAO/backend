@@ -161,4 +161,4 @@ class Config(object):
         )
 
 
-configs = Config()
+configs: Config = Config()
