@@ -38,41 +38,41 @@ def upgrade():
         print(f'#{i}/{total_count}, user avatar #{user.id}')
         raw_user = list(filter(lambda u: u[0] == user.id, user_avatars))[0]
 
-        try:
-            if not raw_user[1]:
-                user.avatar = None
-                session.commit()
-            else:
-                avatar = raw_user[1][1:]
+        if not raw_user[1]:
+            user.avatar = None
+            session.commit()
+        else:
+            avatar = raw_user[1][1:]
+            try:
                 with open(avatar, 'rb') as f:
                     user.avatarUrl = FileStorage(f, filename=avatar)
                     session.commit()
-        except FileNotFoundError:
-            pass
+            except FileNotFoundError:
+                pass
 
-        try:
-            if not raw_user[2]:
-                user.idCardUrl = None
-                session.commit()
-            else:
-                idCardUrl = raw_user[2][1:]
+        if not raw_user[2]:
+            user.idCardUrl = None
+            session.commit()
+        else:
+            idCardUrl = raw_user[2][1:]
+            try:
                 with open(idCardUrl, 'rb') as f:
                     user.idCardUrl = FileStorage(f, filename=idCardUrl)
                     session.commit()
-        except FileNotFoundError:
-            pass
+            except FileNotFoundError:
+                pass
 
-        try:
-            if not raw_user[3] or raw_user[3] == '/':
-                user.passportUrl = None
-                session.commit()
-            else:
-                passportUrl = raw_user[3][1:]
+        if not raw_user[3] or raw_user[3] == '/':
+            user.passportUrl = None
+            session.commit()
+        else:
+            passportUrl = raw_user[3][1:]
+            try:
                 with open(passportUrl, 'rb') as f:
                     user.passportUrl = FileStorage(f, filename=passportUrl)
                     session.commit()
-        except FileNotFoundError:
-            pass
+            except FileNotFoundError:
+                pass
 
     op.create_unique_constraint(
         op.f('social_worker_avatarUrl_key'), 'social_worker', ['avatarUrl']

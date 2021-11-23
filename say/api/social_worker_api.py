@@ -70,7 +70,8 @@ class AddSocialWorker(Resource):
             password = request.form['password']
             if not validate_password(password):
                 raise HTTPException(
-                    status_code=400, message='password must be atleast 6 character'
+                    status_code=400,
+                    message='password must be atleast 6 character',
                 )
         else:
             raise HTTPException(status_code=400, message='password is required')
@@ -314,7 +315,7 @@ class UpdateSocialWorker(Resource):
         if 'passportUrl' in request.files.keys():
             passport_file = request.files['passportUrl']
             if valid_image_extension(passport_file):
-                base_social_worker.passport_file = passport_file
+                base_social_worker.passportUrl = passport_file
             else:
                 return {'message': 'invalid passport file!'}, 400
 
@@ -398,7 +399,13 @@ class UpdateSocialWorker(Resource):
             ]
 
         if 'password' in request.form.keys():
-            base_social_worker.password = request.form['password']
+            password = request.form['password']
+            if not validate_password(password):
+                raise HTTPException(
+                    status_code=400,
+                    message='password must be atleast 6 character',
+                )
+            base_social_worker.password = password
 
         if ngo_change:
             that_ngo = (

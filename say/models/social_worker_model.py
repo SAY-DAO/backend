@@ -41,13 +41,13 @@ class SocialWorker(base, Timestamp):
     birthCertificateNumber = Column(String, nullable=True)
     idNumber = Column(String, nullable=False)
     idCardUrl = Column(
-        LocalFile(dst='sws/id-cards', filename_length=16),
+        LocalFile(dst='social-workers/id-cards', filename_length=64),
         nullable=True,
         unique=True,
     )
     passportNumber = Column(String, nullable=True)
     passportUrl = Column(
-        LocalFile(dst='sws/passports', filename_length=16),
+        LocalFile(dst='social-workers/passports', filename_length=64),
         nullable=True,
         unique=True,
     )
@@ -59,7 +59,7 @@ class SocialWorker(base, Timestamp):
     telegramId = Column(String, nullable=False)
     postalAddress = Column(Text, nullable=True)
     avatarUrl = Column(
-        LocalFile(dst='sws/avatars', filename_length=8),
+        LocalFile(dst='social-workers/avatars', filename_length=64),
         unique=True,
         nullable=False,
     )
