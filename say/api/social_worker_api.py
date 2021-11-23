@@ -126,6 +126,33 @@ class AddSocialWorker(Resource):
         else:
             birth_date = None
 
+        if 'avatarUrl' not in request.files:
+            return {'message': 'Avatar is needed'}, 400
+
+        avatar_file = request.files['avatarUrl']
+        if valid_image_extension(avatar_file):
+            avatarUrl = avatar_file
+        else:
+            return {'message': 'invalid avatar file!'}, 400
+
+        if 'idCardUrl' in request.files:
+            id_card_file = request.files['idCardUrl']
+            if valid_image_extension(id_card_file):
+                idCardUrl = id_card_file
+            else:
+                return {'message': 'invalid id card file!'}, 400
+        else:
+            idCardUrl = None
+
+        if 'passportUrl' in request.files:
+            passport_file = request.files['passportUrl']
+            if valid_image_extension(passport_file):
+                passportUrl = passport_file
+            else:
+                return {'message': 'invalid passport file!'}, 400
+        else:
+            passportUrl = None
+
         telegram_id = request.form['telegramId']
         id_number = request.form['idNumber']
         id_ngo = int(request.form['id_ngo'])
@@ -181,37 +208,12 @@ class AddSocialWorker(Resource):
             lastLoginDate=last_login_date,
             passportNumber=passport_number,
             generatedCode=generated_code,
-            passportUrl='',
-            avatarUrl='',
-            idCardUrl='',
+            avatarUrl=avatarUrl,
+            idCardUrl=idCardUrl,
+            passportUrl=passportUrl,
         )
 
         session.add(new_social_worker)
-        session.flush()
-
-        if 'avatarUrl' not in request.files:
-            return {'message': 'Avatar is needed'}, 400
-
-        avatar_file = request.files['avatarUrl']
-        if valid_image_extension(avatar_file):
-            new_social_worker.avatarUrl = avatar_file
-        else:
-            return {'message': 'invalid avatar file!'}, 400
-
-        if 'idCardUrl' in request.files:
-            id_card_file = request.files['idCardUrl']
-            if valid_image_extension(id_card_file):
-                new_social_worker.idCardUrl = id_card_file
-            else:
-                return {'message': 'invalid id card file!'}, 400
-
-        if 'passportUrl' in request.files:
-            passport_file = request.files['passportUrl']
-            if valid_image_extension(passport_file):
-                new_social_worker.passportUrl = passport_file
-            else:
-                return {'message': 'invalid passport file!'}, 400
-
         safe_commit(session)
         return new_social_worker
 
