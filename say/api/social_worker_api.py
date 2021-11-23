@@ -182,57 +182,22 @@ class AddSocialWorker(Resource):
             return {'message': 'Avatar is needed'}, 400
 
         avatar_file = request.files['avatarUrl']
-        if extension := valid_image_extension(avatar_file):
-            avatar_name = uuid4().hex + extension
-            avatar_path = os.path.join(
-                configs.UPLOAD_FOLDER,
-                'social-workers/avatars',
-            )
-
-            if not os.path.isdir(avatar_path):
-                os.makedirs(avatar_path, exist_ok=True)
-
-            avatar = os.path.join((avatar_path, avatar_name))
-            avatar_file.save(avatar)
-            new_social_worker.avatarUrl = avatar
+        if valid_image_extension(avatar_file):
+            new_social_worker.avatarUrl = avatar_file
         else:
             return {'message': 'invalid avatar file!'}, 400
 
         if 'idCardUrl' in request.files:
             id_card_file = request.files['idCardUrl']
-
-            if extension := valid_image_extension(id_card_file):
-                id_card_name = uuid4().hex + extension
-
-                id_card_path = os.path.join(
-                    configs.UPLOAD_FOLDER, 'social-workers/id-cards'
-                )
-
-                if not os.path.isdir(id_card_path):
-                    os.makedirs(id_card_path, exist_ok=True)
-
-                id_card = os.path.join(id_card_path, id_card_name)
-                id_card_file.save(id_card)
-                new_social_worker.idCardUrl = id_card
+            if valid_image_extension(id_card_file):
+                new_social_worker.idCardUrl = id_card_file
             else:
                 return {'message': 'invalid id card file!'}, 400
 
         if 'passportUrl' in request.files:
             passport_file = request.files['passportUrl']
-
-            if extension := valid_image_extension(passport_file):
-                passport_name = uuid4().hex + extension
-
-                passport_path = os.path.join(
-                    configs.UPLOAD_FOLDER, 'social-workers/passports'
-                )
-
-                if not os.path.isdir(passport_path):
-                    os.makedirs(passport_path, exist_ok=True)
-
-                passport = os.path.join(passport_path, passport_name)
-                passport_file.save(passport)
-                new_social_worker.passportUrl = passport
+            if valid_image_extension(passport_file):
+                new_social_worker.passportUrl = passport_file
             else:
                 return {'message': 'invalid passport file!'}, 400
 
@@ -331,60 +296,22 @@ class UpdateSocialWorker(Resource):
 
         if 'idCardUrl' in request.files.keys():
             id_card_file = request.files['idCardUrl']
-
-            if id_card_file.filename == '':
-                return {'message': 'ERROR OCCURRED --> EMPTY VOICE!'}, 400
-
-            if extension := valid_image_extension(id_card_file):
-                id_card_name = uuid4().hex + extension
-                id_card_path = os.path.join(
-                    configs.UPLOAD_FOLDER,
-                    'social-workers/id-cards',
-                )
-
-                if not os.path.isdir(id_card_path):
-                    os.makedirs(id_card_path, exist_ok=True)
-
-                base_social_worker.idCardUrl = os.path.join(id_card_path, id_card_name)
-                id_card_file.save(base_social_worker.idCardUrl)
+            if valid_image_extension(id_card_file):
+                base_social_worker.idCardUrl = id_card_file
             else:
                 return {'message': 'invalid id card file!'}, 400
 
         if 'passportUrl' in request.files.keys():
             passport_file = request.files['passportUrl']
-            if extension := valid_image_extension(passport_file):
-                passport_name = uuid4().hex + extension
-                passport_path = os.path.join(
-                    configs.UPLOAD_FOLDER,
-                    'social-workers/passports',
-                )
-
-                if not os.path.isdir(passport_path):
-                    os.makedirs(passport_path, exist_ok=True)
-
-                base_social_worker.passportUrl = os.path.join(
-                    passport_path, passport_name
-                )
-
-                passport_file.save(base_social_worker.passportUrl)
+            if valid_image_extension(passport_file):
+                base_social_worker.passport_file = passport_file
             else:
                 return {'message': 'invalid passport file!'}, 400
 
         if 'avatarUrl' in request.files.keys():
             avatar_file = request.files['avatarUrl']
-            if extension := valid_image_extension(avatar_file):
-                avatar_name = uuid4().hex + extension
-
-                avatar_path = os.path.join(
-                    configs.UPLOAD_FOLDER,
-                    'social-workers/avatars',
-                )
-
-                if not os.path.isdir(avatar_path):
-                    os.makedirs(avatar_path, exist_ok=True)
-
-                base_social_worker.avatarUrl = os.path.join(avatar_path, avatar_name)
-                avatar_file.save(base_social_worker.avatarUrl)
+            if valid_image_extension(avatar_file):
+                base_social_worker.avatarUrl = avatar_file
             else:
                 return {'message': 'invalid avatar file!'}, 400
 

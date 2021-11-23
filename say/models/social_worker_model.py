@@ -6,6 +6,7 @@ from sqlalchemy_utils import LocaleType
 
 from say.formatters import expose_datetime
 from say.locale import ChangeLocaleTo
+from say.orm.types import LocalFile
 from say.orm.types import ResourceURL
 from say.render_template_i18n import render_template_i18n
 from say.utils import surname
@@ -39,9 +40,17 @@ class SocialWorker(base, Timestamp):
     _password = Column(String(256), nullable=False)
     birthCertificateNumber = Column(String, nullable=True)
     idNumber = Column(String, nullable=False)
-    idCardUrl = Column(ResourceURL, nullable=True)
+    idCardUrl = Column(
+        LocalFile(dst='sws/id-cards', filename_length=16),
+        nullable=True,
+        unique=True,
+    )
     passportNumber = Column(String, nullable=True)
-    passportUrl = Column(ResourceURL, nullable=True)
+    passportUrl = Column(
+        LocalFile(dst='sws/passports', filename_length=16),
+        nullable=True,
+        unique=True,
+    )
     gender = Column(Boolean, nullable=False)
     birthDate = Column(Date, nullable=True)
     phoneNumber = Column(String, nullable=False)
@@ -49,7 +58,11 @@ class SocialWorker(base, Timestamp):
     emailAddress = Column(String, nullable=False)
     telegramId = Column(String, nullable=False)
     postalAddress = Column(Text, nullable=True)
-    avatarUrl = Column(ResourceURL, nullable=False)
+    avatarUrl = Column(
+        LocalFile(dst='sws/avatars', filename_length=8),
+        unique=True,
+        nullable=False,
+    )
     childCount = Column(Integer, nullable=False, default=0)
     currentChildCount = Column(Integer, nullable=False, default=0)
     needCount = Column(Integer, nullable=False, default=0)
