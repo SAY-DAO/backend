@@ -14,6 +14,7 @@ from say.models.ngo_model import Ngo
 from say.models.social_worker_model import SocialWorker
 from say.orm import safe_commit
 from say.orm import session
+from say.validations import validate_password
 
 from ..authorization import authorize
 from ..authorization import get_user_id
@@ -22,6 +23,7 @@ from ..config import configs
 from ..decorators import json
 from ..exceptions import HTTP_NOT_FOUND
 from ..exceptions import HTTP_PERMISION_DENIED
+from ..exceptions import HTTPException
 from ..roles import *
 from ..schema.social_worker import MigrateSocialWorkerChildrenSchema
 from ..validations import valid_image_extension
@@ -64,6 +66,15 @@ class AddSocialWorker(Resource):
     @json
     @swag_from('./docs/social_worker/add.yml')
     def post(self):
+        if 'password' in request.form.keys():
+            password = request.form['password']
+            if not validate_password(password):
+                raise HTTPException(
+                    status_code=400, message='password must be atleast 6 character'
+                )
+        else:
+            raise HTTPException(status_code=400, message='password is required')
+
         if 'country' in request.form.keys():
             country = int(request.form['country'])
         else:
@@ -123,7 +134,6 @@ class AddSocialWorker(Resource):
         phone_number = request.form['phoneNumber']
         emergency_phone_number = request.form['emergencyPhoneNumber']
         email_address = request.form['emailAddress']
-        password = request.form['password']
 
         register_date = datetime.utcnow()
         last_login_date = datetime.utcnow()
