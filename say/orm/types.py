@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from io import BytesIO
 from urllib.parse import urljoin
 
 from sqlalchemy import types
@@ -73,29 +74,36 @@ class LocalFile(types.TypeDecorator):
             return value
 
         elif isinstance(value, FileStorage):
-            if self.keep_name:
-                timestamp = int(datetime.utcnow().timestamp())
-                name = f'{timestamp}_{secure_filename(value.filename)}'
-            else:
-                _, extension = os.path.splitext(value.filename)
-                name = f'{random_string(self.filename_length)}{extension}'
+            return self._save(value)
 
-            base_path = os.path.join(
-                self.base_dir or configs.UPLOAD_FOLDER,
-                self.dst or '',
-            )
-
-            if not os.path.isdir(base_path):
-                os.makedirs(base_path, exist_ok=True)
-
-            path = os.path.join(base_path, name)
-            value.save(path)
-            return path
+        elif isinstance(value, tuple):
+            value = FileStorage(value[0], filename=value[1])
+            return self._save(value)
 
         raise ValueError("Unsupported type for LocalFile")
+
+    def _save(self, value):
+        if self.keep_name:
+            timestamp = int(datetime.utcnow().timestamp())
+            name = f'{timestamp}_{secure_filename(value.filename)}'
+        else:
+            _, extension = os.path.splitext(value.filename)
+            name = f'{random_string(self.filename_length)}{extension}'
+
+        base_path = os.path.join(
+            self.base_dir or configs.UPLOAD_FOLDER,
+            self.dst or '',
+        )
+
+        if not os.path.isdir(base_path):
+            os.makedirs(base_path, exist_ok=True)
+
+        path = os.path.join(base_path, name)
+        value.save(path)
+        return path
 
     def process_result_value(self, value, dialect):
         if value is None:
             return None
-            
+
         return urljoin(self.base_url, value)

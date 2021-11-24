@@ -31,6 +31,7 @@ from say.models.cart import Cart
 from say.models.cart import CartNeed
 from say.models.receipt import NeedReceipt
 from say.roles import SUPER_ADMIN
+from say.utils import random_string
 
 
 LOGIN_URL = '/api/v2/auth/login'
@@ -104,7 +105,7 @@ class BaseTestClass:
             lastName=f'test{seed}',
             userName=f'test{seed}',
             password=password,
-            avatarUrl=f'{seed}',
+            avatarUrl=self.create_test_file('test.png'),
             emailAddress=f'{seed}test@test.com',
             phoneNumber='09121111111',
             gender=1,
@@ -141,7 +142,7 @@ class BaseTestClass:
                     password='password',
                     firstName=f'test{seed}',
                     lastName=f'test{seed}',
-                    avatarUrl=str(seed),
+                    avatarUrl=self.create_test_file('test.png'),
                     city=1,
                     country=1,
                     lastLogin=datetime.utcnow(),
@@ -285,7 +286,7 @@ class BaseTestClass:
             gender=False,
             emergencyPhoneNumber=str(seed),
             telegramId=str(seed),
-            avatarUrl=str(seed),
+            avatarUrl=self.create_test_file('test.png'),
             emailAddress=f'{str(seed)}@email.com',
             phoneNumber=str(seed),
             password='abcefg123',
