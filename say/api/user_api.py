@@ -129,9 +129,6 @@ class UpdateUserById(Resource):
 
         if 'avatarUrl' in request.files.keys():
             file = request.files['avatarUrl']
-            if file.filename == '':
-                return {'message': 'ERROR OCCURRED --> EMPTY FILE!'}, 400
-
             if not valid_image_extension(file):
                 return {'message': 'invalid avatar file!'}, 400
 
