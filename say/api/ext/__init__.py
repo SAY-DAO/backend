@@ -1,6 +1,7 @@
 from logging import getLogger
 
 import redis
+from flask import request
 from flask_jwt_extended import JWTManager
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -26,6 +27,23 @@ redis_client = redis.Redis(configs.REDIS_HOST, configs.REDIS_PORT)
 mail = Mail()
 limiter = Limiter(key_func=get_remote_address)
 logger = getLogger('main')
+
+
+CLOUDFLARE_IP_HEADER_KEY = 'Cf-Connecting-Ip'
+
+
+def get_remote_address():
+
+    """
+    :return: the ip address for the current request
+     (or 127.0.0.1 if none found)
+
+    """
+    return (
+        request.headers.get(CLOUDFLARE_IP_HEADER_KEY)
+        or request.remote_addr
+        or '127.0.0.1'
+    )
 
 
 def setup_healthz(app):
