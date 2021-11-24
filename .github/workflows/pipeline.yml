@@ -8,7 +8,7 @@ env:
   MAIN_BRANCH: master
   DEV_DOMAIN: api.d.sayapp.company
   STAGE_DOMAIN: api.s.sayapp.company
-  PROD_DOMAIN: sayapp.company
+  PROD_DOMAIN: api.sayapp.company
   TARGET_LAYER: prod
   TEST_TARGET_LAYER: development
   DEV_STACK_NAME: say-dev-backend
