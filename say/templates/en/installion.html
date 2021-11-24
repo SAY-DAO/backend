@@ -1,28 +1,27 @@
 <!-- Reset password -->
-     
-{% extends "en/base.html" %}
-{% block title %}
-   The easier access to say 
-{% endblock %}
-{% block img %}
-    <!-- TODO: change to jpg. DO NOT MISS THE URL IN APP -->
-    <img src="https://sayapp.company/public/resources/img/add_to_home_v1.png" style="height: 100px;" />
-{% endblock %}
-{% block tcontent %}
-    The easier access to say
-{% endblock %}
-{% block mcontent %}
-    To ease of access, please install the SAY application.
-    <a href={{link}} style="
-                        display: block;
-                        text-decoration: none;
-                        font-size: 42px;
-                        margin-top: 20px;
-                        margin: 10px 0;
-                        color: #4a67ce;
-                        font-family: roboto, 'Roboto';"
-        >
-            Install
-        </a>
+
+{% extends "en/base.html" %} {% block title %} The easier access to say {%
+endblock %} {% block img %}
+<!-- TODO: change to jpg. DO NOT MISS THE URL IN APP -->
+<img
+  src="https://api.sayapp.company/public/resources/img/add_to_home_v1.png"
+  style="height: 100px"
+/>
+{% endblock %} {% block tcontent %} The easier access to say {% endblock %} {%
+block mcontent %} To ease of access, please install the SAY application.
+<a
+  href="{{link}}"
+  style="
+    display: block;
+    text-decoration: none;
+    font-size: 42px;
+    margin-top: 20px;
+    margin: 10px 0;
+    color: #4a67ce;
+    font-family: roboto, 'Roboto';
+  "
+>
+  Install
+</a>
 
 {% endblock %}

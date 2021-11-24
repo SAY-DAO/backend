@@ -1,19 +1,12 @@
 <!-- Verification email -->
 
-{% extends "fa/base.html" %}
-{% block title %}
-    SAY Email Verification
-{% endblock %}
-{% block img %}
-    <img src="https://sayapp.company/public/resources/img/verification_v2.png" style="height: 100px;" />
-{% endblock %}
-{% block tcontent %}
-    Enter the code below on the App
-{% endblock %}
-{% block mcontent %}
-    <p style="
-        font-size: 42px;
-        ">
-        {{code[:3]}}-{{code[3:]}}
-    </p>
+{% extends "fa/base.html" %} {% block title %} SAY Email Verification {%
+endblock %} {% block img %}
+<img
+  src="https://api.sayapp.company/public/resources/img/verification_v2.png"
+  style="height: 100px"
+/>
+{% endblock %} {% block tcontent %} Enter the code below on the App {% endblock
+%} {% block mcontent %}
+<p style="font-size: 42px">{{code[:3]}}-{{code[3:]}}</p>
 {% endblock %}

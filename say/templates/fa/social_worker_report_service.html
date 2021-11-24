@@ -1,89 +1,119 @@
 <!-- Report to Social Worker - SERVICE -->
 
-{% extends "fa/base.html" %}
-{% block title %}
-    اطلاع از واریز وجه
-{% endblock %}
+{% extends "fa/base.html" %} {% block title %} اطلاع از واریز وجه {% endblock %}
 {% block img %}
-    <img src="https://sayapp.company/public/resources/img/ngo_report_service_v2.png" style="height: 100px;" />
-{% endblock %}
-{% block tcontent %}
-    اطلاع از واریز وجه
-{% endblock %}
-{% block mcontent %}
-    <strong>
-        {{surname}} {{social_worker.firstName}} {{social_worker.lastName}}
-    </strong>    
-    <p style="
-            font-family: iranyekan, Tahoma; 
-            font-size: 16px;
-            color: #515151;
-            ">
-            با سلام
-            <br />
-            این ایمیل جهت اطلاع شما از واریز وجه در تاریخ {{date}} برای کودکان تحت مراقبت شما است. در ادامه جزئیات این تراکنش آمده است، لطفا ملاحظه فرمایید.
-    </p>
+<img
+  src="https://api.sayapp.company/public/resources/img/ngo_report_service_v2.png"
+  style="height: 100px"
+/>
+{% endblock %} {% block tcontent %} اطلاع از واریز وجه {% endblock %} {% block
+mcontent %}
+<strong>
+  {{surname}} {{social_worker.firstName}} {{social_worker.lastName}}
+</strong>
+<p style="font-family: iranyekan, Tahoma; font-size: 16px; color: #515151">
+  با سلام
+  <br />
+  این ایمیل جهت اطلاع شما از واریز وجه در تاریخ {{date}} برای کودکان تحت مراقبت
+  شما است. در ادامه جزئیات این تراکنش آمده است، لطفا ملاحظه فرمایید.
+</p>
 
-    <table dir="rtl" style="
-            border: 2px solid #cccccc;
-            border-collapse: collapse;
-            font-family: iranyekan, Tahoma; 
-            color: #515151;
-            direction: rtl;
-            text-align: center;
-            font-weight: normal;
-            width: 90%;
-            max-width: 500px; 
-            margin: 0 auto 30px;">
-        <thead>
-            <tr>
-                <td style="
-                    font-family: iranyekan, Tahoma; 
-                    border: 2px solid #cccccc;
-                    padding: 20px 2px;
-                    ">ردیف</td>
-                <td style="
-                    font-family: iranyekan, Tahoma; 
-                    border: 2px solid #cccccc;
-                    padding: 20px 2px;
-                    ">کودک</td>
-                <td style="
-                    font-family: iranyekan, Tahoma; 
-                    border: 2px solid #cccccc;
-                    padding: 20px 2px;
-                    ">سرویس</td>
-                <td style="
-                    font-family: iranyekan, Tahoma; 
-                    border: 2px solid #cccccc;
-                    padding: 20px 2px;
-                    ">مبلغ</td>
-            </tr>
-        </thead>
-        <tbody>
-            {% for need in needs %}
-            <tr>
-                <td style="
-                    font-family: iranyekan, Tahoma; 
-                    padding: 20px 2px;
-                    border: 2px solid #cccccc;
-                    ">{{loop.index}}</td>
-                <td style="
-                    font-family: iranyekan, Tahoma; 
-                    padding: 20px 2px;
-                    border: 2px solid #cccccc;
-                    ">{{need.child.firstName}} {{need.child.lastName}}</td>
-                <td style="
-                    font-family: iranyekan, Tahoma; 
-                    padding: 20px 2px;
-                    border: 2px solid #cccccc;
-                    ">{{need.name}}</td>
-                <td style="
-                    font-family: iranyekan, Tahoma; 
-                    padding: 20px 2px;
-                    border: 2px solid #cccccc;
-                ">{{need.pretty_cost}} تومان</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<table
+  dir="rtl"
+  style="
+    border: 2px solid #cccccc;
+    border-collapse: collapse;
+    font-family: iranyekan, Tahoma;
+    color: #515151;
+    direction: rtl;
+    text-align: center;
+    font-weight: normal;
+    width: 90%;
+    max-width: 500px;
+    margin: 0 auto 30px;
+  "
+>
+  <thead>
+    <tr>
+      <td
+        style="
+          font-family: iranyekan, Tahoma;
+          border: 2px solid #cccccc;
+          padding: 20px 2px;
+        "
+      >
+        ردیف
+      </td>
+      <td
+        style="
+          font-family: iranyekan, Tahoma;
+          border: 2px solid #cccccc;
+          padding: 20px 2px;
+        "
+      >
+        کودک
+      </td>
+      <td
+        style="
+          font-family: iranyekan, Tahoma;
+          border: 2px solid #cccccc;
+          padding: 20px 2px;
+        "
+      >
+        سرویس
+      </td>
+      <td
+        style="
+          font-family: iranyekan, Tahoma;
+          border: 2px solid #cccccc;
+          padding: 20px 2px;
+        "
+      >
+        مبلغ
+      </td>
+    </tr>
+  </thead>
+  <tbody>
+    {% for need in needs %}
+    <tr>
+      <td
+        style="
+          font-family: iranyekan, Tahoma;
+          padding: 20px 2px;
+          border: 2px solid #cccccc;
+        "
+      >
+        {{loop.index}}
+      </td>
+      <td
+        style="
+          font-family: iranyekan, Tahoma;
+          padding: 20px 2px;
+          border: 2px solid #cccccc;
+        "
+      >
+        {{need.child.firstName}} {{need.child.lastName}}
+      </td>
+      <td
+        style="
+          font-family: iranyekan, Tahoma;
+          padding: 20px 2px;
+          border: 2px solid #cccccc;
+        "
+      >
+        {{need.name}}
+      </td>
+      <td
+        style="
+          font-family: iranyekan, Tahoma;
+          padding: 20px 2px;
+          border: 2px solid #cccccc;
+        "
+      >
+        {{need.pretty_cost}} تومان
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 {% endblock %}
