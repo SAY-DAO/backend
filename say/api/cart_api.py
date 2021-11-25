@@ -254,7 +254,7 @@ class CartPaymentAPI(Resource):
             return {'response': success_payment}, 299
 
         name = f'{cart.user.firstName} {cart.user.lastName}'
-        callback = urljoin(configs.API_URL, 'api/v2/mycart/payment/verify')
+        callback = urljoin(configs.BASE_URL, 'api/v2/mycart/payment/verify')
 
         api_data = {
             'order_id': order_id,
