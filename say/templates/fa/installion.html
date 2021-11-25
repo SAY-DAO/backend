@@ -1,27 +1,28 @@
 <!-- Reset password -->
 
-{% extends "fa/base.html" %} {% block title %} دسترسی ساده‌تر به SAY {% endblock
-%} {% block img %}
-<img
-  src="https://api.sayapp.company/public/resources/img/add_to_home_v1.png"
-  style="height: 100px"
-/>
-{% endblock %} {% block tcontent %} دسترسی ساده‌تر به SAY {% endblock %} {%
-block mcontent %} برای استفاده ساده‌تر از SAY آن را نصب کنید.
-<a
-  href="{{link}}"
-  style="
-    display: block;
-    direction: rtl;
-    text-decoration: none;
-    font-size: 40px;
-    margin-top: 20px;
-    margin: 10px 0;
-    color: #4a67ce;
-    font-family: iranyekan, Tahoma;
-  "
->
-  نصب
-</a>
+{% extends "fa/base.html" %}
+{% block title %}
+    دسترسی ساده‌تر به SAY
+{% endblock %}
+{% block img %}
+    <img src="https://api.sayapp.company/public/resources/img/add_to_home_v1.png" style="height: 100px;" />
+{% endblock %}
+{% block tcontent %}
+    دسترسی ساده‌تر به SAY
+{% endblock %}
+{% block mcontent %}
+    برای استفاده ساده‌تر از SAY آن را نصب کنید.
+    <a href={{link}} style="
+                    display: block;
+                    direction: rtl;
+                    text-decoration: none;
+                    font-size: 40px;
+                    margin-top: 20px;
+                    margin: 10px 0;
+                    color: #4a67ce;
+                    font-family: iranyekan, Tahoma;"
+    >
+        نصب
+    </a>
 
 {% endblock %}

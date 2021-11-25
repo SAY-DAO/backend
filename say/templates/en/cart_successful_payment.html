@@ -138,7 +138,8 @@
         <span>Paid from wallet</span>
         <span>{{int_formatter(cart_payment.credit_amount)}} Tomans</span>
       </div>
-      {% endif %} {% if cart_payment.bank_amount %}
+      {% endif %}
+      {% if cart_payment.bank_amount %}
       <div class="rowContent">
         <span>Paid from debit card</span>
         <span>{{int_formatter(cart_payment.bank_amount)}} Tomans</span>
@@ -157,7 +158,8 @@
         <span>Bank tracking number</span>
         <span>{{cart_payment.gateway_track_id}}</span>
       </div>
-      {% endif %} {% if cart_payment.bank_amount %}
+      {% endif %}
+      {% if cart_payment.bank_amount %}
       <hr />
       <div class="rowContent">
         <span>Card number</span>

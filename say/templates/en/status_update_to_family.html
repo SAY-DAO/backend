@@ -1,21 +1,22 @@
 <!-- Report needs that updated from yesterday to family members -->
 <!-- NOT USED -->
 
-{% extends "fa/base.html" %} {% block title %} آخرین وضعیت نیازهای پرداخت شده
-برای {{child_sayName}} {% endblock %} {% block img %}
-<img
-  src="https://api.sayapp.company/public/resources/img/purchased_v2.png"
-  style="height: 100px"
-/>
-{% endblock %} {% block tcontent %} آخرین وضعیت نیازهای پرداخت شده برای
-{{child_sayName}} {% endblock %} {% block mcontent %} You are part of
-{{child_sayName}}’s family, and this email is to notify you about the state of
-purchased needs by your family. Below is the summary of changes in your child’s
-needs until {{yesterday_date}}.
+{% extends "fa/base.html" %}
+{% block title %}
+    آخرین وضعیت نیازهای پرداخت شده برای {{child_sayName}}
+{% endblock %}
+{% block img %}
+    <img src="https://api.sayapp.company/public/resources/img/purchased_v2.png" style="height: 100px;" />
+{% endblock %}
+{% block tcontent %}
+    آخرین وضعیت نیازهای پرداخت شده برای {{child_sayName}}
+{% endblock %}
+{% block mcontent %}
+    You are part of {{child_sayName}}’s family, and this email is to notify you about the state of purchased needs by your family.
+    Below is the summary of changes in your child’s needs until {{yesterday_date}}.
 
 <!-- TODO: NEED Content -->
-<table
-  style="
+<table style="
     border: 2px solid #cccccc;
     border-collapse: collapse;
     font-family: roboto, 'Roboto';
@@ -25,54 +26,42 @@ needs until {{yesterday_date}}.
     font-weight: normal;
     width: 90%;
     max-width: 500px;
-    margin: 0 auto 30px;
-  "
->
-  <tbody>
-    {% for need in needs %}
-    <tr>
-      <td
-        style="
-          font-family: roboto, 'Roboto';
-          padding: 20px 2px;
-          border: 2px solid #cccccc;
-        "
-      >
-        {{loop.index}}
-      </td>
-      <td
-        style="
-          font-family: roboto, 'Roboto';
-          padding: 20px 2px;
-          border: 2px solid #cccccc;
-        "
-      >
-        {{need.status_description}}
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
+    margin: 0 auto 30px;">
+
+    <tbody>
+        {% for need in needs %}
+        <tr>
+            <td style="
+                font-family: roboto, 'Roboto';
+                padding: 20px 2px;
+                border: 2px solid #cccccc;
+                ">{{loop.index}}</td>
+            <td style="
+                font-family: roboto, 'Roboto';
+                padding: 20px 2px;
+                border: 2px solid #cccccc;
+                ">{{need.status_description}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 
 <!-- TODO: please set the link to the child page on application -->
-<a
-  href="{{child_page}}"
-  style="
-    font-family: roboto, 'Roboto';
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 20px;
-    padding: 15px 0;
-    width: 200px;
-    border-radius: 3px;
-    text-decoration: none;
-    background-color: #3d4f41;
-    color: #ffffff;
-    display: inline-block;
-    text-align: center;
-  "
->
-  SAY App
+<a href="{{child_page}}" style="
+                font-family: roboto, 'Roboto';
+                font-size: 14px;
+                font-weight: 400;
+                line-height: 20px;
+                padding: 15px 0;
+                width: 200px;
+                border-radius: 3px;
+                text-decoration: none;
+                background-color: #3d4f41;
+                color: #ffffff;
+                display: inline-block;
+                text-align: center;
+                ">
+    SAY App
 </a>
 
 {% endblock %}
