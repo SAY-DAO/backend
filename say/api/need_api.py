@@ -329,7 +329,7 @@ class UpdateNeedById(Resource):
 
                 if new_status == 4 and need.type == 0 and len(need.receipts_) == 0:
                     return {
-                        'message': 'There is not receipt for this need,'
+                        'message': 'There is not receipt for this need, '
                         'please upload related receipt before changing the status.'
                     }, 400
 
