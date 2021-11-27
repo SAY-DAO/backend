@@ -45,6 +45,7 @@ def client(flask_app):
     shutil.rmtree(configs.UPLOAD_FOLDER)
 
 
+# From https://github.com/pylover/restfulpy/blob/84b48fcd57fe08641d96a4aa3588887bd94d7f47/restfulpy/testing.py#L68
 @pytest.fixture(scope='function')
 def db():
     from say.config import configs

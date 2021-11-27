@@ -1,3 +1,5 @@
+# From https://github.com/pylover/restfulpy/blob/183fbd980aea99ca8787d83a18d014c61de0bb1d/restfulpy/db.py
+
 import contextlib
 from urllib.parse import urlparse
 

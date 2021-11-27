@@ -88,17 +88,20 @@ class NeedReceipt(base, Timestamp):
 
     need = relationship(
         'Need',
-        foreign_keys=need_id,
+        foreign_keys=[need_id],
+        uselist=False,
     )
 
     receipt = relationship(
         'Receipt',
-        foreign_keys=receipt_id,
+        foreign_keys=[receipt_id],
+        uselist=False,
     )
 
     sw = relationship(
         'SocialWorker',
-        foreign_keys=sw_id,
+        foreign_keys=[sw_id],
+        uselist=False,
     )
 
     __table_args__ = (UniqueConstraint('need_id', 'receipt_id', 'deleted'),)

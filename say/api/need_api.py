@@ -194,7 +194,12 @@ class GetNeedById(Resource):
 
 class UpdateNeedById(Resource):
     @authorize(
-        SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+        SOCIAL_WORKER,
+        COORDINATOR,
+        NGO_SUPERVISOR,
+        SUPER_ADMIN,
+        SAY_SUPERVISOR,
+        ADMIN,
     )  # TODO: priv
     @json
     @swag_from('./docs/need/update.yml')
@@ -321,6 +326,12 @@ class UpdateNeedById(Resource):
             if new_status != 5 and new_status - prev_status == 1:
                 if new_status == 4 and need.isReported is not True:
                     return {'message': 'Need has not been reported to ngo yet'}, 400
+
+                if new_status == 4 and need.type == 0 and len(need.receipts_) == 0:
+                    return {
+                        'message': 'There is not receipt for this need,'
+                        'please upload related receipt before changing the status.'
+                    }, 400
 
                 need.status = new_status
 
