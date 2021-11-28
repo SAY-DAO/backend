@@ -3,6 +3,8 @@ from datetime import datetime
 from hashlib import md5
 from uuid import uuid4
 
+from email_validator import EmailNotValidError
+from email_validator import validate_email
 from flasgger import swag_from
 from flask import request
 from flask_restful import Resource
@@ -151,7 +153,12 @@ class AddSocialWorker(Resource):
         gender = True if request.form['gender'] == 'true' else False
         phone_number = request.form['phoneNumber']
         emergency_phone_number = request.form['emergencyPhoneNumber']
-        email_address = request.form['emailAddress']
+        email_address = request.form.get('emailAddress', None)
+
+        try:
+            validate_email(email_address)
+        except EmailNotValidError:
+            return {'message': 'Invalid email'}, 400
 
         register_date = datetime.utcnow()
         last_login_date = datetime.utcnow()
