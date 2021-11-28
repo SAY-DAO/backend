@@ -40,6 +40,9 @@ def send_email(subject, to, html, cc=[], bcc=[]):
 
 
 @celery.task
-def send_embeded_subject_email(to, html, cc=[], bcc=[]):
+def send_embeded_subject_email(to, html, cc=[], bcc=[], delay=True):
     subject = get_subject_from_html(html).strip()
-    return send_email.delay(subject, to, html, cc, bcc)
+    if delay:
+        return send_email.delay(subject, to, html, cc, bcc)
+    else:
+        return send_email(subject, to, html, cc, bcc)

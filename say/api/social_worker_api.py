@@ -66,16 +66,6 @@ class AddSocialWorker(Resource):
     @json
     @swag_from('./docs/social_worker/add.yml')
     def post(self):
-        if 'password' in request.form.keys():
-            password = request.form['password']
-            if not validate_password(password):
-                raise HTTPException(
-                    status_code=400,
-                    message='password must be atleast 6 character',
-                )
-        else:
-            raise HTTPException(status_code=400, message='password is required')
-
         if 'country' in request.form.keys():
             country = int(request.form['country'])
         else:
@@ -182,6 +172,7 @@ class AddSocialWorker(Resource):
             generated_code = format(id_ngo, '03d') + format(self.panel_users, '03d')
 
         username = f'sw{generated_code}'
+        password = SocialWorker.generate_password()
 
         new_social_worker = SocialWorker(
             id_ngo=id_ngo,
@@ -214,6 +205,8 @@ class AddSocialWorker(Resource):
         )
 
         session.add(new_social_worker)
+        new_social_worker.send_password(password=password)
+
         safe_commit(session)
         return new_social_worker
 

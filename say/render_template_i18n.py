@@ -10,7 +10,6 @@ from say.locale import get_locale
 
 
 def render_template_i18n(path, *args, locale=None, date_with_year=True, **kwargs):
-
     if not locale:
         return render_template(path, *args, int_formatter=int_formatter, **kwargs)
 
@@ -26,6 +25,4 @@ def render_template_i18n(path, *args, locale=None, date_with_year=True, **kwargs
                     with_year=date_with_year,
                 )
 
-        return render_template(
-            locale_path, *args, int_formatter=int_formatter, **kwargs
-        )
+        return render_template(locale_path, *args, int_formatter=int_formatter, **kwargs)

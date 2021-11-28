@@ -17,6 +17,6 @@ def clean_input(input: str):
     return input.strip()
 
 
-def random_string(length=10):
-    letters = string.ascii_letters + string.digits
+def random_string(length=10, letters=None):
+    letters = letters or string.ascii_letters + string.digits
     return ''.join(secrets.choice(letters) for i in range(length))

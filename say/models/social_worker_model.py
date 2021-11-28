@@ -1,3 +1,5 @@
+import string
+
 from argon2 import PasswordHasher
 from babel import Locale
 from sqlalchemy.orm import object_session
@@ -19,6 +21,9 @@ from . import *
 SocialWorker Model
 """
 
+PASSOWRD_LENGTH = 12
+PASSOWRD_LETTERS = string.ascii_letters + string.digits
+
 
 class SocialWorker(base, Timestamp):
     __tablename__ = "social_worker"
@@ -36,7 +41,6 @@ class SocialWorker(base, Timestamp):
     firstName = Column(String, nullable=True)
     lastName = Column(String, nullable=False)
     userName = Column(String, nullable=False)  # ngoName + "-sw" + generatedCode
-    # password = Column(String, nullable=False)
     _password = Column(String(256), nullable=False)
     birthCertificateNumber = Column(String, nullable=True)
     idNumber = Column(String, nullable=False)
@@ -102,6 +106,32 @@ class SocialWorker(base, Timestamp):
     def validate_password(self, password):
         ph = PasswordHasher()
         return ph.verify(self.password, password)
+
+    def send_password(self, password):
+        from say.app import app
+        from say.tasks import send_embeded_subject_email
+
+        with app.app_context(), ChangeLocaleTo(self.locale):
+            send_embeded_subject_email(
+                to=self.emailAddress,
+                html=render_template_i18n(
+                    'social_worker_password.html',
+                    social_worker=self,
+                    surname=surname(self.gender),
+                    password=password,
+                    locale=self.locale,
+                ),
+                delay=False,
+            )
+
+    @staticmethod
+    def generate_password():
+        from say.utils import random_string
+
+        return random_string(
+            length=PASSOWRD_LENGTH,
+            letters=PASSOWRD_LETTERS,
+        )
 
     def send_report(self):
         from say.app import app
