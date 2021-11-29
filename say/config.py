@@ -59,6 +59,7 @@ class Config(object):
     MAILERLITE_GROUP_ID = '0'
     INVITATION_URL = '/search-result?token=%s'
     INVITATION_V3_URL = '/invitations/%s'
+    MAIL_DEFAULT_SENDER = 'devtest@say.company'
 
     # Business
     MIN_BANK_AMOUNT = 1000  # Toman
