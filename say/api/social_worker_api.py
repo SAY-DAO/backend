@@ -212,8 +212,9 @@ class AddSocialWorker(Resource):
         )
 
         session.add(new_social_worker)
-        new_social_worker.send_password(password=password)
+        session.flush()
 
+        new_social_worker.send_password(password=password)
         safe_commit(session)
         return new_social_worker
 

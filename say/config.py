@@ -10,7 +10,7 @@ from say.helpers import get_secret
 class Config(object):
     ENVIRONMENT = 'local'
     PRODUCTION = False
-    TESTING = False
+    TESTING = True
     DEBUG = True
     LOGLEVEL = DEBUG_LVL
     POSTGRES_HOST = 'db'
