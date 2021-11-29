@@ -112,13 +112,18 @@ def columns(
     composites=False,
     hybrids=True,
     proxys=True,
+    protecteds=False,
 ):
     cls = obj.__class__
 
     mapper = inspect(cls)
     for k, c in mapper.all_orm_descriptors.items():
-
-        if k == '__mapper__':
+        if k == '__mapper__' or (
+            not protecteds
+            and hasattr(c, 'original_property')
+            and hasattr(c.original_property, 'info')
+            and c.original_property.info.get('protected', False)
+        ):
             continue
 
         if (

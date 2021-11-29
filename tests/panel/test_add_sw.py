@@ -33,4 +33,5 @@ class TestAddSocialWorker(BaseTestClass):
             data=data,
         )
         assert res.status_code == 200
+        assert 'password' not in res.json
         # TODO: Add more tests
