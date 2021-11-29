@@ -3,7 +3,7 @@ import re
 
 import requests
 
-from .patterns import get_patterns
+from say.crawler.patterns import get_patterns
 
 
 class Crawler:

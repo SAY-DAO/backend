@@ -30,6 +30,15 @@ stores = {
         title=r'<meta property="og:image:alt" content="([^"]+)"',
         img=r'<meta property="og:image:secure_url" content="([^"]+)"',
     ),
+    'kookchi': Patterns(
+        url='kookchi.com',
+        cost=r'<meta property="product:price:amount" content="(\d+)()"',
+        discontinued='zzzzzzzzzzzzzzzzzzzzzzzzzzz',
+        unavaliable=r'stock out-of-stock',
+        product_status=r'zzzzzzzzzzzzzzzzzzzzzzzzzzz',
+        title=r'class="product_title wd-entities-title">([^<]+)',
+        img=r'<meta property="og:image:secure_url" content="([^"]+)"',
+    ),
 }
 
 
