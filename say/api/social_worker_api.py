@@ -66,15 +66,22 @@ class AddSocialWorker(Resource):
 
     @authorize(SUPER_ADMIN)  # TODO: priv
     @json
+    @commit
     @swag_from('./docs/social_worker/add.yml')
     def post(self):
         if 'country' in request.form.keys():
-            country = int(request.form['country'])
+            try:
+                country = int(request.form['country'])
+            except ValueError:
+                country = None
         else:
             country = None
 
         if 'city' in request.form.keys():
-            city = int(request.form['city'])
+            try:
+                city = int(request.form['city'])
+            except ValueError:
+                city = None
         else:
             city = None
 
@@ -153,7 +160,7 @@ class AddSocialWorker(Resource):
         gender = True if request.form['gender'] == 'true' else False
         phone_number = request.form['phoneNumber']
         emergency_phone_number = request.form['emergencyPhoneNumber']
-        email_address = request.form.get('emailAddress', None)
+        email_address = request.form.get('emailAddress', '')
 
         try:
             validate_email(email_address)
@@ -213,9 +220,11 @@ class AddSocialWorker(Resource):
 
         session.add(new_social_worker)
         session.flush()
+        session.refresh(
+            new_social_worker
+        )  # Expire on commit not working in this case, so manually refreshing the object
 
         new_social_worker.send_password(password=password)
-        safe_commit(session)
         return new_social_worker
 
 
