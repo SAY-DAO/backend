@@ -220,11 +220,7 @@ class AddSocialWorker(Resource):
 
         session.add(new_social_worker)
         session.flush()
-        session.refresh(
-            new_social_worker
-        )  # Expire on commit not working in this case, so manually refreshing the object
-
-        new_social_worker.send_password(password=password)
+        new_social_worker.send_password(password=password, delay=True)
         return new_social_worker
 
 

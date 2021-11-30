@@ -1,5 +1,4 @@
-from datetime import datetime
-
+from say.models import SocialWorker
 from say.roles import SUPER_ADMIN
 from tests.helper import BaseTestClass
 
@@ -33,5 +32,7 @@ class TestAddSocialWorker(BaseTestClass):
             data=data,
         )
         assert res.status_code == 200
+        assert res.json['id'] is not None
         assert 'password' not in res.json
+        assert self.session.query(SocialWorker).filter_by(id=res.json['id']).one_or_none()
         # TODO: Add more tests

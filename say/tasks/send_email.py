@@ -20,7 +20,7 @@ def get_subject_from_html(html):
     autoretry_for=(Exception,),
     retry_backoff=True,
     retry_backoff_max=600,
-    retry_kwargs={'max_retries': 80},
+    retry_kwargs={'max_retries': 10},
 )
 def send_email(subject, to, html, cc=[], bcc=[]):
     if isinstance(to, str):

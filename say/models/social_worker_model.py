@@ -107,22 +107,24 @@ class SocialWorker(base, Timestamp):
         ph = PasswordHasher()
         return ph.verify(self.password, password)
 
-    def send_password(self, password):
-        from say.app import app
+    def send_password(self, password, delay=True):
         from say.tasks import send_embeded_subject_email
 
-        with app.app_context(), ChangeLocaleTo(self.locale):
-            send_embeded_subject_email(
-                to=self.emailAddress,
-                html=render_template_i18n(
-                    'social_worker_password.html',
-                    social_worker=self,
-                    surname=surname(self.gender),
-                    password=password,
-                    locale=self.locale,
-                ),
-                delay=False,
-            )
+        if delay:
+            sender = send_embeded_subject_email.delay
+        else:
+            sender = send_embeded_subject_email
+
+        sender(
+            to=self.emailAddress,
+            html=render_template_i18n(
+                'social_worker_password.html',
+                social_worker=self,
+                surname=surname(self.gender),
+                password=password,
+                locale=self.locale,
+            ),
+        )
 
     @staticmethod
     def generate_password():
