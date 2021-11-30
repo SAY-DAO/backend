@@ -124,6 +124,7 @@ class SocialWorker(base, Timestamp):
                 password=password,
                 locale=self.locale,
             ),
+            delay=delay,
         )
 
     @staticmethod

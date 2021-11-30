@@ -20,6 +20,7 @@ depends_on = None
 
 
 def upgrade():
+    from say.app import app
     from say.models import SocialWorker
     from say.orm import init_model
     from say.orm import session
@@ -30,13 +31,14 @@ def upgrade():
         raw_password = SocialWorker.generate_password()
         sw.password = raw_password
         print(f'Reseting passowrd of {sw.id}...')
-        try:
-            sw.send_password(raw_password)
-            session.commit()
-            print('Done\n')
+        with app.app_context():
+            try:
+                sw.send_password(raw_password, delay=False)
+                session.commit()
+                print('Done\n')
 
-        except smtplib.SMTPRecipientsRefused:
-            print(f'Can not send password: ' f'{sw.id}\n')
+            except smtplib.SMTPRecipientsRefused:
+                print(f'Can not send password: ' f'{sw.id}\n')
 
 
 def downgrade():
