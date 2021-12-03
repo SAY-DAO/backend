@@ -66,7 +66,6 @@ class AddSocialWorker(Resource):
 
     @authorize(SUPER_ADMIN)  # TODO: priv
     @json
-    @commit
     @swag_from('./docs/social_worker/add.yml')
     def post(self):
         if 'country' in request.form.keys():
@@ -219,7 +218,7 @@ class AddSocialWorker(Resource):
         )
 
         session.add(new_social_worker)
-        session.flush()
+        safe_commit(session)
         new_social_worker.send_password(password=password, delay=True)
         return new_social_worker
 
