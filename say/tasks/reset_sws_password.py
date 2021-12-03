@@ -1,7 +1,7 @@
 import smtplib
 from typing import DefaultDict
 
-import celery
+from say.celery import celery
 
 
 @celery.task(base=celery.DBTask, bind=True)
