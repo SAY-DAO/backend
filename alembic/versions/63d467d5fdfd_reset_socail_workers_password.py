@@ -34,22 +34,24 @@ def upgrade():
         sw.password = raw_password
         print(f'Reseting username and passowrd of {sw.id}...')
 
+        if sw.id_ngo != 3:
+            sw_counts[sw.id_ngo] += 1
+            sw.userName = (
+                'sw'
+                + format(sw.id_ngo, '03d')
+                + format(
+                    sw_counts[sw.id_ngo],
+                    '03d',
+                )
+            )
+            
+        print('Username and password changed!\n')
+        session.commit()
+
         with app.app_context():
             try:
-                if sw.id_ngo != 3:
-                    sw_counts[sw.id_ngo] += 1
-                    sw.userName = (
-                        'sw'
-                        + format(sw.id_ngo, '03d')
-                        + format(
-                            sw_counts[sw.id_ngo],
-                            '03d',
-                        )
-                    )
-
                 sw.send_password(raw_password, delay=False)
-                session.commit()
-                print('Done\n')
+                print('Username and password sent!\n')
 
             except smtplib.SMTPRecipientsRefused:
                 print(f'Can not send password: ' f'{sw.id}\n')
