@@ -6,6 +6,7 @@ from .nakama import update_nakama_txs
 from .report_to_family import report_to_families
 from .report_to_social_worker import report_to_social_workers
 from .report_unpayables import report_unpayables
+from .reset_sws_password import reset_sws_password
 from .send_email import send_email
 from .send_email import send_embeded_subject_email
 from .sms import send_sms
