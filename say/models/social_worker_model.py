@@ -81,7 +81,7 @@ class SocialWorker(base, Timestamp):
     isDeleted = Column(Boolean, nullable=False, default=False, index=True)
     locale = Column(LocaleType, default=Locale('fa'), nullable=False)
 
-    privilege = relationship("Privilege", foreign_keys=id_type)
+    privilege = relationship("Privilege", foreign_keys=[id_type], lazy='joined')
     ngo = relationship("Ngo", foreign_keys=id_ngo)
     children = relationship("Child", back_populates='social_worker')
 
@@ -108,6 +108,7 @@ class SocialWorker(base, Timestamp):
         return ph.verify(self.password, password)
 
     def send_password(self, password, delay=True):
+        from say.authorization import create_sw_access_token
         from say.tasks import send_embeded_subject_email
 
         if delay:
@@ -122,6 +123,7 @@ class SocialWorker(base, Timestamp):
                 social_worker=self,
                 surname=surname(self.gender),
                 password=password,
+                token=create_sw_access_token(self),
                 locale=self.locale,
             ),
             delay=delay,

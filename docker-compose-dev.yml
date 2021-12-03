@@ -13,6 +13,7 @@ services:
     depends_on:
       - db
       - redis
+      # - worker
     volumes:
       - ./:/app/
       - pudb_volume:/home/user/.config/pudb/
@@ -24,6 +25,9 @@ services:
     command: celery -A say.celery worker --autoscale=8,1 --loglevel=WARNING -B -S redbeat.RedBeatScheduler -Q celery -Ofair
     healthcheck:
       test: echo
+    # depends_on:
+    #   - db
+    #   - redis
 
   slow-worker:
     <<: *worker

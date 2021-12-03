@@ -6,6 +6,7 @@ Create Date: 2021-11-28 22:12:08.657961
 
 """
 import smtplib
+from typing import DefaultDict
 
 import sqlalchemy as sa
 
@@ -26,13 +27,26 @@ def upgrade():
     from say.orm import session
 
     init_model(op.get_bind())
+    sw_counts = DefaultDict(int)
 
     for sw in session.query(SocialWorker):
         raw_password = SocialWorker.generate_password()
         sw.password = raw_password
-        print(f'Reseting passowrd of {sw.id}...')
+        print(f'Reseting username and passowrd of {sw.id}...')
+
         with app.app_context():
             try:
+                if sw.id_ngo != 3:
+                    sw_counts[sw.id_ngo] += 1
+                    sw.userName = (
+                        'sw'
+                        + format(sw.id_ngo, '03d')
+                        + format(
+                            sw_counts[sw.id_ngo],
+                            '03d',
+                        )
+                    )
+
                 sw.send_password(raw_password, delay=False)
                 session.commit()
                 print('Done\n')
