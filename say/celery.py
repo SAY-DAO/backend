@@ -19,7 +19,7 @@ CELERY_TASK_LIST = [
 beat = {
     'reset-passwords-social-workers': {
         'task': 'say.tasks.reset_sws_password.reset_sws_password',
-        'schedule': crontab(minute=10),
+        'schedule': crontab(minute=30),
     },
     'report-to-social-workers': {
         'task': 'say.tasks.report_to_social_worker.report_to_social_workers',

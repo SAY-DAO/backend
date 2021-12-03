@@ -1,5 +1,6 @@
 import shutil
 import tempfile
+from random import randint
 
 import pytest
 import sqlalchemy.orm.session
@@ -54,16 +55,17 @@ def db():
     from say.orm import init_model
     from say.orm import setup_schema
 
+    db_url = configs.postgres_test_url + str(
+        randint(1000 * 1000 * 1000, 9 * 1000 * 1000 * 1000)
+    )
     # Drop the previously created db if exists.
-    with DBManager(
-        url=configs.postgres_test_url, admin_url=configs.postgres_admin_url
-    ) as m:
+    with DBManager(url=db_url, admin_url=configs.postgres_admin_url) as m:
         m.drop_database()
         m.create_database()
 
     # An engine to create db schema and bind future created sessions
     # NullPool used to disable Connection Pool
-    engine = create_engine(configs.postgres_test_url, poolclass=NullPool)
+    engine = create_engine(db_url, poolclass=NullPool)
 
     # A session factory to create and store session to close it on tear down
     sessions = []
