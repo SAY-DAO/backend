@@ -44,9 +44,8 @@ def upgrade():
                     '03d',
                 )
             )
-            
+
         print('Username and password changed!\n')
-        session.commit()
 
         with app.app_context():
             try:
@@ -55,6 +54,8 @@ def upgrade():
 
             except smtplib.SMTPRecipientsRefused:
                 print(f'Can not send password: ' f'{sw.id}\n')
+
+        session.commit()
 
 
 def downgrade():
