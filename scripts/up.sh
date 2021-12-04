@@ -3,4 +3,4 @@
 docker-compose \
     -f docker-compose.yml \
     -f docker-compose-dev.yml \
-    up backend
+    up backend --remove-orphans
