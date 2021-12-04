@@ -107,16 +107,11 @@ class SocialWorker(base, Timestamp):
         ph = PasswordHasher()
         return ph.verify(self.password, password)
 
-    def send_password(self, password, delay=True):
+    def send_password(self, password):
         from say.authorization import create_sw_access_token
         from say.tasks import send_embeded_subject_email
 
-        if delay:
-            sender = send_embeded_subject_email.delay
-        else:
-            sender = send_embeded_subject_email
-
-        sender(
+        send_embeded_subject_email.delay(
             to=self.emailAddress,
             html=render_template_i18n(
                 'social_worker_password.html',
@@ -126,7 +121,6 @@ class SocialWorker(base, Timestamp):
                 token=create_sw_access_token(self),
                 locale=self.locale,
             ),
-            delay=delay,
         )
 
     @staticmethod

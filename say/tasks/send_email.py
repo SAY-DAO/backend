@@ -17,10 +17,10 @@ def get_subject_from_html(html):
 
 
 @celery.task(
-    autoretry_for=(Exception,),
+    # autoretry_for=(Exception,),
     retry_backoff=True,
     retry_backoff_max=600,
-    retry_kwargs={'max_retries': 10},
+    retry_kwargs={'max_retries': 80},
 )
 def send_email(subject, to, html, cc=[], bcc=[]):
     if isinstance(to, str):
@@ -40,9 +40,6 @@ def send_email(subject, to, html, cc=[], bcc=[]):
 
 
 @celery.task
-def send_embeded_subject_email(to, html, cc=[], bcc=[], delay=True):
+def send_embeded_subject_email(to, html, cc=[], bcc=[]):
     subject = get_subject_from_html(html).strip()
-    if delay:
-        return send_email.delay(subject, to, html, cc, bcc)
-    else:
-        return send_email(subject, to, html, cc, bcc)
+    return send_email.delay(subject, to, html, cc, bcc)

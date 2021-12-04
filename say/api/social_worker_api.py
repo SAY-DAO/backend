@@ -219,7 +219,7 @@ class AddSocialWorker(Resource):
 
         session.add(new_social_worker)
         safe_commit(session)
-        new_social_worker.send_password(password=password, delay=True)
+        new_social_worker.send_password(password=password)
         return new_social_worker
 
 
