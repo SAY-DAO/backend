@@ -34,7 +34,7 @@ def report_to_family(self, family_id):
     from say.models.user_model import User
 
     session = self.session
-    yesterday = datetime.utcnow() - timedelta(days=1)
+    yesterday = datetime.utcnow() - timedelta(days=3)
 
     with app.app_context(), ChangeLocaleTo(LANGS.fa):
         family = session.query(Family).get(family_id)
