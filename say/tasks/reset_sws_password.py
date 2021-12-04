@@ -32,7 +32,7 @@ def reset_sws_password(self):
             self.session.commit()
 
             try:
-                sw.send_password(raw_password, delay=False)
+                sw.send_password(raw_password, delay=True)
                 print('Username and password sent!\n')
 
             except smtplib.SMTPRecipientsRefused:
