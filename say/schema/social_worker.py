@@ -22,7 +22,7 @@ class NewSocialWorkerSchema(BaseModel):
     city: Optional[int]
     firstName: Optional[constr(max_length=64, strip_whitespace=True)]
     lastName: constr(max_length=64, strip_whitespace=True)
-    birthCertificateNumber: constr(max_length=32, strip_whitespace=True)
+    birthCertificateNumber: Optional[constr(max_length=32, strip_whitespace=True)]
     passportNumber: Optional[constr(max_length=32, strip_whitespace=True)]
     postalAddress: Optional[constr(max_length=256, strip_whitespace=True)]
     bankAccountNumber: Optional[constr(max_length=64, strip_whitespace=True)]

@@ -23,7 +23,7 @@ class TestAddSocialWorker(BaseTestClass):
             birthCertificateNumber='1234567890',
             phoneNumber='+9809054829099',
             emergencyPhoneNumber='+98 01231231231',
-            emailAddress='example@test.com',
+            # emailAddress='example@test.com',
             avatarUrl=self.create_test_file('imageUrl.jpg', size=10000),
         )
 
@@ -32,7 +32,7 @@ class TestAddSocialWorker(BaseTestClass):
             content_type='multipart/form-data',
             data=data,
         )
-
+        from pudb import set_trace; set_trace()
         assert res.status_code == 200
         assert res.json['id'] is not None
         assert res.json['gender'] is True

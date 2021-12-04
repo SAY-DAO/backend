@@ -46,7 +46,7 @@ def validate(schema):
                     **(request.files or {}),
                 )
             except ValueError as e:
-                return e.json(), 400
+                return e.errors(), 400
 
             return func(*args, **kwargs, data=data)
 
