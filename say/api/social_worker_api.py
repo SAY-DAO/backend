@@ -21,13 +21,15 @@ from say.validations import validate_password
 from ..authorization import authorize
 from ..authorization import get_user_id
 from ..authorization import get_user_role
-from ..config import configs
 from ..decorators import json
+from ..decorators import validate
+from ..exceptions import HTTP_BAD_REQUEST
 from ..exceptions import HTTP_NOT_FOUND
 from ..exceptions import HTTP_PERMISION_DENIED
 from ..exceptions import HTTPException
 from ..roles import *
 from ..schema.social_worker import MigrateSocialWorkerChildrenSchema
+from ..schema.social_worker import NewSocialWorkerSchema
 from ..validations import valid_image_extension
 from .ext import api
 
@@ -62,159 +64,38 @@ class GetAllSocialWorkers(Resource):
 
 
 class AddSocialWorker(Resource):
-    panel_users = 0
-
     @authorize(SUPER_ADMIN)  # TODO: priv
+    @validate(NewSocialWorkerSchema)
     @json
     @swag_from('./docs/social_worker/add.yml')
-    def post(self):
-        if 'country' in request.form.keys():
-            try:
-                country = int(request.form['country'])
-            except ValueError:
-                country = None
-        else:
-            country = None
-
-        if 'city' in request.form.keys():
-            try:
-                city = int(request.form['city'])
-            except ValueError:
-                city = None
-        else:
-            city = None
-
-        if 'firstName' in request.form.keys():
-            first_name = request.form['firstName']
-        else:
-            first_name = None
-
-        if 'birthCertificateNumber' in request.form.keys():
-            birth_certificate_number = request.form['birthCertificateNumber']
-        else:
-            birth_certificate_number = None
-
-        if 'passportNumber' in request.form.keys():
-            passport_number = request.form['passportNumber']
-        else:
-            passport_number = None
-
-        if 'postalAddress' in request.form.keys():
-            postal_address = request.form['postalAddress']
-        else:
-            postal_address = None
-
-        if 'bankAccountNumber' in request.form.keys():
-            bank_account_number = request.form['bankAccountNumber']
-        else:
-            bank_account_number = None
-
-        if 'bankAccountShebaNumber' in request.form.keys():
-            bank_account_sheba_number = request.form['bankAccountShebaNumber']
-        else:
-            bank_account_sheba_number = None
-
-        if 'bankAccountCardNumber' in request.form.keys():
-            bank_account_card_number = request.form['bankAccountCardNumber']
-        else:
-            bank_account_card_number = None
-
-        if 'birthDate' in request.form.keys():
-            birth_date = datetime.strptime(request.form['birthDate'], '%Y-%m-%d')
-        else:
-            birth_date = None
-
-        if 'avatarUrl' not in request.files:
-            return {'message': 'Avatar is needed'}, 400
-
-        avatar_file = request.files['avatarUrl']
-        if valid_image_extension(avatar_file):
-            avatarUrl = avatar_file
-        else:
-            return {'message': 'invalid avatar file!'}, 400
-
-        if 'idCardUrl' in request.files:
-            id_card_file = request.files['idCardUrl']
-            if valid_image_extension(id_card_file):
-                idCardUrl = id_card_file
-            else:
-                return {'message': 'invalid id card file!'}, 400
-        else:
-            idCardUrl = None
-
-        if 'passportUrl' in request.files:
-            passport_file = request.files['passportUrl']
-            if valid_image_extension(passport_file):
-                passportUrl = passport_file
-            else:
-                return {'message': 'invalid passport file!'}, 400
-        else:
-            passportUrl = None
-
-        telegram_id = request.form['telegramId']
-        id_number = request.form['idNumber']
-        id_ngo = int(request.form['id_ngo'])
-        id_type = int(request.form['id_type'])
-        last_name = request.form['lastName']
-        gender = True if request.form['gender'] == 'true' else False
-        phone_number = request.form['phoneNumber']
-        emergency_phone_number = request.form['emergencyPhoneNumber']
-        email_address = request.form.get('emailAddress', '')
-
-        try:
-            validate_email(email_address)
-        except EmailNotValidError:
-            return {'message': 'Invalid email'}, 400
-
-        register_date = datetime.utcnow()
-        last_login_date = datetime.utcnow()
-
-        if id_ngo != 0:
-            ngo = (
-                session.query(Ngo).filter_by(isDeleted=False).filter_by(id=id_ngo).first()
+    def post(self, data: NewSocialWorkerSchema):
+        ngo = (
+            session.query(Ngo)
+            .filter(
+                Ngo.isDeleted.is_(False),
+                Ngo.id == data.id_ngo,
             )
-            generated_code = format(id_ngo, '03d') + format(
-                ngo.socialWorkerCount + 1, '03d'
-            )
+            .populate_existing()
+            .with_for_update()
+            .one_or_none()
+        )
 
-            ngo.socialWorkerCount += 1
-            ngo.currentSocialWorkerCount += 1
+        if ngo is None:
+            raise HTTP_BAD_REQUEST(message='NGO not found')
 
-        else:
-            self.panel_users += 1
-            generated_code = format(id_ngo, '03d') + format(self.panel_users, '03d')
+        generated_code = format(data.id_ngo, '03d') + format(
+            ngo.socialWorkerCount + 1,
+            '03d',
+        )
 
         username = f'sw{generated_code}'
         password = SocialWorker.generate_password()
 
         new_social_worker = SocialWorker(
-            id_ngo=id_ngo,
-            country=country,
-            city=city,
-            id_type=id_type,
-            firstName=first_name,
-            lastName=last_name,
             userName=username,
             password=password,
-            birthCertificateNumber=birth_certificate_number,
-            idNumber=id_number,
-            gender=gender,
-            birthDate=birth_date,
-            phoneNumber=phone_number,
-            emergencyPhoneNumber=emergency_phone_number,
-            emailAddress=email_address,
-            telegramId=telegram_id,
-            postalAddress=postal_address,
-            bankAccountNumber=bank_account_number,
-            bankAccountShebaNumber=bank_account_sheba_number,
-            bankAccountCardNumber=bank_account_card_number,
-            registerDate=register_date,
-            lastLoginDate=last_login_date,
-            passportNumber=passport_number,
             generatedCode=generated_code,
-            avatarUrl=avatarUrl,
-            idCardUrl=idCardUrl,
-            passportUrl=passportUrl,
+            **data.dict(),
         )
 
         session.add(new_social_worker)

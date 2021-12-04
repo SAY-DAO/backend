@@ -1,20 +1,30 @@
 import string
+from datetime import datetime
+from datetime import timedelta
 
 from argon2 import PasswordHasher
 from babel import Locale
 from sqlalchemy.orm import object_session
+from sqlalchemy.orm import relationship
 from sqlalchemy.orm import synonym
+from sqlalchemy.sql.schema import Column
+from sqlalchemy.sql.schema import ForeignKey
+from sqlalchemy.sql.sqltypes import Boolean
+from sqlalchemy.sql.sqltypes import Date
+from sqlalchemy.sql.sqltypes import Integer
+from sqlalchemy.sql.sqltypes import String
+from sqlalchemy.sql.sqltypes import Text
 from sqlalchemy_utils import LocaleType
+from sqlalchemy_utils.models import Timestamp
 
 from say.formatters import expose_datetime
 from say.locale import ChangeLocaleTo
+from say.locale import get_locale
+from say.orm import base
 from say.orm.types import LocalFile
-from say.orm.types import ResourceURL
 from say.render_template_i18n import render_template_i18n
 from say.utils import surname
 from say.validations import validate_password as _validate_password
-
-from . import *
 
 
 """
@@ -25,6 +35,7 @@ PASSOWRD_LENGTH = 12
 PASSOWRD_LETTERS = string.ascii_letters + string.digits
 
 
+# TODO: unique email, phone, username, ...
 class SocialWorker(base, Timestamp):
     __tablename__ = "social_worker"
 
@@ -74,8 +85,8 @@ class SocialWorker(base, Timestamp):
     bankAccountNumber = Column(String, nullable=True)
     bankAccountShebaNumber = Column(String, nullable=True)
     bankAccountCardNumber = Column(String, nullable=True)
-    registerDate = Column(Date, nullable=False)
-    lastLoginDate = Column(Date, nullable=False)
+    registerDate = Column(Date, default=datetime.utcnow, nullable=False)
+    lastLoginDate = Column(Date, default=datetime.utcnow, nullable=False)
     lastLogoutDate = Column(Date, nullable=True)
     isActive = Column(Boolean, nullable=False, default=True)
     isDeleted = Column(Boolean, nullable=False, default=False, index=True)

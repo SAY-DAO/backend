@@ -72,8 +72,8 @@ class BaseTestClass:
         # Override this method to add mockup data
         pass
 
-    def create_test_file(self, name):
-        return (io.BytesIO(b"abcdef"), name)
+    def create_test_file(self, name, size=1000):
+        return (io.BytesIO(b"a" * size), name)
 
     def create_panel_user(self, password='password'):
         seed = randint(10 ** 3, 10 ** 4)
