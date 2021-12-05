@@ -21,6 +21,7 @@ from ..authorization import authorize
 from ..authorization import get_user_id
 from ..crud.user import get_say_id
 from ..decorators import json
+from ..decorators import validate
 from ..orm import session
 from ..schema.invitation import NewInvitationSchema
 from ..schema.invitation import NewInvitationSchemaV3
@@ -29,10 +30,11 @@ from .ext import api
 
 
 class InvitationAPI(Resource):
+    @validate(NewInvitationSchema)
     @json
     @commit
     @swag_from('./docs/invitation/create.yml')
-    def post(self):
+    def post(self, data):
         try:
             inviter_id = get_user_id()
         except NoAuthorizationError:
@@ -45,39 +47,26 @@ class InvitationAPI(Resource):
             logger.info(str(e))
             abort(401)
 
-        try:
-            data = NewInvitationSchema(
-                **request.form.to_dict(),
-            )
-        except ValueError as ex:
-            return ex.json(), 400
-
         invitation = crud.invitation.create_or_update(data, inviter_id)
         return invitation
 
 
 class InvitationAPIV3(Resource):
     @authorize
-    @json
+    @validate(NewInvitationSchemaV3)
+    @json(InvitationSchemaV3)
     @commit
     @swag_from('./docs/invitation/create-v3.yml')
-    def post(self):
-        try:
-            data = NewInvitationSchemaV3(
-                **request.form.to_dict(),
-            )
-        except ValueError as ex:
-            return ex.json(), 400
-
+    def post(self, data):
         inviter_id = get_user_id()
         invitation = crud.invitation.create_or_update(data, inviter_id)
-        return InvitationSchemaV3.from_orm(invitation)
+        return invitation
 
 
 class InvitationsV3(Resource):
     GONE_CHILD = HTTPException(743, 'Child is Gone')
 
-    @json
+    @json(InvitationSchemaV3)
     @swag_from('./docs/invitation/get-v3.yml')
     def get(self, token):
         invitation = (
@@ -106,14 +95,13 @@ class InvitationsV3(Resource):
         if child is None:
             return self.GONE_CHILD
 
-        result = InvitationSchemaV3.from_orm(invitation)
-        return result
+        return invitation
 
 
 class InvitationsAcceptV3(Resource):
     @authorize
     @commit
-    @json
+    @json(InvitationSchemaV3)
     @swag_from('./docs/invitation/accept-v3.yml')
     def post(self, token):
         user_id = get_user_id()

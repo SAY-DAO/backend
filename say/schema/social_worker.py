@@ -1,4 +1,5 @@
 from datetime import date
+from datetime import datetime
 from typing import Optional
 
 from pydantic.networks import EmailStr
@@ -6,7 +7,9 @@ from pydantic.types import constr
 
 from say.constants import MB
 from say.schema.base import BaseModel
+from say.schema.base import BaseModelWithId
 from say.schema.base import CamelModel
+from say.schema.types import Locale
 from say.schema.types import PhoneNumber
 from say.schema.types import confilestorage
 from say.validations import ALLOWED_DOCUMENT_EXTENSIONS
@@ -55,3 +58,24 @@ class NewSocialWorkerSchema(BaseModel):
             valid_extensions=ALLOWED_DOCUMENT_EXTENSIONS,
         )
     ]
+
+
+class SocialWorkerSchema(NewSocialWorkerSchema, BaseModelWithId):
+    id: int
+    avatarUrl: str
+    idCardUrl: Optional[str]
+    passportUrl: Optional[str]
+    userName: str
+    generatedCode: str
+    childCount: int
+    currentChildCount: int
+    created: datetime
+    updated: datetime
+    needCount: int
+    currentNeedCount: int
+    registerDate: date
+    lastLoginDate: date
+    lastLogoutDate: Optional[date]
+    isActive: bool
+    isDeleted: bool
+    locale: Locale

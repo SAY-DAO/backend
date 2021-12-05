@@ -8,7 +8,7 @@ class TestUpdateSw(BaseTestClass):
     def mockup(self):
         self.sw = self.create_panel_user()
 
-    def test_login_by_username(self):
+    def test_update_sw_password(self):
         self.login_sw(self.sw)
 
         new_pass = 'newpassword'

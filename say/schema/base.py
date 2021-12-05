@@ -1,3 +1,5 @@
+import babel
+import ujson
 from pydantic import BaseModel as PydanticBase
 
 from say.helpers import to_camel
@@ -16,6 +18,18 @@ class BaseModel(PydanticBase):
     def from_query_list(cls, q):
         for row in q:
             yield cls.from_query(row)
+
+    class Config:
+        orm_mode = True
+
+        json_loads = ujson.loads
+        json_encoders = {
+            babel.core.Locale: str,
+        }
+
+
+class BaseModelWithId(BaseModel):
+    id: int
 
 
 class CamelModel(BaseModel):

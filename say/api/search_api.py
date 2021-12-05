@@ -6,6 +6,7 @@ from flask_restful import abort
 from say.crud.search import select_random_child
 from say.models import commit
 from say.models.search import SearchType
+from say.schema.search import SearchSchema
 
 from .. import crud
 from ..authorization import authorize
@@ -50,7 +51,7 @@ class GetRandomSearchV2(Resource):
 
 
 class GetRandomSearchV3(Resource):
-    @json
+    @json(SearchSchema)
     @commit
     @swag_from('./docs/search/random-v3.yml')
     def post(self):

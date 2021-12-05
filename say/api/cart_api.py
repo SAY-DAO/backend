@@ -14,6 +14,7 @@ from say.authorization import authorize
 from say.authorization import get_user_id
 from say.config import configs
 from say.decorators import json
+from say.decorators import validate
 from say.exceptions import HTTP_NOT_FOUND
 from say.exceptions import HTTPException
 from say.locale import DEFAULT_LOCALE
@@ -63,25 +64,19 @@ class CartAPI(Resource):
     decorators = [limiter.limit('15/minute')]
 
     @authorize(USER)
-    @json
+    @json(CartSchema)
     @swag_from('./docs/cart/get.yml')
     def get(self):
         user_id = get_user_id()
         cart = session.query(Cart).filter(Cart.user_id == user_id).one()
-        return CartSchema.from_orm(cart)
+        return cart
 
     @authorize(USER)
-    @json
+    @validate(CartPutSchema)
+    @json(CartSchema)
     @commit
     @swag_from('./docs/cart/put.yml')
-    def put(self):
-        try:
-            data = CartPutSchema(**request.json)
-        except ValueError as e:
-            return e.json(), 400
-        except TypeError:
-            return 'No Data in Body', 400
-
+    def put(self, data):
         user_id = get_user_id()
         cart = session.query(Cart).filter(Cart.user_id == user_id).one()
         needs = payable_needs(session, user_id, data.need_ids)
@@ -108,20 +103,16 @@ class CartAPI(Resource):
 
         session.flush()
         session.expire(cart)
-        return CartSchema.from_orm(cart)
+        return cart
 
 
 class CartNeedsAPI(Resource):
     @authorize(USER)
-    @json
+    @validate(CartNeedInputSchema)
+    @json(CartSchema)
     @commit
     @swag_from('./docs/cart/add.yml')
-    def post(self):
-        try:
-            data = CartNeedInputSchema(**request.form.to_dict())
-        except ValueError as e:
-            return e.json(), 400
-
+    def post(self, data):
         user_id = get_user_id()
         needs = payable_needs(session, user_id, [data.need_id])
 
@@ -147,17 +138,14 @@ class CartNeedsAPI(Resource):
         session.add(cart_need)
         session.flush()
         session.expire(cart)
-        return CartSchema.from_orm(cart)
+        return cart
 
     @authorize(USER)
-    @json
+    @validate(CartNeedInputSchema)
+    @json(CartSchema)
     @commit
     @swag_from('./docs/cart/delete.yml')
-    def delete(self):
-        try:
-            data = CartNeedInputSchema(**request.form.to_dict())
-        except ValueError as e:
-            return e.json(), 400
+    def delete(self, data):
 
         user_id = get_user_id()
         cart = session.query(Cart).filter(Cart.user_id == user_id).one()
@@ -177,20 +165,16 @@ class CartNeedsAPI(Resource):
         cart_need.deleted = datetime.utcnow()
         session.flush()
         session.expire(cart)
-        return CartSchema.from_orm(cart)
+        return cart
 
 
 class CartPaymentAPI(Resource):
     @authorize(USER)
-    @json
+    @validate(CartPaymentInSchema)
+    @json(CartPaymentSchema)
     @commit
     @swag_from('./docs/cart/payment.yml')
-    def post(self):
-        try:
-            data = CartPaymentInSchema(**request.form.to_dict())
-        except ValueError as e:
-            return e.json(), 400
-
+    def post(self, data):
         user_id = get_user_id()
         cart = session.query(Cart).filter(Cart.user_id == user_id).with_for_update().one()
 
@@ -275,7 +259,7 @@ class CartPaymentAPI(Resource):
             payment.link = cart_payment.link
 
         session.flush()
-        return CartPaymentSchema.from_orm(cart_payment)
+        return cart_payment
 
 
 class VerifyCartPayment(Resource):

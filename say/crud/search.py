@@ -13,7 +13,6 @@ from say.models.search import generate_token
 
 from ..models import Invitation
 from ..orm import session
-from ..schema.search import SearchSchema
 from .user import get_say_id
 
 
@@ -57,7 +56,7 @@ def create_v3(child: Child, user_id, type):
 
     search = Search(child=child, user_id=user_id, type=type, token=token)
     session.add(search)
-    return SearchSchema.from_orm(search)
+    return search
 
 
 def select_random_child(user_id):

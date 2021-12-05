@@ -30,6 +30,7 @@ from ..exceptions import HTTPException
 from ..roles import *
 from ..schema.social_worker import MigrateSocialWorkerChildrenSchema
 from ..schema.social_worker import NewSocialWorkerSchema
+from ..schema.social_worker import SocialWorkerSchema
 from ..validations import valid_image_extension
 from .ext import api
 
@@ -66,7 +67,7 @@ class GetAllSocialWorkers(Resource):
 class AddSocialWorker(Resource):
     @authorize(SUPER_ADMIN)  # TODO: priv
     @validate(NewSocialWorkerSchema)
-    @json
+    @json(SocialWorkerSchema)
     @swag_from('./docs/social_worker/add.yml')
     def post(self, data: NewSocialWorkerSchema):
         ngo = (

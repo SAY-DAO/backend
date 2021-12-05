@@ -38,6 +38,8 @@ class TestAddSocialWorker(BaseTestClass):
         assert res.json['gender'] is True
         assert res.json['generatedCode'] == '001002'
         assert res.json['userName'] == 'sw001002'
+        assert res.json['locale'] == 'fa'
+        assert res.json['avatarUrl'].startswith('http')
         assert res.json['registerDate'] is not None
         assert res.json['lastLoginDate'] is not None
         assert 'password' not in res.json

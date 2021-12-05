@@ -5,34 +5,11 @@ from typing import Optional
 from typing import Set
 from typing import Type
 
-import phonenumbers
 from pydantic.errors import PydanticTypeError
 from pydantic.errors import PydanticValueError
 from pydantic.types import OptionalInt
 from pydantic.utils import update_not_none
-from pydantic.validators import strict_str_validator
 from werkzeug.datastructures import FileStorage
-
-
-class PhoneNumber(str):
-    """Phone Number Pydantic type, using google's phonenumbers"""
-
-    @classmethod
-    def __get_validators__(cls):
-        yield strict_str_validator
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v: str):
-        # Remove spaces
-        v = v.strip().replace(' ', '')
-
-        try:
-            pn = phonenumbers.parse(v)
-        except phonenumbers.phonenumberutil.NumberParseException:
-            raise ValueError('invalid phone number format')
-
-        return cls(phonenumbers.format_number(pn, phonenumbers.PhoneNumberFormat.E164))
 
 
 class FileTypeError(PydanticTypeError):
@@ -76,12 +53,12 @@ class ConstrainedFileStorage(FileStorage):
 
     @classmethod
     def validate_size(cls, v: FileStorage):
-        v.stream.seek(0, 2)  # seek to end
+        v.stream.seek(0, os.SEEK_END)  # seek to end
         file_size = v.stream.tell()
         if cls.max_size and file_size > cls.max_size:
             raise FileTooLargeError()
 
-        v.stream.seek(0, 0)  # seek back to start
+        v.stream.seek(0, os.SEEK_SET)  # seek back to start
         return v
 
     @classmethod

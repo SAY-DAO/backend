@@ -603,7 +603,7 @@ class NeedReceipts(Resource):
     @authorize(
         SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
     )
-    @json
+    @json(ReceiptSchema)
     @swag_from('./docs/need/new_receipt.yml')
     def post(self, id):
         sw_id = get_user_id()
@@ -639,12 +639,12 @@ class NeedReceipts(Resource):
         receipt.attachment = data.attachment.filepath
 
         safe_commit(session)
-        return ReceiptSchema.from_orm(receipt)
+        return receipt
 
 
 class NeedReceiptAPI(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
-    @json
+    @json(ReceiptSchema)
     @swag_from('./docs/need/delete_receipt.yml')
     def delete(self, id, receiptId):
         receipt_id = receiptId
@@ -663,7 +663,7 @@ class NeedReceiptAPI(Resource):
 
         need_receipt.deleted = datetime.utcnow()
         safe_commit(session)
-        return ReceiptSchema.from_orm(need_receipt.receipt)
+        return need_receipt.receipt
 
 
 """

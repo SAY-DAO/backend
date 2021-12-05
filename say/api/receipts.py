@@ -14,6 +14,7 @@ from say.authorization import get_sw_ngo_id
 from say.authorization import get_user_id
 from say.authorization import get_user_role
 from say.decorators import json
+from say.decorators import validate
 from say.models import Child
 from say.models import Need
 from say.models import Receipt
@@ -56,16 +57,16 @@ class ReceiptAPI(Resource):
 
         return receipt
 
-    @json
+    @json(ReceiptSchema)
     @swag_from('./docs/receipt/get.yml')
     def get(self, id):
         receipt = self._get_or_404(id, for_update=False)
-        return ReceiptSchema.from_orm(receipt)
+        return receipt
 
     @authorize(
         SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
     )
-    @json
+    @json(ReceiptSchema)
     @swag_from('./docs/receipt/delete.yml')
     def delete(self, id):
         receipt = self._get_or_404(id, for_update=True)
@@ -79,23 +80,16 @@ class ReceiptAPI(Resource):
         ).update({NeedReceipt.deleted: now})
 
         safe_commit(session)
-        return ReceiptSchema.from_orm(receipt)
+        return receipt
 
     @authorize(
         SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
     )
-    @json
+    @validate(UpdateReceiptSchema)
+    @json(ReceiptSchema)
     @swag_from('./docs/receipt/update.yml')
-    def patch(self, id):
+    def patch(self, id, data):
         receipt = self._get_or_404(id, for_update=True)
-
-        try:
-            data = UpdateReceiptSchema(
-                **request.form.to_dict(),
-                **request.files,
-            )
-        except ValueError as e:
-            return e.json(), 400
 
         receipt.update(**data.dict(skip_defaults=True))
         safe_commit(session)
@@ -103,7 +97,7 @@ class ReceiptAPI(Resource):
         if data.attachment:
             data.attachment.save(data.attachment.filepath)
 
-        return ReceiptSchema.from_orm(receipt)
+        return receipt
 
 
 class AttachReceiptAPI(Resource):
