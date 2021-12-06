@@ -6,13 +6,14 @@ from pydantic.networks import EmailStr
 from pydantic.types import constr
 
 from say.constants import MB
+from say.schema.base import AllOptionalMeta
 from say.schema.base import BaseModel
 from say.schema.base import BaseModelWithId
 from say.schema.base import CamelModel
 from say.schema.types import Locale
+from say.schema.types import Password
 from say.schema.types import PhoneNumber
 from say.schema.types import confilestorage
-from say.validations import ALLOWED_DOCUMENT_EXTENSIONS
 from say.validations import ALLOWED_IMAGE_EXTENSIONS
 
 
@@ -48,20 +49,24 @@ class NewSocialWorkerSchema(BaseModel):
     idCardUrl: Optional[
         confilestorage(
             max_size=4 * MB,
-            valid_extensions=ALLOWED_DOCUMENT_EXTENSIONS,
+            valid_extensions=ALLOWED_IMAGE_EXTENSIONS,
         )
     ]
 
     passportUrl: Optional[
         confilestorage(
             max_size=4 * MB,
-            valid_extensions=ALLOWED_DOCUMENT_EXTENSIONS,
+            valid_extensions=ALLOWED_IMAGE_EXTENSIONS,
         )
     ]
 
 
+class UpdateSocialWorkerSchema(NewSocialWorkerSchema, metaclass=AllOptionalMeta):
+    userName: Optional[str]  # TODO: add validator
+    password: Optional[Password]
+
+
 class SocialWorkerSchema(NewSocialWorkerSchema, BaseModelWithId):
-    id: int
     avatarUrl: str
     idCardUrl: Optional[str]
     passportUrl: Optional[str]

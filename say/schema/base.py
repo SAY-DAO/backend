@@ -1,6 +1,13 @@
+from typing import Any
+from typing import Dict
+from typing import Optional
+from typing import Tuple
+
 import babel
 import ujson
 from pydantic import BaseModel as PydanticBase
+from pydantic.main import BaseModel
+from pydantic.main import ModelMetaclass
 
 from say.helpers import to_camel
 
@@ -36,3 +43,23 @@ class CamelModel(BaseModel):
     class Config:
         alias_generator = to_camel
         allow_population_by_field_name = True
+
+
+class AllOptionalMeta(ModelMetaclass):
+    def __new__(cls, name: str, bases: Tuple[type], namespaces: Dict[str, Any], **kwargs):
+        annotations: dict = namespaces.get('__annotations__', {})
+
+        for base in bases:
+            for base_ in base.__mro__:
+                if base_ is BaseModel:
+                    break
+
+                annotations.update(base_.__annotations__)
+
+        for field in annotations:
+            if not field.startswith('__'):
+                annotations[field] = Optional[annotations[field]]
+
+        namespaces['__annotations__'] = annotations
+
+        return super().__new__(cls, name, bases, namespaces, **kwargs)

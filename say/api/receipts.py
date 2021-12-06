@@ -91,7 +91,7 @@ class ReceiptAPI(Resource):
     def patch(self, id, data):
         receipt = self._get_or_404(id, for_update=True)
 
-        receipt.update(**data.dict(skip_defaults=True))
+        receipt.update(**data.dict(exclude_unset=True))
         safe_commit(session)
 
         if data.attachment:

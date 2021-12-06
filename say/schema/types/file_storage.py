@@ -74,7 +74,7 @@ def confilestorage(
     *,
     max_size: int = None,
     valid_extensions: Set[str] = None,
-) -> Type[FileStorage]:
+) -> Type[ConstrainedFileStorage]:
     # use kwargs then define conf in a dict to aid with IDE type hinting
     namespace = dict(
         max_size=max_size,

@@ -14,7 +14,7 @@ from sqlalchemy.sql.schema import MetaData
 from sqlalchemy_utils import Country
 from sqlalchemy_utils import PhoneNumber
 
-from .base import BaseModel
+from .base import BaseModel, columns
 
 
 metadata = MetaData(
@@ -27,7 +27,7 @@ metadata = MetaData(
     }
 )
 
-base = declarative_base(cls=BaseModel, metadata=metadata)
+base: BaseModel = declarative_base(cls=BaseModel, metadata=metadata)
 
 session_factory = sessionmaker(
     autoflush=False,
@@ -104,37 +104,6 @@ def obj_to_dict(obj, relationships=False, proxys=False):
             result[key] = value
     return result
 
-
-def columns(
-    obj,
-    relationships=False,
-    synonyms=True,
-    composites=False,
-    hybrids=True,
-    proxys=True,
-    protecteds=False,
-):
-    cls = obj.__class__
-
-    mapper = inspect(cls)
-    for k, c in mapper.all_orm_descriptors.items():
-        if k == '__mapper__' or (
-            not protecteds
-            and hasattr(c, 'original_property')
-            and hasattr(c.original_property, 'info')
-            and c.original_property.info.get('protected', False)
-        ):
-            continue
-
-        if (
-            (not hybrids and c.extension_type == HYBRID_PROPERTY)
-            or (not relationships and k in mapper.relationships)
-            or (not synonyms and k in mapper.synonyms)
-            or (not proxys and c.extension_type == ASSOCIATION_PROXY)
-        ):
-            continue
-
-        yield k, getattr(cls, k)
 
 
 def safe_commit(session):

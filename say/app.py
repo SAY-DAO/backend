@@ -6,6 +6,7 @@ from flask import Flask
 from flask import jsonify
 from flask_caching import Cache
 from flask_cors import CORS
+from pydantic.error_wrappers import ValidationError
 
 from say.api.ext import api
 from say.api.ext import jwt
@@ -64,6 +65,11 @@ def handle_http_exception(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
     return response
+
+
+@app.errorhandler(ValidationError)
+def handle_pydantic_validation_errors(e):
+    return jsonify(e.errors()), 400
 
 
 @app.before_first_request

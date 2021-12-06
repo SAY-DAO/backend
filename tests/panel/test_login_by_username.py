@@ -7,7 +7,7 @@ PANEL_LOGIN_URL = '/api/v2/panel/auth/login'
 class TestLogin(BaseTestClass):
     def mockup(self):
         self.password = 'password'
-        self.user = self.create_panel_user(password=self.password)
+        self.user = self._create_random_sw(password=self.password)
 
     def test_login_by_username(self):
         res = self.client.post(

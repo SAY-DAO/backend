@@ -188,6 +188,9 @@ class UpdateUserById(Resource):
         if 'city' in request.form.keys():
             user.city = int(request.form['city'])
 
+        if 'country' in request.form.keys():
+            user.country = request.form['country']
+
         if 'postal_address' in request.form.keys():
             user.postal_address = request.form['postal_address']
 

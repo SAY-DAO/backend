@@ -17,7 +17,7 @@ class TestNeed(BaseTestClass):
             )
 
     def mockup(self):
-        self.sw = self.create_panel_user()
+        self.sw = self._create_random_sw()
 
     def test_get_needs(self):
         self.login_sw(self.sw)

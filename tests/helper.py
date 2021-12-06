@@ -75,51 +75,6 @@ class BaseTestClass:
     def create_test_file(self, name, size=1000):
         return (io.BytesIO(b"a" * size), name)
 
-    def create_panel_user(self, password='password'):
-        seed = randint(10 ** 3, 10 ** 4)
-        ngo = Ngo(
-            id=seed,
-            country=1,
-            city=1,
-            name=f'test{seed}',
-            postalAddress=f'test{seed}',
-            emailAddress=f'{seed}test@test.com',
-            phoneNumber='09127616539',
-            website=f'test{seed}',
-            logoUrl='',
-            balance=0,
-            socialWorkerCount=1,
-            currentSocialWorkerCount=1,
-            childrenCount=2,
-            currentChildrenCount=1,
-            registerDate=datetime.utcnow(),
-            isActive=1,
-            isDeleted=0,
-        )
-        self.session.save(ngo)
-        privilege = Privilege(id=seed, name=SUPER_ADMIN, privilege=0)  # Social Worker
-        self.session.save(privilege)
-        social_worker = SocialWorker(
-            id=seed,
-            generatedCode=seed,
-            lastName=f'test{seed}',
-            userName=f'test{seed}',
-            password=password,
-            avatarUrl=self.create_test_file('test.png'),
-            emailAddress=f'{seed}test@test.com',
-            phoneNumber='09121111111',
-            gender=1,
-            idNumber=f'{seed}',
-            id_ngo=ngo.id,
-            emergencyPhoneNumber='09124548745',
-            telegramId='zxcsad',
-            registerDate=datetime.utcnow(),
-            lastLoginDate=datetime.utcnow(),
-            id_type=privilege.id,
-        )
-        self.session.save(social_worker)
-        return social_worker
-
     def _create_random_cart(self, user=None, **kwargs):
         user = user or self._create_random_user()
         data = dict(
@@ -243,10 +198,10 @@ class BaseTestClass:
         self.session.save(family)
         return family
 
-    def _create_random_child(self, **kwargs):
+    def _create_random_child(self, sw=None, **kwargs):
         seed = randint(1, 10 ** 3)
         randomstr = str(seed)
-        sw = self._create_random_sw()
+        sw = sw or self._create_random_sw()
         data = dict(
             ngo=sw.ngo,
             social_worker=sw,
@@ -284,11 +239,11 @@ class BaseTestClass:
             userName=str(seed),
             idNumber=str(seed),
             gender=False,
-            emergencyPhoneNumber=str(seed),
             telegramId=str(seed),
             avatarUrl=self.create_test_file('test.png'),
             emailAddress=f'{str(seed)}@email.com',
-            phoneNumber=str(seed),
+            phoneNumber=f'+98{seed})',
+            emergencyPhoneNumber=f'+98{seed})',
             password='abcefg123',
             registerDate=datetime.utcnow(),
             lastLoginDate=datetime.utcnow(),
@@ -310,6 +265,7 @@ class BaseTestClass:
             logoUrl='',
             postalAddress=str(seed),
             registerDate=datetime.utcnow(),
+            isDeleted=False,
         )
         self.session.save(ngo)
         return ngo

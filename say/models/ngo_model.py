@@ -16,6 +16,7 @@ from sqlalchemy_utils.models import Timestamp
 from say.orm import base
 from say.orm.types import ResourceURL
 
+from .child_model import Child
 from .social_worker_model import SocialWorker
 
 
@@ -40,8 +41,8 @@ class Ngo(base, Timestamp):
     website = Column(String, nullable=True)
     logoUrl = Column(ResourceURL, nullable=False)
     balance = Column(Integer, nullable=False, default=0)
-    childrenCount = Column(Integer, nullable=False, default=0)
-    currentChildrenCount = Column(Integer, nullable=False, default=0)
+    # childrenCount = Column(Integer, nullable=False, default=0)
+    # currentChildrenCount = Column(Integer, nullable=False, default=0)
     registerDate = Column(DateTime, nullable=False)
     isActive = Column(Boolean, nullable=False, default=True)
     isDeleted = Column(Boolean, nullable=False, default=False)
@@ -58,6 +59,24 @@ class Ngo(base, Timestamp):
                 SocialWorker.id_ngo == id,
                 SocialWorker.isActive.is_(True),
                 SocialWorker.isDeleted.is_(False),
+            )
+        )
+    )
+
+    childrenCount = column_property(
+        select([coalesce(func.count(1), 0,)]).where(
+            and_(
+                Child.id_ngo == id,
+            )
+        )
+    )
+
+    currentChildrenCount = column_property(
+        select([coalesce(func.count(1), 0,)]).where(
+            and_(
+                Child.id_ngo == id,
+                Child.isDeleted.is_(False),
+                Child.isMigrated.is_(False),
             )
         )
     )
