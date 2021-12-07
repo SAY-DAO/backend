@@ -1,3 +1,5 @@
+from random import randint
+
 from say.models import SocialWorker
 from say.roles import SUPER_ADMIN
 from tests.helper import BaseTestClass
@@ -21,9 +23,9 @@ class TestAddSocialWorker(BaseTestClass):
             idNumber='12345666',
             gender='true',
             birthCertificateNumber='1234567890',
-            phoneNumber='+9809054829099',
-            emergencyPhoneNumber='+9801231231231',
-            emailAddress='example@test.com',
+            phoneNumber=f'+98{randint(10000, 1000000)}',
+            emergencyPhoneNumber=f'+98{randint(10000, 1000000)}',
+            emailAddress=f'{randint(10000, 1000000)}@test.com',
             avatarUrl=self.create_test_file('imageUrl.jpg', size=10000),
         )
 
@@ -47,20 +49,5 @@ class TestAddSocialWorker(BaseTestClass):
         assert sw is not None
         assert sw.ngo.currentSocialWorkerCount == 2
         assert sw.ngo.socialWorkerCount == 2
-
-        data.update(
-            avatarUrl=self.create_test_file('imageUrl.jpg', size=10000),
-            gender='false',
-        )
-        res = self.client.post(
-            ADD_SW_URL,
-            content_type='multipart/form-data',
-            data=data,
-        )
-
-        assert res.status_code == 200
-        assert res.json['generatedCode'] == '001003'
-        assert res.json['userName'] == 'sw001003'
-        assert res.json['gender'] is False
 
         # TODO: Add more tests

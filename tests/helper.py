@@ -31,7 +31,6 @@ from say.models.cart import Cart
 from say.models.cart import CartNeed
 from say.models.receipt import NeedReceipt
 from say.roles import SUPER_ADMIN
-from say.utils import random_string
 
 
 LOGIN_URL = '/api/v2/auth/login'
@@ -242,8 +241,8 @@ class BaseTestClass:
             telegramId=str(seed),
             avatarUrl=self.create_test_file('test.png'),
             emailAddress=f'{str(seed)}@email.com',
-            phoneNumber=f'+98{seed})',
-            emergencyPhoneNumber=f'+98{seed})',
+            phoneNumber=f'+98{seed}',
+            emergencyPhoneNumber=f'+98{seed}',
             password='abcefg123',
             lastLoginDate=datetime.utcnow(),
             privilege=Privilege(name=role, privilege=1),

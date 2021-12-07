@@ -1,6 +1,9 @@
 import os
+import re
 from logging import basicConfig
 
+import psycopg2
+import sqlalchemy
 from flasgger import Swagger
 from flask import Flask
 from flask import jsonify
@@ -70,6 +73,21 @@ def handle_http_exception(error):
 @app.errorhandler(ValidationError)
 def handle_pydantic_validation_errors(e):
     return jsonify(e.errors()), 400
+
+
+DUPPLICATE_ENTRY_PATTERN = re.compile(r'Key \(\"(.*)\"\)=\((.*)\)')
+
+
+@app.errorhandler(sqlalchemy.exc.IntegrityError)
+def handle_sqlalchemy_integrity_error(e):
+    if isinstance(e.orig, psycopg2.errors.UniqueViolation):
+        entry = DUPPLICATE_ENTRY_PATTERN.search(e.orig.pgerror)
+        if not entry:
+            raise e
+
+        return jsonify(message=f'Duplicate key: {entry.group(1)}={entry.group(2)}'), 400
+
+    raise e
 
 
 @app.before_first_request

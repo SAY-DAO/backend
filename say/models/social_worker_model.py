@@ -71,9 +71,9 @@ class SocialWorker(base, Timestamp):
     )
     gender = Column(Boolean, nullable=False)
     birthDate = Column(Date, nullable=True)
-    phoneNumber = Column(String, nullable=False)
+    phoneNumber = Column(String, nullable=False, unique=True)
     emergencyPhoneNumber = Column(String, nullable=False)
-    emailAddress = Column(String, nullable=False)
+    emailAddress = Column(String, nullable=False, unique=True)
     telegramId = Column(String, nullable=False)
     postalAddress = Column(Text, nullable=True)
     avatarUrl = Column(
