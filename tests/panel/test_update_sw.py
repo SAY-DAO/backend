@@ -14,18 +14,13 @@ class TestUpdateSocialWorker(BaseTestClass):
         'field,value,code',
         [
             ('firstName', 'new-str', 200),
-            # (
-            #     'id_type',
-            #     1,
-            #     200
-            # ),
             ('lastName', 'new-str', 200),
             ('telegramId', '23432545234', 200),
             ('idNumber', '564564565465', 200),
             ('country', 1, 200),
             ('city', 1, 200),
             ('birthCertificateNumber', '9876523423441223', 200),
-            # ('birthDate', '1999-12-12', 200), # TODO: current json encoder resulets "Sun, 12 Dec 1999 00:00:00 GMT"
+            ('birthDate', '1999-12-12', 200),
             ('postalAddress', 'postalAddress', 200),
             ('bankAccountNumber', '231434523', 200),
             ('bankAccountShebaNumber', '12312343423566', 200),
@@ -40,13 +35,8 @@ class TestUpdateSocialWorker(BaseTestClass):
             ('emailAddress', 'newexample@test.com', 200),
             ('emailAddress', 'newexample@test', 400),
             ('emailAddress', 'newexample', 400),
-            # ('id_ngo', admin.id_ngo)
-            # ('avatarUrl', self.create_test_file('imageUrl.jpg', size=10000))
-            # (
-            #     'userName',
-            #     'sw001035',
-            #     200
-            # ),
+            ('userName', 'abcd', 200),
+            ('userName', 'ab', 400),
         ],
     )
     def test_update_social_worker(self, field, value, code):

@@ -62,7 +62,7 @@ class NewSocialWorkerSchema(BaseModel):
 
 
 class UpdateSocialWorkerSchema(NewSocialWorkerSchema, metaclass=AllOptionalMeta):
-    userName: Optional[str]  # TODO: add validator
+    userName: Optional[constr(strip_whitespace=True, min_length=3)]  # TODO: add validator
     password: Optional[Password]
 
 
@@ -78,9 +78,8 @@ class SocialWorkerSchema(NewSocialWorkerSchema, BaseModelWithId):
     updated: datetime
     needCount: int
     currentNeedCount: int
-    registerDate: date
-    lastLoginDate: date
-    lastLogoutDate: Optional[date]
+    lastLoginDate: datetime
+    lastLogoutDate: Optional[datetime]
     isActive: bool
     isDeleted: bool
     locale: Locale

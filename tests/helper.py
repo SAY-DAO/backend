@@ -245,7 +245,6 @@ class BaseTestClass:
             phoneNumber=f'+98{seed})',
             emergencyPhoneNumber=f'+98{seed})',
             password='abcefg123',
-            registerDate=datetime.utcnow(),
             lastLoginDate=datetime.utcnow(),
             privilege=Privilege(name=role, privilege=1),
         )

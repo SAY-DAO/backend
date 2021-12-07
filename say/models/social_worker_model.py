@@ -11,6 +11,7 @@ from sqlalchemy.sql.schema import Column
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import Boolean
 from sqlalchemy.sql.sqltypes import Date
+from sqlalchemy.sql.sqltypes import DateTime
 from sqlalchemy.sql.sqltypes import Integer
 from sqlalchemy.sql.sqltypes import String
 from sqlalchemy.sql.sqltypes import Text
@@ -51,7 +52,9 @@ class SocialWorker(base, Timestamp):
     city = Column(Integer, nullable=True)
     firstName = Column(String, nullable=True)
     lastName = Column(String, nullable=False)
-    userName = Column(String, nullable=False)  # ngoName + "-sw" + generatedCode
+    userName = Column(
+        String, nullable=False, unique=True
+    )  # ngoName + "-sw" + generatedCode
     _password = Column(String(256), nullable=False)
     birthCertificateNumber = Column(String, nullable=True)
     idNumber = Column(String, nullable=False)
@@ -85,9 +88,8 @@ class SocialWorker(base, Timestamp):
     bankAccountNumber = Column(String, nullable=True)
     bankAccountShebaNumber = Column(String, nullable=True)
     bankAccountCardNumber = Column(String, nullable=True)
-    registerDate = Column(Date, default=datetime.utcnow, nullable=False)
-    lastLoginDate = Column(Date, default=datetime.utcnow, nullable=False)
-    lastLogoutDate = Column(Date, nullable=True)
+    lastLoginDate = Column(DateTime, default=datetime.utcnow, nullable=False)
+    lastLogoutDate = Column(DateTime, nullable=True)
     isActive = Column(Boolean, nullable=False, default=True)
     isDeleted = Column(Boolean, nullable=False, default=False, index=True)
     locale = Column(LocaleType, default=Locale('fa'), nullable=False)
