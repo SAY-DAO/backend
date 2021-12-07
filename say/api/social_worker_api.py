@@ -192,7 +192,7 @@ class UpdateSocialWorker(Resource):
                 raise HTTP_PERMISION_DENIED()
 
             new_ngo = (
-                session.query(Ngo)
+                session.query(Ngo.id)
                 .filter(
                     Ngo.id == data.id_ngo,
                     Ngo.isDeleted.is_(False),
@@ -201,7 +201,7 @@ class UpdateSocialWorker(Resource):
             )
 
             if new_ngo is None:
-                HTTP_BAD_REQUEST(message='NGO not found')
+                raise HTTP_BAD_REQUEST(message='NGO not found')
 
             sw.id_ngo = data.id_ngo
             for chid in sw.children:

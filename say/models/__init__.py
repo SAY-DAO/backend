@@ -46,6 +46,7 @@ from sqlalchemy_utils import observes
 from sqlalchemy_utils.models import Timestamp
 
 from say.date import *
+from say.exceptions import HTTPException
 from say.formatters import expose_datetime
 from say.formatters import int_formatter
 from say.langs import LANGS
@@ -64,10 +65,11 @@ def commit(func):
         try:
             result = func(*args, **kwargs)
 
-            if isinstance(result, tuple):
-                if result[1] >= 300:
-                    session.rollback()
-                    return result
+            if (isinstance(result, tuple) and result[1] >= 300) or isinstance(
+                result, HTTPException
+            ):
+                session.rollback()
+                return result
 
             session.commit()
             return result

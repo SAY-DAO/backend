@@ -135,6 +135,17 @@ class TestUpdateSocialWorker(BaseTestClass):
         assert new_ngo.currentChildrenCount == 1
         assert new_ngo.childrenCount == 1
 
+        # When new ngo is not exist
+        res = self.client.patch(
+            UPDATE_SW_URL % admin.id,
+            content_type='multipart/form-data',
+            data={
+                'id_ngo': -1,
+            },
+        )
+
+        assert res.status_code == 400
+
         for role in ROLES - {SUPER_ADMIN, SAY_SUPERVISOR}:
             user = self.login_as_sw(role=role)
             new_ngo = self._create_random_ngo()
