@@ -4,6 +4,7 @@ from datetime import timedelta
 
 from argon2 import PasswordHasher
 from babel import Locale
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import object_session
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import synonym
@@ -97,6 +98,9 @@ class SocialWorker(base, Timestamp):
     privilege = relationship("Privilege", foreign_keys=[id_type], lazy='joined')
     ngo = relationship("Ngo", foreign_keys=id_ngo)
     children = relationship("Child", back_populates='social_worker')
+
+    typeName = association_proxy('privilege', 'name')
+    ngoName = association_proxy('ngo', 'name')
 
     def _set_password(self, password):
         """Hash ``password`` on the fly and store its hashed version."""

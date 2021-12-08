@@ -104,7 +104,7 @@ class GetSocialWorkerById(Resource):
     @authorize(
         COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
     )  # TODO: priv
-    @json
+    @json(SocialWorkerSchema)
     @swag_from('./docs/social_worker/id.yml')
     def get(self, social_worker_id):
         social_worker_query = (
@@ -113,20 +113,21 @@ class GetSocialWorkerById(Resource):
             .filter_by(isDeleted=False)
         )
 
-        if get_user_role() in [COORDINATOR, NGO_SUPERVISOR]:  # TODO: priv
+        if get_user_role() not in [SAY_SUPERVISOR, SUPER_ADMIN, ADMIN]:  # TODO: priv
             user_id = get_user_id()
             user = session.query(SocialWorker).get(user_id)
+            if user is None or user.isDeleted or not user.isActive:
+                raise HTTP_PERMISION_DENIED()
+
             social_worker_query = social_worker_query.filter_by(id_ngo=user.id_ngo)
 
-        social_worker = social_worker_query.first()
+        social_worker = social_worker_query.one_or_none()
 
         if not social_worker:
             raise HTTP_NOT_FOUND()
 
-        res = obj_to_dict(social_worker)
-        res['typeName'] = social_worker.privilege.name
-        res['ngoName'] = social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
-        return res
+        print(social_worker.lastLoginDate)
+        return social_worker
 
 
 class GetSocialWorkerByNgoId(Resource):
@@ -363,7 +364,7 @@ api.add_resource(GetAllSocialWorkers, '/api/v2/socialWorker/all')
 api.add_resource(AddSocialWorker, '/api/v2/socialWorker/add')
 api.add_resource(
     GetSocialWorkerById,
-    '/api/v2/socialWorker/socialWorkerId=<social_worker_id>',
+    '/api/v2/socialWorker/socialWorkerId=<int:social_worker_id>',
 )
 api.add_resource(GetSocialWorkerByNgoId, '/api/v2/socialWorker/ngoId=<ngo_id>')
 api.add_resource(
@@ -372,15 +373,15 @@ api.add_resource(
 )
 api.add_resource(
     DeleteSocialWorker,
-    '/api/v2/socialWorker/delete/socialWorkerId=<social_worker_id>',
+    '/api/v2/socialWorker/delete/socialWorkerId=<int:social_worker_id>',
 )
 api.add_resource(
     DeactivateSocialWorker,
-    '/api/v2/socialWorker/deactivate/socialWorkerId=<social_worker_id>',
+    '/api/v2/socialWorker/deactivate/socialWorkerId=<int:social_worker_id>',
 )
 api.add_resource(
     ActivateSocialWorker,
-    '/api/v2/socialWorker/activate/socialWorkerId=<social_worker_id>',
+    '/api/v2/socialWorker/activate/socialWorkerId=<int:social_worker_id>',
 )
 
 api.add_resource(

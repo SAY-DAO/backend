@@ -34,6 +34,7 @@ def json(schema):
                 return jsonify([obj_to_dict(item) for item in result])
 
             elif isclass(schema) and issubclass(schema, pydantic.BaseModel):
+                schema.from_orm(result)
                 return Response(
                     schema.from_orm(result).json(by_alias=True),
                     mimetype='application/json',

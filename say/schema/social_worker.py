@@ -2,6 +2,7 @@ from datetime import date
 from datetime import datetime
 from typing import Optional
 
+from pydantic import Field
 from pydantic.networks import EmailStr
 from pydantic.types import constr
 
@@ -83,3 +84,5 @@ class SocialWorkerSchema(NewSocialWorkerSchema, BaseModelWithId):
     isActive: bool
     isDeleted: bool
     locale: Locale
+    typeName: str
+    ngoName: str
