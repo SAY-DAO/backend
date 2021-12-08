@@ -30,8 +30,8 @@ def delivere_to_child(self):
     needs_id = self.session.query(Need.id).filter(
         Need.type == 1,
         Need.status == 4,
-        datetime.utcnow() - Need.ngo_delivery_date
-        >= timedelta(seconds=configs.DELIVER_TO_CHILD_DELAY),
+        Need.ngo_delivery_date
+        >= datetime.utcnow() - timedelta(seconds=configs.DELIVER_TO_CHILD_DELAY),
     )
 
     t = []
