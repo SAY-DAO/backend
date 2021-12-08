@@ -17,17 +17,29 @@ class BaseModel(PydanticBase):
     def fields(cls):
         return cls.__fields__.keys()
 
+    # DEPRECETED
     @classmethod
     def from_query(cls, q):
         return cls(**q._asdict())
 
+    # DEPRECETED
     @classmethod
     def from_query_list(cls, q):
         for row in q:
             yield cls.from_query(row)
 
+    @classmethod
+    def from_query_(cls, q):
+        return cls.from_orm(q)
+
+    @classmethod
+    def from_query_list_(cls, q):
+        for row in q:
+            yield cls.from_query_(row)
+
     class Config:
         orm_mode = True
+        extra = 'ignore'
 
         json_loads = ujson.loads
         json_encoders = {

@@ -14,6 +14,7 @@ from ..authorization import authorize
 from ..authorization import get_user_id
 from ..authorization import get_user_role
 from ..decorators import json
+from ..decorators import query
 from ..decorators import validate
 from ..exceptions import HTTP_BAD_REQUEST
 from ..exceptions import HTTP_NOT_FOUND
@@ -35,28 +36,28 @@ Social Worker APIs
 '''
 
 
+def filter_by_role(query, user):
+    if user.typeName not in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR]:  # TODO: priv
+        query = query.filter(SocialWorker.id_ngo == user.id_ngo)
+
+    return query
+
+
 class GetAllSocialWorkers(Resource):
     @authorize(
         COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
     )  # TODO: priv
-    @json
+    @query(
+        SocialWorker,
+        SocialWorker.isDeleted.is_(False),
+        enbale_filtering=True,
+        filtering_schema=SocialWorkerSchema,
+    )
+    @json(SocialWorkerSchema, use_list=True)
     @swag_from('./docs/social_worker/all.yml')
     def get(self):
-        social_workers = session.query(SocialWorker).filter_by(isDeleted=False)
-
-        if get_user_role() in [COORDINATOR, NGO_SUPERVISOR]:  # TODO: priv
-            user_id = get_user_id()
-            user = session.query(SocialWorker).get(user_id)
-            social_workers = social_workers.filter_by(id_ngo=user.id_ngo)
-
-        fetch = {}
-        for social_worker in social_workers:
-            data = obj_to_dict(social_worker)
-            data['typeName'] = social_worker.privilege.name
-            data['ngoName'] = social_worker.ngo.name
-            fetch[str(social_worker.id)] = data
-
-        return fetch
+        social_workers = filter_by_role(query=request._query, user=request.user)
+        return social_workers
 
 
 class AddSocialWorker(Resource):
@@ -104,32 +105,22 @@ class GetSocialWorkerById(Resource):
     @authorize(
         COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
     )  # TODO: priv
+    @query(SocialWorker, SocialWorker.isDeleted.is_(False))
     @json(SocialWorkerSchema)
     @swag_from('./docs/social_worker/id.yml')
     def get(self, social_worker_id):
-        social_worker_query = (
-            session.query(SocialWorker)
-            .filter_by(id=social_worker_id)
-            .filter_by(isDeleted=False)
-        )
-
-        if get_user_role() not in [SAY_SUPERVISOR, SUPER_ADMIN, ADMIN]:  # TODO: priv
-            user_id = get_user_id()
-            user = session.query(SocialWorker).get(user_id)
-            if user is None or user.isDeleted or not user.isActive:
-                raise HTTP_PERMISION_DENIED()
-
-            social_worker_query = social_worker_query.filter_by(id_ngo=user.id_ngo)
-
-        social_worker = social_worker_query.one_or_none()
+        social_workers = filter_by_role(query=request._query, user=request.user)
+        social_worker = social_workers.filter(
+            SocialWorker.id == social_worker_id
+        ).one_or_none()
 
         if not social_worker:
             raise HTTP_NOT_FOUND()
 
-        print(social_worker.lastLoginDate)
         return social_worker
 
 
+# Depreceted
 class GetSocialWorkerByNgoId(Resource):
     @authorize(
         COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN

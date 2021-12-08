@@ -39,7 +39,7 @@ class TestGetSocialWorker(BaseTestClass):
         )
         self.assert_code(res, 404)
 
-    def test_get_social_worker_by_coordinator_or_supervisior(self):
+    def test_get_social_worker_by_coordinator_or_supervisor(self):
         for role in {COORDINATOR, NGO_SUPERVISOR}:
             sw = self.login_as_sw(role=role)
 

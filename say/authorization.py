@@ -4,6 +4,7 @@ from logging import getLogger
 import redis
 from flask import jsonify
 from flask import make_response
+from flask.globals import request
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_claims
 from flask_jwt_extended import get_jwt_identity
@@ -13,14 +14,17 @@ from flask_jwt_extended.exceptions import JWTExtendedException
 from flask_jwt_extended.utils import create_refresh_token
 from jwt.exceptions import PyJWTError
 from sentry_sdk import set_user
-from sqlalchemy_utils.utils import starts_with
 
 from say.api.ext import jwt
 from say.config import configs
 from say.constants import BEARER
 from say.constants import REFRESH_TOKEN_SW_PREFIX
 from say.constants import REFRESH_TOKEN_USER_PREFIX
+from say.exceptions import HTTP_PERMISION_DENIED
 from say.exceptions import HTTP_UNAUTHORIZED
+from say.models import SocialWorker
+from say.models import User
+from say.orm import session
 from say.roles import *
 
 
@@ -142,12 +146,45 @@ def authorize(*roles):
         def wrapper(*args, **kwargs):
             try:
                 verify_jwt_in_request()
+                claims = get_jwt_claims()
+                user_id = get_jwt_identity()
+                user_role = claims.get('role', USER)
+
                 set_user(
                     dict(
-                        id=get_jwt_identity(),
-                        role=get_user_role(),
+                        id=user_id,
+                        role=user_role,
                     )
                 )
+
+                if user_role not in roles:
+                    raise HTTP_PERMISION_DENIED()
+
+                user = None
+                if user_role == USER:
+                    user = (
+                        session.query(User)
+                        .filter(User.id == user_id, User.isDeleted.is_(False))
+                        .one_or_none()
+                    )
+                    if user is None:
+                        raise HTTP_UNAUTHORIZED()
+
+                else:
+                    user = (
+                        session.query(SocialWorker)
+                        .filter(
+                            SocialWorker.id == user_id,
+                            SocialWorker.isDeleted.is_(False),
+                            SocialWorker.isActive.is_(True),
+                        )
+                        .one_or_none()
+                    )
+                    if user is None:
+                        raise HTTP_UNAUTHORIZED()
+
+                request.user = user
+
             except (PyJWTError, JWTExtendedException) as ex:
                 getLogger().info(ex)
                 return make_response(jsonify(message=f'Unauthorized, {ex}'), 401)

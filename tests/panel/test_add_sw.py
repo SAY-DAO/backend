@@ -14,11 +14,9 @@ class TestAddSocialWorker(BaseTestClass):
 
         data = dict(
             firstName='asd',
-            id=42,
             id_ngo=admin.id_ngo,
             id_type=1,
             lastName='qw',
-            userName='sw001035',
             telegramId=123456789,
             idNumber='12345666',
             gender='true',
