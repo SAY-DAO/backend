@@ -36,7 +36,7 @@ class TestUpdateSocialWorker(BaseTestClass):
             ('emailAddress', 'newexample@test', 400),
             ('emailAddress', 'newexample', 400),
             ('userName', 'abcd', 200),
-            ('userName', 'ab', 400),
+            ('userName', 'as', 400),
         ],
     )
     def test_update_social_worker(self, field, value, code):
@@ -55,8 +55,8 @@ class TestUpdateSocialWorker(BaseTestClass):
                 field: value,
             },
         )
-
-        assert res.status_code == code
+        # assert res.json and (res.status_code == code)
+        self.assert_code(res, code)
         if code == 200:
             assert res.json.get(field) == expected
 
@@ -73,7 +73,7 @@ class TestUpdateSocialWorker(BaseTestClass):
             },
         )
 
-        assert res.status_code == 400
+        self.assert_code(res, 400)
 
     def test_update_social_worker_unique_phone_number(self):
         admin = self.login_as_sw(role=SUPER_ADMIN)

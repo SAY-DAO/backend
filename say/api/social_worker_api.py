@@ -18,7 +18,11 @@ from ..decorators import validate
 from ..exceptions import HTTP_BAD_REQUEST
 from ..exceptions import HTTP_NOT_FOUND
 from ..exceptions import HTTP_PERMISION_DENIED
-from ..roles import *
+from ..roles import ADMIN
+from ..roles import COORDINATOR
+from ..roles import NGO_SUPERVISOR
+from ..roles import SAY_SUPERVISOR
+from ..roles import SUPER_ADMIN
 from ..schema.social_worker import MigrateSocialWorkerChildrenSchema
 from ..schema.social_worker import NewSocialWorkerSchema
 from ..schema.social_worker import SocialWorkerSchema

@@ -1,4 +1,5 @@
 import shutil
+import string
 import tempfile
 from random import randint
 
@@ -7,6 +8,8 @@ import sqlalchemy.orm.session
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
+
+from say.utils import random_string
 
 
 # class CustomClient(FlaskClient):
@@ -55,8 +58,10 @@ def db():
     from say.orm import init_model
     from say.orm import setup_schema
 
-    db_url = configs.postgres_test_url + str(
-        randint(1000 * 1000 * 1000, 9 * 1000 * 1000 * 1000)
+    db_url = (
+        configs.postgres_test_url
+        + '_'
+        + random_string(length=10, letters=string.ascii_lowercase + string.digits)
     )
     # Drop the previously created db if exists.
     with DBManager(url=db_url, admin_url=configs.postgres_admin_url) as m:

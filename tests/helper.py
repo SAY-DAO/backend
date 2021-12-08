@@ -1,4 +1,5 @@
 import io
+import string
 import tempfile
 from datetime import datetime
 from random import choice
@@ -31,6 +32,7 @@ from say.models.cart import Cart
 from say.models.cart import CartNeed
 from say.models.receipt import NeedReceipt
 from say.roles import SUPER_ADMIN
+from say.utils import random_string
 
 
 LOGIN_URL = '/api/v2/auth/login'
@@ -70,6 +72,14 @@ class BaseTestClass:
     def mockup(self):
         # Override this method to add mockup data
         pass
+
+    @classmethod
+    def assert_code(cls, res, code):
+        assert (res.status_code == code) and res.json
+
+    @classmethod
+    def assert_ok(cls, res):
+        cls.assert_code(res, 200)
 
     def create_test_file(self, name, size=1000):
         return (io.BytesIO(b"a" * size), name)
@@ -235,14 +245,14 @@ class BaseTestClass:
             generatedCode=str(seed),
             firstName=str(seed),
             lastName=str(seed),
-            userName=str(seed),
+            userName=random_string(length=8, letters=string.ascii_lowercase),
             idNumber=str(seed),
             gender=False,
             telegramId=str(seed),
             avatarUrl=self.create_test_file('test.png'),
             emailAddress=f'{str(seed)}@email.com',
-            phoneNumber=f'+98{seed}',
-            emergencyPhoneNumber=f'+98{seed}',
+            phoneNumber=f'+98{random_string(length=8, letters=string.digits)}',
+            emergencyPhoneNumber=f'+98{random_string(length=8, letters=string.digits)}',
             password='abcefg123',
             lastLoginDate=datetime.utcnow(),
             privilege=Privilege(name=role, privilege=1),
