@@ -35,7 +35,7 @@ beat = {
     },
     'delivere_to_child': {
         'task': 'say.tasks.delivere_to_child.delivere_to_child',
-        'schedule': crontab(minute=0),
+        'schedule': crontab(minute='10,40'),
     },
     'update_nakama_txs': {
         'task': 'say.tasks.nakama.update_nakama_txs',
