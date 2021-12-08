@@ -35,7 +35,7 @@ class TestAddSocialWorker(BaseTestClass):
             data=data,
         )
 
-        assert res.status_code == 200
+        self.assert_ok(res)
         assert res.json['id'] is not None
         assert res.json['gender'] is True
         assert res.json['generatedCode'] == '001002'

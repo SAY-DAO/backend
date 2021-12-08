@@ -33,11 +33,11 @@ class TestUpdateServiceStatus(BaseTestClass):
             UPDATE_NEED_URL % self.need_without_receipt.id,
             data=data,
         )
-        assert res.status_code == 400
+        self.assert_code(res, 400)
 
         # when need has atleast one receipt
         res = self.client.patch(
             UPDATE_NEED_URL % self.need_with_receipt.id,
             data=data,
         )
-        assert res.status_code == 200
+        self.assert_ok(res)

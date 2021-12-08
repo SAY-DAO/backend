@@ -88,7 +88,7 @@ class TestUpdateSocialWorker(BaseTestClass):
             },
         )
 
-        assert res.status_code == 400
+        self.assert_code(res, 400)
 
     def test_update_social_worker_unique_email(self):
         admin = self.login_as_sw(role=SUPER_ADMIN)
@@ -103,7 +103,7 @@ class TestUpdateSocialWorker(BaseTestClass):
             },
         )
 
-        assert res.status_code == 400
+        self.assert_code(res, 400)
 
     def test_update_social_worker_ngo(self):
         admin = self.login_as_sw(role=SUPER_ADMIN)
@@ -120,7 +120,7 @@ class TestUpdateSocialWorker(BaseTestClass):
             },
         )
 
-        assert res.status_code == 200
+        self.assert_ok(res)
         assert res.json.get('id_ngo') == new_ngo.id
 
         self.session.expire(old_ngo)
@@ -144,7 +144,7 @@ class TestUpdateSocialWorker(BaseTestClass):
             },
         )
 
-        assert res.status_code == 400
+        self.assert_code(res, 400)
 
         for role in ROLES - {SUPER_ADMIN, SAY_SUPERVISOR}:
             user = self.login_as_sw(role=role)
@@ -185,7 +185,7 @@ class TestUpdateSocialWorker(BaseTestClass):
             },
         )
 
-        assert res.status_code == 200
+        self.assert_ok(res)
         self.session.refresh(admin)
         admin.validate_password(new_password)
 
@@ -197,7 +197,7 @@ class TestUpdateSocialWorker(BaseTestClass):
             },
         )
 
-        assert res.status_code == 400
+        self.assert_code(res, 400)
 
     def test_update_social_worker_avatar(self):
         admin = self.login_as_sw(role=SUPER_ADMIN)
@@ -210,7 +210,7 @@ class TestUpdateSocialWorker(BaseTestClass):
             },
         )
 
-        assert res.status_code == 200
+        self.assert_ok(res)
         self.session.refresh(admin)
         assert res.json.get('avatarUrl') == admin.avatarUrl
 
@@ -222,7 +222,7 @@ class TestUpdateSocialWorker(BaseTestClass):
             },
         )
 
-        assert res.status_code == 400
+        self.assert_code(res, 400)
 
     def test_update_social_worker_id_card(self):
         admin = self.login_as_sw(role=SUPER_ADMIN)
@@ -235,7 +235,7 @@ class TestUpdateSocialWorker(BaseTestClass):
             },
         )
 
-        assert res.status_code == 200
+        self.assert_ok(res)
         assert res.json.get('idCardUrl')
         self.session.refresh(admin)
         assert res.json.get('idCardUrl') == admin.idCardUrl
@@ -248,7 +248,7 @@ class TestUpdateSocialWorker(BaseTestClass):
             },
         )
 
-        assert res.status_code == 400
+        self.assert_code(res, 400)
 
     def test_update_social_worker_passport(self):
         admin = self.login_as_sw(role=SUPER_ADMIN)
@@ -260,7 +260,7 @@ class TestUpdateSocialWorker(BaseTestClass):
                 'passportUrl': self.create_test_file('image.jpg', size=10000),
             },
         )
-        assert res.status_code == 200
+        self.assert_ok(res)
         assert res.json.get('passportUrl')
         self.session.refresh(admin)
         assert res.json.get('passportUrl') == admin.passportUrl
@@ -273,4 +273,4 @@ class TestUpdateSocialWorker(BaseTestClass):
             },
         )
 
-        assert res.status_code == 400
+        self.assert_code(res, 400)

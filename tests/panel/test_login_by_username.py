@@ -17,7 +17,7 @@ class TestLogin(BaseTestClass):
                 'password': self.password,
             },
         )
-        assert res.status_code == 200
+        self.assert_ok(res)
         assert res.json['access_token'] is not None
         assert res.json['refresh_token'] is not None
 
@@ -37,4 +37,4 @@ class TestLogin(BaseTestClass):
             PANEL_LOGIN_URL,
             data={'username': self.user.userName},
         )
-        assert res.status_code == 400
+        self.assert_code(res, 400)

@@ -32,5 +32,5 @@ class TestPreNeed(BaseTestClass):
 
         self.login_sw(self.sw)
         res = self.client.get(url)
-        assert res.status_code == 200
+        self.assert_ok(res)
         assert len(res.json) == len(self.child.needs)

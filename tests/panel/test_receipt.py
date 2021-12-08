@@ -36,31 +36,31 @@
 #         self.login_sw(self.sw)
 
 #         res = self.client.get(LIST_NEEDS_URL)
-#         assert res.status_code == 200
+#         self.assert_ok(res)
 #         needs = res.json['needs']
 #         assert needs[0]['receipt_count'] == 2
 
 #     def test_get_public_receipt(self):
 #         res = self.client.get(RECEIPT_URL + str(self.public_receipt.id))
-#         assert res.status_code == 200
+#         self.assert_ok(res)
 #         assert res.json['ownerId'] is None
 
 #         self.login_as_user()
 #         res = self.client.get(RECEIPT_URL + str(self.public_receipt.id))
-#         assert res.status_code == 200
+#         self.assert_ok(res)
 #         assert res.json['ownerId'] is None
 
 #         for role in [SAY_SUPERVISOR, ADMIN, SUPER_ADMIN]:
 #             self.login_as_sw(role)
 #             res = self.client.get(RECEIPT_URL + str(self.public_receipt.id))
-#             assert res.status_code == 200
+#             self.assert_ok(res)
 #             assert res.json['ownerId'] is not None
 
 #         self.login_as_sw(SOCIAL_WORKER)
 #         res = self.client.get(
 #             RECEIPT_URL + str(self.public_receipt.id),
 #         )
-#         assert res.status_code == 200
+#         self.assert_ok(res)
 
 #     def test_get_private_receipt(self):
 #         res = self.client.get(RECEIPT_URL + str(self.r1.id))
@@ -68,7 +68,7 @@
 
 #         self.login_as_sw(SUPER_ADMIN)
 #         res = self.client.get(RECEIPT_URL + str(self.r1.id))
-#         assert res.status_code == 200
+#         self.assert_ok(res)
 #         assert res.json['id'] == self.r1.id
 
 #         res = self.client.get(RECEIPT_URL + str(self.deleted_receipt))
@@ -76,7 +76,7 @@
 
 #         self.login_sw(self.r1.owner)
 #         res = self.client.get(RECEIPT_URL + str(self.r1.id))
-#         assert res.status_code == 200
+#         self.assert_ok(res)
 
 #         self.login_as_sw(SOCIAL_WORKER)
 #         res = self.client.get(RECEIPT_URL + str(self.r1.id))
@@ -88,4 +88,4 @@
 #         )
 #         self.login_sw(ngo_super_visor)
 #         res = self.client.get(RECEIPT_URL + str(self.r1.id))
-#         assert res.status_code == 200
+#         self.assert_ok(res)

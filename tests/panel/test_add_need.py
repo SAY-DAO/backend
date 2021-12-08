@@ -39,5 +39,5 @@ class TestAddNeed(BaseTestClass):
             content_type='multipart/form-data',
             data=data,
         )
-        assert res.status_code == 200
+        self.assert_ok(res)
         # TODO: Add more tests
