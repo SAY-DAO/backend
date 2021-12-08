@@ -75,7 +75,7 @@ class BaseTestClass:
 
     @classmethod
     def assert_code(cls, res, code):
-        assert (res.status_code == code) and res.json
+        assert (res.status_code == code) and res.json()
 
     @classmethod
     def assert_ok(cls, res):
