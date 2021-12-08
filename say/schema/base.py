@@ -51,7 +51,7 @@ class AllOptionalMeta(ModelMetaclass):
 
         for base in bases:
             for base_ in base.__mro__:
-                if base_ is BaseModel or issubclass(base_, BaseModel):
+                if base_ is BaseModel or base_ is CamelModel or base_ is PydanticBase:
                     break
 
                 annotations.update(base_.__annotations__)
