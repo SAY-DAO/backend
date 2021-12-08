@@ -31,7 +31,7 @@ def delivere_to_child(self):
         Need.type == 1,
         Need.status == 4,
         Need.ngo_delivery_date
-        >= datetime.utcnow() - timedelta(seconds=configs.DELIVER_TO_CHILD_DELAY),
+        <= datetime.utcnow() - timedelta(seconds=configs.DELIVER_TO_CHILD_DELAY),
     )
 
     t = []
