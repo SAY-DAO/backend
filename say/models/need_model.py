@@ -439,7 +439,8 @@ class Need(base, Timestamp):
         return data
 
     def delivere_to_child(self):
-        assert self.status == 4 and self.type == 1
+        assert self.status == 4 and self.type == 1 and self.ngo_delivery_date is not None
+
         self.status = 5
         self.child_delivery_date = self.ngo_delivery_date + timedelta(
             seconds=configs.DELIVER_TO_CHILD_DELAY
