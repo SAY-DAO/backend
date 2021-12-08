@@ -438,16 +438,11 @@ class Need(base, Timestamp):
 
         return data
 
-    def child_delivery_product(self):
-        from say.tasks import change_need_status_to_delivered
-
-        deliver_to_child_delay = datetime.utcnow() + timedelta(
+    def delivere_to_child(self):
+        assert self.status == 4 and self.type == 1
+        self.status = 5
+        self.child_delivery_date = self.ngo_delivery_date + timedelta(
             seconds=configs.DELIVER_TO_CHILD_DELAY
-        )
-
-        change_need_status_to_delivered.apply_async(
-            (self.id,),
-            eta=deliver_to_child_delay,
         )
 
     def change_cost(self, new_cost):
@@ -517,8 +512,6 @@ def status_event(need, new_status, old_status, initiator):
                 need.expected_delivery_date <= need.ngo_delivery_date <= datetime.utcnow()
             ):
                 raise Exception('Invalid ngo_delivery_date')
-
-            need.child_delivery_product()
 
             if need.purchase_cost < need.paid:
                 need.refund_extra_credit(need.purchase_cost)
