@@ -509,8 +509,9 @@ def status_event(need, new_status, old_status, initiator):
 
             need.ngo_delivery_date = parse_datetime(request.form.get('ngo_delivery_date'))
 
-            if not (
-                need.expected_delivery_date <= need.ngo_delivery_date <= datetime.utcnow()
+            if (
+                need.ngo_delivery_date < need.expected_delivery_date
+                or need.ngo_delivery_date > datetime.utcnow()
             ):
                 raise Exception('Invalid ngo_delivery_date')
 
