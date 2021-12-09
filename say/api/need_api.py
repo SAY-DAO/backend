@@ -9,6 +9,7 @@ from flask import request
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_restful import Resource
 from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import selectinload
 
 from say.api.ext import api
@@ -178,7 +179,13 @@ class GetNeedById(Resource):
     @json
     @swag_from('./docs/need/id.yml')
     def get(self, need_id):
-        need_query = session.query(Need).filter_by(isDeleted=False).filter_by(id=need_id)
+        need_query = (
+            session.query(Need)
+            .options(joinedload(Need.participants))
+            .filter_by(isDeleted=False)
+            .filter_by(id=need_id)
+        )
+
         need = filter_by_privilege(need_query, get=True).one_or_none()
 
         if need is None:
@@ -300,6 +307,7 @@ class UpdateNeedById(Resource):
         if request.form.get('expected_delivery_date'):
             if not (2 <= need.status <= 3):
                 raise Exception('Expected delivery date can not changed in this status')
+
             need.isReported = False
             need.expected_delivery_date = parse_datetime(
                 request.form['expected_delivery_date']
