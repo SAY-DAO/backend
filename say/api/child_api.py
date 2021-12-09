@@ -3,6 +3,7 @@ Child APIs
 '''
 
 
+import collections
 import functools
 import os
 from collections import OrderedDict
@@ -36,7 +37,9 @@ from say.models import ChildNeed
 from say.models import Family
 from say.models import Invitation
 from say.models import Need
+from say.models import NeedFamily
 from say.models import SocialWorker
+from say.models import User
 from say.models import UserFamily
 from say.models import commit
 from say.models import obj_to_dict
@@ -400,22 +403,28 @@ class GetChildNeedsSummary(Resource):
             raise HTTP_NOT_FOUND()
 
         needs_query = (
-            session.query(Need)
-            .options(joinedload(Need.participants))
+            session.query(Need, User.avatarUrl)
+            .join(NeedFamily, Need.id == NeedFamily.id_need)
+            .join(User, NeedFamily.id_user == User.id)
             .filter(Need.child_id == child_id)
             .filter(Need.isDeleted.is_(False))
             .order_by(Need.name)
         )
 
+        need_avatars = collections.defaultdict(list)
+
+        for need, avatar in needs_query:
+            need_avatars[need].append(avatar)
+
         needs = []
         role = get_user_role()
-        for need in needs_query.all():
-            if not need.isConfirmed and role in [USER]:
+        for need, avatars in need_avatars.items():
+            if not need.isConfirmed and role == USER:
                 continue
 
             need_dict = obj_to_dict(need)
             need_dict['participants'] = [
-                {'user_avatar': p.user_avatar} for p in need.current_participants
+                {'user_avatar': avatar} for avatar in avatars or []
             ]
             needs.append(NeedSummary(**need_dict).dict())
 

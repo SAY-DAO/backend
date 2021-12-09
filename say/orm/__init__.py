@@ -14,7 +14,8 @@ from sqlalchemy.sql.schema import MetaData
 from sqlalchemy_utils import Country
 from sqlalchemy_utils import PhoneNumber
 
-from .base import BaseModel, columns
+from .base import BaseModel
+from .base import columns
 
 
 metadata = MetaData(
@@ -103,7 +104,6 @@ def obj_to_dict(obj, relationships=False, proxys=False):
         else:
             result[key] = value
     return result
-
 
 
 def safe_commit(session):

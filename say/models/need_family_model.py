@@ -42,6 +42,7 @@ class NeedFamily(base, Timestamp):
     user = relationship(
         'User',
         foreign_keys=id_user,
+        lazy='selectin',
         back_populates='participations',
         uselist=False,
     )
