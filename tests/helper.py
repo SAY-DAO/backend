@@ -237,7 +237,7 @@ class BaseTestClass:
         return child
 
     def _create_random_sw(self, role=SUPER_ADMIN, ngo=None, **kwargs):
-        seed = randint(1, 10 ** 3)
+        seed = randint(10 ** 6, 10 ** 9)
         ngo = ngo or self._create_random_ngo()
 
         data = dict(
@@ -245,14 +245,14 @@ class BaseTestClass:
             generatedCode=str(seed),
             firstName=str(seed),
             lastName=str(seed),
-            userName=random_string(length=8, letters=string.ascii_lowercase),
+            userName=str(seed),
             idNumber=str(seed),
             gender=False,
             telegramId=str(seed),
             avatarUrl=self.create_test_file('test.png'),
             emailAddress=f'{str(seed)}@email.com',
-            phoneNumber=f'+98{random_string(length=8, letters=string.digits)}',
-            emergencyPhoneNumber=f'+98{random_string(length=8, letters=string.digits)}',
+            phoneNumber=f'+98{seed}',
+            emergencyPhoneNumber=f'+98{seed}',
             password='abcefg123',
             lastLoginDate=datetime.utcnow(),
             privilege=Privilege(name=role, privilege=1),
