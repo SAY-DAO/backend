@@ -135,7 +135,7 @@ jobs:
       - name: Run Tests
         run: >
           docker-compose -f compose.yml
-          run --rm backend pytest -vvv --cov=./ --cov-report=xml -n 4
+          run --rm backend pytest -vvv --cov=./ --cov-report=xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
