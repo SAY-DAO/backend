@@ -16,6 +16,7 @@ from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_restful import Resource
 from flask_restful import abort
 from sqlalchemy import or_
+from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import selectinload
 
 from say import crud
@@ -344,7 +345,7 @@ class GetChildNeeds(Resource):
 
         needs_query = (
             session.query(Need)
-            .options(selectinload('participants'))
+            .options(joinedload(Need.participants))
             .filter(Need.child_id == child_id)
             .filter(Need.isDeleted.is_(False))
             .order_by(Need.name)
@@ -400,7 +401,7 @@ class GetChildNeedsSummary(Resource):
 
         needs_query = (
             session.query(Need)
-            .options(selectinload('participants'))
+            .options(joinedload(Need.participants))
             .filter(Need.child_id == child_id)
             .filter(Need.isDeleted.is_(False))
             .order_by(Need.name)
@@ -408,7 +409,7 @@ class GetChildNeedsSummary(Resource):
 
         needs = []
         role = get_user_role()
-        for need in needs_query:
+        for need in needs_query.all():
             if not need.isConfirmed and role in [USER]:
                 continue
 
