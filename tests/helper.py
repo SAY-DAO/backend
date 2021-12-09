@@ -57,10 +57,10 @@ class BaseTestClass:
         # Insert mockup data
         self.mockup()
 
-        # Disable Sentry
-        import sentry_sdk
+        # # Disable Sentry
+        # import sentry_sdk
 
-        sentry_sdk.init()
+        # sentry_sdk.init()
 
         # get client
         self._client = client

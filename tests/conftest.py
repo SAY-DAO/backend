@@ -58,11 +58,7 @@ def db():
     from say.orm import init_model
     from say.orm import setup_schema
 
-    db_url = (
-        configs.postgres_test_url
-        + '_'
-        + random_string(length=10, letters=string.ascii_lowercase + string.digits)
-    )
+    db_url = configs.postgres_test_url
     # Drop the previously created db if exists.
     with DBManager(url=db_url, admin_url=configs.postgres_admin_url) as m:
         m.drop_database()
