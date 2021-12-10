@@ -23,6 +23,7 @@ from say.formatters import expose_datetime
 from say.locale import ChangeLocaleTo
 from say.locale import get_locale
 from say.orm import base
+from say.orm.mixins import ActivateMixin
 from say.orm.types import LocalFile
 from say.render_template_i18n import render_template_i18n
 from say.utils import surname
@@ -38,7 +39,7 @@ PASSOWRD_LETTERS = string.ascii_letters + string.digits
 
 
 # TODO: unique email, phone, username, ...
-class SocialWorker(base, Timestamp):
+class SocialWorker(base, Timestamp, ActivateMixin):
     __tablename__ = "social_worker"
 
     id = Column(Integer, primary_key=True, nullable=False, unique=True)
@@ -91,11 +92,11 @@ class SocialWorker(base, Timestamp):
     bankAccountCardNumber = Column(String, nullable=True)
     lastLoginDate = Column(DateTime, default=datetime.utcnow, nullable=False)
     lastLogoutDate = Column(DateTime, nullable=True)
-    isActive = Column(Boolean, nullable=False, default=True)
+    # isActive = Column(Boolean, nullable=False, default=True)
     isDeleted = Column(Boolean, nullable=False, default=False, index=True)
     locale = Column(LocaleType, default=Locale('fa'), nullable=False)
 
-    privilege = relationship("Privilege", foreign_keys=[id_type], lazy='joined')
+    privilege = relationship("Privilege", foreign_keys=[id_type], lazy='selectin')
     ngo = relationship("Ngo", foreign_keys=id_ngo)
     children = relationship("Child", back_populates='social_worker')
 

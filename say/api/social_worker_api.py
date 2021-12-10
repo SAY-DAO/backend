@@ -4,7 +4,6 @@ from flask_restful import Resource
 
 from say.models import Child
 from say.models import commit
-from say.models import obj_to_dict
 from say.models.ngo_model import Ngo
 from say.models.social_worker_model import SocialWorker
 from say.orm import safe_commit
@@ -201,24 +200,19 @@ class DeleteSocialWorker(Resource):
 
 class DeactivateSocialWorker(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
-    @json
+    @query(
+        SocialWorker,
+        SocialWorker.isDeleted.is_(False),
+        SocialWorker.isActive.is_(True),
+    )
+    @json(SocialWorkerSchema)
     @commit
     @swag_from('./docs/social_worker/deactivate.yml')
-    def patch(self, social_worker_id):
-
-        sw = (
-            session.query(SocialWorker)
-            .filter_by(id=social_worker_id)
-            .filter_by(isDeleted=False)
-            .filter_by(isActive=True)
-            .with_for_update()
-            .one_or_none()
-        )
+    def post(self, social_worker_id):
+        sw = request._query.filter_by(id=social_worker_id).with_for_update().one_or_none()
 
         if not sw:
-            return {
-                'message': f'Social worker {social_worker_id} not found',
-            }, 404
+            raise HTTP_NOT_FOUND()
 
         has_active_child = (
             session.query(Child.id)
@@ -235,7 +229,7 @@ class DeactivateSocialWorker(Resource):
                 f' children and can not deactivate',
             }, 400
 
-        sw.isActive = False
+        sw.deactivate()
         return sw
 
 
