@@ -29,6 +29,12 @@ class TestDeactiveSocialWorker(BaseTestClass):
             DEACTIVE_SW_URL % sw.id,
         )
 
+        self.assert_code(res, 400)
+
+        # Invalid id
+        res = self.client.post(
+            DEACTIVE_SW_URL % '0',
+        )
         self.assert_code(res, 404)
 
         sw_with_active_child = self._create_random_sw(isActive=True)

@@ -203,7 +203,6 @@ class DeactivateSocialWorker(Resource):
     @query(
         SocialWorker,
         SocialWorker.isDeleted.is_(False),
-        SocialWorker.isActive.is_(True),
     )
     @json(SocialWorkerSchema)
     @commit
@@ -213,6 +212,9 @@ class DeactivateSocialWorker(Resource):
 
         if not sw:
             raise HTTP_NOT_FOUND()
+
+        if not sw.isActive:
+            raise HTTP_BAD_REQUEST(message='social worker already deactivated')
 
         has_active_child = (
             session.query(Child.id)
@@ -224,10 +226,10 @@ class DeactivateSocialWorker(Resource):
         )
 
         if has_active_child:
-            return {
-                'message': f'Social worker {social_worker_id} has active'
-                f' children and can not deactivate',
-            }, 400
+            raise HTTP_BAD_REQUEST(
+                message=f'Social worker {social_worker_id} has active'
+                f' children and can not deactivate'
+            )
 
         sw.deactivate()
         return sw
@@ -235,19 +237,27 @@ class DeactivateSocialWorker(Resource):
 
 class ActivateSocialWorker(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
-    @json
+    @query(
+        SocialWorker,
+        SocialWorker.isDeleted.is_(False),
+    )
+    @json(SocialWorkerSchema)
+    @commit
     @swag_from('./docs/social_worker/activate.yml')
-    def patch(self, social_worker_id):
-        base_social_worker = (
-            session.query(SocialWorker)
-            .filter_by(id=social_worker_id)
+    def post(self, social_worker_id):
+        sw = (
+            request._query.filter_by(id=social_worker_id)
             .filter_by(isDeleted=False)
-            .first()
+            .one_or_none()
         )
+        if not sw:
+            raise HTTP_NOT_FOUND()
 
-        base_social_worker.isActive = True
-        safe_commit(session)
-        return base_social_worker
+        if sw.isActive:
+            raise HTTP_BAD_REQUEST(message='social worker already activated')
+
+        sw.activate()
+        return sw
 
 
 class MigrateSocialWorkerChildren(Resource):
