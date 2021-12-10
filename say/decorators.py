@@ -62,9 +62,20 @@ def json(schema, use_list=False):
                 return jsonify([obj_to_dict(item) for item in result])
 
             elif isclass(schema) and issubclass(schema, pydantic.BaseModel):
-                schema.from_orm(result)
+                if not use_list:
+                    result = schema.from_orm(result).json(by_alias=True)
+                else:
+                    # Using dumb loads/dumps workaround becuase pydantic doesn't
+                    # direct list serialization
+                    # See https://github.com/samuelcolvin/pydantic/issues/1409
+                    result = ujson.dumps(
+                        [
+                            ujson.loads(schema.from_orm(row).json(by_alias=True))
+                            for row in result
+                        ]
+                    )
                 return Response(
-                    schema.from_orm(result).json(by_alias=True),
+                    result,
                     mimetype='application/json',
                 )
 

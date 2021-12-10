@@ -227,7 +227,7 @@ class BaseTestClass:
             bioSummary=randomstr,
             birthDate=datetime.utcnow(),
             voiceUrl=randomstr,
-            generatedCode=randomstr,
+            generatedCode=sw.generatedCode + randomstr,
             isConfirmed=choice([True, False]),
             family=Family(),
         )

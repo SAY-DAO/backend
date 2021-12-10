@@ -5,9 +5,14 @@ from datetime import timedelta
 from argon2 import PasswordHasher
 from babel import Locale
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.orm import column_property
 from sqlalchemy.orm import object_session
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import synonym
+from sqlalchemy.sql.elements import and_
+from sqlalchemy.sql.expression import select
+from sqlalchemy.sql.functions import coalesce
+from sqlalchemy.sql.functions import func
 from sqlalchemy.sql.schema import Column
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.sql.sqltypes import Boolean
@@ -22,6 +27,7 @@ from sqlalchemy_utils.models import Timestamp
 from say.formatters import expose_datetime
 from say.locale import ChangeLocaleTo
 from say.locale import get_locale
+from say.models import Child
 from say.orm import base
 from say.orm.mixins import ActivateMixin
 from say.orm.types import LocalFile
@@ -83,8 +89,8 @@ class SocialWorker(base, Timestamp, ActivateMixin):
         unique=True,
         nullable=False,
     )
-    childCount = Column(Integer, nullable=False, default=0)
-    currentChildCount = Column(Integer, nullable=False, default=0)
+    # childCount = Column(Integer, nullable=False, default=0)
+    # currentChildCount = Column(Integer, nullable=False, default=0)
     needCount = Column(Integer, nullable=False, default=0)
     currentNeedCount = Column(Integer, nullable=False, default=0)
     bankAccountNumber = Column(String, nullable=True)
@@ -119,6 +125,24 @@ class SocialWorker(base, Timestamp, ActivateMixin):
         '_password',
         descriptor=property(_get_password, _set_password),
         info=dict(protected=True),
+    )
+
+    childCount = column_property(
+        select([coalesce(func.count(1), 0,)]).where(
+            and_(
+                Child.id_social_worker == id,
+            )
+        )
+    )
+
+    currentChildCount = column_property(
+        select([coalesce(func.count(1), 0,)]).where(
+            and_(
+                Child.id_social_worker == id,
+                Child.isDeleted.is_(False),
+                Child.isMigrated.is_(False),
+            )
+        )
     )
 
     def validate_password(self, password):

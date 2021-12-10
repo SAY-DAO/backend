@@ -207,16 +207,6 @@ class Child(base, Timestamp):
 
         new_sw.childCount += 1
         old_sw.childCount -= 1
-        if new_sw.id_ngo != old_sw.id_ngo:
-            new_sw.ngo.childrenCount += 1
-            old_sw.ngo.childrenCount -= 1
-            if self.isConfirmed:
-                new_sw.ngo.currentChildrenCount += 1
-                old_sw.ngo.currentChildrenCount -= 1
-
-        if self.isConfirmed:
-            new_sw.currentChildCount += 1
-            old_sw.currentChildCount -= 1
 
         self.generatedCode = new_generated_code
         self.social_worker = new_sw

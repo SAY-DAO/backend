@@ -8,6 +8,7 @@ from say.models.ngo_model import Ngo
 from say.models.social_worker_model import SocialWorker
 from say.orm import safe_commit
 from say.orm import session
+from say.schema.child_migration import ChildMigrationSchema
 
 from ..authorization import authorize
 from ..authorization import get_user_id
@@ -213,7 +214,7 @@ class DeactivateSocialWorker(Resource):
         if not sw:
             raise HTTP_NOT_FOUND()
 
-        if not sw.isActive:
+        if not sw.is_active:
             raise HTTP_BAD_REQUEST(message='social worker already deactivated')
 
         has_active_child = (
@@ -253,7 +254,7 @@ class ActivateSocialWorker(Resource):
         if not sw:
             raise HTTP_NOT_FOUND()
 
-        if sw.isActive:
+        if sw.is_active:
             raise HTTP_BAD_REQUEST(message='social worker already activated')
 
         sw.activate()
@@ -262,47 +263,35 @@ class ActivateSocialWorker(Resource):
 
 class MigrateSocialWorkerChildren(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
-    @json
+    @validate(MigrateSocialWorkerChildrenSchema)
+    @query(
+        SocialWorker,
+        SocialWorker.isDeleted.is_(False),
+        SocialWorker.is_active.is_(True),
+    )
+    @json(ChildMigrationSchema, use_list=True)
     @commit
     @swag_from('./docs/social_worker/migrate_children.yml')
-    def post(self, id):
-        try:
-            data = MigrateSocialWorkerChildrenSchema(
-                **request.form.to_dict(),
-            )
-        except ValueError as ex:
-            return ex.json(), 400
-
+    def post(self, id, data):
         if data.destination_social_worker_id == id:
-            return {'message': 'Can not migrate to same sw'}, 400
+            raise HTTP_BAD_REQUEST(message='destination social worker is same as source')
 
-        sw = (
-            session.query(SocialWorker)
-            .filter_by(id=id)
-            .filter_by(isDeleted=False)
-            .filter_by(isActive=True)
-            .with_for_update(SocialWorker)
-            .one_or_none()
-        )
+        sw = request._query.filter(SocialWorker.id == id).with_for_update().one_or_none()
 
         if not sw:
-            return {
-                'message': f'Social worker {id} not found',
-            }, 404
+            raise HTTP_NOT_FOUND()
 
         destination_sw = (
             session.query(SocialWorker)
-            .filter_by(id=data.destination_social_worker_id)
-            .filter_by(isDeleted=False)
-            .filter_by(isActive=True)
+            .filter(SocialWorker.id == data.destination_social_worker_id)
+            .filter(SocialWorker.isDeleted.is_(False))
+            .filter(SocialWorker.is_active.is_(True))
             .with_for_update()
             .one_or_none()
         )
 
         if not destination_sw:
-            return {
-                'message': f'destination social worker not found',
-            }, 400
+            raise HTTP_BAD_REQUEST(message='destination social worker not found')
 
         children = (
             session.query(Child)
@@ -315,6 +304,7 @@ class MigrateSocialWorkerChildren(Resource):
         for child in children:
             migration = child.migrate(destination_sw)
             resp.append(migration)
+
         return resp
 
 
