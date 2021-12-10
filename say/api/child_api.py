@@ -19,6 +19,11 @@ from flask_restful import abort
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import selectinload
+from sqlalchemy.sql.functions import count
+from sqlalchemy.sql.functions import func
+from sqlalchemy.sql.sqltypes import ARRAY
+from sqlalchemy.sql.sqltypes import Integer
+from sqlalchemy.sql.sqltypes import String
 
 from say import crud
 from say.api.ext import api
@@ -388,6 +393,8 @@ class GetChildNeedsSummary(Resource):
     @json
     @swag_from('./docs/child/needs_summary.yml')
     def get(self, child_id):
+        role = get_user_role()
+
         child_id = int(child_id)
 
         child_query = (
@@ -403,30 +410,21 @@ class GetChildNeedsSummary(Resource):
             raise HTTP_NOT_FOUND()
 
         needs_query = (
-            session.query(Need, User.avatarUrl)
-            .join(NeedFamily, Need.id == NeedFamily.id_need)
-            .join(User, NeedFamily.id_user == User.id)
-            .filter(Need.child_id == child_id)
-            .filter(Need.isDeleted.is_(False))
-            .order_by(Need.name)
+            session.query(Need)
+            .options(selectinload(Need.participants))
+            .filter(
+                Need.child_id == child_id,
+                Need.isDeleted.is_(False),
+                Need.isDeleted.is_(False),
+                Need.isConfirmed.is_(True) if role == USER else True,
+            )
+            .order_by(Need.name, Need.doneAt)
         )
 
-        need_avatars = collections.defaultdict(list)
-
-        for need, avatar in needs_query:
-            need_avatars[need].append(avatar)
-
         needs = []
-        role = get_user_role()
-        for need, avatars in need_avatars.items():
-            if not need.isConfirmed and role == USER:
-                continue
-
-            need_dict = obj_to_dict(need)
-            need_dict['participants'] = [
-                {'user_avatar': avatar} for avatar in avatars or []
-            ]
-            needs.append(NeedSummary(**need_dict).dict())
+        for need in needs_query:
+            need_dict = NeedSummary.from_orm(need)
+            needs.append(need_dict.dict())
 
         result = dict(
             total_count=len(needs),

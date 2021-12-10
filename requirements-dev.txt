@@ -3,3 +3,4 @@ pudb
 pytest-pudb
 pytest-cov
 pytest-mock
+devtools[pygments]

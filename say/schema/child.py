@@ -83,6 +83,9 @@ class UserChildSchemaV3(ChildSchemaV3):
 class Participant(BaseModel):
     user_avatar: str = None
 
+    class Config:
+        orm_mode = True
+
 
 class NeedSummary(BaseModel):
     id: int
@@ -98,3 +101,6 @@ class NeedSummary(BaseModel):
     created: datetime
     doneAt: datetime = None
     unpayable: bool = None
+
+    class Config:
+        orm_mode = True
