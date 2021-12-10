@@ -43,7 +43,7 @@ def filter_by_role(query, user):
     return query
 
 
-class GetAllSocialWorkers(Resource):
+class ListCreateSocialWorkers(Resource):
     @authorize(
         COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
     )  # TODO: priv
@@ -59,8 +59,6 @@ class GetAllSocialWorkers(Resource):
         social_workers = filter_by_role(query=request._query, user=request.user)
         return social_workers
 
-
-class AddSocialWorker(Resource):
     @authorize(SUPER_ADMIN)  # TODO: priv
     @validate(NewSocialWorkerSchema)
     @json(SocialWorkerSchema)
@@ -101,26 +99,22 @@ class AddSocialWorker(Resource):
         return new_social_worker
 
 
-class GetSocialWorkerById(Resource):
+class GetUpdateDeleteSocialWorkers(Resource):
     @authorize(
         COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
     )  # TODO: priv
     @query(SocialWorker, SocialWorker.isDeleted.is_(False))
     @json(SocialWorkerSchema)
     @swag_from('./docs/social_worker/id.yml')
-    def get(self, social_worker_id):
+    def get(self, id):
         social_workers = filter_by_role(query=request._query, user=request.user)
-        social_worker = social_workers.filter(
-            SocialWorker.id == social_worker_id
-        ).one_or_none()
+        social_worker = social_workers.filter(SocialWorker.id == id).one_or_none()
 
         if not social_worker:
             raise HTTP_NOT_FOUND()
 
         return social_worker
 
-
-class UpdateSocialWorker(Resource):
     @authorize(
         COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
     )  # TODO: priv
@@ -128,11 +122,11 @@ class UpdateSocialWorker(Resource):
     @json(SocialWorkerSchema)
     @commit
     @swag_from('./docs/social_worker/update.yml')
-    def patch(self, social_worker_id, data: UpdateSocialWorkerSchema):
+    def patch(self, id, data: UpdateSocialWorkerSchema):
         role = get_user_role()
         sw = (
             session.query(SocialWorker)
-            .filter_by(id=social_worker_id)
+            .filter_by(id=id)
             .filter_by(isDeleted=False)
             .one_or_none()
         )
@@ -174,29 +168,36 @@ class UpdateSocialWorker(Resource):
 
         return sw
 
-
-class DeleteSocialWorker(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
-    @json
+    @query(SocialWorker, SocialWorker.isDeleted.is_(False))
+    @json(SocialWorkerSchema)
+    @commit
     @swag_from('./docs/social_worker/delete.yml')
-    def patch(self, social_worker_id):
-        base_social_worker = (
-            session.query(SocialWorker)
-            .filter_by(id=social_worker_id)
-            .filter_by(isDeleted=False)
-            .first()
+    def delete(self, id):
+        sw = request._query.filter(SocialWorker.id == id).with_for_update().one_or_none()
+        if sw is None:
+            raise HTTP_NOT_FOUND()
+
+        if sw.isDeleted:
+            raise HTTP_BAD_REQUEST(message='Social Worker already deleted')
+
+        has_active_child = (
+            session.query(Child.id)
+            .filter(Child.id_social_worker == id)
+            .filter(Child.isConfirmed.is_(True))
+            .filter(Child.isDeleted.is_(False))
+            .filter(Child.isMigrated.is_(False))
+            .count()
         )
 
-        base_social_worker.isDeleted = True
-        this_ngo = (
-            session.query(Ngo)
-            .filter_by(id=base_social_worker.id_ngo)
-            .filter_by(isDeleted=False)
-            .one_or_none()
-        )
+        if has_active_child:
+            raise HTTP_BAD_REQUEST(
+                message=f'Social worker {id} has active'
+                f' children and can not deactivate'
+            )
 
-        safe_commit(session)
-        return {'message': 'social worker deleted successfully!'}
+        sw.isDeleted = True
+        return sw
 
 
 class DeactivateSocialWorker(Resource):
@@ -208,8 +209,8 @@ class DeactivateSocialWorker(Resource):
     @json(SocialWorkerSchema)
     @commit
     @swag_from('./docs/social_worker/deactivate.yml')
-    def post(self, social_worker_id):
-        sw = request._query.filter_by(id=social_worker_id).with_for_update().one_or_none()
+    def post(self, id):
+        sw = request._query.filter_by(id=id).with_for_update().one_or_none()
 
         if not sw:
             raise HTTP_NOT_FOUND()
@@ -219,7 +220,7 @@ class DeactivateSocialWorker(Resource):
 
         has_active_child = (
             session.query(Child.id)
-            .filter(Child.id_social_worker == social_worker_id)
+            .filter(Child.id_social_worker == id)
             .filter(Child.isConfirmed.is_(True))
             .filter(Child.isDeleted.is_(False))
             .filter(Child.isMigrated.is_(False))
@@ -228,7 +229,7 @@ class DeactivateSocialWorker(Resource):
 
         if has_active_child:
             raise HTTP_BAD_REQUEST(
-                message=f'Social worker {social_worker_id} has active'
+                message=f'Social worker {id} has active'
                 f' children and can not deactivate'
             )
 
@@ -245,12 +246,8 @@ class ActivateSocialWorker(Resource):
     @json(SocialWorkerSchema)
     @commit
     @swag_from('./docs/social_worker/activate.yml')
-    def post(self, social_worker_id):
-        sw = (
-            request._query.filter_by(id=social_worker_id)
-            .filter_by(isDeleted=False)
-            .one_or_none()
-        )
+    def post(self, id):
+        sw = request._query.filter_by(id=id).filter_by(isDeleted=False).one_or_none()
         if not sw:
             raise HTTP_NOT_FOUND()
 
@@ -308,30 +305,27 @@ class MigrateSocialWorkerChildren(Resource):
         return resp
 
 
-api.add_resource(GetAllSocialWorkers, '/api/v2/socialWorker/all')
-api.add_resource(AddSocialWorker, '/api/v2/socialWorker/add')
 api.add_resource(
-    GetSocialWorkerById,
-    '/api/v2/socialWorker/socialWorkerId=<int:social_worker_id>',
+    ListCreateSocialWorkers,
+    '/api/v2/socialWorkers/',
+    '/api/v2/socialWorkers',
 )
+
 api.add_resource(
-    UpdateSocialWorker,
-    '/api/v2/socialWorker/update/socialWorkerId=<int:social_worker_id>',
+    GetUpdateDeleteSocialWorkers,
+    '/api/v2/socialWorkers/<int:id>',
 )
-api.add_resource(
-    DeleteSocialWorker,
-    '/api/v2/socialWorker/delete/socialWorkerId=<int:social_worker_id>',
-)
+
 api.add_resource(
     DeactivateSocialWorker,
-    '/api/v2/socialWorker/deactivate/socialWorkerId=<int:social_worker_id>',
+    '/api/v2/socialWorkers/<int:id>/deactivate',
 )
 api.add_resource(
     ActivateSocialWorker,
-    '/api/v2/socialWorker/activate/socialWorkerId=<int:social_worker_id>',
+    '/api/v2/socialWorkers/<int:id>/activate',
 )
 
 api.add_resource(
     MigrateSocialWorkerChildren,
-    '/api/v2/socialWorker/<int:id>/children/migrate',
+    '/api/v2/socialWorkers/<int:id>/children/migrate',
 )
