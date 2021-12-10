@@ -5,7 +5,7 @@ from say.roles import SUPER_ADMIN
 from tests.helper import BaseTestClass
 
 
-DEACTIVE_SW_URL = '/api/v2/socialWorkers/%s/deactivate'
+DEACTIVE_SW_URL = '/api/v2/socialworkers/%s/deactivate'
 
 
 class TestDeactiveSocialWorker(BaseTestClass):

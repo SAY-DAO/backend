@@ -6,7 +6,7 @@ from say.roles import SUPER_ADMIN
 from tests.helper import BaseTestClass
 
 
-UPDATE_SW_URL = '/api/v2/socialWorkers/%s'
+UPDATE_SW_URL = '/api/v2/socialworkers/%s'
 
 
 class TestUpdateSocialWorker(BaseTestClass):

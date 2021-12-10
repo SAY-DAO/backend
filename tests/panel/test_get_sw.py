@@ -4,7 +4,7 @@ from say.roles import SUPER_ADMIN
 from tests.helper import BaseTestClass
 
 
-GET_SW_URL = '/api/v2/socialWorkers/%s'
+GET_SW_URL = '/api/v2/socialworkers/%s'
 
 
 class TestGetSocialWorker(BaseTestClass):

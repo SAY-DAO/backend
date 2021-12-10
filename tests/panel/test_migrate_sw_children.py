@@ -5,7 +5,7 @@ from say.roles import SUPER_ADMIN
 from tests.helper import BaseTestClass
 
 
-MIGRATE_SW_CHILDREN_URL = '/api/v2/socialWorkers/%s/children/migrate'
+MIGRATE_SW_CHILDREN_URL = '/api/v2/socialworkers/%s/children/migrate'
 
 
 class TestMigrateSocialWorkerChildren(BaseTestClass):
