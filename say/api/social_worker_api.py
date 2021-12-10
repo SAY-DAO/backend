@@ -307,25 +307,25 @@ class MigrateSocialWorkerChildren(Resource):
 
 api.add_resource(
     ListCreateSocialWorkers,
-    '/api/v2/socialWorkers/',
-    '/api/v2/socialWorkers',
+    '/api/v2/socialworkers/',
+    '/api/v2/socialworkers',
 )
 
 api.add_resource(
     GetUpdateDeleteSocialWorkers,
-    '/api/v2/socialWorkers/<int:id>',
+    '/api/v2/socialworkers/<int:id>',
 )
 
 api.add_resource(
     DeactivateSocialWorker,
-    '/api/v2/socialWorkers/<int:id>/deactivate',
+    '/api/v2/socialworkers/<int:id>/deactivate',
 )
 api.add_resource(
     ActivateSocialWorker,
-    '/api/v2/socialWorkers/<int:id>/activate',
+    '/api/v2/socialworkers/<int:id>/activate',
 )
 
 api.add_resource(
     MigrateSocialWorkerChildren,
-    '/api/v2/socialWorkers/<int:id>/children/migrate',
+    '/api/v2/socialworkers/<int:id>/children/migrate',
 )
