@@ -120,43 +120,6 @@ class GetSocialWorkerById(Resource):
         return social_worker
 
 
-# Depreceted
-class GetSocialWorkerByNgoId(Resource):
-    @authorize(
-        COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
-    )  # TODO: priv
-    @json
-    @swag_from('./docs/social_worker/ngo.yml')
-    def get(self, ngo_id):
-        ngo_id = int(ngo_id)
-        social_workers = (
-            session.query(SocialWorker)
-            .filter_by(id_ngo=ngo_id)
-            .filter_by(isDeleted=False)
-        )
-
-        if get_user_role() in [COORDINATOR, NGO_SUPERVISOR]:  # TODO: priv
-            user_id = get_user_id()
-            user = session.query(SocialWorker).get(user_id)
-            if user.id_ngo != ngo_id:
-                raise HTTP_PERMISION_DENIED()
-
-        fetch = {}
-        for social_worker in social_workers:
-            if not social_worker:
-                raise HTTP_NOT_FOUND()
-
-            data = obj_to_dict(social_worker)
-            data['typeName'] = social_worker.privilege.name
-            data['ngoName'] = (
-                social_worker.ngo.name if social_worker.id_ngo != 0 else 'SAY'
-            )
-
-            fetch[str(social_worker.id)] = data
-
-        return fetch
-
-
 class UpdateSocialWorker(Resource):
     @authorize(
         COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
@@ -357,7 +320,6 @@ api.add_resource(
     GetSocialWorkerById,
     '/api/v2/socialWorker/socialWorkerId=<int:social_worker_id>',
 )
-api.add_resource(GetSocialWorkerByNgoId, '/api/v2/socialWorker/ngoId=<ngo_id>')
 api.add_resource(
     UpdateSocialWorker,
     '/api/v2/socialWorker/update/socialWorkerId=<int:social_worker_id>',
