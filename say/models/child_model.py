@@ -18,7 +18,8 @@ Child Model
 
 
 class Child(base, Timestamp):
-    __tablename__ = "child"
+    __tablename__ = 'child'
+    __versioned__ = {}
 
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
     id_ngo = Column(Integer, ForeignKey('ngo.id'), nullable=False, index=True)
@@ -157,10 +158,10 @@ class Child(base, Timestamp):
     )
     family = relationship('Family', back_populates='child', uselist=False)
 
-    ngo = relationship("Ngo", foreign_keys="Child.id_ngo")
+    ngo = relationship('Ngo', foreign_keys='Child.id_ngo')
 
     social_worker = relationship(
-        "SocialWorker",
+        'SocialWorker',
         foreign_keys=id_social_worker,
         back_populates='children',
     )
