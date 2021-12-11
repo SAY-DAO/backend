@@ -12,22 +12,7 @@ from say.config import configs
 from say.payment import IDPay
 from say.sms import MeliPayamak
 
-
-CLOUDFLARE_IP_HEADER_KEY = 'Cf-Connecting-Ip'
-
-
-def get_remote_address():
-
-    """
-    :return: the ip address for the current request
-     (or 127.0.0.1 if none found)
-
-    """
-    return (
-        request.headers.get(CLOUDFLARE_IP_HEADER_KEY)
-        or request.remote_addr
-        or '127.0.0.1'
-    )
+from .remote_address import get_remote_address
 
 
 api = Api()

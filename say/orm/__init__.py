@@ -11,12 +11,21 @@ from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.schema import MetaData
+from sqlalchemy_continuum import make_versioned
+from sqlalchemy_continuum import plugins
 from sqlalchemy_utils import Country
 from sqlalchemy_utils import PhoneNumber
+
+from say.orm.versioning import flask_versioning_plugin
 
 from .base import BaseModel
 from .base import columns
 
+
+make_versioned(
+    user_cls='SocialWorker',
+    plugins=[flask_versioning_plugin, plugins.TransactionChangesPlugin()],
+)
 
 metadata = MetaData(
     naming_convention={

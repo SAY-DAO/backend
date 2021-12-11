@@ -161,7 +161,9 @@ class GetUpdateDeleteSocialWorkers(Resource):
                 chid.id_ngo = data.id_ngo
 
         sw.update_from_schema(data)
+        from pudb import set_trace
 
+        set_trace()
         # Password is protected and secret and needs to be set manually
         if data.password is not None:
             sw.password = data.password.get_secret_value()

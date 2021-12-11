@@ -47,6 +47,7 @@ PASSOWRD_LETTERS = string.ascii_letters + string.digits
 # TODO: unique email, phone, username, ...
 class SocialWorker(base, Timestamp, ActivateMixin):
     __tablename__ = "social_worker"
+    __versioned__ = {}
 
     id = Column(Integer, primary_key=True, nullable=False, unique=True)
     generatedCode = Column(String, nullable=False)

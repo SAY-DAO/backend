@@ -30,6 +30,7 @@ from sqlalchemy.ext.associationproxy import ASSOCIATION_PROXY
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import configure_mappers
 from sqlalchemy.orm import object_session
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import scoped_session
@@ -114,3 +115,6 @@ from .user_model import User
 from .verify_model import EmailVerification
 from .verify_model import PhoneVerification
 from .verify_model import Verification
+
+
+configure_mappers()  # You need to call this after the import
