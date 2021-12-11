@@ -16,6 +16,7 @@ from say.render_template_i18n import render_template_i18n
 from say.validations import validate_password as _validate_password
 
 from . import *
+from .base_user import BaseUser
 from .need_model import Need
 from .need_model import NeedFamily
 from .payment_model import Payment
@@ -26,10 +27,20 @@ User Model
 """
 
 
-class User(base, Timestamp):
+class User(BaseUser, Timestamp):
     __tablename__ = 'user'
 
-    id = Column(Integer, nullable=False, primary_key=True, unique=True)
+    __mapper_args__ = {
+        'polymorphic_identity': 'user',
+    }
+
+    id = Column(
+        Integer,
+        ForeignKey('base_users.id'),
+        nullable=False,
+        primary_key=True,
+        unique=True,
+    )
 
     firstName = Column(String, nullable=False)
     lastName = Column(String, nullable=False)

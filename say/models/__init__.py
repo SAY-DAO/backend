@@ -89,6 +89,7 @@ translation_hybrid = TranslationHybrid(
 
 
 from .activity_model import Activity
+from .base_user import BaseUser
 from .cart import Cart
 from .cart import CartNeed
 from .cart import CartPayment

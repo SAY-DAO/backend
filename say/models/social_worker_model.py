@@ -35,6 +35,8 @@ from say.render_template_i18n import render_template_i18n
 from say.utils import surname
 from say.validations import validate_password as _validate_password
 
+from .base_user import BaseUser
+
 
 """
 SocialWorker Model
@@ -45,11 +47,20 @@ PASSOWRD_LETTERS = string.ascii_letters + string.digits
 
 
 # TODO: unique email, phone, username, ...
-class SocialWorker(base, Timestamp, ActivateMixin):
+class SocialWorker(BaseUser, Timestamp, ActivateMixin):
     __tablename__ = "social_worker"
     __versioned__ = {}
+    __mapper_args__ = {
+        'polymorphic_identity': 'social_worker',
+    }
 
-    id = Column(Integer, primary_key=True, nullable=False, unique=True)
+    id = Column(
+        Integer,
+        ForeignKey('base_users.id'),
+        primary_key=True,
+        nullable=False,
+        unique=True,
+    )
     generatedCode = Column(String, nullable=False)
 
     id_ngo = Column(Integer, ForeignKey('ngo.id'), nullable=False, index=True)

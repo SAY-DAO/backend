@@ -23,7 +23,7 @@ from .base import columns
 
 
 make_versioned(
-    user_cls='SocialWorker',
+    user_cls='BaseUser',
     plugins=[flask_versioning_plugin, plugins.TransactionChangesPlugin()],
 )
 

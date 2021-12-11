@@ -350,7 +350,7 @@ class AddUser(Resource):
         first_name = request.form['firstName']
         last_name = request.form['lastName']
         city = int(request.form['city'])
-        country_code = request.form['country_code']
+        country_code = request.form['countryCode']
 
         username = request.form['userName']
 
@@ -372,11 +372,11 @@ class AddUser(Resource):
             lastName=last_name,
             userName=username,
             avatarUrl=avatar_url,
-            phoneNumber=phone_number,
+            phone_number=phone_number,
             emailAddress=email_address,
             gender=gender,
             city=city,
-            country_code=country_code,
+            country=country_code,
             birthDate=birth_date,
             birthPlace=birth_place,
             lastLogin=last_login,
