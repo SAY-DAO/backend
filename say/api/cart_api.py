@@ -258,7 +258,6 @@ class CartPaymentAPI(Resource):
             payment.gateway_payment_id = cart_payment.gateway_payment_id
             payment.link = cart_payment.link
 
-        session.flush()
         return cart_payment
 
 

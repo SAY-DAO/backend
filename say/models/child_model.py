@@ -36,7 +36,7 @@ class Child(base, Timestamp):
     sayname_translations = Column(HSTORE)
     sayName = translation_hybrid(sayname_translations)
 
-    phoneNumber = Column(Integer, nullable=False)
+    phoneNumber = Column(String, nullable=False)
     nationality = Column(Integer, nullable=True)  # 98:iranian | 93:afghan
     country = Column(
         Integer, nullable=False

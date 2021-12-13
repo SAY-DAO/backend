@@ -8,6 +8,7 @@ from random import randint
 import pytest
 import sqlalchemy
 
+from say.api.ext import idpay
 from say.api.payment_api import generate_order_id
 from say.authorization import create_sw_access_token
 from say.authorization import create_sw_refresh_token
@@ -64,6 +65,19 @@ class BaseTestClass:
 
         # get client
         self._client = client
+
+    @staticmethod
+    def _mocked_idpay_new_tx(**kwargs):
+        return {
+            'id': 'daf912385d155c0c414f199e67d025e9',
+            'link': 'https://idpay.ir/p/ws-sandbox/abcd',
+        }
+
+    @staticmethod
+    def _mocked_idpay_new_tx_error(**kwargs):
+        return {
+            'error_code': list(idpay.ERRORS.keys())[0],
+        }
 
     @property
     def client(self):

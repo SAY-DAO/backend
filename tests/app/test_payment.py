@@ -25,19 +25,6 @@ class TestPayment(BaseTestClass):
         self.user = self._create_random_user()
         self.user_family = self._create_user_family(self.user, self.need.child.family)
 
-    @staticmethod
-    def _mocked_idpay_new_tx(**kwargs):
-        return {
-            'id': 'daf912385d155c0c414f199e67d025e9',
-            'link': 'https://idpay.ir/p/ws-sandbox/abcd',
-        }
-
-    @staticmethod
-    def _mocked_idpay_new_tx_error(**kwargs):
-        return {
-            'error_code': list(idpay.ERRORS.keys())[0],
-        }
-
     def test_validate_amount(self):
         assert validate_amount(self.need, self.min_amount) == self.min_amount
         assert validate_amount(self.need, self.need.cost) == self.need.cost

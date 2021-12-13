@@ -1,7 +1,9 @@
+from say.api.ext import idpay
 from tests.helper import BaseTestClass
 
 
 CART_URL = '/api/v2/mycart'
+CART_PAYMENT_URL = CART_URL + '/payment'
 CART_NEEDS_URL = CART_URL + '/needs'
 
 
@@ -100,3 +102,25 @@ class TestCart(BaseTestClass):
             data=dict(needId='not-int'),
         )
         assert res.status_code == 400
+
+    def test_cart_payment(self, mocker):
+        mocker.patch.object(
+            idpay,
+            'new_transaction',
+            self._mocked_idpay_new_tx,
+        )
+
+        self.login(self.user)
+
+        cart_need = self._create_random_cart_need(cart=self.user.cart)
+        res = self.client.post(
+            CART_PAYMENT_URL,
+            data=dict(
+                donation=1000,
+                use_credit=False,
+            ),
+        )
+        assert res.status_code == 200
+        assert res.json['needsAmount'] == cart_need.need.cost
+        assert res.json['donationAmount'] == 1000
+        assert res.json['link'] is not None
