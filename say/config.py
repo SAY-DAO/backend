@@ -64,6 +64,8 @@ class Config(object):
     # Business
     MIN_BANK_AMOUNT = 1000  # Toman
     RANDOM_SEARCH_FACTOR = 3
+    REQUEST_CACHE_MAX_SIZE = 1024
+    REQUEST_CACHE_TTL = 30 * 60  # 30 minutes
 
     # Celery
     BROKER = 'redis'

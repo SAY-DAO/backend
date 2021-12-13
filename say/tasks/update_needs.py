@@ -14,7 +14,7 @@ def update_needs(self):
             Need.status < 4,
             Need.title.is_(None),
         ),
-        Need.isDeleted == False,
+        Need.isDeleted.is_(False),
         Need.link.isnot(None),
     )
 
@@ -39,7 +39,7 @@ def update_need(self, need_id, force=False):
 
     need = self.session.query(Need).get(need_id)
 
-    data = need.update()
+    data = need.update(force=force)
     safe_commit(self.session)
 
     return data

@@ -1,6 +1,8 @@
 import secrets
 import string
 
+from .timed_lru_cache import timed_lru_cache
+
 
 def surname(gender):
     surname = ''

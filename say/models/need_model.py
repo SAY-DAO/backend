@@ -410,10 +410,10 @@ class Need(base, Timestamp):
                 paid=past_participation.paid,
             )
 
-    def update(self):
+    def update(self, force=False):
         from say.crawler import Crawler
 
-        data = Crawler(self.link).get_data()
+        data = Crawler(self.link).get_data(force=force)
 
         if data is None:
             return

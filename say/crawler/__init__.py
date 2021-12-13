@@ -1,9 +1,20 @@
+import functools
 import html
 import re
 
 import requests
 
+from say.config import configs
 from say.crawler.patterns import get_patterns
+from say.utils import timed_lru_cache
+
+
+@timed_lru_cache(
+    seconds=configs.REQUEST_CACHE_TTL,
+    maxsize=configs.REQUEST_CACHE_MAX_SIZE,
+)
+def request_with_cache(*args, **kwargs):
+    return requests.get(*args, **kwargs)
 
 
 class Crawler:
@@ -70,11 +81,15 @@ class Crawler:
 
         return img
 
-    def get_data(self):
+    def get_data(self, force=False):
         if self.patterns is None:
             return
 
-        r = requests.get(self.url)
+        if force:
+            r = requests.get(self.url)
+        else:
+            r = request_with_cache(self.url)
+
         text = r.text
         text = html.unescape(text)
         self.c = text
