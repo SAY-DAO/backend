@@ -3,6 +3,7 @@ alembic~=1.4.3
 argon2-cffi~=21.1.0
 Babel~=2.9.0
 beautifulsoup4~=4.9.3
+cachetools~=4.2.4
 celery~=4.4.7
 celery-redbeat~=2.0.0
 email-validator~=1.1.2

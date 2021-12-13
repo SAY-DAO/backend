@@ -3,15 +3,18 @@ import html
 import re
 
 import requests
+from cachetools import TTLCache
+from cachetools import cached
 
 from say.config import configs
 from say.crawler.patterns import get_patterns
-from say.utils import timed_lru_cache
 
 
-@timed_lru_cache(
-    seconds=configs.REQUEST_CACHE_TTL,
-    maxsize=configs.REQUEST_CACHE_MAX_SIZE,
+@cached(
+    cache=TTLCache(
+        ttl=configs.REQUEST_CACHE_TTL,
+        maxsize=configs.REQUEST_CACHE_MAX_SIZE,
+    )
 )
 def request_with_cache(*args, **kwargs):
     return requests.get(*args, **kwargs)
