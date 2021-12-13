@@ -633,7 +633,7 @@ class NeedReceipts(Resource):
         ).one_or_none()
 
         if need is None:
-            return HTTP_NOT_FOUND()
+            raise HTTP_NOT_FOUND()
 
         receipt = Receipt(**data.dict())
         need_receipt = NeedReceipt(
@@ -667,7 +667,7 @@ class NeedReceiptAPI(Resource):
         )
 
         if need_receipt is None:
-            return HTTP_NOT_FOUND()
+            raise HTTP_NOT_FOUND()
 
         need_receipt.deleted = datetime.utcnow()
         safe_commit(session)

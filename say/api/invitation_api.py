@@ -77,7 +77,7 @@ class InvitationsV3(Resource):
         )
 
         if not invitation:
-            return HTTP_NOT_FOUND()
+            raise HTTP_NOT_FOUND()
 
         family = session.query(Family).get(invitation.family_id)
         if not family or family.child.isDeleted:

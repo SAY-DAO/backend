@@ -124,3 +124,15 @@ class TestCart(BaseTestClass):
         assert res.json['needsAmount'] == cart_need.need.cost
         assert res.json['donationAmount'] == 1000
         assert res.json['link'] is not None
+
+    def test_cart_payment_empty(self, mocker):
+        self.login(self.user)
+
+        res = self.client.post(
+            CART_PAYMENT_URL,
+            data=dict(
+                donation=1000,
+                use_credit=False,
+            ),
+        )
+        assert res.status_code == 600

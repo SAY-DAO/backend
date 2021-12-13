@@ -180,7 +180,7 @@ class CartPaymentAPI(Resource):
 
         order_id = generate_order_id()
         if len(cart.needs) == 0:
-            return HTTPException(600, 'Cart empty')
+            raise HTTPException(600, 'Cart empty')
 
         total_amount = cart.total_amount + data.donation
         bank_amount = total_amount

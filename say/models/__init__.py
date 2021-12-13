@@ -66,9 +66,7 @@ def commit(func):
         try:
             result = func(*args, **kwargs)
 
-            if (isinstance(result, tuple) and result[1] >= 300) or isinstance(
-                result, HTTPException
-            ):
+            if isinstance(result, tuple) and result[1] >= 300:
                 session.rollback()
                 return result
 
