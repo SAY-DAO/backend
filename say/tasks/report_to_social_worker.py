@@ -6,8 +6,8 @@ from say.models.social_worker_model import SocialWorker
 def report_to_social_workers(self):
     social_workers_id = (
         self.session.query(SocialWorker.id)
-        .filter(SocialWorker.isDeleted.is_(False))
-        .filter(SocialWorker.isActive.is_(True))
+        .filter(SocialWorker.is_deleted.is_(False))
+        .filter(SocialWorker.is_active.is_(True))
     )
 
     for (social_worker_id,) in social_workers_id:

@@ -83,7 +83,7 @@ class Child(base, Timestamp):
     migrateDate = Column(Date, nullable=True)
 
     familyId = association_proxy('family', 'id')
-    socialWorkerGeneratedCode = association_proxy('social_worker', 'generatedCode')
+    socialWorkerGeneratedCode = association_proxy('social_worker', 'generated_code')
     childFamilyMembers = association_proxy('family', 'members')
 
     @hybrid_property
@@ -195,7 +195,7 @@ class Child(base, Timestamp):
         old_sw = self.social_worker
         old_generated_code = self.generatedCode
         new_generated_code = (
-            new_sw.generatedCode + format(new_sw.childCount + 1, '04d'),
+            new_sw.generated_code + format(new_sw.child_count + 1, '04d'),
         )
 
         migration = ChildMigration(
@@ -205,9 +205,6 @@ class Child(base, Timestamp):
             new_generated_code=new_generated_code,
         )
         self.migrations.append(migration)
-
-        new_sw.childCount += 1
-        old_sw.childCount -= 1
 
         self.generatedCode = new_generated_code
         self.social_worker = new_sw

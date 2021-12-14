@@ -134,7 +134,7 @@ def query(model, *filters, enbale_filtering=False, filtering_schema=None):
 
                 class FilteringSchema(filtering_schema, metaclass=AllOptionalMeta):
                     class Config:
-                        extra = 'forbid'
+                        extra = 'ignore'
 
                 data = FilteringSchema.parse_obj(request.args)
                 _query = _query.filter_by(**data.dict(exclude_unset=True))

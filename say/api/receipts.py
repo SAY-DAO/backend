@@ -184,7 +184,7 @@ class ListReceiptsAPI(Resource):
                     Receipt.owner_id == user_id
                     if user_role not in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR]
                     else False,
-                    SocialWorker.id_ngo == ngo_id
+                    SocialWorker.ngo_id == ngo_id
                     if user_role in [NGO_SUPERVISOR]
                     else False,
                 ),

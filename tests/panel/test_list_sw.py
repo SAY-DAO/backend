@@ -13,7 +13,7 @@ class TestListSocialWorker(BaseTestClass):
         # As admin
         self.login_as_sw(role=SUPER_ADMIN)
         self._create_random_sw()
-        self._create_random_sw(isDeleted=True)
+        self._create_random_sw(is_deleted=True)
 
         res = self.client.get(LIST_SW_URL)
         self.assert_ok(res)
@@ -49,18 +49,18 @@ class TestListSocialWorker(BaseTestClass):
     def test_list_social_worker_filtering(self):
         # As admin
         self.login_as_sw(role=SUPER_ADMIN)
-        sw1 = self._create_random_sw(firstName='bob')
-        self._create_random_sw(firstName='bob')
+        sw1 = self._create_random_sw(first_name='bob')
+        self._create_random_sw(first_name='bob')
         self._create_random_sw()
 
-        res = self.client.get(LIST_SW_URL, query_string=dict(id_ngo=sw1.ngo.id))
+        res = self.client.get(LIST_SW_URL, query_string=dict(ngoId=sw1.ngo.id))
         self.assert_ok(res)
         result = res.json
         assert isinstance(result, list)
         assert len(result) == 1
         assert result[0]['id'] == sw1.id
 
-        res = self.client.get(LIST_SW_URL, query_string=dict(id_ngo=sw1.ngo.id))
+        res = self.client.get(LIST_SW_URL, query_string=dict(ngoId=sw1.ngo.id))
         self.assert_ok(res)
         result = res.json
         assert isinstance(result, list)
@@ -71,8 +71,9 @@ class TestListSocialWorker(BaseTestClass):
         self.assert_ok(res)
         assert len(res.json) == 2
 
-        res = self.client.get(LIST_SW_URL, query_string=dict(id_ngo='invalid-id'))
+        res = self.client.get(LIST_SW_URL, query_string=dict(ngoId='invalid-id'))
         self.assert_code(res, 400)
 
         res = self.client.get(LIST_SW_URL, query_string=dict(invalid_key='invalid-id'))
-        self.assert_code(res, 400)
+        self.assert_code(res, 200)
+        assert len(res.json) == 4

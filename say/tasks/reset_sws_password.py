@@ -17,13 +17,13 @@ def reset_sws_password(self):
             sw.password = raw_password
             print(f'Reseting username and passowrd of {sw.id}...')
 
-            if sw.id_ngo != 3:
-                sw_counts[sw.id_ngo] += 1
-                sw.userName = (
+            if sw.ngo_id != 3:
+                sw_counts[sw.ngo_id] += 1
+                sw.username = (
                     'sw'
-                    + format(sw.id_ngo, '03d')
+                    + format(sw.ngo_id, '03d')
                     + format(
-                        sw_counts[sw.id_ngo],
+                        sw_counts[sw.ngo_id],
                         '03d',
                     )
                 )

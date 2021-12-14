@@ -11,7 +11,7 @@ DELETE_SW_URL = '/api/v2/socialworkers/%s'
 class TestDeleteSocialWorker(BaseTestClass):
     def test_delete_social_worker(self):
         self.login_as_sw(role=SUPER_ADMIN)
-        sw = self._create_random_sw(isDeleted=False)
+        sw = self._create_random_sw(is_deleted=False)
         self._create_random_child(
             sw=sw,
             isConfirmed=False,
@@ -37,7 +37,7 @@ class TestDeleteSocialWorker(BaseTestClass):
         )
         self.assert_code(res, 404)
 
-        sw_with_active_child = self._create_random_sw(isActive=True)
+        sw_with_active_child = self._create_random_sw(is_active=True)
         self._create_random_child(
             sw=sw_with_active_child,
             isConfirmed=True,

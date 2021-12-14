@@ -19,7 +19,7 @@ parameters:
     required: true
     type: string
 
-  - name: id_ngo
+  - name: ngoId
     in: formData
     type: integer
     required: true
@@ -32,7 +32,7 @@ parameters:
     in: formData
     type: integer
 
-  - name: id_type
+  - name: typeId
     in: formData
     type: integer
     required: true
@@ -91,7 +91,7 @@ parameters:
     type: string
     required: true
 
-  - name: emailAddress
+  - name: email
     in: formData
     type: string
     required: true

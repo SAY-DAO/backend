@@ -11,7 +11,7 @@ ACTIVE_SW_URL = '/api/v2/socialworkers/%s/activate'
 class TestActiveSocialWorker(BaseTestClass):
     def test_active_social_worker(self):
         self.login_as_sw(role=SUPER_ADMIN)
-        sw = self._create_random_sw(isActive=False)
+        sw = self._create_random_sw(is_active=False)
 
         res = self.client.post(
             ACTIVE_SW_URL % sw.id,

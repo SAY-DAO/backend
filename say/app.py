@@ -75,7 +75,7 @@ def handle_pydantic_validation_errors(e):
     return jsonify(e.errors()), 400
 
 
-DUPPLICATE_ENTRY_PATTERN = re.compile(r'Key \(\"(.*)\"\)=\((.*)\)')
+DUPPLICATE_ENTRY_PATTERN = re.compile(r'Key \((.*)\)=\((.*)\)')
 
 
 @app.errorhandler(sqlalchemy.exc.IntegrityError)

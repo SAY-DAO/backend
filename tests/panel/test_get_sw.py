@@ -17,11 +17,11 @@ class TestGetSocialWorker(BaseTestClass):
 
         self.assert_ok(res)
         assert res.json['id'] == admin.id
-        assert res.json['firstName'] == admin.firstName
-        assert res.json['lastName'] == admin.lastName
-        assert res.json['avatarUrl'] == admin.avatarUrl
-        assert res.json['phoneNumber'] == admin.phoneNumber
-        assert res.json['emailAddress'] == admin.emailAddress
+        assert res.json['firstName'] == admin.first_name
+        assert res.json['lastName'] == admin.last_name
+        assert res.json['avatarUrl'] == admin.avatar_url
+        assert res.json['phoneNumber'] == admin.phone_number
+        assert res.json['email'] == admin.email
         assert res.json['typeName'] == admin.privilege.name
         assert res.json['ngoName'] == admin.ngo.name
         assert 'password' not in res.json
@@ -33,7 +33,7 @@ class TestGetSocialWorker(BaseTestClass):
 
         self.assert_code(res, 404)
 
-        deleted_sw = self._create_random_sw(isDeleted=True)
+        deleted_sw = self._create_random_sw(is_deleted=True)
         res = self.client.get(
             GET_SW_URL % deleted_sw.id,
         )

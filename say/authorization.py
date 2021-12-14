@@ -95,12 +95,12 @@ def create_sw_access_token(social_worker, fresh=False):
         identity=social_worker.id,
         fresh=fresh,
         user_claims=dict(
-            username=social_worker.userName,
-            firstName=social_worker.firstName,
-            lastName=social_worker.lastName,
-            avatarUrl=social_worker.avatarUrl,
+            username=social_worker.username,
+            firstName=social_worker.first_name,
+            lastName=social_worker.last_name,
+            avatarUrl=social_worker.avatar_url,
             role=social_worker.privilege.name,
-            ngoId=social_worker.id_ngo,
+            ngoId=social_worker.ngo_id,
         ),
     )
 
@@ -175,8 +175,8 @@ def authorize(*roles):
                         session.query(SocialWorker)
                         .filter(
                             SocialWorker.id == user_id,
-                            SocialWorker.isDeleted.is_(False),
-                            SocialWorker.isActive.is_(True),
+                            SocialWorker.is_deleted.is_(False),
+                            SocialWorker.is_active.is_(True),
                         )
                         .one_or_none()
                     )

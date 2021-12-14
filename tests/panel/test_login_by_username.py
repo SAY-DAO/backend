@@ -13,7 +13,7 @@ class TestLogin(BaseTestClass):
         res = self.client.post(
             PANEL_LOGIN_URL,
             data={
-                'username': self.user.userName,
+                'username': self.user.username,
                 'password': self.password,
             },
         )
@@ -26,7 +26,7 @@ class TestLogin(BaseTestClass):
         res = self.client.post(
             PANEL_LOGIN_URL,
             data={
-                'username': self.user.userName,
+                'username': self.user.username,
                 'password': 'wrong-password',
             },
         )
@@ -35,6 +35,6 @@ class TestLogin(BaseTestClass):
     def test_login_by_username_incomplete_parameter(self):
         res = self.client.post(
             PANEL_LOGIN_URL,
-            data={'username': self.user.userName},
+            data={'username': self.user.username},
         )
         self.assert_code(res, 400)

@@ -37,8 +37,8 @@ Social Worker APIs
 
 
 def filter_by_role(query, user):
-    if user.typeName not in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR]:  # TODO: priv
-        query = query.filter(SocialWorker.id_ngo == user.id_ngo)
+    if user.type_name not in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR]:  # TODO: priv
+        query = query.filter(SocialWorker.ngo_id == user.ngo_id)
 
     return query
 
@@ -49,7 +49,7 @@ class ListCreateSocialWorkers(Resource):
     )  # TODO: priv
     @query(
         SocialWorker,
-        SocialWorker.isDeleted.is_(False),
+        SocialWorker.is_deleted.is_(False),
         enbale_filtering=True,
         filtering_schema=SocialWorkerSchema,
     )
@@ -68,7 +68,7 @@ class ListCreateSocialWorkers(Resource):
             session.query(Ngo)
             .filter(
                 Ngo.isDeleted.is_(False),
-                Ngo.id == data.id_ngo,
+                Ngo.id == data.ngo_id,
             )
             .populate_existing()
             .with_for_update()
@@ -78,7 +78,7 @@ class ListCreateSocialWorkers(Resource):
         if ngo is None:
             raise HTTP_BAD_REQUEST(message='NGO not found')
 
-        generated_code = format(data.id_ngo, '03d') + format(
+        generated_code = format(data.ngo_id, '03d') + format(
             ngo.socialWorkerCount + 1,
             '03d',
         )
@@ -87,9 +87,9 @@ class ListCreateSocialWorkers(Resource):
         password = SocialWorker.generate_password()
 
         new_social_worker = SocialWorker(
-            userName=username,
+            username=username,
             password=password,
-            generatedCode=generated_code,
+            generated_code=generated_code,
             **data.dict(),
         )
 
@@ -103,7 +103,7 @@ class GetUpdateDeleteSocialWorkers(Resource):
     @authorize(
         COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
     )  # TODO: priv
-    @query(SocialWorker, SocialWorker.isDeleted.is_(False))
+    @query(SocialWorker, SocialWorker.is_deleted.is_(False))
     @json(SocialWorkerSchema)
     @swag_from('./docs/social_worker/id.yml')
     def get(self, id):
@@ -127,7 +127,7 @@ class GetUpdateDeleteSocialWorkers(Resource):
         sw = (
             session.query(SocialWorker)
             .filter_by(id=id)
-            .filter_by(isDeleted=False)
+            .filter_by(is_deleted=False)
             .one_or_none()
         )
 
@@ -137,17 +137,17 @@ class GetUpdateDeleteSocialWorkers(Resource):
         if get_user_role() in [COORDINATOR, NGO_SUPERVISOR]:  # TODO: priv
             user_id = get_user_id()
             user = session.query(SocialWorker).get(user_id)
-            if user is None or user.id_ngo != sw.id_ngo:
+            if user is None or user.ngo_id != sw.ngo_id:
                 raise HTTP_PERMISION_DENIED()
 
-        if data.id_ngo is not None:
+        if data.ngo_id is not None:
             if role not in {SUPER_ADMIN, SAY_SUPERVISOR}:
                 raise HTTP_PERMISION_DENIED()
 
             new_ngo = (
                 session.query(Ngo.id)
                 .filter(
-                    Ngo.id == data.id_ngo,
+                    Ngo.id == data.ngo_id,
                     Ngo.isDeleted.is_(False),
                 )
                 .one_or_none()
@@ -156,9 +156,9 @@ class GetUpdateDeleteSocialWorkers(Resource):
             if new_ngo is None:
                 raise HTTP_BAD_REQUEST(message='NGO not found')
 
-            sw.id_ngo = data.id_ngo
+            sw.ngo_id = data.ngo_id
             for chid in sw.children:
-                chid.id_ngo = data.id_ngo
+                chid.id_ngo = data.ngo_id
 
         sw.update_from_schema(data)
         # Password is protected and secret and needs to be set manually
@@ -168,7 +168,7 @@ class GetUpdateDeleteSocialWorkers(Resource):
         return sw
 
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
-    @query(SocialWorker, SocialWorker.isDeleted.is_(False))
+    @query(SocialWorker, SocialWorker.is_deleted.is_(False))
     @json(SocialWorkerSchema)
     @commit
     @swag_from('./docs/social_worker/delete.yml')
@@ -177,7 +177,7 @@ class GetUpdateDeleteSocialWorkers(Resource):
         if sw is None:
             raise HTTP_NOT_FOUND()
 
-        if sw.isDeleted:
+        if sw.is_deleted:
             raise HTTP_BAD_REQUEST(message='Social Worker already deleted')
 
         has_active_child = (
@@ -195,7 +195,7 @@ class GetUpdateDeleteSocialWorkers(Resource):
                 f' children and can not deactivate'
             )
 
-        sw.isDeleted = True
+        sw.is_deleted = True
         return sw
 
 
@@ -203,7 +203,7 @@ class DeactivateSocialWorker(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @query(
         SocialWorker,
-        SocialWorker.isDeleted.is_(False),
+        SocialWorker.is_deleted.is_(False),
     )
     @json(SocialWorkerSchema)
     @commit
@@ -240,13 +240,13 @@ class ActivateSocialWorker(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @query(
         SocialWorker,
-        SocialWorker.isDeleted.is_(False),
+        SocialWorker.is_deleted.is_(False),
     )
     @json(SocialWorkerSchema)
     @commit
     @swag_from('./docs/social_worker/activate.yml')
     def post(self, id):
-        sw = request._query.filter_by(id=id).filter_by(isDeleted=False).one_or_none()
+        sw = request._query.filter_by(id=id).filter_by(is_deleted=False).one_or_none()
         if not sw:
             raise HTTP_NOT_FOUND()
 
@@ -262,7 +262,7 @@ class MigrateSocialWorkerChildren(Resource):
     @validate(MigrateSocialWorkerChildrenSchema)
     @query(
         SocialWorker,
-        SocialWorker.isDeleted.is_(False),
+        SocialWorker.is_deleted.is_(False),
         SocialWorker.is_active.is_(True),
     )
     @json(ChildMigrationSchema, use_list=True)
@@ -280,7 +280,7 @@ class MigrateSocialWorkerChildren(Resource):
         destination_sw = (
             session.query(SocialWorker)
             .filter(SocialWorker.id == data.destination_social_worker_id)
-            .filter(SocialWorker.isDeleted.is_(False))
+            .filter(SocialWorker.is_deleted.is_(False))
             .filter(SocialWorker.is_active.is_(True))
             .with_for_update()
             .one_or_none()

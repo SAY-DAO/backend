@@ -12,7 +12,7 @@ parameters:
     description: Access Token
     required: true
     type: string
-  
+
   - in: path
     name: social_worker_id
     required: true
@@ -54,7 +54,7 @@ responses:
           description: the social worker's city international code
           example: 21
 
-        id_type:
+        typeId:
           type: integer
           description: the social worker's privilege state
           example: 5
@@ -67,7 +67,7 @@ responses:
           type: string
           description: the social worker's last name
 
-        userName:
+        username:
           type: string
           description: the social worker's username
 

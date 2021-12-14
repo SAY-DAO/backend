@@ -37,7 +37,7 @@ def report_unpayables(self):
         .one()
     )
 
-    say_coordinator = say.coordinator.emailAddress
+    say_coordinator = say.coordinator.email
 
     from say.app import app
 

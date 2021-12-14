@@ -14,8 +14,8 @@ class TestAddSocialWorker(BaseTestClass):
 
         data = dict(
             firstName='asd',
-            id_ngo=admin.id_ngo,
-            id_type=1,
+            ngoId=admin.ngo_id,
+            typeId=1,
             lastName='qw',
             telegramId=123456789,
             idNumber='12345666',
@@ -23,7 +23,7 @@ class TestAddSocialWorker(BaseTestClass):
             birthCertificateNumber='1234567890',
             phoneNumber=f'+98{randint(10000, 1000000)}',
             emergencyPhoneNumber=f'+98{randint(10000, 1000000)}',
-            emailAddress=f'{randint(10000, 1000000)}@test.com',
+            email=f'{randint(10000, 1000000)}@test.com',
             avatarUrl=self.create_test_file('imageUrl.jpg', size=10000),
         )
 
@@ -37,7 +37,7 @@ class TestAddSocialWorker(BaseTestClass):
         assert res.json['id'] is not None
         assert res.json['gender'] is True
         assert res.json['generatedCode'] == '001002'
-        assert res.json['userName'] == 'sw001002'
+        assert res.json['username'] == 'sw001002'
         assert res.json['locale'] == 'fa'
         assert res.json['avatarUrl'].startswith('http')
         assert res.json['lastLoginDate'] is not None

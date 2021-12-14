@@ -49,16 +49,16 @@ class Ngo(base, Timestamp):
 
     socialWorkerCount = column_property(
         select([coalesce(func.count(1), 0,)]).where(
-            SocialWorker.id_ngo == id,
+            SocialWorker.ngo_id == id,
         )
     )
 
     currentSocialWorkerCount = column_property(
         select([coalesce(func.count(1), 0,)]).where(
             and_(
-                SocialWorker.id_ngo == id,
-                SocialWorker.isActive.is_(True),
-                SocialWorker.isDeleted.is_(False),
+                SocialWorker.ngo_id == id,
+                SocialWorker.is_active.is_(True),
+                SocialWorker.is_deleted.is_(False),
             )
         )
     )

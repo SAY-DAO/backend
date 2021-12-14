@@ -5,9 +5,8 @@ Calling this API only affects social_worker table by updating a row.
 Be aware that city and country are integer fields, so you cannot insert their names in those fields.
 You have to insert the international codes for countries and cities.
 For idCardUrl, passportUrl and avatarUrl you have to upload a file.
-Social workers can change their NGO by editing id_ngo field.
+Social workers can change their NGO by editing ngo_id field.
 ---
-
 tags:
   - Social Worker API
 
@@ -20,13 +19,13 @@ parameters:
     description: Access Token
     required: true
     type: string
-  
+
   - name: social_worker_id
     in: path
     type: integer
     required: true
 
-  - name: id_ngo
+  - name: ngo_id
     in: formData
     type: integer
 
@@ -38,7 +37,7 @@ parameters:
     in: formData
     type: integer
 
-  - name: id_type
+  - name: typeId
     in: formData
     type: integer
 
@@ -50,7 +49,7 @@ parameters:
     in: formData
     type: string
 
-  - name: userName
+  - name: username
     in: formData
     type: string
 
@@ -94,7 +93,7 @@ parameters:
     in: formData
     type: string
 
-  - name: emailAddress
+  - name: email
     in: formData
     type: string
 

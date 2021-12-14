@@ -30,6 +30,7 @@ from say.locale import get_locale
 from say.models import Child
 from say.orm import base
 from say.orm.mixins import ActivateMixin
+from say.orm.mixins import SoftDeleteMixin
 from say.orm.types import LocalFile
 from say.render_template_i18n import render_template_i18n
 from say.utils import surname
@@ -47,7 +48,7 @@ PASSOWRD_LETTERS = string.ascii_letters + string.digits
 
 
 # TODO: unique email, phone, username, ...
-class SocialWorker(BaseUser, Timestamp, ActivateMixin):
+class SocialWorker(BaseUser, Timestamp, ActivateMixin, SoftDeleteMixin):
     __tablename__ = "social_worker"
     __versioned__ = {}
     __mapper_args__ = {
@@ -61,65 +62,65 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin):
         nullable=False,
         unique=True,
     )
-    generatedCode = Column(String, nullable=False)
+    generated_code = Column(String, nullable=False)
 
-    id_ngo = Column(Integer, ForeignKey('ngo.id'), nullable=False, index=True)
-    id_type = Column(
+    ngo_id = Column(Integer, ForeignKey('ngo.id'), nullable=False, index=True)
+    type_id = Column(
         Integer, ForeignKey('social_worker_type.id'), nullable=False, index=True
     )
 
     country = Column(Integer, nullable=True)
     city = Column(Integer, nullable=True)
-    firstName = Column(String, nullable=True)
-    lastName = Column(String, nullable=False)
-    userName = Column(
+    first_name = Column(String, nullable=True)
+    last_name = Column(String, nullable=False)
+    username = Column(
         String, nullable=False, unique=True
     )  # ngoName + "-sw" + generatedCode
     _password = Column(String(256), nullable=False)
-    birthCertificateNumber = Column(String, nullable=True)
-    idNumber = Column(String, nullable=False)
-    idCardUrl = Column(
+    birth_certificate_number = Column(String, nullable=True)
+    id_number = Column(String, nullable=False)
+    id_card_url = Column(
         LocalFile(dst='social-workers/id-cards', filename_length=64),
         nullable=True,
         unique=True,
     )
-    passportNumber = Column(String, nullable=True)
-    passportUrl = Column(
+    passport_number = Column(String, nullable=True)
+    passport_url = Column(
         LocalFile(dst='social-workers/passports', filename_length=64),
         nullable=True,
         unique=True,
     )
     gender = Column(Boolean, nullable=False)
-    birthDate = Column(Date, nullable=True)
-    phoneNumber = Column(String, nullable=False, unique=True)
-    emergencyPhoneNumber = Column(String, nullable=False)
-    emailAddress = Column(String, nullable=False, unique=True)
-    telegramId = Column(String, nullable=False)
-    postalAddress = Column(Text, nullable=True)
-    avatarUrl = Column(
+    birth_date = Column(Date, nullable=True)
+    phone_number = Column(String, nullable=False, unique=True)
+    emergency_phone_number = Column(String, nullable=False)
+    email = Column(String, nullable=False, unique=True)
+    telegram_id = Column(String, nullable=False)
+    postal_address = Column(Text, nullable=True)
+    avatar_url = Column(
         LocalFile(dst='social-workers/avatars', filename_length=64),
         unique=True,
         nullable=False,
     )
     # childCount = Column(Integer, nullable=False, default=0)
     # currentChildCount = Column(Integer, nullable=False, default=0)
-    needCount = Column(Integer, nullable=False, default=0)
-    currentNeedCount = Column(Integer, nullable=False, default=0)
-    bankAccountNumber = Column(String, nullable=True)
-    bankAccountShebaNumber = Column(String, nullable=True)
-    bankAccountCardNumber = Column(String, nullable=True)
-    lastLoginDate = Column(DateTime, default=datetime.utcnow, nullable=False)
-    lastLogoutDate = Column(DateTime, nullable=True)
+    need_count = Column(Integer, nullable=False, default=0)
+    current_need_count = Column(Integer, nullable=False, default=0)
+    bank_account_number = Column(String, nullable=True)
+    bank_account_sheba_number = Column(String, nullable=True)
+    bank_account_card_number = Column(String, nullable=True)
+    last_login_date = Column(DateTime, default=datetime.utcnow, nullable=False)
+    # lastLogoutDate = Column(DateTime, nullable=True)
     # isActive = Column(Boolean, nullable=False, default=True)
-    isDeleted = Column(Boolean, nullable=False, default=False, index=True)
+    # is_deleted = Column(Boolean, nullable=False, default=False, index=True)
     locale = Column(LocaleType, default=Locale('fa'), nullable=False)
 
-    privilege = relationship("Privilege", foreign_keys=[id_type], lazy='selectin')
-    ngo = relationship("Ngo", foreign_keys=id_ngo)
+    privilege = relationship("Privilege", foreign_keys=[type_id], lazy='selectin')
+    ngo = relationship("Ngo", foreign_keys=ngo_id)
     children = relationship("Child", back_populates='social_worker')
 
-    typeName = association_proxy('privilege', 'name')
-    ngoName = association_proxy('ngo', 'name')
+    type_name = association_proxy('privilege', 'name')
+    ngo_name = association_proxy('ngo', 'name')
 
     def _set_password(self, password):
         """Hash ``password`` on the fly and store its hashed version."""
@@ -139,7 +140,7 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin):
         info=dict(protected=True),
     )
 
-    childCount = column_property(
+    child_count = column_property(
         select([coalesce(func.count(1), 0,)]).where(
             and_(
                 Child.id_social_worker == id,
@@ -147,7 +148,7 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin):
         )
     )
 
-    currentChildCount = column_property(
+    current_child_count = column_property(
         select([coalesce(func.count(1), 0,)]).where(
             and_(
                 Child.id_social_worker == id,
@@ -166,7 +167,7 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin):
         from say.tasks import send_embeded_subject_email
 
         send_embeded_subject_email.delay(
-            to=self.emailAddress,
+            to=self.email,
             html=render_template_i18n(
                 'social_worker_password.html',
                 social_worker=self,
@@ -225,13 +226,13 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin):
             # This date show when the needs status updated to 3
             date = datetime.utcnow() - timedelta(days=1)
             say = session.query(Ngo).filter_by(name='SAY').first()
-            bcc = [say.coordinator.emailAddress]
-            coordinator_email = self.ngo.coordinator.emailAddress
+            bcc = [say.coordinator.email]
+            coordinator_email = self.ngo.coordinator.email
             locale = self.locale
 
             if len(services) != 0:
                 send_embeded_subject_email.delay(
-                    to=self.emailAddress,
+                    to=self.email,
                     cc=coordinator_email,
                     bcc=bcc,
                     html=render_template_i18n(
@@ -252,7 +253,7 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin):
             if len(products) != 0:
                 use_plural = False if len(products) == 1 else True
                 send_embeded_subject_email.delay(
-                    to=self.emailAddress,
+                    to=self.email,
                     cc=coordinator_email,
                     bcc=bcc,
                     html=render_template_i18n(

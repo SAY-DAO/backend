@@ -79,14 +79,14 @@ def filter_by_privilege(query, get=False):  # TODO: priv
                 .join(SocialWorker)
                 .filter(
                     or_(
-                        SocialWorker.id_ngo == ngo_id,
+                        SocialWorker.ngo_id == ngo_id,
                         Child.id == DEFAULT_CHILD_ID,
                     )
                 )
             )
         else:
             query = (
-                query.join(Child).join(SocialWorker).filter(SocialWorker.id_ngo == ngo_id)
+                query.join(Child).join(SocialWorker).filter(SocialWorker.ngo_id == ngo_id)
             )
 
     elif user_role in [USER]:
@@ -420,8 +420,8 @@ class ConfirmNeed(Resource):
             id_need=primary_need.id,
         )
 
-        child.social_worker.needCount += 1
-        child.social_worker.currentNeedCount += 1
+        child.social_worker.need_count += 1
+        child.social_worker.current_need_count += 1
 
         session.add(new_child_need)
         safe_commit(session)
@@ -469,8 +469,8 @@ class AddNeed(Resource):
         if sw_role in [NGO_SUPERVISOR]:
             allowed_sw_ids_tuple = (
                 session.query(SocialWorker.id)
-                .filter_by(isDeleted=False)
-                .filter_by(id_ngo=get_sw_ngo_id())
+                .filter_by(is_deleted=False)
+                .filter_by(ngo_id=get_sw_ngo_id())
                 .distinct()
                 .all()
             )
@@ -595,7 +595,7 @@ class NeedReceipts(Resource):
                     Receipt.owner_id == user_id
                     if user_role not in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR]
                     else False,
-                    SocialWorker.id_ngo == ngo_id
+                    SocialWorker.ngo_id == ngo_id
                     if user_role in [NGO_SUPERVISOR]
                     else False,
                 ),

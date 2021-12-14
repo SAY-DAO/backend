@@ -47,10 +47,6 @@ class BaseModel(PydanticBase):
         }
 
 
-class BaseModelWithId(BaseModel):
-    id: int
-
-
 class CamelModel(BaseModel):
     class Config:
         alias_generator = to_camel

@@ -32,11 +32,11 @@ class TestUpdateSocialWorker(BaseTestClass):
             ('phoneNumber', '0213412414', 400),
             ('emergencyPhoneNumber', '+98054232434', 200),
             ('emergencyPhoneNumber', '8054232434', 400),
-            ('emailAddress', 'newexample@test.com', 200),
-            ('emailAddress', 'newexample@test', 400),
-            ('emailAddress', 'newexample', 400),
-            ('userName', 'abcd', 200),
-            ('userName', 'as', 400),
+            ('email', 'newexample@test.com', 200),
+            ('email', 'newexample@test', 400),
+            ('email', 'newexample', 400),
+            ('username', 'abcd', 200),
+            ('username', 'as', 400),
         ],
     )
     def test_update_social_worker(self, field, value, code):
@@ -69,7 +69,7 @@ class TestUpdateSocialWorker(BaseTestClass):
             UPDATE_SW_URL % admin.id,
             content_type='multipart/form-data',
             data={
-                'userName': sw.userName,
+                'username': sw.username,
             },
         )
 
@@ -84,7 +84,7 @@ class TestUpdateSocialWorker(BaseTestClass):
             UPDATE_SW_URL % admin.id,
             content_type='multipart/form-data',
             data={
-                'phoneNumber': sw.phoneNumber,
+                'phoneNumber': sw.phone_number,
             },
         )
 
@@ -99,7 +99,7 @@ class TestUpdateSocialWorker(BaseTestClass):
             UPDATE_SW_URL % admin.id,
             content_type='multipart/form-data',
             data={
-                'emailAddress': sw.emailAddress,
+                'email': sw.email,
             },
         )
 
@@ -116,12 +116,12 @@ class TestUpdateSocialWorker(BaseTestClass):
             UPDATE_SW_URL % admin.id,
             content_type='multipart/form-data',
             data={
-                'id_ngo': new_ngo.id,
+                'ngoId': new_ngo.id,
             },
         )
 
         self.assert_ok(res)
-        assert res.json.get('id_ngo') == new_ngo.id
+        assert res.json.get('ngoId') == new_ngo.id
 
         self.session.expire(old_ngo)
         assert old_ngo.currentSocialWorkerCount == 0
@@ -140,7 +140,7 @@ class TestUpdateSocialWorker(BaseTestClass):
             UPDATE_SW_URL % admin.id,
             content_type='multipart/form-data',
             data={
-                'id_ngo': -1,
+                'ngoId': -1,
             },
         )
 
@@ -154,7 +154,7 @@ class TestUpdateSocialWorker(BaseTestClass):
                 UPDATE_SW_URL % user.id,
                 content_type='multipart/form-data',
                 data={
-                    'id_ngo': new_ngo.id,
+                    'ngoId': new_ngo.id,
                 },
             )
 
@@ -212,7 +212,7 @@ class TestUpdateSocialWorker(BaseTestClass):
 
         self.assert_ok(res)
         self.session.refresh(admin)
-        assert res.json.get('avatarUrl') == admin.avatarUrl
+        assert res.json.get('avatarUrl') == admin.avatar_url
 
         res = self.client.patch(
             UPDATE_SW_URL % admin.id,
@@ -238,7 +238,7 @@ class TestUpdateSocialWorker(BaseTestClass):
         self.assert_ok(res)
         assert res.json.get('idCardUrl')
         self.session.refresh(admin)
-        assert res.json.get('idCardUrl') == admin.idCardUrl
+        assert res.json.get('idCardUrl') == admin.id_card_url
 
         res = self.client.patch(
             UPDATE_SW_URL % admin.id,
@@ -263,7 +263,7 @@ class TestUpdateSocialWorker(BaseTestClass):
         self.assert_ok(res)
         assert res.json.get('passportUrl')
         self.session.refresh(admin)
-        assert res.json.get('passportUrl') == admin.passportUrl
+        assert res.json.get('passportUrl') == admin.passport_url
 
         res = self.client.patch(
             UPDATE_SW_URL % admin.id,

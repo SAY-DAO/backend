@@ -5,7 +5,7 @@ Be aware that city and country are integer fields, so you cannot insert their na
 You have to insert the international codes for countries and cities.
 The same rule applied for nationality and birthPlace.
 For voiceUrl and awakeAvatarUrl you have to upload a file; for avatar in png, jpg or jpeg and for voice in wav, m4a, wma, mp3, aac or ogg format.
-Social workers can change their NGO by editing id_ngo field.
+Social workers can change their NGO by editing ngoId field.
 ---
 
 tags:

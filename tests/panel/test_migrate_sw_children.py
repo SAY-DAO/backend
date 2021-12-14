@@ -11,8 +11,8 @@ MIGRATE_SW_CHILDREN_URL = '/api/v2/socialworkers/%s/children/migrate'
 class TestMigrateSocialWorkerChildren(BaseTestClass):
     def test_active_social_worker(self):
         self.login_as_sw(role=SUPER_ADMIN)
-        sw = self._create_random_sw(isActive=True)
-        new_sw = self._create_random_sw(isActive=True)
+        sw = self._create_random_sw(is_active=True)
+        new_sw = self._create_random_sw(is_active=True)
         self._create_random_child(sw, isDeleted=False)
         self._create_random_child(sw, isDeleted=False)
         self._create_random_child(sw, isDeleted=True)
@@ -28,16 +28,16 @@ class TestMigrateSocialWorkerChildren(BaseTestClass):
         assert res.json[0]['oldSwId'] == sw.id
         assert res.json[0]['migratedAt'] is not None
         assert res.json[0]['childId'] in [c.id for c in new_sw.children]
-        assert res.json[0]['newGeneratedCode'].startswith(new_sw.generatedCode)
-        assert res.json[0]['oldGeneratedCode'].startswith(sw.generatedCode)
+        assert res.json[0]['newGeneratedCode'].startswith(new_sw.generated_code)
+        assert res.json[0]['oldGeneratedCode'].startswith(sw.generated_code)
 
         self.session.refresh(sw)
-        assert sw.childCount == 1
-        assert sw.currentChildCount == 0
+        assert sw.child_count == 1
+        assert sw.current_child_count == 0
 
         self.session.refresh(new_sw)
-        assert new_sw.childCount == 2
-        assert new_sw.currentChildCount == 2
+        assert new_sw.child_count == 2
+        assert new_sw.current_child_count == 2
 
         for role in ROLES - {SUPER_ADMIN, SAY_SUPERVISOR, ADMIN}:
             self.login_as_sw(role=role)

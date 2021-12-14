@@ -10,7 +10,6 @@ from pydantic.types import constr
 from say.constants import MB
 from say.schema.base import AllOptionalMeta
 from say.schema.base import BaseModel
-from say.schema.base import BaseModelWithId
 from say.schema.base import CamelModel
 from say.schema.types import Locale
 from say.schema.types import Password
@@ -23,39 +22,39 @@ class MigrateSocialWorkerChildrenSchema(CamelModel):
     destination_social_worker_id: int
 
 
-class NewSocialWorkerSchema(BaseModel):
+class NewSocialWorkerSchema(CamelModel):
     country: Optional[int]
     city: Optional[int]
-    firstName: Optional[constr(max_length=64, strip_whitespace=True)]
-    lastName: constr(max_length=64, strip_whitespace=True)
-    birthCertificateNumber: Optional[constr(max_length=32, strip_whitespace=True)]
-    passportNumber: Optional[constr(max_length=32, strip_whitespace=True)]
-    postalAddress: Optional[constr(max_length=256, strip_whitespace=True)]
-    bankAccountNumber: Optional[constr(max_length=64, strip_whitespace=True)]
-    bankAccountShebaNumber: Optional[constr(max_length=64, strip_whitespace=True)]
-    bankAccountCardNumber: Optional[constr(max_length=64, strip_whitespace=True)]
-    birthDate: Optional[date]
-    telegramId: constr(max_length=64, strip_whitespace=True)
-    idNumber: constr(max_length=64, strip_whitespace=True)
-    id_ngo: int
-    id_type: int
+    first_name: Optional[constr(max_length=64, strip_whitespace=True)]
+    last_name: constr(max_length=64, strip_whitespace=True)
+    birth_certificate_number: Optional[constr(max_length=32, strip_whitespace=True)]
+    passport_number: Optional[constr(max_length=32, strip_whitespace=True)]
+    postal_address: Optional[constr(max_length=256, strip_whitespace=True)]
+    bank_account_number: Optional[constr(max_length=64, strip_whitespace=True)]
+    bank_account_sheba_number: Optional[constr(max_length=64, strip_whitespace=True)]
+    bank_account_card_number: Optional[constr(max_length=64, strip_whitespace=True)]
+    birth_date: Optional[date]
+    telegram_id: constr(max_length=64, strip_whitespace=True)
+    id_number: constr(max_length=64, strip_whitespace=True)
+    ngo_id: int
+    type_id: int
     gender: bool
-    phoneNumber: PhoneNumber
-    emergencyPhoneNumber: PhoneNumber
-    emailAddress: EmailStr
-    avatarUrl: confilestorage(
+    phone_number: PhoneNumber
+    emergency_phone_number: PhoneNumber
+    email: EmailStr
+    avatar_url: confilestorage(
         max_size=4 * MB,
         valid_extensions=ALLOWED_IMAGE_EXTENSIONS,
     )
 
-    idCardUrl: Optional[
+    id_card_url: Optional[
         confilestorage(
             max_size=4 * MB,
             valid_extensions=ALLOWED_IMAGE_EXTENSIONS,
         )
     ]
 
-    passportUrl: Optional[
+    passport_url: Optional[
         confilestorage(
             max_size=4 * MB,
             valid_extensions=ALLOWED_IMAGE_EXTENSIONS,
@@ -64,26 +63,26 @@ class NewSocialWorkerSchema(BaseModel):
 
 
 class UpdateSocialWorkerSchema(NewSocialWorkerSchema, metaclass=AllOptionalMeta):
-    userName: Optional[constr(strip_whitespace=True, min_length=3)]  # TODO: add validator
+    username: Optional[constr(strip_whitespace=True, min_length=3)]  # TODO: add validator
     password: Optional[Password]
 
 
-class SocialWorkerSchema(NewSocialWorkerSchema, BaseModelWithId):
-    avatarUrl: str
-    idCardUrl: Optional[str]
-    passportUrl: Optional[str]
-    userName: str
-    generatedCode: str
-    childCount: int
-    currentChildCount: int
+class SocialWorkerSchema(NewSocialWorkerSchema):
+    id: int
+    avatar_url: str
+    id_card_url: Optional[str]
+    passport_url: Optional[str]
+    username: str
+    generated_code: str
+    child_count: int
+    current_child_count: int
     created: datetime
     updated: datetime
-    needCount: int
-    currentNeedCount: int
-    lastLoginDate: datetime
-    lastLogoutDate: Optional[datetime]
-    isActive: bool
-    isDeleted: bool
+    need_count: int
+    current_need_count: int
+    last_login_date: datetime
+    is_active: bool
+    is_deleted: bool
     locale: Locale
-    typeName: str
-    ngoName: str
+    type_name: str
+    ngo_name: str

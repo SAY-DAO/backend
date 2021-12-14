@@ -237,7 +237,7 @@ class GetChildById(Resource):
             raise HTTP_NOT_FOUND()
 
         child_dict = obj_to_dict(child)
-        child_dict['socialWorkerGeneratedCode'] = child.social_worker.generatedCode
+        child_dict['socialWorkerGeneratedCode'] = child.social_worker.generated_code
 
         if get_user_role() in [USER]:  # TODO: priv
             user_id = get_user_id()
@@ -312,7 +312,7 @@ class GetChildByInvitationToken(Resource):
             raise HTTP_NOT_FOUND()
 
         child_dict = obj_to_dict(child)
-        child_dict['socialWorkerGeneratedCode'] = child.social_worker.generatedCode
+        child_dict['socialWorkerGeneratedCode'] = child.social_worker.generated_code
         child_dict['familyId'] = family.id
         child_dict['userRole'] = invitation.role
 
@@ -462,8 +462,8 @@ class AddChild(Resource):
         if sw_role in [NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN]:
             allowed_sw_ids_tuple = (
                 session.query(SocialWorker.id)
-                .filter_by(isDeleted=False)
-                .filter_by(id_ngo=ngo_id)
+                .filter_by(is_deleted=False)
+                .filter_by(ngo_id=ngo_id)
                 .distinct()
                 .all()
             )
@@ -476,14 +476,14 @@ class AddChild(Resource):
         sw = (
             session.query(SocialWorker)
             .filter_by(id=sw_id)
-            .filter_by(isDeleted=False)
+            .filter_by(is_deleted=False)
             .one_or_none()
         )
 
         if sw is None:
             abort(403)
 
-        code = sw.generatedCode + format(sw.childCount + 1, '04d')
+        code = sw.generated_code + format(sw.childCount + 1, '04d')
 
         if 'nationality' in request.form.keys():
             nationality = int(request.form['nationality'])
@@ -658,8 +658,8 @@ class UpdateChildById(Resource):
         if sw_role in [NGO_SUPERVISOR]:
             allowed_sw_ids_tuple = (
                 session.query(SocialWorker.id)
-                .filter_by(isDeleted=False)
-                .filter_by(id_ngo=primary_child.id_ngo)
+                .filter_by(is_deleted=False)
+                .filter_by(ngo_id=primary_child.id_ngo)
                 .distinct()
                 .all()
             )
@@ -814,7 +814,6 @@ class UpdateChildById(Resource):
                 for need in needs:
                     need.delete()
 
-                primary_child.social_worker.currentChildCount -= 1
                 primary_child.ngo.currentChildrenCount -= 1
 
         safe_commit(session)
@@ -857,7 +856,7 @@ class DeleteChildById(Resource):
         if sw_role in [NGO_SUPERVISOR]:
             allowed_sw_ids_tuple = (
                 session.query(SocialWorker.id)
-                .filter_by(isDeleted=False)
+                .filter_by(is_deleted=False)
                 .filter_by(id_ngo=child.id_ngo)
                 .distinct()
                 .all()
@@ -929,7 +928,6 @@ class ConfirmChild(Resource):
         child.confirmUser = social_worker_id
         child.confirmDate = datetime.utcnow()
         child.ngo.currentChildrenCount += 1
-        child.social_worker.currentChildCount += 1
 
         new_family = Family(id_child=child.id)
         session.add(new_family)
@@ -954,7 +952,7 @@ class MigrateChild(Resource):
 
         new_sw = (
             session.query(SocialWorker)
-            .filter_by(isDeleted=False)
+            .filter_by(is_deleted=False)
             .filter_by(id=new_sw_id)
             .with_for_update()
             .one_or_none()

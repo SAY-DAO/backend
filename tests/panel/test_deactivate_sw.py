@@ -11,7 +11,7 @@ DEACTIVE_SW_URL = '/api/v2/socialworkers/%s/deactivate'
 class TestDeactiveSocialWorker(BaseTestClass):
     def test_deactive_social_worker(self):
         self.login_as_sw(role=SUPER_ADMIN)
-        sw = self._create_random_sw(isActive=True)
+        sw = self._create_random_sw(is_active=True)
         self._create_random_child(
             sw=sw,
             isConfirmed=False,
@@ -37,7 +37,7 @@ class TestDeactiveSocialWorker(BaseTestClass):
         )
         self.assert_code(res, 404)
 
-        sw_with_active_child = self._create_random_sw(isActive=True)
+        sw_with_active_child = self._create_random_sw(is_active=True)
         self._create_random_child(
             sw=sw_with_active_child,
             isConfirmed=True,

@@ -137,8 +137,8 @@ class GetNgoById(Resource):
         if base_ngo.coordinatorId:
             coordinator = (
                 session.query(
-                    SocialWorker.firstName,
-                    SocialWorker.lastName,
+                    SocialWorker.first_name,
+                    SocialWorker.last_name,
                 )
                 .filter_by(id=base_ngo.coordinatorId)
                 .filter_by(isDeleted=False)
@@ -150,8 +150,8 @@ class GetNgoById(Resource):
 
         res['socialWorkers'] = sw_list(
             session.query(SocialWorker)
-            .filter_by(id_ngo=base_ngo.id)
-            .filter_by(isDeleted=False)
+            .filter_by(ngo_id=base_ngo.id)
+            .filter_by(is_deleted=False)
             .all()
         )
         return res
