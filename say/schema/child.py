@@ -85,22 +85,3 @@ class Participant(BaseModel):
 
     class Config:
         orm_mode = True
-
-
-class NeedSummary(BaseModel):
-    id: int
-    imageUrl: str
-    name: str
-    progress: float
-    cost: int
-    isDone: bool
-    isUrgent: bool
-    category: int
-    type: int
-    participants: List[Participant] = []
-    created: datetime
-    doneAt: datetime = None
-    unpayable: bool = None
-
-    class Config:
-        orm_mode = True

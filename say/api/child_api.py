@@ -57,8 +57,9 @@ from say.roles import SAY_SUPERVISOR
 from say.roles import SOCIAL_WORKER
 from say.roles import SUPER_ADMIN
 from say.roles import USER
-from say.schema.child import NeedSummary
 from say.schema.child import UserChildSchema
+from say.schema.need import NeedSchema
+from say.schema.need import NeedSummary
 from say.validations import valid_image_extension
 from say.validations import valid_voice_extension
 
@@ -351,26 +352,22 @@ class GetChildNeeds(Resource):
         if child is None:
             raise HTTP_NOT_FOUND()
 
+        role = get_user_role()
         needs_query = (
             session.query(Need)
-            .options(joinedload(Need.participants))
-            .filter(Need.child_id == child_id)
-            .filter(Need.isDeleted.is_(False))
+            .options(selectinload(Need.participants))
+            .filter(
+                Need.child_id == child_id,
+                Need.isDeleted.is_(False),
+                Need.isConfirmed.is_(True) if role == USER else True,
+            )
             .order_by(Need.name)
-            .all()
         )
 
         needs = []
-        role = get_user_role()
         for need in needs_query:
-            if not need.isConfirmed and role in [USER]:
-                continue
-
-            need_dict = obj_to_dict(need)
-            need_dict['participants'] = [
-                {'user_avatar': p.user_avatar} for p in need.current_participants
-            ]
-            needs.append(need_dict)
+            need_dict = NeedSchema.from_orm(need)
+            needs.append(need_dict.dict())
 
         result = dict(
             total_count=len(needs),
@@ -414,7 +411,6 @@ class GetChildNeedsSummary(Resource):
             .options(selectinload(Need.participants))
             .filter(
                 Need.child_id == child_id,
-                Need.isDeleted.is_(False),
                 Need.isDeleted.is_(False),
                 Need.isConfirmed.is_(True) if role == USER else True,
             )
