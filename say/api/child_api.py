@@ -483,7 +483,7 @@ class AddChild(Resource):
         if sw is None:
             abort(403)
 
-        code = sw.generated_code + format(sw.childCount + 1, '04d')
+        code = sw.generated_code + format(sw.child_count + 1, '04d')
 
         if 'nationality' in request.form.keys():
             nationality = int(request.form['nationality'])
