@@ -616,8 +616,6 @@ class AddChild(Resource):
         else:
             return {'message': 'invalid sleep avatar file!'}, 400
 
-        new_child.ngo.childrenCount += 1
-        new_child.social_worker.childCount += 1
         safe_commit(session)
         return new_child
 
