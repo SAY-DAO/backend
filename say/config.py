@@ -75,6 +75,14 @@ class Config(object):
 
     FAMILY_REPORT_EMAIL = 'vfamily@say.company'
 
+    # Pagination
+    PAGINATION_TAKE_HEADER_KEY = 'X-Take'
+    PAGINATION_SKIP_HEADER_KEY = 'X-Skip'
+    PAGINATION_DEFAULT_TAKE = 50
+    PAGINATION_MAX_TAKE = 500
+
+    POSTRGES_MAX_BIG_INT = 9223372036854775807
+
     def __init__(self):
         load_dotenv(find_dotenv())
         for k, v in os.environ.items():

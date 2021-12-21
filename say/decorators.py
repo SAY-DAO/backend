@@ -15,6 +15,7 @@ from say.exceptions import HTTP_NOT_FOUND
 from say.orm import obj_to_dict
 from say.orm import session
 from say.schema.base import AllOptionalMeta
+from say.schema.base import PaginationSchema
 
 
 def json(schema, use_list=False):
@@ -116,7 +117,15 @@ def validate(schema):
     return decorator
 
 
-def query(model, *filters, enbale_filtering=False, filtering_schema=None):
+def query(
+    model,
+    *filters,
+    enbale_filtering=False,
+    filter_callbacks=None,
+    filtering_schema=None,
+    enable_pagination=False,
+    pagination_schema=PaginationSchema,
+):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -125,6 +134,10 @@ def query(model, *filters, enbale_filtering=False, filtering_schema=None):
             # Apply custom filters
             if len(args) != 0:
                 _query = _query.filter(*filters)
+
+            if filter_callbacks:
+                for callback in filter_callbacks:
+                    _query = callback(_query)
 
             # Apply query string filtering
             if enbale_filtering:
@@ -138,6 +151,10 @@ def query(model, *filters, enbale_filtering=False, filtering_schema=None):
 
                 data = FilteringSchema.parse_obj(request.args)
                 _query = _query.filter_by(**data.dict(exclude_unset=True))
+
+            if enable_pagination:
+                pagination_data = pagination_schema.parse_obj(request.headers)
+                _query = _query.limit(pagination_data.take).offset(pagination_data.skip)
 
             request._query = _query
             return func(*args, **kwargs)

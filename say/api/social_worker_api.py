@@ -43,6 +43,10 @@ def filter_by_role(query, user):
     return query
 
 
+def filter_by_privilage(query):
+    return filter_by_role(query, request.user)
+
+
 class ListCreateSocialWorkers(Resource):
     @authorize(
         COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
@@ -50,14 +54,15 @@ class ListCreateSocialWorkers(Resource):
     @query(
         SocialWorker,
         SocialWorker.is_deleted.is_(False),
+        filter_callbacks=[filter_by_privilage],
         enbale_filtering=True,
         filtering_schema=SocialWorkerSchema,
+        enable_pagination=True,
     )
     @json(SocialWorkerSchema, use_list=True)
     @swag_from('./docs/social_worker/all.yml')
     def get(self):
-        social_workers = filter_by_role(query=request._query, user=request.user)
-        return social_workers
+        return request._query
 
     @authorize(SUPER_ADMIN)  # TODO: priv
     @validate(NewSocialWorkerSchema)
@@ -103,12 +108,15 @@ class GetUpdateDeleteSocialWorkers(Resource):
     @authorize(
         COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
     )  # TODO: priv
-    @query(SocialWorker, SocialWorker.is_deleted.is_(False))
+    @query(
+        SocialWorker,
+        SocialWorker.is_deleted.is_(False),
+        filter_callbacks=[filter_by_privilage],
+    )
     @json(SocialWorkerSchema)
     @swag_from('./docs/social_worker/id.yml')
     def get(self, id):
-        social_workers = filter_by_role(query=request._query, user=request.user)
-        social_worker = social_workers.filter(SocialWorker.id == id).one_or_none()
+        social_worker = request._query.filter(SocialWorker.id == id).one_or_none()
 
         if not social_worker:
             raise HTTP_NOT_FOUND()
@@ -168,7 +176,10 @@ class GetUpdateDeleteSocialWorkers(Resource):
         return sw
 
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
-    @query(SocialWorker, SocialWorker.is_deleted.is_(False))
+    @query(
+        SocialWorker,
+        SocialWorker.is_deleted.is_(False),
+    )
     @json(SocialWorkerSchema)
     @commit
     @swag_from('./docs/social_worker/delete.yml')

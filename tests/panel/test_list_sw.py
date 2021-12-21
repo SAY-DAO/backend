@@ -1,3 +1,4 @@
+from say.config import configs
 from say.roles import COORDINATOR
 from say.roles import NGO_SUPERVISOR
 from say.roles import SOCIAL_WORKER
@@ -77,3 +78,64 @@ class TestListSocialWorker(BaseTestClass):
         res = self.client.get(LIST_SW_URL, query_string=dict(invalid_key='invalid-id'))
         self.assert_code(res, 200)
         assert len(res.json) == 4
+
+    def test_list_social_worker_pagination(self):
+        self.login_as_sw(role=SUPER_ADMIN)
+        for i in range(10):
+            self._create_random_sw()
+
+        res = self.client.get(
+            LIST_SW_URL,
+            headers={
+                configs.PAGINATION_TAKE_HEADER_KEY: 5,
+                configs.PAGINATION_SKIP_HEADER_KEY: 0,
+            },
+        )
+        self.assert_ok(res)
+        assert len(res.json) == 5
+        prev_result = res.json
+
+        res = self.client.get(
+            LIST_SW_URL,
+            headers={
+                configs.PAGINATION_TAKE_HEADER_KEY: 100,
+                configs.PAGINATION_SKIP_HEADER_KEY: 3,
+            },
+        )
+        self.assert_ok(res)
+        result = res.json
+        assert len(result) == 8  # Total is 11, but we only get 8
+        assert result[0]['id'] == prev_result[3]['id']
+
+        res = self.client.get(
+            LIST_SW_URL,
+            headers={
+                configs.PAGINATION_TAKE_HEADER_KEY: 5,
+                configs.PAGINATION_SKIP_HEADER_KEY: 100000,
+            },
+        )
+        self.assert_ok(res)
+        assert len(res.json) == 0
+
+        # Test default values
+        res = self.client.get(LIST_SW_URL)
+        self.assert_ok(res)
+        assert len(res.json) == 11
+
+        res = self.client.get(
+            LIST_SW_URL,
+            headers={
+                configs.PAGINATION_TAKE_HEADER_KEY: 5,
+                configs.PAGINATION_SKIP_HEADER_KEY: configs.POSTRGES_MAX_BIG_INT + 1,
+            },
+        )
+        self.assert_code(res, 400)
+
+        res = self.client.get(
+            LIST_SW_URL,
+            headers={
+                configs.PAGINATION_TAKE_HEADER_KEY: configs.PAGINATION_MAX_TAKE + 1,
+                configs.PAGINATION_SKIP_HEADER_KEY: 0,
+            },
+        )
+        self.assert_code(res, 400)
