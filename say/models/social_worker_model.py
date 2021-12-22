@@ -28,6 +28,7 @@ from say.formatters import expose_datetime
 from say.locale import ChangeLocaleTo
 from say.locale import get_locale
 from say.models import Child
+from say.models import Need
 from say.orm import base
 from say.orm.mixins import ActivateMixin
 from say.orm.mixins import SoftDeleteMixin
@@ -104,8 +105,8 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin, SoftDeleteMixin):
     )
     # childCount = Column(Integer, nullable=False, default=0)
     # currentChildCount = Column(Integer, nullable=False, default=0)
-    need_count = Column(Integer, nullable=False, default=0)
-    current_need_count = Column(Integer, nullable=False, default=0)
+    # need_count = Column(Integer, nullable=False, default=0)
+    # current_need_count = Column(Integer, nullable=False, default=0)
     bank_account_number = Column(String, nullable=True)
     bank_account_sheba_number = Column(String, nullable=True)
     bank_account_card_number = Column(String, nullable=True)
@@ -154,6 +155,26 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin, SoftDeleteMixin):
                 Child.id_social_worker == id,
                 Child.isDeleted.is_(False),
                 Child.isMigrated.is_(False),
+            )
+        )
+    )
+
+    need_count = column_property(
+        select([coalesce(func.count(1), 0,)]).where(
+            and_(
+                Child.id_social_worker == id,
+                Need.child_id == Child.id,
+            )
+        )
+    )
+
+    current_need_count = column_property(
+        select([coalesce(func.count(1), 0,)]).where(
+            and_(
+                Child.id_social_worker == id,
+                Need.child_id == Child.id,
+                Need.isDeleted.is_(False),
+                Need.isConfirmed.is_(True),
             )
         )
     )

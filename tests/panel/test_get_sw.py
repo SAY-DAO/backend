@@ -10,6 +10,17 @@ GET_SW_URL = '/api/v2/socialworkers/%s'
 class TestGetSocialWorker(BaseTestClass):
     def test_get_social_worker(self):
         admin = self.login_as_sw(role=SUPER_ADMIN)
+        sw1 = self._create_random_sw()
+
+        c1 = self._create_random_child(sw=admin)
+        c2 = self._create_random_child(sw=sw1)
+        self._create_random_child(sw=admin, isDeleted=True)
+        self._create_random_child(sw=admin)
+        self._create_random_need(child=c1, isConfirmed=True)
+        self._create_random_need(child=c1, isConfirmed=True)
+        self._create_random_need(child=c1, isConfirmed=False)
+        self._create_random_need(child=c1, isDeleted=True)
+        self._create_random_need(child=c2, isDeleted=False, isConfirmed=True)
 
         res = self.client.get(
             GET_SW_URL % admin.id,
@@ -23,6 +34,11 @@ class TestGetSocialWorker(BaseTestClass):
         assert res.json['phoneNumber'] == admin.phone_number
         assert res.json['email'] == admin.email
         assert res.json['typeName'] == admin.privilege.name
+        assert res.json['ngoName'] == admin.ngo.name
+        assert res.json['childCount'] == 3
+        assert res.json['currentChildCount'] == 2
+        assert res.json['needCount'] == 4
+        assert res.json['currentNeedCount'] == 2
         assert res.json['ngoName'] == admin.ngo.name
         assert 'password' not in res.json
         assert '_password' not in res.json
