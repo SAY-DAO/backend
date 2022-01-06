@@ -36,6 +36,7 @@ class NewSocialWorkerSchema(CamelModel):
     birth_date: Optional[date]
     telegram_id: constr(max_length=64, strip_whitespace=True)
     id_number: constr(max_length=64, strip_whitespace=True)
+    is_coordinator: Optional[bool]
     ngo_id: int
     type_id: int
     gender: bool

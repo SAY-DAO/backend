@@ -33,11 +33,6 @@ parameters:
     type: integer
     required: true
 
-  - name: coordinatorId
-    in: formData
-    type: integer
-    required: false
-
   - name: name
     in: formData
     type: string

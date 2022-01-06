@@ -30,7 +30,7 @@ class Ngo(base, Timestamp):
 
     id = Column(Integer, primary_key=True, nullable=False, unique=True)
 
-    coordinatorId = Column(Integer, ForeignKey('social_worker.id'), nullable=True)
+    # coordinatorId = Column(Integer, ForeignKey('social_worker.id'), nullable=True)
 
     country = Column(Integer, nullable=False)
     city = Column(Integer, nullable=False)
@@ -81,8 +81,12 @@ class Ngo(base, Timestamp):
         )
     )
 
-    coordinator = relationship(
+    coordinators = relationship(
         'SocialWorker',
-        foreign_keys=coordinatorId,
-        uselist=False,
+        primaryjoin='''and_(
+            SocialWorker.ngo_id==Ngo.id,
+            SocialWorker.is_coordinator.is_(True),
+            SocialWorker.is_deleted.is_(False),
+            SocialWorker.is_active.is_(True),
+        )''',
     )

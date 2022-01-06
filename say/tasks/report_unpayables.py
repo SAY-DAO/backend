@@ -20,8 +20,8 @@ def report_unpayables(self):
             Need.unpayable_from < datetime.utcnow(),
             Need.unpayable_from > datetime.utcnow() - timedelta(days=1),
             Need.isDeleted.is_(False),
-            Need.isConfirmed == True,
-            Need.isDone != True,
+            Need.isConfirmed.is_(True),
+            Need.isDone.is_(False),
         )
         .all()
     )
@@ -37,13 +37,13 @@ def report_unpayables(self):
         .one()
     )
 
-    say_coordinator = say.coordinator.email
+    say_coordinators = [s.email for s in say.coordinators]
 
     from say.app import app
 
     with app.app_context():
         send_embeded_subject_email.delay(
-            to=say_coordinator,
+            to=say_coordinators,
             html=render_template_i18n(
                 'report_unpayables.html',
                 needs=unpayables,

@@ -43,8 +43,6 @@ class GetAllNgo(Resource):
         fetch = {}
         for n in base_ngos:
             data = obj_to_dict(n)
-
-            data['coordinator'] = obj_to_dict(n.coordinator)
             fetch[str(n.id)] = data
 
         return fetch
@@ -73,13 +71,6 @@ class AddNgo(Resource):
 
         country = int(request.form['country'])
         city = int(request.form['city'])
-        try:
-            coordinator_id = request.form.get('coordinatorId')
-            if coordinator_id:
-                coordinator_id = int(coordinator_id)
-        except (ValueError, TypeError):
-            return {'message': 'invalid coordinatorId'}, 400
-
         name = request.form['name']
         postal_address = request.form['postalAddress']
         email_address = request.form['emailAddress']
@@ -100,7 +91,6 @@ class AddNgo(Resource):
             name=name,
             country=country,
             city=city,
-            coordinatorId=coordinator_id,
             postalAddress=postal_address,
             emailAddress=email_address,
             phoneNumber=phone_number,
@@ -131,22 +121,6 @@ class GetNgoById(Resource):
             return {'message': 'sth went wrong!'}, 400
 
         res = obj_to_dict(base_ngo)
-        res['coordinatorFirstName'] = None
-        res['coordinatorLastName'] = None
-
-        if base_ngo.coordinatorId:
-            coordinator = (
-                session.query(
-                    SocialWorker.first_name,
-                    SocialWorker.last_name,
-                )
-                .filter_by(id=base_ngo.coordinatorId)
-                .filter_by(isDeleted=False)
-                .one_or_none()
-            )
-
-            res['coordinatorFirstName'] = coordinator[0]
-            res['coordinatorLastName'] = coordinator[1]
 
         res['socialWorkers'] = sw_list(
             session.query(SocialWorker)
@@ -177,9 +151,6 @@ class UpdateNgo(Resource):
 
         if 'city' in request.form.keys():
             base_ngo.city = int(request.form['city'])
-
-        if 'coordinatorId' in request.form.keys():
-            base_ngo.coordinatorId = int(request.form['coordinatorId'])
 
         if 'name' in request.form.keys():
             base_ngo.name = request.form['name']

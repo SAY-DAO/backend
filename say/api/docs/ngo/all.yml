@@ -13,7 +13,7 @@ parameters:
     description: Access Token
     required: true
     type: string
- 
+
 responses:
   500:
     description: Error occurred somewhere!
@@ -39,11 +39,6 @@ responses:
           type: integer
           description: the international code of city
           example: 21
-
-        coordinatorId:
-          type: integer
-          description: the coordinator of ngo id
-          example: 1
 
         name:
           type: string

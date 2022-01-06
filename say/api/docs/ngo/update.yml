@@ -6,7 +6,6 @@ Be aware that city and country are integer fields, so you cannot insert their na
 You have to insert the international codes for countries and cities.
 For logoUrl you have to upload a file.
 ---
-
 tags:
   - NGO API
 
@@ -19,7 +18,7 @@ parameters:
     description: Access Token
     required: true
     type: string
-    
+
   - name: ngo_id
     in: path
     type: integer
@@ -30,10 +29,6 @@ parameters:
     type: integer
 
   - name: city
-    in: formData
-    type: integer
-
-  - name: coordinatorId
     in: formData
     type: integer
 

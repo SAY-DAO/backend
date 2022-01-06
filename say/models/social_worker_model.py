@@ -70,6 +70,8 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin, SoftDeleteMixin):
         Integer, ForeignKey('social_worker_type.id'), nullable=False, index=True
     )
 
+    is_coordinator = Column(Boolean, default=False, nullable=False)
+
     country = Column(Integer, nullable=True)
     city = Column(Integer, nullable=True)
     first_name = Column(String, nullable=True)
@@ -247,14 +249,14 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin, SoftDeleteMixin):
             # This date show when the needs status updated to 3
             date = datetime.utcnow() - timedelta(days=1)
             say = session.query(Ngo).filter_by(name='SAY').first()
-            bcc = [say.coordinator.email]
-            coordinator_email = self.ngo.coordinator.email
+            bcc = [s.email for s in say.coordinators]
+            coordinators_email = [s.email for s in self.ngo.coordinators]
             locale = self.locale
 
             if len(services) != 0:
                 send_embeded_subject_email.delay(
                     to=self.email,
-                    cc=coordinator_email,
+                    cc=coordinators_email,
                     bcc=bcc,
                     html=render_template_i18n(
                         'social_worker_report_service.html',
