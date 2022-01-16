@@ -341,6 +341,7 @@ class UpdateNeedById(Resource):
                         'please upload related receipt before changing the status.'
                     }, 400
 
+                session.flush()
                 need.status = new_status
 
             elif new_status != prev_status:
