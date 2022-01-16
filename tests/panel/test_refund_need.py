@@ -1,13 +1,20 @@
 from datetime import datetime
 
+import pytest
+
 from tests.helper import BaseTestClass
 
 
 class TestRefundNeed(BaseTestClass):
-    def mockup(self):
+    @pytest.mark.parametrize(
+        'type',
+        [0, 1],
+    )
+    def test_refund_need(self, type):
         self.need = self._create_random_need(
             cost=3000,
             status=2,
+            type=type,
         )
 
         self.p1 = self._create_payment(
@@ -22,7 +29,6 @@ class TestRefundNeed(BaseTestClass):
             verified=datetime.utcnow(),
         )
 
-    def test_refund_need(self):
         new_cost = 1000
         refunds = self.need.refund_extra_credit(new_cost)
         self.session.expire(self.need)

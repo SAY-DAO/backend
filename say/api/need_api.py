@@ -323,7 +323,10 @@ class UpdateNeedById(Resource):
             if (
                 purchase_cost
                 and sw_role in [SUPER_ADMIN, SAY_SUPERVISOR, ADMIN]
-                and new_status == 3
+                and (
+                    (new_status == 3 and need.type == 1)
+                    or (new_status == 4 and need.type == 0)
+                )
             ):
 
                 purchase_cost = purchase_cost.replace(',', '')
