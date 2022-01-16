@@ -330,7 +330,7 @@ class UpdateNeedById(Resource):
             ):
 
                 purchase_cost = purchase_cost.replace(',', '')
-                need.purchase_cost = purchase_cost
+                need.purchase_cost = int(purchase_cost)
                 if need.purchase_date is not None:
                     need.oncePurchased = True
 
