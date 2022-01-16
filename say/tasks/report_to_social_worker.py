@@ -20,4 +20,4 @@ def report_to_social_workers(self):
 )
 def report_to_social_worker(self, social_worker_id):
     social_worker = self.session.query(SocialWorker).get(social_worker_id)
-    social_worker.send_report()
+    return social_worker.send_report()

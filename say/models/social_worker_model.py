@@ -248,7 +248,7 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin, SoftDeleteMixin):
 
             # This date show when the needs status updated to 3
             date = datetime.utcnow() - timedelta(days=1)
-            say = session.query(Ngo).filter_by(name='SAY').first()
+            say = session.query(Ngo).filter_by(name='SAY').one()
             bcc = [s.email for s in say.coordinators]
             coordinators_email = [s.email for s in self.ngo.coordinators]
             locale = self.locale
@@ -296,4 +296,9 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin, SoftDeleteMixin):
 
                 safe_commit(session)
 
-            return [need.id for need in needs]
+            return {
+                'to': self.email,
+                'cc': coordinators_email,
+                'bcc': bcc,
+                'needs': [need.id for need in needs],
+            }
