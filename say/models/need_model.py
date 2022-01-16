@@ -497,6 +497,16 @@ def status_event(need, new_status, old_status, initiator):
             need.ngo_delivery_date = datetime.utcnow()
 
         elif new_status == 4:
+            if old_status == new_status:
+                return
+
+            if need.purchase_cost < need.paid:
+                need.refund_extra_credit(need.purchase_cost)
+
+            elif need.purchase_cost > need.paid:
+                need.say_extra_payment()
+
+            need.cost = need.purchase_cost
             need.child_delivery_date = datetime.utcnow()
 
     elif need.type == 1:  # Product
