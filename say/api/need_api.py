@@ -19,6 +19,7 @@ from say.authorization import get_user_id
 from say.authorization import get_user_role
 from say.config import configs
 from say.constants import DEFAULT_CHILD_ID
+from say.date import parse_date
 from say.date import parse_datetime
 from say.decorators import json
 from say.decorators import validate
@@ -309,7 +310,7 @@ class UpdateNeedById(Resource):
                 raise Exception('Expected delivery date can not changed in this status')
 
             need.isReported = False
-            need.expected_delivery_date = parse_datetime(
+            need.expected_delivery_date = parse_date(
                 request.form['expected_delivery_date']
             )
 

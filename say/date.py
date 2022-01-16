@@ -22,3 +22,10 @@ def parse_datetime(datetime_string):
         datetime_string,
         DATETIME_FORMAT,
     )
+
+
+def parse_date(date_string):
+    return datetime.strptime(
+        date_string,
+        DATE_FORMAT,
+    )
