@@ -6,8 +6,7 @@ from tests.helper import BaseTestClass
 
 class TestSayExtraPayment(BaseTestClass):
     def mockup(self):
-        self._create_random_user(userName=SAY_USER)
-
+        self._create_say_user()
         self.need = self._create_random_need(
             cost=3000,
             purchase_cost=4000,
