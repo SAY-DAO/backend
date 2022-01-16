@@ -7,6 +7,8 @@ UPDATE_NEED_URL = '/api/v2/need/update/needId=%s'
 
 class TestUpdateServiceStatus(BaseTestClass):
     def mockup(self):
+        self._create_say_user()
+
         self.need_with_receipt = self._create_random_need(
             type=0,
             status=3,

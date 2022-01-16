@@ -15,6 +15,7 @@ from say.authorization import create_sw_refresh_token
 from say.authorization import create_user_access_token
 from say.authorization import create_user_refresh_token
 from say.config import configs
+from say.constants import SAY_USER
 from say.models import Child
 from say.models import EmailVerification
 from say.models import Family
@@ -359,6 +360,9 @@ class BaseTestClass:
         reset_pass = ResetPassword(**data)
         self.session.save(reset_pass)
         return reset_pass
+
+    def _create_say_user(self):
+        return self._create_random_user(userName=SAY_USER)
 
     def logout(self):
         del self._client.environ_base['HTTP_AUTHORIZATION']
