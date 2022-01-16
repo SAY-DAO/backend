@@ -277,7 +277,7 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin, SoftDeleteMixin):
                 use_plural = False if len(products) == 1 else True
                 send_embeded_subject_email.delay(
                     to=self.email,
-                    cc=coordinator_email,
+                    cc=coordinators_email,
                     bcc=bcc,
                     html=render_template_i18n(
                         'social_worker_report_product.html',
