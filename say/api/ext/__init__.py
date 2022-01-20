@@ -2,6 +2,7 @@ from logging import getLogger
 
 import redis
 from flask import request
+from flask_caching import Cache
 from flask_jwt_extended import JWTManager
 from flask_limiter import Limiter
 from flask_mail import Mail
@@ -28,6 +29,7 @@ redis_client = redis.Redis(configs.REDIS_HOST, configs.REDIS_PORT)
 mail = Mail()
 limiter = Limiter(key_func=get_remote_address)
 logger = getLogger('main')
+cache = Cache()
 
 
 def setup_healthz(app):

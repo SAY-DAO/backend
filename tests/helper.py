@@ -330,7 +330,11 @@ class BaseTestClass:
         payment = Payment(**data)
         self.session.save(payment)
 
-        need_family = self._create_need_family(need=need, user=user)
+        need_family = self._create_need_family(
+            need=need,
+            user=user,
+            family=need.child.family,
+        )
         self.session.save(need_family)
         return payment
 

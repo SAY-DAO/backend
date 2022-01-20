@@ -32,6 +32,15 @@ class Family(base, Timestamp):
         back_populates='family',
     )
 
+    current_members = relationship(
+        'UserFamily',
+        back_populates='family',
+        primaryjoin='''and_(
+            Family.id==UserFamily.id_family,
+            UserFamily.is_deleted.is_(False),
+        )''',
+    )
+
     invitations = relationship(
         'Invitation',
         back_populates='family',
@@ -55,11 +64,11 @@ class Family(base, Timestamp):
         .correlate_except(UserFamily),
     )
 
-    def current_members(self):
-        for member in self.members:
-            if member.isDeleted:
-                continue
-            yield member
+    # def current_members(self):
+    #     for member in self.members:
+    #         if member.isDeleted:
+    #             continue
+    #         yield member
 
     def is_in_family(self, user):
         for member in self.members:

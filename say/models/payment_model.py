@@ -8,9 +8,9 @@ from . import *
 from .user_family_model import UserFamily
 
 
-"""
+'''
 Payment Model
-"""
+'''
 
 
 def create_order_id():
@@ -18,7 +18,7 @@ def create_order_id():
 
 
 class Payment(base, Timestamp):
-    __tablename__ = "payment"
+    __tablename__ = 'payment'
 
     id = Column(Integer, nullable=False, primary_key=True)
     id_need = Column(Integer, ForeignKey('need.id'), nullable=True, index=True)
@@ -52,14 +52,14 @@ class Payment(base, Timestamp):
         return self.need_amount + self.donation_amount
 
     need = relationship(
-        "Need",
+        'Need',
         foreign_keys=id_need,
         uselist=False,
         back_populates='payments',
     )
 
     user = relationship(
-        "User",
+        'User',
         foreign_keys=id_user,
         back_populates='payments',
         uselist=False,
@@ -115,22 +115,26 @@ class Payment(base, Timestamp):
         )
 
         if participant is None:
-            user_role = (
-                session.query(UserFamily.userRole)
+            user_family = (
+                session.query(UserFamily)
                 .filter(UserFamily.id_user == self.user.id)
                 .filter(UserFamily.id_family == family.id)
-                .filter(UserFamily.isDeleted == False)
+                .filter(UserFamily.isDeleted.is_(False))
                 .one_or_none()
             )
 
-            if user_role:
-                (user_role,) = user_role
+            if user_family:
+                user_family.is_participated = True
+                user_role = user_family.role
             elif is_say:
                 user_role = SAY_ROLE
             else:
                 raise Exception('User not in family')
 
             new_participant = NeedFamily(
-                id_family=family.id, user=self.user, need=self.need, user_role=user_role
+                id_family=family.id,
+                user=self.user,
+                need=self.need,
+                user_role=user_role,
             )
             session.add(new_participant)

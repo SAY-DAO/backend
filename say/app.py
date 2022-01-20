@@ -7,11 +7,11 @@ import sqlalchemy
 from flasgger import Swagger
 from flask import Flask
 from flask import jsonify
-from flask_caching import Cache
 from flask_cors import CORS
 from pydantic.error_wrappers import ValidationError
 
 from say.api.ext import api
+from say.api.ext import cache
 from say.api.ext import jwt
 from say.api.ext import limiter
 from say.api.ext import mail
@@ -44,10 +44,10 @@ app.config["SWAGGER"] = {
     ]
 }
 
-cache = Cache(app)
 
 Swagger(app)
 
+cache.init_app(app)
 jwt.init_app(app)
 mail.init_app(app)
 api.init_app(app)

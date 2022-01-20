@@ -50,6 +50,7 @@ class Config(object):
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
     CACHE_TYPE = 'redis'  # Flask-Caching related configs
+    CACHE_REDIS_HOST = 'redis'
     CACHE_DEFAULT_TIMEOUT = 300
     SENTRY_DSN = 'https://e7665a883afe47d082b3fa4e0b956c07@sentry.say.company/4'
     INFURA_URL = 'https://mainnet.infura.io/v3/0be880209fd94507a2b7b340f638f8a0'

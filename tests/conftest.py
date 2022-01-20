@@ -29,6 +29,8 @@ def flask_app():
     from say.config import configs
 
     configs.UPLOAD_FOLDER = tempfile.mkdtemp()
+    configs.CACHE_TYPE = "null"
+
     app.testing = True
     limiter.enabled = False
     return app
