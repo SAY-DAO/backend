@@ -5,6 +5,7 @@ from say.api.ext import cache
 from say.api.ext import limiter
 from say.decorators import json
 from say.models import Child
+from say.models import Family
 from say.schema.child_user_graph import ChildWithFamily
 
 from ...orm import session
@@ -26,6 +27,7 @@ class ChildUserGraph(Resource):
                 Child.isMigrated.is_(False),
                 Child.isConfirmed.is_(True),
                 Child.existence_status == 1,
+                Family.members_count > 0,
             )
             .options(selectinload('family'))
             .options(selectinload('family.current_members'))
