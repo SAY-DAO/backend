@@ -29,6 +29,7 @@ class ChildUserGraph(Resource):
                 Child.existence_status == 1,
                 Family.members_count > 0,
             )
+            .join(Family, Family.id_child == Child.id)
             .options(selectinload('family'))
             .options(selectinload('family.current_members'))
             .options(selectinload('family.current_members.user'))
