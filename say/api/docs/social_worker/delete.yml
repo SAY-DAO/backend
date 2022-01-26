@@ -13,9 +13,9 @@ parameters:
     description: Access Token
     required: true
     type: string
-  
+
   - in: path
-    name: social_worker_id
+    name: id
     required: true
     type: integer
 

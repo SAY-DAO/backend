@@ -2,7 +2,6 @@ activate social worker
 Activates a deactive social worker.
 Calling this API only affects social_worker table by updating a row.
 ---
-
 tags:
   - Social Worker API
 
@@ -12,11 +11,11 @@ parameters:
     description: Access Token
     required: true
     type: string
-    
+
   - in: path
-    name: social_worker_id
+    name: id
     required: true
-    type: string
+    type: integer
 
 responses:
   500:

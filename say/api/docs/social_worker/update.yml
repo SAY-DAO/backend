@@ -20,12 +20,12 @@ parameters:
     required: true
     type: string
 
-  - name: social_worker_id
+  - name: id
     in: path
     type: integer
     required: true
 
-  - name: ngo_id
+  - name: ngoId
     in: formData
     type: integer
 
@@ -41,41 +41,63 @@ parameters:
     in: formData
     type: integer
 
-  - name: firstName
+  - name: isCoordinator
     in: formData
-    type: string
-
-  - name: lastName
-    in: formData
-    type: string
+    type: boolean
+    required: true
 
   - name: username
     in: formData
     type: string
+    minLength: 3
 
   - name: password
     in: formData
     type: string
+    minLength: 6
+
+  - name: firstName
+    in: formData
+    type: string
+    maxLength: 64
+
+  - name: lastName
+    in: formData
+    type: string
+    maxLength: 64
 
   - name: birthCertificateNumber
     in: formData
     type: string
+    maxLength: 32
 
   - name: idNumber
     in: formData
     type: string
+    maxLength: 64
 
   - name: idCardUrl
     in: formData
     type: file
+    maxSize: 4194304
+    valid_extensions:
+      - jpeg
+      - jpg
+      - png
 
   - name: passportNumber
     in: formData
     type: string
+    maxLength: 32
 
   - name: passportUrl
     in: formData
     type: file
+    maxSize: 4194304
+    valid_extensions:
+      - jpeg
+      - jpg
+      - png
 
   - name: gender
     in: formData
@@ -84,6 +106,7 @@ parameters:
   - name: birthDate
     in: formData
     type: string
+    format: date
 
   - name: phoneNumber
     in: formData
@@ -96,34 +119,56 @@ parameters:
   - name: email
     in: formData
     type: string
+    format: email
 
   - name: telegramId
     in: formData
     type: string
+    maxLength: 64
 
   - name: postalAddress
     in: formData
     type: string
+    maxLength: 256
 
   - name: avatarUrl
     in: formData
     type: file
+    maxSize: 4194304
+    valid_extensions:
+      - jpeg
+      - jpg
+      - png
 
   - name: bankAccountNumber
     in: formData
     type: string
+    maxLength: 64
 
   - name: bankAccountShebaNumber
     in: formData
     type: string
+    maxLength: 64
 
   - name: bankAccountCardNumber
     in: formData
     type: string
+    maxLength: 64
+
+  required:
+    - lastName
+    - telegramId
+    - idNumber
+    - ngoId
+    - typeId
+    - gender
+    - phoneNumber
 
 responses:
-  500:
-    description: Error occurred somewhere!
+  400:
+    description: Bad Request
 
   200:
     description: Ok
+    schema:
+      $ref: "#/definitions/social_worker_model"

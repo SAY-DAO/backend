@@ -1,7 +1,7 @@
 import babel
 
 
-class Locale(babel.Locale):
+class Locale(babel.Locale, str):
     """Pydantic Locale type"""
 
     @classmethod

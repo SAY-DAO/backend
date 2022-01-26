@@ -2,7 +2,6 @@ get social worker by ngo id
 Returns information of all social workers with given NGO id as a json object.
 Calling this API only affects social_worker table by selecting rows from it.
 ---
-
 tags:
   - Social Worker API
 
@@ -12,9 +11,9 @@ parameters:
     description: Access Token
     required: true
     type: string
-  
+
   - in: path
-    name: ngo_id
+    name: ngoId
     required: true
     type: string
 
@@ -24,6 +23,5 @@ responses:
 
   200:
     description: Ok
-
     schema:
-      id: social_worker_model
+      $ref: "#/definitions/social_worker_model"

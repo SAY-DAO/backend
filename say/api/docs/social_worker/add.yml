@@ -37,40 +37,55 @@ parameters:
     type: integer
     required: true
 
-  - name: password
+  - name: isCoordinator
     in: formData
-    type: string
+    type: boolean
     required: true
 
   - name: firstName
     in: formData
     type: string
+    maxLength: 64
 
   - name: lastName
     in: formData
     type: string
     required: true
+    maxLength: 64
 
   - name: birthCertificateNumber
     in: formData
     type: string
+    maxLength: 32
 
   - name: idNumber
     in: formData
     type: string
     required: true
+    maxLength: 64
 
   - name: idCardUrl
     in: formData
     type: file
+    maxSize: 4194304
+    valid_extensions:
+      - jpeg
+      - jpg
+      - png
 
   - name: passportNumber
     in: formData
     type: string
+    maxLength: 32
 
   - name: passportUrl
     in: formData
     type: file
+    maxSize: 4194304
+    valid_extensions:
+      - jpeg
+      - jpg
+      - png
 
   - name: gender
     in: formData
@@ -80,6 +95,7 @@ parameters:
   - name: birthDate
     in: formData
     type: string
+    format: date
 
   - name: phoneNumber
     in: formData
@@ -94,33 +110,44 @@ parameters:
   - name: email
     in: formData
     type: string
+    format: email
     required: true
 
   - name: telegramId
     in: formData
     type: string
     required: true
+    maxLength: 64
 
   - name: postalAddress
     in: formData
     type: string
+    maxLength: 256
 
   - name: avatarUrl
     in: formData
     type: file
     required: true
+    maxSize: 4194304
+    valid_extensions:
+      - jpeg
+      - jpg
+      - png
 
   - name: bankAccountNumber
     in: formData
     type: string
+    maxLength: 64
 
   - name: bankAccountShebaNumber
     in: formData
     type: string
+    maxLength: 64
 
   - name: bankAccountCardNumber
     in: formData
     type: string
+    maxLength: 64
 
 responses:
   500:
@@ -128,3 +155,5 @@ responses:
 
   200:
     description: Ok
+    schema:
+      $ref: "#/definitions/social_worker_model"
