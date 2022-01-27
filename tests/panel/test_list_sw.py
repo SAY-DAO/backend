@@ -139,3 +139,26 @@ class TestListSocialWorker(BaseTestClass):
             },
         )
         self.assert_code(res, 400)
+
+    def test_list_social_worker_ordering(self):
+        alice = self._create_random_sw(first_name='alice')
+        self.login_sw(alice)
+        self._create_random_sw(id=5, first_name='bob')
+        self._create_random_sw(id=6, first_name='bob')
+        self._create_random_sw(id=7, first_name='bob')
+
+        res = self.client.get(LIST_SW_URL, query_string=dict(orderBy='firstName,id'))
+        self.assert_ok(res)
+        assert isinstance(res.json, list)
+        assert res.json[0]['firstName'] == 'alice'
+        assert res.json[1]['id'] == 5
+        assert res.json[2]['id'] == 6
+        assert res.json[3]['id'] == 7
+
+        res = self.client.get(LIST_SW_URL, query_string=dict(orderBy='-firstName,-id'))
+        self.assert_ok(res)
+        assert res.json[0]['firstName'] == 'bob'
+        assert res.json[0]['id'] == 7
+        assert res.json[1]['id'] == 6
+        assert res.json[2]['id'] == 5
+        assert res.json[3]['firstName'] == 'alice'

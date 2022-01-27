@@ -58,6 +58,8 @@ class ListCreateSocialWorkers(Resource):
         enbale_filtering=True,
         filtering_schema=SocialWorkerSchema,
         enable_pagination=True,
+        enable_ordering=True,
+        ordering_schema=SocialWorkerSchema,
     )
     @json(SocialWorkerSchema, use_list=True)
     @swag_from('./docs/social_worker/all.yml')

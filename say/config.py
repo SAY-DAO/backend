@@ -82,6 +82,11 @@ class Config(object):
     PAGINATION_DEFAULT_TAKE = 50
     PAGINATION_MAX_TAKE = 500
 
+    # Ordering
+    ORDERING_DESC_SYMBOL = '-'
+    ORDERING_KEY = 'orderBy'
+    ORDERING_KEY_SEPARATOR = ','
+
     POSTRGES_MAX_BIG_INT = 9223372036854775807
 
     def __init__(self):

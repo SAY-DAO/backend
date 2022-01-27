@@ -1,7 +1,11 @@
+from collections import OrderedDict
+
 from sqlalchemy.ext.associationproxy import ASSOCIATION_PROXY
 from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
 from sqlalchemy.inspection import inspect
 from werkzeug.datastructures import FileStorage
+
+from say.constants import OrderingDirection
 
 
 class BaseModel(object):
@@ -21,7 +25,7 @@ class BaseModel(object):
             setattr(self, k, v)
 
     def _update(self, **kwargs):
-        for k, c in columns(
+        for k in columns(
             self,
             synonyms=True,
             hybrids=True,
@@ -50,6 +54,10 @@ def columns(
 ):
     cls = obj.__class__
 
+    # When obj is model, not instance
+    if cls.__class__ == type:
+        cls = obj
+
     mapper = inspect(cls)
     for k, c in mapper.all_orm_descriptors.items():
         if k == '__mapper__' or (
@@ -65,7 +73,68 @@ def columns(
             or (not relationships and k in mapper.relationships)
             or (not synonyms and k in mapper.synonyms)
             or (not proxys and c.extension_type == ASSOCIATION_PROXY)
+            or (not protecteds and k.startswith('_'))
         ):
             continue
 
-        yield k, getattr(cls, k)
+        yield k
+
+
+def order_by_field(
+    model,
+    query,
+    field,
+    direction=OrderingDirection.Asc,
+):
+    if field not in columns(
+        model,
+        relationships=False,
+        synonyms=True,
+        composites=False,
+        hybrids=False,
+        proxys=False,
+        protecteds=False,
+    ):
+        raise ValueError(f'{field} is not a valid field')
+
+    column = getattr(model, field)
+    if direction == OrderingDirection.Desc:
+        column = column.desc()
+
+    return query.order_by(column)
+
+
+def query_builder(
+    session,
+    model,
+    filters: list = [],
+    filter_callbacks=None,
+    filter_by: dict = None,
+    skip: int = None,
+    take: int = None,
+    order_by: OrderedDict = None,
+):
+    _query = session.query(model)
+
+    # Apply custom filters
+    if len(filters) != 0:
+        _query = _query.filter(*filters)
+
+    if filter_callbacks:
+        for callback in filter_callbacks:
+            _query = callback(_query)
+
+    if filter_by:
+        _query = _query.filter_by(**filter_by)
+
+    if order_by:
+        for field, dir in order_by.items():
+            _query = order_by_field(model, _query, field, dir)
+
+    if take:
+        _query = _query.limit(take)
+
+    if skip:
+        _query = _query.offset(skip)
+
+    return _query

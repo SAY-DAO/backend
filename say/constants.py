@@ -1,4 +1,5 @@
 import string
+from enum import Enum
 
 
 DEFAULT_AVATAR_URI = 'public/resources/img/default-avatar.png'
@@ -27,3 +28,8 @@ REFRESH_TOKEN_SW_PREFIX = 'sw_'
 SAY_USER = 'SAY'
 
 MB = 1024 * 1024
+
+
+class OrderingDirection(Enum):
+    Asc = 'asc'
+    Desc = 'desc'

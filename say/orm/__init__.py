@@ -20,6 +20,8 @@ from say.orm.versioning import flask_versioning_plugin
 
 from .base import BaseModel
 from .base import columns
+from .base import order_by_field
+from .base import query_builder
 
 
 make_versioned(
@@ -83,7 +85,7 @@ def obj_to_dict(obj, relationships=False, proxys=False):
         return obj
 
     result = {}
-    for k, c in columns(obj, relationships, proxys=proxys):
+    for k in columns(obj, relationships, proxys=proxys):
         key, value = k, getattr(obj, k)
 
         if key.startswith('_'):

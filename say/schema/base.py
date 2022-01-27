@@ -1,5 +1,7 @@
+from enum import Enum
 from typing import Any
 from typing import Dict
+from typing import List
 from typing import Optional
 from typing import Tuple
 
@@ -8,10 +10,12 @@ import ujson
 from pydantic import BaseModel as PydanticBase
 from pydantic import Field
 from pydantic import conint
+from pydantic import validator
 from pydantic.main import BaseModel
 from pydantic.main import ModelMetaclass
 
 from say.config import configs
+from say.constants import OrderingDirection
 from say.helpers import to_camel
 
 
@@ -76,6 +80,26 @@ class AllOptionalMeta(ModelMetaclass):
         return super().__new__(cls, name, bases, namespaces, **kwargs)
 
 
+class OrderingMeta(ModelMetaclass):
+    def __new__(cls, name: str, bases: Tuple[type], namespaces: Dict[str, Any], **kwargs):
+        annotations: dict = namespaces.get('__annotations__', {})
+
+        for base in bases:
+            for base_ in base.__mro__:
+                if base_ is BaseModel or base_ is CamelModel or base_ is PydanticBase:
+                    break
+
+                annotations.update(base_.__annotations__)
+
+        for field in annotations:
+            if not field.startswith('__'):
+                annotations[field] = Optional[OrderingDirection]
+
+        namespaces['__annotations__'] = annotations
+
+        return super().__new__(cls, name, bases, namespaces, **kwargs)
+
+
 class PaginationSchema(BaseModel):
     take: conint(ge=1, le=configs.PAGINATION_MAX_TAKE) = Field(
         configs.PAGINATION_DEFAULT_TAKE,
@@ -86,3 +110,6 @@ class PaginationSchema(BaseModel):
         0,
         alias=configs.PAGINATION_SKIP_HEADER_KEY,
     )
+
+    class Config:
+        extra = 'ignore'
