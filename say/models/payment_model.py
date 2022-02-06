@@ -72,9 +72,9 @@ class Payment(base, Timestamp):
 
     def verify(
         self,
-        transaction_date=datetime.utcnow(),
+        transaction_date=None,
         track_id=None,
-        verify_date=datetime.utcnow(),
+        verify_date=None,
         card_no=None,
         hashed_card_no=None,
         is_say=False,
@@ -84,9 +84,9 @@ class Payment(base, Timestamp):
 
         session = object_session(self)
 
-        self.transaction_date = transaction_date
+        self.transaction_date = transaction_date or datetime.utcnow()
         self.gateway_track_id = track_id or self.order_id
-        self.verified = verify_date
+        self.verified = verify_date or datetime.utcnow()
         self.card_no = card_no
         self.hashed_card_no = hashed_card_no
 
