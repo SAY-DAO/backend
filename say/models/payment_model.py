@@ -100,7 +100,8 @@ class Payment(base, Timestamp):
         session.expire(self.need)
 
         if self.need.paid >= self.need.cost:
-            self.need.done()
+            if not self.need.isDone:
+                self.need.done()
         else:
             self.need.status = 1
 
