@@ -128,6 +128,10 @@ class DigikalaCrawler:
             return
 
         data = r.json()['data']
+
+        if data['product']['is_inactive']:
+            return dict(cost='unavailable', img=None, title=None)
+
         title = data['product']['title_fa']
         if data['product']['status'] == 'marketable':
             cost = int(data['product']['default_variant']['price']['rrp_price']) // 10
