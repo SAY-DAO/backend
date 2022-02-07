@@ -413,8 +413,12 @@ class Need(base, Timestamp):
 
     def update(self, force=False):
         from say.crawler import Crawler
+        from say.crawler import DigikalaCrawler
 
-        data = Crawler(self.link).get_data(force=force)
+        if 'digikala' in self.link:
+            data = DigikalaCrawler(self.link).get_data(force=force)
+        else:
+            data = Crawler(self.link).get_data(force=force)
 
         if data is None:
             return

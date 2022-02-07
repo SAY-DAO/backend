@@ -1,6 +1,7 @@
 import functools
 import html
 import re
+from typing import NamedTuple
 
 import requests
 from cachetools import TTLCache
@@ -100,4 +101,38 @@ class Crawler:
         cost = self.parse_cost()
         title = self.parse_title()
         img = self.parse_img()
+        return dict(cost=cost, img=img, title=title)
+
+
+class DigikalaCrawler:
+    API_URL = 'https://api.digikala.com/v1/product/%s/'
+    DKP_PATTERN = re.compile(r'.*/dkp-(\d+).*')
+
+    def __init__(self, url):
+        try:
+            self.dkp = self.DKP_PATTERN.findall(string=url)[0]
+        except IndexError:
+            self.dkp = None
+
+    def get_data(self, force=False):
+        if self.dkp is None:
+            return
+
+        url = self.API_URL % self.dkp
+        if force:
+            r = requests.get(url)
+        else:
+            r = request_with_cache(url)
+
+        if r.status_code != 200:
+            return
+
+        data = r.json()['data']
+        title = data['product']['title_fa']
+        if data['product']['status'] == 'marketable':
+            cost = int(data['product']['default_variant']['price']['rrp_price']) // 10
+        else:
+            cost = 'unavailable'
+
+        img = data['product']['images']['main']['url'][0]
         return dict(cost=cost, img=img, title=title)
