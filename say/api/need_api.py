@@ -682,13 +682,13 @@ class NeedReceiptAPI(Resource):
 API URLs
 """
 
-api.add_resource(GetNeedById, '/api/v2/need/needId=<need_id>')
+api.add_resource(GetNeedById, '/api/v2/need/needId=<int:need_id>')
 api.add_resource(ListNeeds, '/api/v2/needs')
-api.add_resource(UpdateNeedById, '/api/v2/need/update/needId=<need_id>')
-api.add_resource(DeleteNeedById, '/api/v2/need/delete/needId=<need_id>')
+api.add_resource(UpdateNeedById, '/api/v2/need/update/needId=<int:need_id>')
+api.add_resource(DeleteNeedById, '/api/v2/need/delete/needId=<int:need_id>')
 api.add_resource(
     ConfirmNeed,
-    '/api/v2/need/confirm/needId=<need_id>',
+    '/api/v2/need/confirm/needId=<int:need_id>',
 )
 api.add_resource(AddNeed, "/api/v2/need/")
 api.add_resource(
