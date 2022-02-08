@@ -129,7 +129,7 @@ class DigikalaCrawler:
 
         data = r.json()['data']
 
-        if data['product']['is_inactive']:
+        if data['product'].get('is_inactive'):
             return dict(cost='unavailable', img=None, title=None)
 
         title = data['product']['title_fa']
