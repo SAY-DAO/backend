@@ -33,3 +33,11 @@ MB = 1024 * 1024
 class OrderingDirection(Enum):
     Asc = 'asc'
     Desc = 'desc'
+
+
+CATEGORIES = [
+    0,  # Growth
+    1,  # Joy
+    2,  # Health
+    3,  # Surroundings
+]

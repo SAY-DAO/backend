@@ -18,6 +18,7 @@ from say.authorization import get_sw_ngo_id
 from say.authorization import get_user_id
 from say.authorization import get_user_role
 from say.config import configs
+from say.constants import CATEGORIES
 from say.constants import DEFAULT_CHILD_ID
 from say.date import parse_date
 from say.date import parse_datetime
@@ -412,6 +413,18 @@ class ConfirmNeed(Resource):
 
         if primary_need.isConfirmed:
             return {'message': 'need has already been confirmed!'}, 400
+
+        if primary_need.category not in CATEGORIES:
+            return {'message': 'Invalid category'}, 400
+
+        if (
+            not primary_need.description_translations['en']
+            or not primary_need.description_translations['fa']
+        ):
+            return {'message': 'Invalid description translations'}, 400
+
+        if not primary_need.name_translations['en']:
+            return {'message': 'Invalid name translations'}, 400
 
         child = primary_need.child
 
