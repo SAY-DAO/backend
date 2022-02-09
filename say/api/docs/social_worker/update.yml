@@ -155,15 +155,6 @@ parameters:
     type: string
     maxLength: 64
 
-  required:
-    - lastName
-    - telegramId
-    - idNumber
-    - ngoId
-    - typeId
-    - gender
-    - phoneNumber
-
 responses:
   400:
     description: Bad Request
