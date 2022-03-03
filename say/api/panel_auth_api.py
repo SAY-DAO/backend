@@ -71,6 +71,7 @@ class PanelLogin(Resource):
             'message': 'Login Successful',
             'access_token': access_token,
             'refresh_token': refresh_token,
+            'id': social_worker.id,
         }
 
 

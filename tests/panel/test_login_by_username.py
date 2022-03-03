@@ -20,6 +20,7 @@ class TestLogin(BaseTestClass):
         self.assert_ok(res)
         assert res.json['access_token'] is not None
         assert res.json['refresh_token'] is not None
+        assert res.json['id'] == self.user.id
 
     def test_login_by_username_wrong_password(self):
         # when password is wrong

@@ -1,6 +1,5 @@
 Panel Login API
 ---
-
 tags:
   - Panel Auth API
 
@@ -19,5 +18,5 @@ responses:
   200:
     description: Ok
 
-    schema:
-      id: social_worker
+    # schema:
+    #   id: social_worker
