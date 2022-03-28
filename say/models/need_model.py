@@ -30,7 +30,7 @@ class Need(base, Timestamp):
     id = Column(Integer, nullable=False, primary_key=True, unique=True)
 
     child_id = Column(Integer, ForeignKey('child.id'), index=True)
-    created_by_id = Column(Integer, ForeignKey('social_worker.id'), nullable=True)
+    created_by_id = Column(Integer, ForeignKey('social_worker.id'), nullable=False)
 
     name_translations = Column(HSTORE)
     name = translation_hybrid(name_translations)
