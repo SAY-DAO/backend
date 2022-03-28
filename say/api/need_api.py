@@ -529,6 +529,7 @@ class AddNeed(Resource):
             doing_duration = 5
 
         new_need = Need(
+            created_by_id=sw_id,
             name_translations=name_translations,
             description_translations=description_translations,
             imageUrl=image_url,
