@@ -38,14 +38,8 @@ class GetAllNgo(Resource):
     @json
     @swag_from('./docs/ngo/all.yml')
     def get(self):
-        base_ngos = session.query(Ngo).filter_by(isDeleted=False).all()
-
-        fetch = {}
-        for n in base_ngos:
-            data = obj_to_dict(n)
-            fetch[str(n.id)] = data
-
-        return fetch
+        base_ngos = session.query(Ngo).filter_by(isDeleted=False)
+        return base_ngos
 
 
 class AddNgo(Resource):
