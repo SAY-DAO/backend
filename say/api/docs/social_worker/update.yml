@@ -29,11 +29,7 @@ parameters:
     in: formData
     type: integer
 
-  - name: country
-    in: formData
-    type: integer
-
-  - name: city
+  - name: cityId
     in: formData
     type: integer
 

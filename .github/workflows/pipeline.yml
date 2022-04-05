@@ -194,15 +194,6 @@ jobs:
           port: ${{ secrets.DEV_SERVER_PORT }}
           script: docker stack deploy --prune --resolve-image=changed --with-registry-auth -c /tmp/${{ env.STACK_FILE }} ${{ env.DEV_STACK_NAME }}
 
-      - name: Wait for Successful Deploy
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.DEV_SERVER_ADDR }}
-          username: ${{ secrets.DEV_SERVER_USER }}
-          key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
-          port: ${{ secrets.DEV_SERVER_PORT }}
-          script: docker-stack-wait.sh ${{ env.DEV_STACK_NAME }}
-
   deploy_staging:
     name: Deploy to Staging Server
     runs-on: ubuntu-latest
@@ -249,15 +240,6 @@ jobs:
           port: ${{ secrets.STAGE_SERVER_PORT }}
           script: docker stack deploy --prune --resolve-image=changed --with-registry-auth -c /tmp/${{ env.STACK_FILE }} ${{ env.STAGE_STACK_NAME }}
 
-      - name: Wait for Successful Deploy
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.DEV_SERVER_ADDR }}
-          username: ${{ secrets.DEV_SERVER_USER }}
-          key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
-          port: ${{ secrets.DEV_SERVER_PORT }}
-          script: docker-stack-wait.sh ${{ env.STAGE_STACK_NAME }}
-
   deploy_production:
     name: Deploy to Production Server
     runs-on: ubuntu-latest
@@ -303,12 +285,3 @@ jobs:
           key: ${{ secrets.PROD_SSH_PRIVATE_KEY }}
           port: ${{ secrets.PROD_SERVER_PORT }}
           script: docker stack deploy --prune --resolve-image=changed --with-registry-auth -c /tmp/${{ env.STACK_FILE }} ${{ env.PROD_STACK_NAME }}
-
-      - name: Wait for Successful Deploy
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.DEV_SERVER_ADDR }}
-          username: ${{ secrets.DEV_SERVER_USER }}
-          key: ${{ secrets.DEV_SSH_PRIVATE_KEY }}
-          port: ${{ secrets.DEV_SERVER_PORT }}
-          script: docker-stack-wait.sh ${{ env.PROD_STACK_NAME }}
