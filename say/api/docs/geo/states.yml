@@ -1,0 +1,55 @@
+List states of a country
+---
+tags:
+  - Geo API
+parameters:
+  - name: id
+    in: path
+    description: ID of Country
+    required: true
+    type: integer
+
+responses:
+  200:
+    description: Ok
+    schema:
+      type: array
+      items:
+        $ref: "#/definitions/state_model"
+        schema:
+          id: state_model
+          title: StateSchema
+          type: object
+          properties:
+            id:
+              title: id
+              type: integer
+            country_id:
+              title: id
+              type: integer
+            name:
+              type: string
+            country_code:
+              type: string
+            country_name:
+              type: string
+            state_code:
+              type: string
+            latitude:
+              type: string
+            longitude:
+              type: string
+            flag:
+              type: string
+            wikiDataId:
+              type: string
+            iso2:
+              type: string
+            fips_code:
+              type: string
+            type:
+              type: string
+            flag_code:
+              type: string
+            flag:
+              type: string

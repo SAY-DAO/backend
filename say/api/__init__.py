@@ -6,6 +6,7 @@ from .check_api import *
 from .child_api import *
 from .dashboard_api import *
 from .family_api import *
+from .geo_api import *
 from .invitation_api import *
 from .nakama import *
 from .need_api import *

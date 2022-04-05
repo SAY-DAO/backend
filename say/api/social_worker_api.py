@@ -43,7 +43,7 @@ def filter_by_role(query, user):
     return query
 
 
-def filter_by_privilage(query):
+def filter_by_privilege(query):
     return filter_by_role(query, request.user)
 
 
@@ -54,7 +54,7 @@ class ListCreateSocialWorkers(Resource):
     @query(
         SocialWorker,
         SocialWorker.is_deleted.is_(False),
-        filter_callbacks=[filter_by_privilage],
+        filter_callbacks=[filter_by_privilege],
         enbale_filtering=True,
         filtering_schema=SocialWorkerSchema,
         enable_pagination=True,
@@ -113,7 +113,7 @@ class GetUpdateDeleteSocialWorkers(Resource):
     @query(
         SocialWorker,
         SocialWorker.is_deleted.is_(False),
-        filter_callbacks=[filter_by_privilage],
+        filter_callbacks=[filter_by_privilege],
     )
     @json(SocialWorkerSchema)
     @swag_from('./docs/social_worker/id.yml')

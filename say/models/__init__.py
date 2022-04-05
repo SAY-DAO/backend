@@ -95,6 +95,8 @@ from .change_cost import *
 from .child_migration_model import ChildMigration
 from .child_model import Child
 from .child_need_model import ChildNeed
+from .city import City
+from .country import Country
 from .family_model import Family
 from .invite import Invitation
 from .invite import InvitationAccept
@@ -109,6 +111,7 @@ from .receipt import Receipt
 from .reset_password_model import ResetPassword
 from .search import Search
 from .social_worker_model import SocialWorker
+from .states import State
 from .user_family_model import UserFamily
 from .user_model import User
 from .verify_model import EmailVerification

@@ -1,5 +1,4 @@
 import io
-import string
 import tempfile
 from datetime import datetime
 from random import choice
@@ -17,6 +16,8 @@ from say.authorization import create_user_refresh_token
 from say.config import configs
 from say.constants import SAY_USER
 from say.models import Child
+from say.models import City
+from say.models import Country
 from say.models import EmailVerification
 from say.models import Family
 from say.models import Need
@@ -28,6 +29,7 @@ from say.models import Privilege
 from say.models import Receipt
 from say.models import ResetPassword
 from say.models import SocialWorker
+from say.models import State
 from say.models import User
 from say.models import UserFamily
 from say.models.cart import Cart
@@ -365,6 +367,81 @@ class BaseTestClass:
         reset_pass = ResetPassword(**data)
         self.session.save(reset_pass)
         return reset_pass
+
+    def _create_country(self, **kwargs):
+        data = dict(
+            name=random_string(100),
+            iso3=random_string(3),
+            numeric_code=random_string(3),
+            iso2=random_string(2),
+            phone_code=random_string(255),
+            capital=random_string(255),
+            currency=random_string(255),
+            currency_name=random_string(255),
+            currency_symbol=random_string(255),
+            tld=random_string(255),
+            native=random_string(255),
+            region=random_string(255),
+            subregion=random_string(255),
+            timezones=random_string(1),
+            translations=random_string(1),
+            latitude='1',
+            longitude='1',
+            emoji=random_string(191),
+            emojiU=random_string(191),
+            flag=1,
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+        )
+        data.update(kwargs)
+        country = Country(**data)
+        self.session.save(country)
+        return country
+
+    def _create_state(self, country=None, **kwargs):
+        country = country or self._create_country()
+
+        data = dict(
+            name='Tehran',
+            country_code='IR',
+            country_name='Iran',
+            state_code='IR',
+            fips_code=26,
+            iso2=23,
+            latitude="35.72484160",
+            longitude="51.38165300",
+            type='province',
+            flag=1,
+            country=country,
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+        )
+        data.update(kwargs)
+        state = State(**data)
+        self.session.save(state)
+        return state
+
+    def _create_city(self, country=None, state=None, **kwargs):
+        country = country or self._create_country()
+        state = state or self._create_state(country=country)
+
+        data = dict(
+            name='Tehran',
+            state_code='23',
+            state_name='asd',
+            country_code='IR',
+            country_name='Iran',
+            latitude="35.72484160",
+            longitude="51.38165300",
+            state=state,
+            country=country,
+            created_at=datetime.utcnow(),
+            updated_at=datetime.utcnow(),
+        )
+        data.update(kwargs)
+        city = City(**data)
+        self.session.save(city)
+        return city
 
     def _create_say_user(self):
         return self._create_random_user(userName=SAY_USER)
