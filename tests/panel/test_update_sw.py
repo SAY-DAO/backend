@@ -17,8 +17,6 @@ class TestUpdateSocialWorker(BaseTestClass):
             ('lastName', 'new-str', 200),
             ('telegramId', '23432545234', 200),
             ('idNumber', '564564565465', 200),
-            ('country', 1, 200),
-            ('city', 1, 200),
             ('birthCertificateNumber', '9876523423441223', 200),
             ('birthDate', '1999-12-12', 200),
             ('postalAddress', 'postalAddress', 200),
@@ -270,6 +268,31 @@ class TestUpdateSocialWorker(BaseTestClass):
             content_type='multipart/form-data',
             data={
                 'passportUrl': self.create_test_file('movie.mp3', size=10000),
+            },
+        )
+
+        self.assert_code(res, 400)
+
+    def test_update_social_worker_city(self):
+        admin = self.login_as_sw(role=SUPER_ADMIN)
+        city = self._create_city()
+
+        # Update phoneNumber to an already existing one
+        res = self.client.patch(
+            UPDATE_SW_URL % admin.id,
+            content_type='multipart/form-data',
+            data={
+                'cityId': city.id,
+            },
+        )
+
+        self.assert_code(res, 200)
+
+        res = self.client.patch(
+            UPDATE_SW_URL % admin.id,
+            content_type='multipart/form-data',
+            data={
+                'cityId': -1,
             },
         )
 

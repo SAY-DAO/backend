@@ -3,8 +3,9 @@ from flask import request
 from flask_restful import Resource
 
 from say.models import Child
+from say.models import City
+from say.models import Ngo
 from say.models import commit
-from say.models.ngo_model import Ngo
 from say.models.social_worker_model import SocialWorker
 from say.orm import safe_commit
 from say.orm import session
@@ -84,6 +85,20 @@ class ListCreateSocialWorkers(Resource):
 
         if ngo is None:
             raise HTTP_BAD_REQUEST(message='NGO not found')
+
+        if data.city_id:
+            city = (
+                session.query(City)
+                .filter(
+                    City.id == data.city_id,
+                )
+                .populate_existing()
+                .with_for_update()
+                .one_or_none()
+            )
+
+            if city is None:
+                raise HTTP_BAD_REQUEST(message='city not found')
 
         generated_code = format(data.ngo_id, '03d') + format(
             ngo.socialWorkerCount + 1,
@@ -169,6 +184,20 @@ class GetUpdateDeleteSocialWorkers(Resource):
             sw.ngo_id = data.ngo_id
             for chid in sw.children:
                 chid.id_ngo = data.ngo_id
+
+        if data.city_id:
+            city = (
+                session.query(City)
+                .filter(
+                    City.id == data.city_id,
+                )
+                .populate_existing()
+                .with_for_update()
+                .one_or_none()
+            )
+
+            if city is None:
+                raise HTTP_BAD_REQUEST(message='city not found')
 
         sw.update_from_schema(data)
         # Password is protected and secret and needs to be set manually

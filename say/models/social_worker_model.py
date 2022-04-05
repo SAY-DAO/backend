@@ -69,11 +69,13 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin, SoftDeleteMixin):
     type_id = Column(
         Integer, ForeignKey('social_worker_type.id'), nullable=False, index=True
     )
+    city_id = Column(Integer, ForeignKey('cities.id'), nullable=True)
 
     is_coordinator = Column(Boolean, default=False, nullable=False)
 
-    country = Column(Integer, nullable=True)
-    city = Column(Integer, nullable=True)
+    # country = Column(Integer, nullable=True)
+    # city = Column(Integer, nullable=True)
+
     first_name = Column(String, nullable=True)
     last_name = Column(String, nullable=False)
     username = Column(
@@ -180,6 +182,8 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin, SoftDeleteMixin):
             )
         )
     )
+
+    city = relationship('City', foreign_keys=city_id)
 
     def validate_password(self, password):
         ph = PasswordHasher()

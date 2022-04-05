@@ -254,9 +254,10 @@ class BaseTestClass:
         self.session.save(child)
         return child
 
-    def _create_random_sw(self, role=SUPER_ADMIN, ngo=None, **kwargs):
+    def _create_random_sw(self, role=SUPER_ADMIN, ngo=None, city=None, **kwargs):
         seed = randint(10 ** 6, 10 ** 9)
         ngo = ngo or self._create_random_ngo()
+        city = city or self._create_city()
 
         data = dict(
             ngo=ngo,
@@ -274,6 +275,7 @@ class BaseTestClass:
             password='abcefg123',
             last_login_date=datetime.utcnow(),
             privilege=Privilege(name=role, privilege=1),
+            city=city,
         )
         data.update(kwargs)
         sw = SocialWorker(**data)

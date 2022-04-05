@@ -40,6 +40,8 @@ class TestGetSocialWorker(BaseTestClass):
         assert res.json['needCount'] == 4
         assert res.json['currentNeedCount'] == 2
         assert res.json['ngoName'] == admin.ngo.name
+        assert res.json['city']['name'] is not None
+        assert res.json['city']['countryName'] is not None
         assert 'password' not in res.json
         assert '_password' not in res.json
 

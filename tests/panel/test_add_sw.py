@@ -11,6 +11,7 @@ ADD_SW_URL = '/api/v2/socialworkers/'
 class TestAddSocialWorker(BaseTestClass):
     def test_add_social_worker(self):
         admin = self.login_as_sw(role=SUPER_ADMIN)
+        city = self._create_city()
 
         data = dict(
             firstName='asd',
@@ -25,6 +26,7 @@ class TestAddSocialWorker(BaseTestClass):
             emergencyPhoneNumber=f'+98{randint(10000, 1000000)}',
             email=f'{randint(10000, 1000000)}@test.com',
             avatarUrl=self.create_test_file('imageUrl.jpg', size=10000),
+            cityId=city.id,
         )
 
         res = self.client.post(
@@ -41,6 +43,7 @@ class TestAddSocialWorker(BaseTestClass):
         assert res.json['locale'] == 'fa'
         assert res.json['avatarUrl'].startswith('http')
         assert res.json['lastLoginDate'] is not None
+        assert res.json['cityId'] == city.id
         assert 'password' not in res.json
 
         sw = self.session.query(SocialWorker).filter_by(id=res.json['id']).one_or_none()

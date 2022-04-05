@@ -24,27 +24,21 @@ responses:
             id:
               title: id
               type: integer
-            state_id:
-              title: id
-              type: integer
-            country_id:
-              title: id
-              type: integer
             name:
               type: string
-            country_code:
+            stateId:
+              type: integer
+            stateName:
               type: string
-            state_name:
+            stateCode:
               type: string
-            country_name:
+            countryCode:
               type: string
-            state_code:
+            countryId:
+              type: integer
+            countryName:
               type: string
             latitude:
               type: string
             longitude:
-              type: string
-            flag:
-              type: string
-            wikiDataId:
               type: string

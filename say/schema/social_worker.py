@@ -1,16 +1,14 @@
 from datetime import date
 from datetime import datetime
-from typing import List
 from typing import Optional
 
-from pydantic import Field
 from pydantic.networks import EmailStr
 from pydantic.types import constr
 
 from say.constants import MB
 from say.schema.base import AllOptionalMeta
-from say.schema.base import BaseModel
 from say.schema.base import CamelModel
+from say.schema.city import CitySchema
 from say.schema.types import Locale
 from say.schema.types import Password
 from say.schema.types import PhoneNumber
@@ -23,8 +21,7 @@ class MigrateSocialWorkerChildrenSchema(CamelModel):
 
 
 class NewSocialWorkerSchema(CamelModel):
-    country: Optional[int]
-    city: Optional[int]
+    city_id: Optional[int]
     first_name: Optional[constr(max_length=64, strip_whitespace=True)]
     last_name: constr(max_length=64, strip_whitespace=True)
     birth_certificate_number: Optional[constr(max_length=32, strip_whitespace=True)]
@@ -87,3 +84,4 @@ class SocialWorkerSchema(NewSocialWorkerSchema):
     locale: Locale
     type_name: str
     ngo_name: str
+    city: Optional[CitySchema]
