@@ -8,11 +8,14 @@ from say.models import City
 from say.models import Country
 from say.models import State
 from say.orm import session
+from say.schema.city import CitySchema
+from say.schema.country import CountrySchema
+from say.schema.state import StateSchema
 
 
 class CountryAPI(Resource):
     @cache.cached(timeout=10 * 60)
-    @json
+    @json(CountrySchema, use_list=True)
     @swag_from('./docs/geo/countries.yml')
     def get(self):
         return session.query(Country)
@@ -20,7 +23,7 @@ class CountryAPI(Resource):
 
 class StateCitiesAPI(Resource):
     @cache.cached(timeout=10 * 60)
-    @json
+    @json(CitySchema, use_list=True)
     @swag_from('./docs/geo/cities.yml')
     def get(self, id):
         return session.query(City).filter(City.state_id == id)
@@ -28,7 +31,7 @@ class StateCitiesAPI(Resource):
 
 class CountryStatesAPI(Resource):
     @cache.cached(timeout=10 * 60)
-    @json
+    @json(StateSchema, use_list=True)
     @swag_from('./docs/geo/states.yml')
     def get(self, id):
         return session.query(State).filter(State.country_id == id)

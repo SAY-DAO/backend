@@ -21,3 +21,4 @@ class TestListCountries(BaseTestClass):
         assert len(result) == 10
         assert result[0]['id'] is not None
         assert result[0]['name'] is not None
+        assert result[0]['currencyName'] is not None

@@ -13,7 +13,7 @@ class TestListStates(BaseTestClass):
             self.session.add(self.country)
         self.session.commit()
 
-    def test_list_country_cities(self):
+    def test_list_country_states(self):
         res = self.client.get(LIST_STATES_URL % self.country.id)
         self.assert_ok(res)
         result = res.json
@@ -21,4 +21,4 @@ class TestListStates(BaseTestClass):
         assert len(result) == 3
         assert result[0]['id'] is not None
         assert result[0]['name'] is not None
-        assert result[0]['state_code'] is not None
+        assert result[0]['stateCode'] is not None
