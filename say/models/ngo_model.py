@@ -101,4 +101,6 @@ class Ngo(base, Timestamp):
 
     @hybrid_property
     def city(self):
-        return self._city
+        from say.schema.city import CitySchema
+
+        return CitySchema.from_orm(self._city).dict(by_alias=True)

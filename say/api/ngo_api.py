@@ -37,7 +37,7 @@ def sw_list(social_worker_list):
 
 
 class GetAllNgo(Resource):
-    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    # @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @json
     @swag_from('./docs/ngo/all.yml')
     def get(self):
@@ -51,7 +51,7 @@ class AddNgo(Resource):
     @swag_from('./docs/ngo/add.yml')
     def post(self):
         if 'logoUrl' not in request.files:
-            return {'message': 'Logo is required!'}, 400
+            return {'message': 'LogoUrl is required!'}, 400
 
         logo_file = request.files['logoUrl']
         if extension := valid_image_extension(logo_file):
@@ -195,7 +195,7 @@ class UpdateNgo(Resource):
             base_ngo.city_id = city_id
         else:
             raise HTTP_BAD_REQUEST(message='cityId is required')
-            
+
         if 'name' in request.form.keys():
             base_ngo.name = request.form['name']
 
