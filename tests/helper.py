@@ -285,8 +285,7 @@ class BaseTestClass:
     def _create_random_ngo(self):
         seed = randint(1, 10 ** 3)
         ngo = Ngo(
-            country=0,
-            city=0,
+            city=self._create_city(),
             name=str(seed),
             emailAddress=f'{str(seed)}@email.com',
             phoneNumber=str(seed),

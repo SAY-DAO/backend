@@ -1,3 +1,4 @@
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import column_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.elements import and_
@@ -31,9 +32,10 @@ class Ngo(base, Timestamp):
     id = Column(Integer, primary_key=True, nullable=False, unique=True)
 
     # coordinatorId = Column(Integer, ForeignKey('social_worker.id'), nullable=True)
+    city_id = Column(Integer, ForeignKey('cities.id'), nullable=False)
 
-    country = Column(Integer, nullable=False)
-    city = Column(Integer, nullable=False)
+    # country = Column(Integer, nullable=False)
+    # city = Column(Integer, nullable=False)
     name = Column(String, nullable=False)
     postalAddress = Column(Text, nullable=False)
     emailAddress = Column(String, nullable=False)
@@ -90,3 +92,9 @@ class Ngo(base, Timestamp):
             SocialWorker.is_active.is_(True),
         )''',
     )
+
+    city = relationship('City', foreign_keys=city_id)
+
+    @hybrid_property
+    def cityId(self):
+        return self.city_id

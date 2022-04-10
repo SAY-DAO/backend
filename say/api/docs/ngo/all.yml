@@ -3,7 +3,6 @@ Returns information of all NGOs in a json.
 Json key is NGO id and json value is NGO object.
 Calling this API only affects ngo table by selecting rows from it.
 ---
-
 tags:
   - NGO API
 
@@ -30,12 +29,7 @@ responses:
           description: the ngo id
           example: 1
 
-        country:
-          type: integer
-          description: the international code of country
-          example: 98
-
-        city:
+        city_id:
           type: integer
           description: the international code of city
           example: 21

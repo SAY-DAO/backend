@@ -23,12 +23,7 @@ parameters:
     required: true
     type: string
 
-  - name: country
-    in: formData
-    type: integer
-    required: true
-
-  - name: city
+  - name: cityId
     in: formData
     type: integer
     required: true
