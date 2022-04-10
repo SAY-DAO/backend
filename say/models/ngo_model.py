@@ -93,8 +93,12 @@ class Ngo(base, Timestamp):
         )''',
     )
 
-    city = relationship('City', foreign_keys=city_id)
+    _city = relationship('City', foreign_keys=city_id)
 
     @hybrid_property
     def cityId(self):
         return self.city_id
+
+    @hybrid_property
+    def city(self):
+        return self._city
