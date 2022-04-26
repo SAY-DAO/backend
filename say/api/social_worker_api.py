@@ -4,6 +4,7 @@ from flask_restful import Resource
 
 from say.models import Child
 from say.models import City
+from say.models import Need
 from say.models import Ngo
 from say.models import commit
 from say.models.social_worker_model import SocialWorker
@@ -351,23 +352,51 @@ class MigrateSocialWorkerChildren(Resource):
 
 
 class SocialWorkerCreatedNeeds(Resource):
-    @authorize(
-        COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN, SOCIAL_WORKER
-    )  # TODO: priv
-    @query(
-        SocialWorker,
-        SocialWorker.is_deleted.is_(False),
-        filter_callbacks=[filter_by_privilege],
-    )
-    @json
-    @swag_from('./docs/social_worker/created_needs.yml')
-    def get(self, id):
-        social_worker = request._query.filter(SocialWorker.id == id).one_or_none()
+    def filter_by_sw(query):
+        user = request.user
+        sw_id = request.view_args.get('id', -1)
+
+        social_worker = (
+            session.query(SocialWorker)
+            .filter(
+                SocialWorker.id == sw_id,
+                SocialWorker.is_deleted.is_(False),
+            )
+            .one_or_none()
+        )
 
         if not social_worker:
             raise HTTP_NOT_FOUND()
 
-        return social_worker.created_needs
+        query = query.filter(Need.created_by_id == sw_id)
+
+        if user.type_name not in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR]:  # TODO: priv
+            query = query.join(SocialWorker, SocialWorker.id == Need.created_by_id)
+
+            if user.type_name not in (NGO_SUPERVISOR, COORDINATOR) and sw_id != user.id:
+                raise HTTP_PERMISION_DENIED()
+
+            if user.ngo_id != social_worker.ngo_id:
+                raise HTTP_PERMISION_DENIED()
+
+            query = query.filter(SocialWorker.ngo_id == user.ngo_id)
+
+        return query
+
+    @authorize(
+        COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN, SOCIAL_WORKER
+    )  # TODO: priv
+    @query(
+        Need,
+        Need.isDeleted.is_(False),
+        filter_callbacks=[filter_by_sw],
+        enable_pagination=True,
+    )
+    @json
+    @swag_from('./docs/social_worker/created_needs.yml')
+    def get(self, id):
+
+        return request._query
 
 
 api.add_resource(

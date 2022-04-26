@@ -49,7 +49,7 @@ class TestListSocialWorkerCreatedNeeds(BaseTestClass):
         res = self.client.get(
             LIST_SW_CREATED_NEEDS_URL % sw1.id,
         )
-        self.assert_code(res, 404)
+        self.assert_code(res, 403)
 
         self.login_sw(sw1)
         res = self.client.get(
@@ -69,4 +69,4 @@ class TestListSocialWorkerCreatedNeeds(BaseTestClass):
 
             sw_another_ngo = self._create_random_sw()
             res = self.client.get(LIST_SW_CREATED_NEEDS_URL % sw_another_ngo.id)
-            self.assert_code(res, 404)
+            self.assert_code(res, 403)

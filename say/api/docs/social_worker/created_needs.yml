@@ -15,6 +15,17 @@ parameters:
     required: true
     type: integer
 
+  - name: skip
+    in: query
+    type: integer
+    default: 0
+
+  - name: take
+    in: query
+    type: integer
+    default: 50
+    description: Max 500
+
 responses:
   200:
     description: Ok
