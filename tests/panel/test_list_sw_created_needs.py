@@ -5,11 +5,11 @@ from say.roles import SUPER_ADMIN
 from tests.helper import BaseTestClass
 
 
-GET_SW_URL = '/api/v2/socialworkers/%s'
+LIST_SW_CREATED_NEEDS_URL = '/api/v2/socialworkers/%s/createdNeeds'
 
 
-class TestGetSocialWorker(BaseTestClass):
-    def test_get_social_worker(self):
+class TestListSocialWorkerCreatedNeeds(BaseTestClass):
+    def test_list_sw_created_needs(self):
         admin = self.login_as_sw(role=SUPER_ADMIN)
         sw1 = self._create_random_sw()
 
@@ -24,37 +24,22 @@ class TestGetSocialWorker(BaseTestClass):
         self._create_random_need(child=c2, isDeleted=False, isConfirmed=True)
 
         res = self.client.get(
-            GET_SW_URL % admin.id,
+            LIST_SW_CREATED_NEEDS_URL % admin.id,
         )
 
         self.assert_ok(res)
-        assert res.json['id'] == admin.id
-        assert res.json['firstName'] == admin.first_name
-        assert res.json['lastName'] == admin.last_name
-        assert res.json['avatarUrl'] == admin.avatar_url
-        assert res.json['phoneNumber'] == admin.phone_number
-        assert res.json['email'] == admin.email
-        assert res.json['typeName'] == admin.privilege.name
-        assert res.json['ngoName'] == admin.ngo.name
-        assert res.json['childCount'] == 3
-        assert res.json['currentChildCount'] == 2
-        assert res.json['needCount'] == 4
-        assert res.json['currentNeedCount'] == 2
-        assert res.json['ngoName'] == admin.ngo.name
-        assert res.json['city']['name'] is not None
-        assert res.json['city']['countryName'] is not None
-        assert 'password' not in res.json
-        assert '_password' not in res.json
+        assert isinstance(res.json, list)
+        assert len(res.json) == 3
 
         res = self.client.get(
-            GET_SW_URL % 'invalid_id',
+            LIST_SW_CREATED_NEEDS_URL % 'invalid_id',
         )
 
         self.assert_code(res, 404)
 
         deleted_sw = self._create_random_sw(is_deleted=True)
         res = self.client.get(
-            GET_SW_URL % deleted_sw.id,
+            LIST_SW_CREATED_NEEDS_URL % deleted_sw.id,
         )
         self.assert_code(res, 404)
 
@@ -62,18 +47,26 @@ class TestGetSocialWorker(BaseTestClass):
         self.login_sw(same_ngo_sw)
 
         res = self.client.get(
-            GET_SW_URL % sw1.id,
+            LIST_SW_CREATED_NEEDS_URL % sw1.id,
         )
         self.assert_code(res, 404)
 
-    def test_get_social_worker_by_coordinator_or_supervisor(self):
+        self.login_sw(sw1)
+        res = self.client.get(
+            LIST_SW_CREATED_NEEDS_URL % sw1.id,
+        )
+        self.assert_ok(res)
+        assert isinstance(res.json, list)
+        assert len(res.json) == 1
+
+    def test_list_social_worker_created_needs_by_coordinator_or_supervisor(self):
         for role in {COORDINATOR, NGO_SUPERVISOR}:
             sw = self.login_as_sw(role=role)
 
             sw_with_same_ngo = self._create_random_sw(ngo=sw.ngo)
-            res = self.client.get(GET_SW_URL % sw_with_same_ngo.id)
+            res = self.client.get(LIST_SW_CREATED_NEEDS_URL % sw_with_same_ngo.id)
             self.assert_ok(res)
 
             sw_another_ngo = self._create_random_sw()
-            res = self.client.get(GET_SW_URL % sw_another_ngo.id)
+            res = self.client.get(LIST_SW_CREATED_NEEDS_URL % sw_another_ngo.id)
             self.assert_code(res, 404)

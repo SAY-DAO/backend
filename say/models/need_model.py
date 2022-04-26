@@ -105,6 +105,40 @@ class Need(base, Timestamp):
         )
     )
 
+    created_by = relationship(
+        'SocialWorker',
+        foreign_keys=created_by_id,
+        back_populates='created_needs',
+    )
+
+    child = relationship(
+        'Child',
+        foreign_keys=child_id,
+        uselist=False,
+        back_populates='needs',
+    )
+
+    carts = relationship(
+        'CartNeed',
+        back_populates='need',
+    )
+
+    payments = relationship(
+        'Payment',
+        back_populates='need',
+    )
+
+    participants = relationship(
+        'NeedFamily',
+        back_populates='need',
+    )
+
+    receipts_ = relationship(
+        'Receipt',
+        secondary='need_receipt',
+        back_populates='needs',
+    )
+
     @property
     def is_reported(self):
         return self.isReported
@@ -287,34 +321,6 @@ class Need(base, Timestamp):
     @status_description.expression
     def status_description(cls):
         pass
-
-    child = relationship(
-        'Child',
-        foreign_keys=child_id,
-        uselist=False,
-        back_populates='needs',
-    )
-
-    carts = relationship(
-        'CartNeed',
-        back_populates='need',
-    )
-
-    payments = relationship(
-        'Payment',
-        back_populates='need',
-    )
-
-    participants = relationship(
-        'NeedFamily',
-        back_populates='need',
-    )
-
-    receipts_ = relationship(
-        'Receipt',
-        secondary='need_receipt',
-        back_populates='needs',
-    )
 
     def done(self):
         self.status = 2

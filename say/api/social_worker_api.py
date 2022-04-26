@@ -24,6 +24,7 @@ from ..roles import ADMIN
 from ..roles import COORDINATOR
 from ..roles import NGO_SUPERVISOR
 from ..roles import SAY_SUPERVISOR
+from ..roles import SOCIAL_WORKER
 from ..roles import SUPER_ADMIN
 from ..schema.social_worker import MigrateSocialWorkerChildrenSchema
 from ..schema.social_worker import NewSocialWorkerSchema
@@ -39,6 +40,9 @@ Social Worker APIs
 
 def filter_by_role(query, user):
     if user.type_name not in [SUPER_ADMIN, ADMIN, SAY_SUPERVISOR]:  # TODO: priv
+        if user.type_name not in (NGO_SUPERVISOR, COORDINATOR):
+            query = query.filter(SocialWorker.id == user.id)
+
         query = query.filter(SocialWorker.ngo_id == user.ngo_id)
 
     return query
@@ -123,7 +127,7 @@ class ListCreateSocialWorkers(Resource):
 
 class GetUpdateDeleteSocialWorkers(Resource):
     @authorize(
-        COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+        COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN, SOCIAL_WORKER
     )  # TODO: priv
     @query(
         SocialWorker,
@@ -346,6 +350,26 @@ class MigrateSocialWorkerChildren(Resource):
         return resp
 
 
+class SocialWorkerCreatedNeeds(Resource):
+    @authorize(
+        COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN, SOCIAL_WORKER
+    )  # TODO: priv
+    @query(
+        SocialWorker,
+        SocialWorker.is_deleted.is_(False),
+        filter_callbacks=[filter_by_privilege],
+    )
+    @json
+    @swag_from('./docs/social_worker/created_needs.yml')
+    def get(self, id):
+        social_worker = request._query.filter(SocialWorker.id == id).one_or_none()
+
+        if not social_worker:
+            raise HTTP_NOT_FOUND()
+
+        return social_worker.created_needs
+
+
 api.add_resource(
     ListCreateSocialWorkers,
     '/api/v2/socialworkers/',
@@ -369,4 +393,9 @@ api.add_resource(
 api.add_resource(
     MigrateSocialWorkerChildren,
     '/api/v2/socialworkers/<int:id>/children/migrate',
+)
+
+api.add_resource(
+    SocialWorkerCreatedNeeds,
+    '/api/v2/socialworkers/<int:id>/createdNeeds',
 )

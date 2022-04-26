@@ -185,6 +185,12 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin, SoftDeleteMixin):
 
     city = relationship('City', foreign_keys=city_id)
 
+    created_needs = relationship(
+        'Need',
+        back_populates='created_by',
+        primaryjoin='and_(Need.created_by_id==SocialWorker.id, ~Need.isDeleted)',
+    )
+
     def validate_password(self, password):
         ph = PasswordHasher()
         return ph.verify(self.password, password)

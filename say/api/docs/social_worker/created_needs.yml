@@ -1,0 +1,24 @@
+List created needs of a social worker
+---
+tags:
+  - Social Worker API
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - in: path
+    name: id
+    required: true
+    type: integer
+
+responses:
+  200:
+    description: Ok
+    schema:
+      type: array
+      items:
+        $ref: "#/definitions/need_model"
