@@ -15,13 +15,13 @@ parameters:
     required: true
     type: integer
 
-  - name: skip
-    in: query
+  - name: X-SKIP
+    in: header
     type: integer
     default: 0
 
-  - name: take
-    in: query
+  - name: X-TAKE
+    in: header
     type: integer
     default: 50
     description: Max 500
