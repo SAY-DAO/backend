@@ -1,6 +1,8 @@
-import json
-
 import requests
+
+
+class MeliPayamakException(Exception):
+    pass
 
 
 class MeliPayamak:
@@ -28,7 +30,12 @@ class MeliPayamak:
                 },
                 headers=self.headers,
             )
-            return resp.json()
+            json_resp = resp.json()
+            status = json_resp.get('RetStatus', -1)
+            if status != 1:
+                raise MeliPayamakException(f'Failed with status {status}')
+
+            return json_resp
 
         except Exception as ex:
             print(ex)
