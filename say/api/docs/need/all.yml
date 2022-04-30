@@ -17,6 +17,17 @@ parameters:
     required: true
     type: string
 
+  - name: X-SKIP
+    in: header
+    type: integer
+    default: 0
+
+  - name: X-TAKE
+    in: header
+    type: integer
+    default: 50
+    description: Max 500
+
   - in: query
     name: isConfirmed
     type: boolean
@@ -44,6 +55,11 @@ parameters:
   - in: query
     name: isChildConfirmed
     type: boolean
+
+  - in: query
+    name: unpayable
+    type: boolean
+
 
 responses:
   500:

@@ -47,6 +47,7 @@ from say.roles import SUPER_ADMIN
 from say.roles import USER
 from say.schema import NewReceiptSchema
 from say.schema import ReceiptSchema
+from say.schema.base import PaginationSchema
 from say.schema.need import AllNeedQuerySchema
 from say.validations import valid_image_extension
 
@@ -134,6 +135,9 @@ class ListNeeds(Resource):
         if data.is_reported is not None:
             needs = needs.filter_by(isReported=data.is_reported)
 
+        if data.unpayable is not None:
+            needs = needs.filter_by(unpayable=data.unpayable)
+
         if data.is_child_confirmed is not None:
             children_id = session.query(Child.id).filter(
                 Child.isConfirmed == data.is_child_confirmed,
@@ -144,6 +148,15 @@ class ListNeeds(Resource):
             needs = needs.join(Child).filter(Child.id_ngo == data.ngo_id)
 
         needs = filter_by_privilege(needs, get=True)
+
+        pagination = PaginationSchema.parse_obj(request.headers)
+
+        if pagination.take:
+            needs = needs.limit(pagination.take)
+
+        if pagination.skip:
+            needs = needs.offset(pagination.skip)
+
         needs = needs.options(selectinload(Need.child)).options(selectinload('child.ngo'))
         result = OrderedDict(
             totalCount=needs.count(),
