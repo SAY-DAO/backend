@@ -42,7 +42,7 @@ parameters:
 
   - in: query
     name: status
-    type: integer
+    type: string
 
   - in: query
     name: type

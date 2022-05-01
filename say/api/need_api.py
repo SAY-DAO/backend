@@ -136,7 +136,11 @@ class ListNeeds(Resource):
             needs = needs.filter_by(isReported=data.is_reported)
 
         if data.unpayable is not None:
-            needs = needs.filter_by(unpayable=data.unpayable)
+            needs = needs.filter(
+                Need.unpayable == data.unpayable,
+                Need.status.in_((0, 1, 2, 3)),
+                Need.isConfirmed.is_(True),
+            )
 
         if data.is_child_confirmed is not None:
             children_id = session.query(Child.id).filter(
