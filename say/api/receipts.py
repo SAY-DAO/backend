@@ -100,57 +100,58 @@ class ReceiptAPI(Resource):
         return receipt
 
 
-class AttachReceiptAPI(Resource):
-    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
-    @json
-    @swag_from('./docs/receipt/attach.yml')
-    def post(self, id, need_id):
-        role = get_user_role()
-        user_id = get_user_id()
+# TODO: data model for receipt and needs should be 1-1 so this API should be disabled until model changes
+# class AttachReceiptAPI(Resource):
+#     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
+#     @json
+#     @swag_from('./docs/receipt/attach.yml')
+#     def post(self, id, need_id):
+#         role = get_user_role()
+#         user_id = get_user_id()
 
-        exists = (
-            session.query(NeedReceipt)
-            .filter(
-                NeedReceipt.need_id == need_id,
-                NeedReceipt.receipt_id == id,
-                NeedReceipt.deleted.is_(None),
-            )
-            .one_or_none()
-        )
+#         exists = (
+#             session.query(NeedReceipt)
+#             .filter(
+#                 NeedReceipt.need_id == need_id,
+#                 NeedReceipt.receipt_id == id,
+#                 NeedReceipt.deleted.is_(None),
+#             )
+#             .one_or_none()
+#         )
 
-        if exists:
-            return {'message': 'Already attached'}, 400
+#         if exists:
+#             return {'message': 'Already attached'}, 400
 
-        receipt_id = (
-            Receipt._query(session, role, user_id, fields=[Receipt.id])
-            .filter(Receipt.id == id)
-            .one_or_none()
-        )
+#         receipt_id = (
+#             Receipt._query(session, role, user_id, fields=[Receipt.id])
+#             .filter(Receipt.id == id)
+#             .one_or_none()
+#         )
 
-        if not receipt_id:
-            abort(404)
+#         if not receipt_id:
+#             abort(404)
 
-        need_id = (
-            session.query(Need.id)
-            .filter(
-                Need.id == need_id,
-                Need.isDeleted.is_(False),
-                Need.isConfirmed.is_(True),
-            )
-            .one_or_none()
-        )
+#         need_id = (
+#             session.query(Need.id)
+#             .filter(
+#                 Need.id == need_id,
+#                 Need.isDeleted.is_(False),
+#                 Need.isConfirmed.is_(True),
+#             )
+#             .one_or_none()
+#         )
 
-        if not need_id:
-            abort(404)
+#         if not need_id:
+#             abort(404)
 
-        need_receipt = NeedReceipt(
-            need_id=need_id,
-            receipt_id=receipt_id,
-            sw_id=user_id,
-        )
-        session.add(need_receipt)
-        safe_commit(session)
-        return need_receipt
+#         need_receipt = NeedReceipt(
+#             need_id=need_id,
+#             receipt_id=receipt_id,
+#             sw_id=user_id,
+#         )
+#         session.add(need_receipt)
+#         safe_commit(session)
+#         return need_receipt
 
 
 class ListReceiptsAPI(Resource):
@@ -211,10 +212,10 @@ api.add_resource(
     ReceiptAPI,
     '/api/v2/receipts/<int:id>',
 )
-api.add_resource(
-    AttachReceiptAPI,
-    '/api/v2/receipts/<int:id>/needs/<int:need_id>',
-)
+# api.add_resource(
+#     AttachReceiptAPI,
+#     '/api/v2/receipts/<int:id>/needs/<int:need_id>',
+# )
 api.add_resource(
     ListReceiptsAPI,
     '/api/v2/receipts',

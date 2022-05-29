@@ -1,7 +1,5 @@
 Update a receipt
-
 ---
-
 tags:
   - Receipt API
 
@@ -32,6 +30,10 @@ parameters:
     in: formData
     type: string
     description: max 128 char
+
+  - name: needStatus
+    in: formData
+    type: integer
 
   - name: isPublic
     in: formData

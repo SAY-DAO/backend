@@ -6,6 +6,7 @@ from urllib.parse import urljoin
 from uuid import uuid4
 
 from flask_jwt_extended.exceptions import NoAuthorizationError
+from pydantic import conint
 from pydantic import constr
 from pydantic import validator
 from werkzeug.datastructures import FileStorage
@@ -64,6 +65,7 @@ class NewReceiptSchema(UpdateReceiptSchema):
     title: constr(max_length=128)
     is_public: bool = False
     owner_id: int
+    need_status: conint(ge=0)
 
 
 class ReceiptSchema(NewReceiptSchema):

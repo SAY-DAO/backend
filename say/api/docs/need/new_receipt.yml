@@ -1,7 +1,5 @@
 Create a new receipt for a need
-
 ---
-
 tags:
   - Need API
 
@@ -21,9 +19,8 @@ parameters:
 
   - name: code
     in: formData
-    type: integer
     type: string
-    description: uniqe, max 128 char
+    description: unique, max 128 char
 
   - name: attachment
     in: formData
@@ -46,6 +43,10 @@ parameters:
     type: boolean
     default: false
     description: default=false, only SUPER_ADMIN, SAY_SUPERVISOR, ADMIN can set to true
+
+  - name: needStatus
+    in: formData
+    type: integer
 
 responses:
   400:

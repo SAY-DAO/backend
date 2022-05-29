@@ -31,6 +31,7 @@ class Receipt(base, Timestamp):
     description = Column(Unicode(1024), nullable=True)
     title = Column(Unicode(128), nullable=False)
     is_public = Column(Boolean, default=False)
+    need_status = Column(Integer, nullable=True)
 
     needs = relationship(
         'Need',

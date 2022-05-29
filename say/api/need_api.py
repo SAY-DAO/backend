@@ -21,9 +21,9 @@ from say.config import configs
 from say.constants import CATEGORIES
 from say.constants import DEFAULT_CHILD_ID
 from say.date import parse_date
-from say.date import parse_datetime
 from say.decorators import json
 from say.decorators import validate
+from say.exceptions import HTTP_BAD_REQUEST
 from say.exceptions import HTTP_NOT_FOUND
 from say.exceptions import HTTP_PERMISION_DENIED
 from say.models import commit
@@ -669,6 +669,11 @@ class NeedReceipts(Resource):
 
         if need is None:
             raise HTTP_NOT_FOUND()
+
+        if need.status < data.need_status:
+            raise HTTP_BAD_REQUEST(
+                message='needStatus should be lower than current need status',
+            )
 
         receipt = Receipt(**data.dict())
         need_receipt = NeedReceipt(
