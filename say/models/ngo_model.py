@@ -28,6 +28,7 @@ NGO Model
 
 class Ngo(base, Timestamp):
     __tablename__ = "ngo"
+    __versioned__ = {}
 
     id = Column(Integer, primary_key=True, nullable=False, unique=True)
 

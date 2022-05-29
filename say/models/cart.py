@@ -90,6 +90,7 @@ class Cart(base, Timestamp):
 
 class CartPayment(base, Timestamp):
     __tablename__ = 'cart_payments'
+    __versioned__ = {}
 
     id = Column(Integer, primary_key=True)
 

@@ -20,6 +20,7 @@ from ..orm import base
 
 class Receipt(base, Timestamp):
     __tablename__ = 'receipt'
+    __versioned__ = {}
 
     id = Column(Integer, primary_key=True)
 

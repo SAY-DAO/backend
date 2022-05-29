@@ -19,6 +19,7 @@ def create_order_id():
 
 class Payment(base, Timestamp):
     __tablename__ = 'payment'
+    __versioned__ = {}
 
     id = Column(Integer, nullable=False, primary_key=True)
     id_need = Column(Integer, ForeignKey('need.id'), nullable=True, index=True)

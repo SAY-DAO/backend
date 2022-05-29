@@ -29,6 +29,7 @@ def expire_at():
 
 class Verification(base, Timestamp):
     __tablename__ = "verification"
+    __versioned__ = {}
 
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
     _code = Column(Unicode(6), nullable=False, default=generate_6_digit_secret)

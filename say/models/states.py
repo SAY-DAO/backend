@@ -15,6 +15,7 @@ from . import base
 
 class State(base):
     __tablename__ = 'states'
+    
     id = Column(Integer, primary_key=True)
     name = Column(Unicode(256), nullable=False)
     state_code = Column(Unicode(255), nullable=False)

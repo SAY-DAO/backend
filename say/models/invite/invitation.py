@@ -18,6 +18,7 @@ def generate_token():
 
 class Invitation(base, Timestamp):
     __tablename__ = 'invitations'
+    __versioned__ = {}
 
     id = Column(Integer, nullable=False, primary_key=True)
     inviter_id = Column(

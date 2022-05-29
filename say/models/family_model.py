@@ -11,6 +11,7 @@ Family Model
 
 class Family(base, Timestamp):
     __tablename__ = "family"
+    __versioned__ = {}
 
     id = Column(Integer, nullable=False, primary_key=True)
     id_child = Column(

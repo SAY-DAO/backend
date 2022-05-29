@@ -13,6 +13,7 @@ Need-Family Model
 # TODO: Participant?
 class NeedFamily(base, Timestamp):
     __tablename__ = "need_family"
+    __versioned__ = {}
 
     id = Column(Integer, nullable=False, primary_key=True)
     id_family = Column(Integer, ForeignKey('family.id'), nullable=True, index=True)

@@ -29,6 +29,7 @@ User Model
 
 class User(BaseUser, Timestamp):
     __tablename__ = 'user'
+    __versioned__ = {}
 
     __mapper_args__ = {
         'polymorphic_identity': 'user',

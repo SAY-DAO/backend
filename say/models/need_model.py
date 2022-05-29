@@ -26,6 +26,7 @@ Need Model
 
 class Need(base, Timestamp):
     __tablename__ = "need"
+    __versioned__ = {}
 
     id = Column(Integer, nullable=False, primary_key=True, unique=True)
 
