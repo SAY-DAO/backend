@@ -13,6 +13,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.schema import MetaData
 from sqlalchemy_continuum import make_versioned
 from sqlalchemy_continuum import plugins
+from sqlalchemy_continuum.plugins import PropertyModTrackerPlugin
 from sqlalchemy_utils import Country
 from sqlalchemy_utils import PhoneNumber
 
@@ -26,7 +27,11 @@ from .base import query_builder
 
 make_versioned(
     user_cls='BaseUser',
-    plugins=[flask_versioning_plugin, plugins.TransactionChangesPlugin()],
+    plugins=[
+        flask_versioning_plugin,
+        plugins.TransactionChangesPlugin(),
+        PropertyModTrackerPlugin(),
+    ],
 )
 
 metadata = MetaData(
