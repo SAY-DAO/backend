@@ -65,7 +65,7 @@ class NewReceiptSchema(UpdateReceiptSchema):
     title: constr(max_length=128)
     is_public: bool = False
     owner_id: int
-    need_status: conint(ge=0)
+    need_status: conint(ge=0) = None
 
 
 class ReceiptSchema(NewReceiptSchema):
