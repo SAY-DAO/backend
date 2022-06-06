@@ -162,6 +162,18 @@ class ListNeeds(Resource):
             needs = needs.offset(pagination.skip)
 
         needs = needs.options(selectinload(Need.child)).options(selectinload('child.ngo'))
+
+        if sw_role in [
+            SOCIAL_WORKER,
+            COORDINATOR,
+            NGO_SUPERVISOR,
+            SUPER_ADMIN,
+            SAY_SUPERVISOR,
+            ADMIN,
+        ]:
+            needs = needs.options(selectinload(Need.payments))
+
+        needs = needs.options(selectinload(Need.child)).options(selectinload('child.ngo'))
         result = OrderedDict(
             totalCount=needs.count(),
             needs=[],
@@ -179,6 +191,16 @@ class ListNeeds(Resource):
             res['childFirstName'] = child.firstName
             res['childLastName'] = child.lastName
             res['childSayName'] = child.sayName
+
+            if sw_role in [
+                SOCIAL_WORKER,
+                COORDINATOR,
+                NGO_SUPERVISOR,
+                SUPER_ADMIN,
+                SAY_SUPERVISOR,
+                ADMIN,
+            ]:
+                res['payments'] = obj_to_dict(need.payments)
 
             result['needs'].append(res)
 
