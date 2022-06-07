@@ -20,3 +20,4 @@ from .receipts import *
 from .search_api import *
 from .social_worker_api import *
 from .user_api import *
+from .versions import *
