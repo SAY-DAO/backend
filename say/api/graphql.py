@@ -1,0 +1,19 @@
+from graphql_server.flask import GraphQLView
+from schema import schema
+
+from say.app import app
+
+
+app.add_url_rule(
+    '/graphql',
+    view_func=GraphQLView.as_view(
+        'graphql',
+        schema=schema,
+        graphiql=True,
+    ),
+)
+
+# Optional, for adding batch query support (used in Apollo-Client)
+app.add_url_rule(
+    '/graphql/batch', view_func=GraphQLView.as_view('graphql', schema=schema, batch=True)
+)

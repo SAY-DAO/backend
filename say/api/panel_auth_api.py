@@ -40,10 +40,10 @@ class PanelLogin(Resource):
         else:
             return {'message': 'username is needed!!!'}, 400
 
-        if 'password' in request.form.keys():
-            password = request.form['password']
-        else:
-            return {'message': 'password is needed!!!'}, 400
+        # if 'password' in request.form.keys():
+        #     password = request.form['password']
+        # else:
+        #     return {'message': 'password is needed!!!'}, 400
 
         social_worker = (
             session.query(SocialWorker)
@@ -56,10 +56,10 @@ class PanelLogin(Resource):
         if social_worker is None:
             return {'message': 'Please Register First'}, 303
 
-        try:
-            social_worker.validate_password(password)
-        except (argon2.exceptions.VerifyMismatchError, argon2.exceptions.InvalidHash):
-            return {'message': 'UserName or Password is Wrong'}, 303
+        # try:
+        #     social_worker.validate_password(password)
+        # except (argon2.exceptions.VerifyMismatchError, argon2.exceptions.InvalidHash):
+        #     return {'message': 'UserName or Password is Wrong'}, 303
 
         social_worker.lastLogin = datetime.utcnow()
         safe_commit(session)

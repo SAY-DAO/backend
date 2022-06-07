@@ -54,6 +54,10 @@ session_factory = sessionmaker(
 )
 session = scoped_session(session_factory)
 
+# For GraphQl
+# See https://docs.graphene-python.org/projects/sqlalchemy/en/latest/tips/#querying
+base.query = session.query_property()
+
 
 def create_engine(url, *args, **kwargs):
     return sa_create_engine(url, pool_pre_ping=True, *args, **kwargs)

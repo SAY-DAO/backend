@@ -8,6 +8,7 @@ from flasgger import Swagger
 from flask import Flask
 from flask import jsonify
 from flask_cors import CORS
+from graphql_server.flask import GraphQLView
 from pydantic.error_wrappers import ValidationError
 
 from say.api.ext import api
@@ -18,6 +19,7 @@ from say.api.ext import mail
 from say.api.ext import setup_healthz
 from say.config import configs
 from say.exceptions import HTTPException
+from say.graphql import schema
 from say.orm import create_engine
 from say.orm import init_model
 from say.orm import session
@@ -37,12 +39,30 @@ app.config['PROPAGATE_EXCEPTIONS'] = True
 app.config.update(configs.to_dict())
 
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+
 app.config["SWAGGER"] = {
     # "swagger_version": "3.20.9",
     "specs": [
         {"version": "2.0", "title": "SAY API", "endpoint": "api_v2", "route": "/api/v2"}
     ]
 }
+
+### GraphQL API ###
+app.add_url_rule(
+    '/graphql',
+    view_func=GraphQLView.as_view(
+        'graphql',
+        schema=schema,
+        graphiql=True,
+    ),
+)
+
+# Optional, for adding batch query support (used in Apollo-Client)
+app.add_url_rule(
+    '/graphql/batch',
+    view_func=GraphQLView.as_view('graphql_batch', schema=schema, batch=True),
+)
+### END GraphQL API ###
 
 
 Swagger(app)
