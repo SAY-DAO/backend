@@ -692,7 +692,7 @@ class NeedReceipts(Resource):
         if need is None:
             raise HTTP_NOT_FOUND()
 
-        if need.status and need.status < data.need_status:
+        if data.need_status and need.status < data.need_status:
             raise HTTP_BAD_REQUEST(
                 message='needStatus should be lower than current need status',
             )
