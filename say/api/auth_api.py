@@ -156,18 +156,19 @@ class RegisterUser(Resource):
                 422,
             )
 
-        verification = (
-            session.query(Verification)
-            .filter(
-                Verification._code == code,
-                Verification.verified.is_(True),
-                or_(
-                    EmailVerification.email == email,
-                    PhoneVerification.phone_number == phone_number,
-                ),
-            )
-            .one_or_none()
+        verification_query = session.query(Verification).filter(
+            Verification._code == code,
+            Verification.verified.is_(True),
         )
+
+        if email:
+            verification = verification_query.filter(
+                EmailVerification.email == email,
+            ).one_or_none()
+        else:  # phone
+            verification = verification_query.filter(
+                PhoneVerification.phone_number == phone_number,
+            ).one_or_none()
 
         if not verification:
             return {'message': 'Invalid verifyCode'}, 400
