@@ -120,7 +120,7 @@ class ListNeeds(Resource):
             .order_by(Need.doneAt.desc())
         )
         
-        all_needs_count = len(needs)
+        all_needs_count = needs.count()
 
         if data.is_confirmed is not None:
             needs = needs.filter_by(isConfirmed=data.is_confirmed)
@@ -177,6 +177,7 @@ class ListNeeds(Resource):
 
         needs = needs.options(selectinload(Need.child)).options(selectinload('child.ngo'))
         result = OrderedDict(
+            all_needs_count=all_needs_count,
             totalCount=needs.count(),
             needs=[],
         )
@@ -205,7 +206,6 @@ class ListNeeds(Resource):
                 res['payments'] = obj_to_dict(need.payments)
 
             result['needs'].append(res)
-            result['all_counts'].append(all_needs_count)
 
         return result
 
