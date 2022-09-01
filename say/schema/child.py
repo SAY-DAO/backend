@@ -82,6 +82,7 @@ class UserChildSchemaV3(ChildSchemaV3):
 
 class Participant(BaseModel):
     user_avatar: str = None
+    id_user: int = None
 
     class Config:
         orm_mode = True
