@@ -119,7 +119,7 @@ class ListNeeds(Resource):
             .filter(Need.isDeleted.is_(False))
             .order_by(Need.doneAt.desc())
         )
-        
+
         all_needs_count = needs.count()
 
         if data.is_confirmed is not None:
@@ -546,7 +546,20 @@ class AddNeed(Resource):
 
         image_url = image_path
 
-        category = int(request.form['category'])
+        category = request.form.get('category')
+        if category:
+            try:
+                category = int(request.form['category'])
+                if (
+                    category == -1
+                ):  # TODO: Added to be backward-compatible with current panel, Delete after new panel
+                    category = None
+            except ValueError:
+                return {'message': 'error: category should be integer!'}, 400
+
+            if category is not None and category not in CATEGORIES:
+                return {'message': f'error: category should be {CATEGORIES}'}, 400
+
         cost = request.form['cost'].replace(',', '')
 
         name_translations = ujson.loads(request.form['name_translations'])

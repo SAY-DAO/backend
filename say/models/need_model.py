@@ -41,7 +41,8 @@ class Need(base, Timestamp):
 
     imageUrl = Column(ResourceURL, nullable=False)
     category = Column(
-        Integer, nullable=False
+        Integer,
+        nullable=True,
     )  # 0:Growth | 1:Joy | 2:Health | 3:Surroundings
     isUrgent = Column(Boolean, nullable=False)
     details = Column(Text, nullable=True)
