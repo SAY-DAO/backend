@@ -26,6 +26,7 @@ class PreNeedsAPi(Resource):
             Need.title,
             Need.type,
             Need.details,
+            Need.unpayable,
         ).filter(
             Need.child_id == DEFAULT_CHILD_ID,
             Need.isDeleted.is_(False),
