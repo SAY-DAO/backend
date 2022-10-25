@@ -1,4 +1,4 @@
-version: '3.6'
+version: "3.6"
 
 services:
   redis:
@@ -34,8 +34,8 @@ services:
       - postgres-password
       - flower-password
     networks:
-     - default
-     - traefik-public
+      - default
+      - traefik-public
     deploy:
       placement:
         constraints:
@@ -181,4 +181,3 @@ secrets:
   flower-password:
     name: ${STACK_NAME}-flower-password
     external: true
-

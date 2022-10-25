@@ -3,16 +3,16 @@ name: "CI/CD"
 env:
   REGISTRY: ghcr.io
   DEVELOPMENT: dev
-  STAGING: stag
+  STAGING: staging
   PRODUCTION: prod
   MAIN_BRANCH: master
   DEV_DOMAIN: api.d.sayapp.company
-  STAGE_DOMAIN: api.s.sayapp.company
+  STAGING_DOMAIN: api.s.sayapp.company
   PROD_DOMAIN: api.sayapp.company
   TARGET_LAYER: prod
   TEST_TARGET_LAYER: development
   DEV_STACK_NAME: say-dev-backend
-  STAGE_STACK_NAME: say-stag-backend
+  STAGING_STACK_NAME: say-staging-backend
   PROD_STACK_NAME: say-backend
   DOCKER_COMPOSE_PATH: docker-compose.yml
   DOCKER_STACK_PATH: docker-stack.yml
@@ -53,7 +53,7 @@ jobs:
       - name: Set Staging Envars
         if: ${{ env.REF == 'master' }}
         run: |
-          echo "ENVIRONMENT=stag" >> $GITHUB_ENV
+          echo "ENVIRONMENT=staging" >> $GITHUB_ENV
 
       - name: Set Production Envars
         if: ${{ env.REF == 'release' }}
@@ -205,7 +205,7 @@ jobs:
 
     environment:
       name: Staging
-      url: https://${{ env.STAGE_DOMAIN }}
+      url: https://${{ env.STAGING_DOMAIN }}
 
     steps:
       - name: Git Checkout
@@ -213,32 +213,32 @@ jobs:
 
       - name: Set Envars
         run: |
-          echo "STACK_FILE=docker-stack-${{ env.STAGE_STACK_NAME }}-${{ github.sha }}.yml" >> $GITHUB_ENV
+          echo "STACK_FILE=docker-stack-${{ env.STAGING_STACK_NAME }}-${{ github.sha }}.yml" >> $GITHUB_ENV
 
       - name: Prepare Stack File
         run: >
-          ENVIRONMENT=${{ env.STAGING }} DOMAIN=${{ env.STAGE_DOMAIN }} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${{ env.STAGE_STACK_NAME }}
+          ENVIRONMENT=${{ env.STAGING }} DOMAIN=${{ env.STAGING_DOMAIN }} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${{ env.STAGING_STACK_NAME }}
           docker-compose -f ${{ env.DOCKER_COMPOSE_PATH }} -f ${{ env.DOCKER_STACK_PATH }} config
           > ${{ env.STACK_FILE }}
 
       - name: Move Stack File to Server
         uses: appleboy/scp-action@v0.1.1
         with:
-          host: ${{ secrets.STAGE_SERVER_ADDR }}
-          username: ${{ secrets.STAGE_SERVER_USER }}
-          key: ${{ secrets.STAGE_SSH_PRIVATE_KEY }}
-          port: ${{ secrets.STAGE_SERVER_PORT }}
+          host: ${{ secrets.STAGING_SERVER_ADDR }}
+          username: ${{ secrets.STAGING_SERVER_USER }}
+          key: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.STAGING_SERVER_PORT }}
           source: ${{ env.STACK_FILE }}
           target: "/tmp"
 
       - name: Deploy Stack
         uses: appleboy/ssh-action@v0.1.4
         with:
-          host: ${{ secrets.STAGE_SERVER_ADDR }}
-          username: ${{ secrets.STAGE_SERVER_USER }}
-          key: ${{ secrets.STAGE_SSH_PRIVATE_KEY }}
-          port: ${{ secrets.STAGE_SERVER_PORT }}
-          script: docker stack deploy --prune --resolve-image=changed --with-registry-auth -c /tmp/${{ env.STACK_FILE }} ${{ env.STAGE_STACK_NAME }}
+          host: ${{ secrets.STAGING_SERVER_ADDR }}
+          username: ${{ secrets.STAGING_SERVER_USER }}
+          key: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.STAGING_SERVER_PORT }}
+          script: docker stack deploy --prune --resolve-image=changed --with-registry-auth -c /tmp/${{ env.STACK_FILE }} ${{ env.STAGING_STACK_NAME }}
 
   deploy_production:
     name: Deploy to Production Server
