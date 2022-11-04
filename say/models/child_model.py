@@ -135,7 +135,8 @@ class Child(base, Timestamp):
                 Need.child_id == id,
             )
         )
-        .correlate_except(Need),
+        .correlate_except(Need)
+        .scalar_subquery(),
     )
 
     spent_credit = column_property(
@@ -148,7 +149,8 @@ class Child(base, Timestamp):
             ]
         )
         .where(and_(Need.child_id == id, Need.isDeleted.is_(False)))
-        .correlate_except(Need),
+        .correlate_except(Need)
+        .scalar_subquery(),
     )
 
     needs = relationship(

@@ -26,13 +26,22 @@ class NeedFamily(base, Timestamp):
     username = association_proxy('user', 'userName')
 
     paid = column_property(
-        select([coalesce(func.sum(Payment.need_amount), 0,)]).where(
+        select(
+            [
+                coalesce(
+                    func.sum(Payment.need_amount),
+                    0,
+                )
+            ]
+        )
+        .where(
             and_(
                 Payment.verified.isnot(None),
                 Payment.id_user == id_user,
                 Payment.id_need == id_need,
             )
         )
+        .scalar_subquery()
     )
 
     family = relationship(

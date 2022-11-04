@@ -51,37 +51,73 @@ class Ngo(base, Timestamp):
     isDeleted = Column(Boolean, nullable=False, default=False)
 
     socialWorkerCount = column_property(
-        select([coalesce(func.count(1), 0,)]).where(
+        select(
+            [
+                coalesce(
+                    func.count(1),
+                    0,
+                )
+            ]
+        )
+        .where(
             SocialWorker.ngo_id == id,
         )
+        .scalar_subquery()
     )
 
     currentSocialWorkerCount = column_property(
-        select([coalesce(func.count(1), 0,)]).where(
+        select(
+            [
+                coalesce(
+                    func.count(1),
+                    0,
+                )
+            ]
+        )
+        .where(
             and_(
                 SocialWorker.ngo_id == id,
                 SocialWorker.is_active.is_(True),
                 SocialWorker.is_deleted.is_(False),
             )
         )
+        .scalar_subquery()
     )
 
     childrenCount = column_property(
-        select([coalesce(func.count(1), 0,)]).where(
+        select(
+            [
+                coalesce(
+                    func.count(1),
+                    0,
+                )
+            ]
+        )
+        .where(
             and_(
                 Child.id_ngo == id,
             )
         )
+        .scalar_subquery()
     )
 
     currentChildrenCount = column_property(
-        select([coalesce(func.count(1), 0,)]).where(
+        select(
+            [
+                coalesce(
+                    func.count(1),
+                    0,
+                )
+            ]
+        )
+        .where(
             and_(
                 Child.id_ngo == id,
                 Child.isDeleted.is_(False),
                 Child.isMigrated.is_(False),
             )
         )
+        .scalar_subquery()
     )
 
     coordinators = relationship(

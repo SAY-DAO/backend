@@ -88,25 +88,51 @@ class User(BaseUser, Timestamp):
         return or_(cls.is_phonenumber_verified, cls.is_email_verified)
 
     spent = column_property(
-        select([coalesce(func.sum(Payment.need_amount), 0,)]).where(
+        select(
+            [
+                coalesce(
+                    func.sum(Payment.need_amount),
+                    0,
+                )
+            ]
+        )
+        .where(
             and_(
                 Payment.verified.isnot(None),
                 Payment.id_user == id,
             )
         )
+        .scalar_subquery()
     )
 
     credit = column_property(
-        select([coalesce(func.sum(-Payment.credit_amount), 0,)]).where(
+        select(
+            [
+                coalesce(
+                    func.sum(-Payment.credit_amount),
+                    0,
+                )
+            ]
+        )
+        .where(
             and_(
                 Payment.verified.isnot(None),
                 Payment.id_user == id,
             )
         )
+        .scalar_subquery()
     )
 
     done_needs_count = column_property(
-        select([coalesce(func.count(Need.id), 0,)]).where(
+        select(
+            [
+                coalesce(
+                    func.count(Need.id),
+                    0,
+                )
+            ]
+        )
+        .where(
             and_(
                 NeedFamily.id_user == id,
                 NeedFamily.id_need == Need.id,
@@ -114,6 +140,7 @@ class User(BaseUser, Timestamp):
                 Need.isDeleted.is_(False),
             )
         )
+        .scalar_subquery()
     )
 
     payments = relationship(

@@ -40,7 +40,9 @@ class CartNeed(base, Timestamp):
     paid = association_proxy('need', 'paid')
     deleted = Column(DateTime, nullable=True)
 
-    amount = column_property(select([Need.cost - Need.paid]).where(Need.id == need_id))
+    amount = column_property(
+        select([Need.cost - Need.paid]).where(Need.id == need_id).scalar_subquery()
+    )
 
     cart = relationship(
         'Cart',
@@ -63,12 +65,14 @@ class Cart(base, Timestamp):
     user_id = Column(Integer, ForeignKey('user.id'), nullable=False, unique=True)
 
     total_amount = column_property(
-        select([cast(coalesce(func.sum(CartNeed.amount), 0), Integer)]).where(
+        select([cast(coalesce(func.sum(CartNeed.amount), 0), Integer)])
+        .where(
             and_(
                 CartNeed.cart_id == id,
                 CartNeed.deleted.is_(None),
             )
         )
+        .scalar_subquery()
     )
 
     cart_payments = relationship(

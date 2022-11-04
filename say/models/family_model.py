@@ -62,7 +62,8 @@ class Family(base, Timestamp):
                 UserFamily.id_family == id,
             )
         )
-        .correlate_except(UserFamily),
+        .correlate_except(UserFamily)
+        .scalar_subquery(),
     )
 
     # def current_members(self):

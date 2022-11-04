@@ -146,34 +146,69 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin, SoftDeleteMixin):
     )
 
     child_count = column_property(
-        select([coalesce(func.count(1), 0,)]).where(
+        select(
+            [
+                coalesce(
+                    func.count(1),
+                    0,
+                )
+            ]
+        )
+        .where(
             and_(
                 Child.id_social_worker == id,
             )
         )
+        .scalar_subquery()
     )
 
     current_child_count = column_property(
-        select([coalesce(func.count(1), 0,)]).where(
+        select(
+            [
+                coalesce(
+                    func.count(1),
+                    0,
+                )
+            ]
+        )
+        .where(
             and_(
                 Child.id_social_worker == id,
                 Child.isDeleted.is_(False),
                 Child.isMigrated.is_(False),
             )
         )
+        .scalar_subquery()
     )
 
     need_count = column_property(
-        select([coalesce(func.count(1), 0,)]).where(
+        select(
+            [
+                coalesce(
+                    func.count(1),
+                    0,
+                )
+            ]
+        )
+        .where(
             and_(
                 Child.id_social_worker == id,
                 Need.child_id == Child.id,
             )
         )
+        .scalar_subquery()
     )
 
     current_need_count = column_property(
-        select([coalesce(func.count(1), 0,)]).where(
+        select(
+            [
+                coalesce(
+                    func.count(1),
+                    0,
+                )
+            ]
+        )
+        .where(
             and_(
                 Child.id_social_worker == id,
                 Need.child_id == Child.id,
@@ -181,6 +216,7 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin, SoftDeleteMixin):
                 Need.isConfirmed.is_(True),
             )
         )
+        .scalar_subquery()
     )
 
     city = relationship('City', foreign_keys=city_id)

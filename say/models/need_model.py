@@ -81,30 +81,50 @@ class Need(base, Timestamp):
     unconfirmed_at = Column(DateTime, nullable=True)
 
     paid = column_property(
-        select([coalesce(func.sum(Payment.need_amount), 0,)]).where(
+        select(
+            [
+                coalesce(
+                    func.sum(Payment.need_amount),
+                    0,
+                )
+            ]
+        )
+        .where(
             and_(
                 Payment.verified.isnot(None),
                 Payment.id_need == id,
             )
         )
+        .scalar_subquery()
     )
 
     donated = column_property(
-        select([coalesce(func.sum(Payment.donation_amount), 0,)]).where(
+        select(
+            [
+                coalesce(
+                    func.sum(Payment.donation_amount),
+                    0,
+                )
+            ]
+        )
+        .where(
             and_(
                 Payment.verified.isnot(None),
                 Payment.id_need == id,
             )
         )
+        .scalar_subquery()
     )
 
     receipt_count = column_property(
-        select([coalesce(func.count(1), 0)]).where(
+        select([coalesce(func.count(1), 0)])
+        .where(
             and_(
                 NeedReceipt.need_id == id,
                 NeedReceipt.deleted.is_(None),
             )
         )
+        .scalar_subquery()
     )
 
     created_by = relationship(

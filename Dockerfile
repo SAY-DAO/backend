@@ -1,4 +1,4 @@
-FROM python:3.8 AS base
+FROM python:3.10 AS base
 
 ENV VIRTUAL_ENV=/opt/venv
 # WORKDIR $VIRTUAL_ENV
@@ -21,7 +21,7 @@ COPY requirements-dev.txt .
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r requirements-dev.txt
 
-FROM python:3.8-slim AS prod
+FROM python:3.10-slim AS prod
 RUN apt update && apt install curl -y
 ENV VIRTUAL_ENV=/opt/venv
 COPY --from=base $VIRTUAL_ENV $VIRTUAL_ENV

@@ -30,7 +30,6 @@ from sqlalchemy.ext.associationproxy import ASSOCIATION_PROXY
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import HYBRID_PROPERTY
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import configure_mappers
 from sqlalchemy.orm import object_session
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import scoped_session
@@ -85,6 +84,8 @@ translation_hybrid = TranslationHybrid(
     default_locale=DEFAULT_LOCALE,
 )
 
+
+from sqlalchemy.orm import configure_mappers
 
 from .activity_model import Activity
 from .base_user import BaseUser
