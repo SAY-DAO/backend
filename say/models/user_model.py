@@ -43,6 +43,8 @@ class User(BaseUser, Timestamp):
         unique=True,
     )
 
+    city_id = Column(Integer, ForeignKey('cities.id'), nullable=True)
+
     firstName = Column(String, nullable=False)
     lastName = Column(String, nullable=False)
     userName = Column(String, nullable=False, unique=True)
@@ -52,8 +54,8 @@ class User(BaseUser, Timestamp):
         unique=True,
     )
     phone_number = Column(PhoneNumberType(), unique=True, index=True, nullable=True)
-    country = Column(CountryType, nullable=True)
-    city = Column(Integer, nullable=False)  # 1:tehran | 2:karaj
+    _country = Column(CountryType, nullable=True)
+    _city = Column(Integer, nullable=True)  # 1:tehran | 2:karaj
     postal_address = Column(Text, nullable=True)
     postal_code = Column(Unicode(10), nullable=True)
     emailAddress = Column(String, nullable=True, unique=True, index=True)
@@ -62,7 +64,6 @@ class User(BaseUser, Timestamp):
     is_email_verified = Column(Boolean, nullable=False, default=False, index=True)
     is_phonenumber_verified = Column(Boolean, nullable=False, default=False, index=True)
     birthDate = Column(Date, nullable=True)
-    birthPlace = Column(Integer, nullable=True)  # 1:tehran | 2:karaj
     lastLogin = Column(DateTime, nullable=False)
     _password = Column(String, nullable=False)
     locale = Column(LocaleType, default=Locale('fa'), nullable=False)
@@ -115,6 +116,8 @@ class User(BaseUser, Timestamp):
             )
         )
     )
+
+    city = relationship('City', foreign_keys=city_id)
 
     payments = relationship(
         'Payment',

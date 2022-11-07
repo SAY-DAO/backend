@@ -9,6 +9,7 @@ from flask_restful import Resource
 from sqlalchemy import func
 
 from say.gender import Gender
+from say.models import City
 from say.models import commit
 from say.models import obj_to_dict
 from say.models.family_model import Family
@@ -182,14 +183,12 @@ class UpdateUserById(Resource):
         if 'lastName' in request.form.keys():
             user.lastName = request.form['lastName']
 
-        if 'country_code' in request.form.keys():
-            user.country_code = request.form['country_code']
+        if 'cityId' in request.form.keys():
+            city = session.query(City).get(request.form.get('city_id'))
+            if city is None:
+                return {'message': 'Invalid cityId'}, 400
 
-        if 'city' in request.form.keys():
-            user.city = int(request.form['city'])
-
-        if 'country' in request.form.keys():
-            user.country = request.form['country']
+            user.city_id = request.form.get('city_id')
 
         if 'postal_address' in request.form.keys():
             user.postal_address = request.form['postal_address']
@@ -205,9 +204,6 @@ class UpdateUserById(Resource):
                     ),
                     498,
                 )
-
-        if 'birthPlace' in request.form.keys():
-            user.birthPlace = int(request.form['birthPlace'])
 
         if 'locale' in request.form.keys():
             user.locale = request.form['locale'].lower()
@@ -336,11 +332,6 @@ class AddUser(Resource):
         else:
             birth_date = None
 
-        if 'birthPlace' in request.form.keys():
-            birth_place = int(request.form['birthPlace'])
-        else:
-            birth_place = None
-
         if 'phoneNumber' in request.form.keys():
             phone_number = request.form['phoneNumber']
         else:
@@ -349,8 +340,7 @@ class AddUser(Resource):
         password = request.form['password']
         first_name = request.form['firstName']
         last_name = request.form['lastName']
-        city = int(request.form['city'])
-        country_code = request.form['countryCode']
+        city_id = int(request.form['cityId'])
 
         username = request.form['userName']
 
@@ -375,10 +365,8 @@ class AddUser(Resource):
             phone_number=phone_number,
             emailAddress=email_address,
             gender=gender,
-            city=city,
-            country=country_code,
+            city_id=city_id,
             birthDate=birth_date,
-            birthPlace=birth_place,
             lastLogin=last_login,
             password=password,
         )

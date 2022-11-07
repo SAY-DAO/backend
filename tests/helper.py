@@ -124,8 +124,7 @@ class BaseTestClass:
                     firstName=f'test{seed}',
                     lastName=f'test{seed}',
                     avatarUrl=self.create_test_file('test.png'),
-                    city=1,
-                    country=1,
+                    city_id=self._create_city().id,
                     lastLogin=datetime.utcnow(),
                     cart=Cart(),
                 )

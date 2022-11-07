@@ -7,7 +7,6 @@ The same rule applied for nationality and birthPlace.
 For voiceUrl and awakeAvatarUrl you have to upload a file; for avatar in png, jpg or jpeg and for voice in wav, m4a, wma, mp3, aac or ogg format.
 Social workers can change their NGO by editing ngoId field.
 ---
-
 tags:
   - Child API
 

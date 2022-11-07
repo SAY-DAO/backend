@@ -3,7 +3,6 @@ Returns required information for dashboard as a json object.
 It contains user data and user urgent needs.
 Calling this API affects need, child, child_need, need_family and user tables.
 ---
-
 tags:
   - Dashboard API
 
@@ -13,7 +12,7 @@ parameters:
     description: Access Token
     required: true
     type: string
- 
+
 responses:
   500:
     description: Error occurred somewhere!
@@ -70,10 +69,6 @@ responses:
           type: string
           description: the user's email address in correct format
           example: "sample@mail.com"
-
-        birthPlace:
-          type: integer
-          description: the user's birth place international code
 
         birthDate:
           type: string
