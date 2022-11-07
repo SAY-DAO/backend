@@ -187,7 +187,7 @@ def authorize(*roles):
 
             except (PyJWTError, JWTExtendedException) as ex:
                 getLogger().info(ex)
-                return make_response(jsonify(message=f'Unauthorized, {ex}'), 401)
+                return make_response(jsonify(message='Unauthorized'), 401)
 
             if get_user_role() not in roles:
                 return make_response(jsonify(message='Permission Denied'), 403)
