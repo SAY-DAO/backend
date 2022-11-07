@@ -184,11 +184,11 @@ class UpdateUserById(Resource):
             user.lastName = request.form['lastName']
 
         if 'cityId' in request.form.keys():
-            city = session.query(City).get(request.form.get('city_id'))
+            city = session.query(City).get(request.form.get('cityId'))
             if city is None:
                 return {'message': 'Invalid cityId'}, 400
 
-            user.city_id = request.form.get('city_id')
+            user.city_id = request.form.get('cityId')
 
         if 'postal_address' in request.form.keys():
             user.postal_address = request.form['postal_address']

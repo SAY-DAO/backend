@@ -44,6 +44,7 @@ class User(BaseUser, Timestamp):
     )
 
     city_id = Column(Integer, ForeignKey('cities.id'), nullable=True)
+    cityId = synonym('city_id') # TODO: For compatibily
 
     firstName = Column(String, nullable=False)
     lastName = Column(String, nullable=False)
