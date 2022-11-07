@@ -39,6 +39,8 @@ from say.exceptions import HTTP_NOT_FOUND
 from say.exceptions import HTTP_PERMISION_DENIED
 from say.models import Child
 from say.models import ChildNeed
+from say.models import City
+from say.models import Country
 from say.models import Family
 from say.models import Invitation
 from say.models import Need
@@ -485,8 +487,10 @@ class AddChild(Resource):
 
         code = sw.generated_code + format(sw.child_count + 1, '04d')
 
-        if 'nationality' in request.form.keys():
-            nationality = int(request.form['nationality'])
+        if 'nationalityId' in request.form.keys():
+            nationality = session.query(Country).get(request.form['nationalityId'])
+            if nationality is None:
+                return {'message': 'Invalid nationalityId'}, 400
         else:
             nationality = None
 
@@ -509,8 +513,11 @@ class AddChild(Resource):
         else:
             last_name_translations = None
 
-        if 'birthPlace' in request.form.keys():
-            birth_place = request.form['birthPlace']
+        if 'birthPlaceId' in request.form.keys():
+            birth_place_id = request.form['birthPlaceId']
+            birth_place = session.query(City).get(birth_place_id)
+            if birth_place is None:
+                return {'message': 'Invalid birthPlaceId'}, 400
         else:
             birth_place = None
 
@@ -536,8 +543,12 @@ class AddChild(Resource):
 
         birth_date = datetime.strptime(request.form['birthDate'], '%Y-%m-%d')
         phone_number = request.form['phoneNumber']
-        country = int(request.form['country'])
-        city = int(request.form['city'])
+
+        city_id = request.form['cityId']
+        city = session.query(City).get(city_id)
+        if city is None:
+            return {'message': 'Invalid cityId'}, 400
+
         sayname_translations = ujson.loads(request.form['sayname_translations'])
         bio_translations = ujson.loads(request.form['bio_translations'])
         bio_summary_translations = ujson.loads(request.form['bio_summary_translations'])
@@ -553,7 +564,7 @@ class AddChild(Resource):
             lastName_translations=last_name_translations,
             familyCount=family_count,
             education=education,
-            birthPlace=birth_place,
+            birth_place=birth_place,
             birthDate=birth_date,
             address=address,
             voiceUrl='',
@@ -562,7 +573,6 @@ class AddChild(Resource):
             sayname_translations=sayname_translations,
             bio_translations=bio_translations,
             bio_summary_translations=bio_summary_translations,
-            country=country,
             city=city,
             gender=gender,
             status=status,
@@ -732,8 +742,12 @@ class UpdateChildById(Resource):
         if 'phoneNumber' in request.form.keys():
             primary_child.phoneNumber = request.form['phoneNumber']
 
-        if 'nationality' in request.form.keys():
-            primary_child.nationality = int(request.form['nationality'])
+        if 'nationalityId' in request.form.keys():
+            nationality = session.query(Country).get(request.form['nationalityId'])
+            if nationality is None:
+                return {'message': 'Invalid nationalityId'}, 400
+
+            primary_child.nationality = nationality
 
         if 'housingStatus' in request.form.keys():
             primary_child.housingStatus = int(request.form['housingStatus'])
@@ -754,11 +768,12 @@ class UpdateChildById(Resource):
         if 'familyCount' in request.form.keys():
             primary_child.familyCount = int(request.form['familyCount'])
 
-        if 'country' in request.form.keys():
-            primary_child.country = int(request.form['country'])
+        if 'cityId' in request.form.keys():
+            city = session.query(City).get(request.form['cityId'])
+            if city is None:
+                return {'message': 'Invalid cityId'}, 400
 
-        if 'city' in request.form.keys():
-            primary_child.city = int(request.form['city'])
+            primary_child.city = city
 
         if 'status' in request.form.keys():
             primary_child.status = int(request.form['status'])
@@ -766,8 +781,12 @@ class UpdateChildById(Resource):
         if 'education' in request.form.keys():
             primary_child.education = int(request.form['education'])
 
-        if 'birthPlace' in request.form.keys():
-            primary_child.birthPlace = request.form['birthPlace']
+        if 'birthPlaceId' in request.form.keys():
+            birth_place = session.query(City).get(request.form['birthPlaceId'])
+            if birth_place is None:
+                return {'message': 'Invalid birthPlaceId'}, 400
+
+            primary_child.birth_place = birth_place
 
         if 'birthDate' in request.form.keys():
             primary_child.birthDate = datetime.strptime(

@@ -1,3 +1,4 @@
+
 from datetime import time
 
 import pytz
@@ -27,6 +28,10 @@ class Child(base, Timestamp):
         Integer, ForeignKey('social_worker.id'), nullable=False, index=True
     )
 
+    city_id = Column(Integer, ForeignKey('cities.id'), nullable=True)
+    birth_place_id = Column(Integer, ForeignKey('cities.id'), nullable=True)
+    nationality_id = Column(Integer, ForeignKey('countries.id'), nullable=True)
+
     firstName_translations = Column(HSTORE)
     firstName = translation_hybrid(firstName_translations)
 
@@ -37,12 +42,13 @@ class Child(base, Timestamp):
     sayName = translation_hybrid(sayname_translations)
 
     phoneNumber = Column(String, nullable=False)
-    nationality = Column(Integer, nullable=True)  # 98:iranian | 93:afghan
-    country = Column(
-        Integer, nullable=False
+
+    _nationality = Column(Integer, nullable=True)  # 98:iranian | 93:afghan
+    _country = Column(
+        Integer, nullable=True
     )  # 98:iran | 93:afghanistan | ... (real country codes) / [must be change after using real country/city api]
-    city = Column(
-        Integer, nullable=False
+    _city = Column(
+        Integer, nullable=True
     )  # 1:tehran | 2:karaj / [must be change after using real country/city api]
 
     awakeAvatarUrl = Column(ResourceURL, nullable=False)
@@ -57,7 +63,7 @@ class Child(base, Timestamp):
     bioSummary = translation_hybrid(bio_summary_translations)
     sayFamilyCount = Column(Integer, nullable=False, default=0)
     voiceUrl = Column(ResourceURL, nullable=False)
-    birthPlace = Column(
+    _birthPlace = Column(
         Text, nullable=True
     )  # 1:tehran | 2:karaj / [must be change after using real country/city api]
     birthDate = Column(Date, nullable=True)
@@ -86,12 +92,34 @@ class Child(base, Timestamp):
     socialWorkerGeneratedCode = association_proxy('social_worker', 'generated_code')
     childFamilyMembers = association_proxy('family', 'members')
 
+    city = relationship('City', foreign_keys=city_id, lazy='selectin')
+    birth_place = relationship('City', foreign_keys=birth_place_id)
+    nationality = relationship('Country', foreign_keys=nationality_id)
+    needs = relationship(
+        'Need',
+        back_populates='child',
+        primaryjoin='and_(Need.child_id==Child.id, ~Need.isDeleted)',
+    )
+    family = relationship('Family', back_populates='child', uselist=False)
+
+    ngo = relationship('Ngo', foreign_keys='Child.id_ngo')
+
+    social_worker = relationship(
+        'SocialWorker',
+        foreign_keys=id_social_worker,
+        back_populates='children',
+    )
+    migrations = relationship(
+        'ChildMigration',
+        back_populates='child',
+    )
+
     @hybrid_property
     def avatarUrl(self):
         # TODO: Use right timezone
         now_time = datetime.utcnow().time()
 
-        if self.country == 98 or self.country == 93:
+        if self.city.country.phone_code in [98,93]:
             tz = pytz.timezone('Asia/Tehran')
             now_time = datetime.now(tz).time()
 
@@ -149,25 +177,6 @@ class Child(base, Timestamp):
         )
         .where(and_(Need.child_id == id, Need.isDeleted.is_(False)))
         .correlate_except(Need),
-    )
-
-    needs = relationship(
-        'Need',
-        back_populates='child',
-        primaryjoin='and_(Need.child_id==Child.id, ~Need.isDeleted)',
-    )
-    family = relationship('Family', back_populates='child', uselist=False)
-
-    ngo = relationship('Ngo', foreign_keys='Child.id_ngo')
-
-    social_worker = relationship(
-        'SocialWorker',
-        foreign_keys=id_social_worker,
-        back_populates='children',
-    )
-    migrations = relationship(
-        'ChildMigration',
-        back_populates='child',
     )
 
     @classmethod
