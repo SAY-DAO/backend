@@ -32,6 +32,10 @@ class Child(base, Timestamp):
     birth_place_id = Column(Integer, ForeignKey('cities.id'), nullable=True)
     nationality_id = Column(Integer, ForeignKey('countries.id'), nullable=True)
 
+    cityId = synonym('city_id')
+    birthPlaceId = synonym('birth_place_id')
+    nationalityId = synonym('nationality_id')
+
     firstName_translations = Column(HSTORE)
     firstName = translation_hybrid(firstName_translations)
 
@@ -119,7 +123,7 @@ class Child(base, Timestamp):
         # TODO: Use right timezone
         now_time = datetime.utcnow().time()
 
-        if self.city.country.phone_code in [98,93]:
+        if self.city.country.phone_code in [98, 93]:
             tz = pytz.timezone('Asia/Tehran')
             now_time = datetime.now(tz).time()
 
