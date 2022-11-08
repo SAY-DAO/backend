@@ -1,0 +1,16 @@
+Get a City
+---
+tags:
+  - Geo API
+parameters:
+  - name: id
+    in: path
+    description: ID of city
+    required: true
+    type: integer
+
+responses:
+  200:
+    description: Ok
+    schema:
+      $ref: "#/definitions/city_model"

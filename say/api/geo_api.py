@@ -4,6 +4,7 @@ from flask_restful import Resource
 from say.api.ext import api
 from say.api.ext import cache
 from say.decorators import json
+from say.exceptions import HTTP_NOT_FOUND
 from say.models import City
 from say.models import Country
 from say.models import State
@@ -36,6 +37,23 @@ class CountryStatesAPI(Resource):
     def get(self, id):
         return session.query(State).filter(State.country_id == id)
 
+
+class CityAPI(Resource):
+    @cache.cached(timeout=10 * 60)
+    @json(CitySchema)
+    @swag_from('./docs/geo/get-city.yml')
+    def get(self, id):
+        city = session.query(City).filter(City.id == id).one_or_none()
+        if city is None:
+            raise HTTP_NOT_FOUND()
+
+        return city
+
+
+api.add_resource(
+    CityAPI,
+    '/api/v2/cities/<int:id>',
+)
 
 api.add_resource(
     CountryAPI,
