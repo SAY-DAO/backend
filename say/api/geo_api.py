@@ -43,16 +43,33 @@ class CityAPI(Resource):
     @json(CitySchema)
     @swag_from('./docs/geo/get-city.yml')
     def get(self, id):
-        city = session.query(City).filter(City.id == id).one_or_none()
+        city = session.query(City).get(id)
         if city is None:
             raise HTTP_NOT_FOUND()
 
         return city
 
 
+class StateAPI(Resource):
+    @cache.cached(timeout=10 * 60)
+    @json(StateSchema)
+    @swag_from('./docs/geo/get-state.yml')
+    def get(self, id):
+        state = session.query(State).get(id)
+        if state is None:
+            raise HTTP_NOT_FOUND()
+
+        return state
+
+
 api.add_resource(
     CityAPI,
     '/api/v2/cities/<int:id>',
+)
+
+api.add_resource(
+    StateAPI,
+    '/api/v2/states/<int:id>',
 )
 
 api.add_resource(
