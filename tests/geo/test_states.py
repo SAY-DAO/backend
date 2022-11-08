@@ -24,7 +24,7 @@ class TestStates(BaseTestClass):
         assert result[0]['name'] is not None
         assert result[0]['stateCode'] is not None
 
-    def test_get_states(self):
+    def test_get_state(self):
         res = self.client.get(STATES_URL % self.country.states[0].id)
         self.assert_ok(res)
         result = res.json

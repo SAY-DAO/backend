@@ -1,0 +1,15 @@
+Get Country
+---
+tags:
+  - Geo API
+parameters:
+  - name: id
+    in: path
+    description: ID of Country
+    required: true
+    type: integer
+responses:
+  200:
+    description: Ok
+    schema:
+      $ref: "#/definitions/country_model"
