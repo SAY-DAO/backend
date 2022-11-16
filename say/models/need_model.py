@@ -141,6 +141,11 @@ class Need(base, Timestamp):
         back_populates='needs',
     )
 
+    status_updates = relationship(
+        'NeedStatusUpdate',
+        back_populates='need',
+    )
+
     @property
     def is_reported(self):
         return self.isReported
