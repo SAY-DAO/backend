@@ -32,6 +32,7 @@ from say.models.child_model import Child
 from say.models.child_need_model import ChildNeed
 from say.models.family_model import Family
 from say.models.need_model import Need
+from say.models.need_status_update import NeedStatusUpdate
 from say.models.receipt import NeedReceipt
 from say.models.receipt import Receipt
 from say.models.social_worker_model import SocialWorker
@@ -388,7 +389,14 @@ class UpdateNeedById(Resource):
                     }, 400
 
                 session.flush()
+                need_status = NeedStatusUpdate(
+                    sw_id=get_user_id(),
+                    new_status=new_status,
+                    old_status=need.status,
+                    need_id=need.id,
+                )
                 need.status = new_status
+                need.status_updates.append(need_status)
 
             elif new_status != prev_status:
                 return {

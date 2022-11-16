@@ -103,6 +103,7 @@ from .invite import InvitationAccept
 from .nakama import *
 from .need_family_model import NeedFamily
 from .need_model import Need
+from .need_status_update import NeedStatusUpdate
 from .ngo_model import Ngo
 from .payment_model import Payment
 from .privilege_model import Privilege

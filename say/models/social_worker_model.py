@@ -127,6 +127,11 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin, SoftDeleteMixin):
     type_name = association_proxy('privilege', 'name')
     ngo_name = association_proxy('ngo', 'name')
 
+    need_status_updates = relationship(
+        'NeedStatusUpdate',
+        back_populates='sw',
+    )
+
     def _set_password(self, password):
         """Hash ``password`` on the fly and store its hashed version."""
         if not _validate_password(password):
