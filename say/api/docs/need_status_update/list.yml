@@ -1,0 +1,66 @@
+List all Need Status Updates
+Orderin, Filtering, Pagination
+---
+tags:
+  - Need Status Updates API
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token, Only Super Admin and SAY Supervisior
+    required: true
+    type: string
+
+  - name: X-Take
+    in: header
+    description: Number of results in one page
+    type: integer
+    default: 50
+    max: 500
+
+  - name: X-Skip
+    in: header
+    description: Skip n result
+    type: integer
+    default: 0
+
+  - name: orderBy
+    in: query
+    description: OrderBy column/columns, use - to revrse the order, like this -created,needId
+    type: string
+
+  - name: needId
+    in: query
+    description: Filter by needId
+    type: integer
+
+  - name: swId
+    in: query
+    description: Filter by swId
+    type: integer
+
+responses:
+  200:
+    description: Ok
+    schema:
+      type: array
+      items:
+        schema:
+          id: need_status_update_model
+          title: NeedStatusUpdateSchema
+          type: object
+          properties:
+            id:
+              type: integer
+            needId:
+              type: integer
+            swId:
+              type: integer
+            newStatus:
+              type: integer
+            oldStatus:
+              type: integer
+            created:
+              type: string
+            updated:
+              type: string
