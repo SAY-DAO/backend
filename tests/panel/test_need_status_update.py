@@ -3,6 +3,7 @@ from tests.helper import BaseTestClass
 
 
 UPDATE_NEED_URL = '/api/v2/need/update/needId=%s'
+LIST_NEED_STATUS_UPDATE_URL = '/api/v2/need-status-updates'
 
 
 class TestNeedStatusUpdate(BaseTestClass):
@@ -13,6 +14,9 @@ class TestNeedStatusUpdate(BaseTestClass):
             isMigrated=False,
         )
         self.need = self._create_random_need(child=self.child, status=2)
+
+        for _ in range(4):
+            self._create_random_need_status_update()
 
     def test_create_need_status_update(self):
         self.login_sw(self.child.social_worker)
@@ -35,3 +39,31 @@ class TestNeedStatusUpdate(BaseTestClass):
         assert need_status_update.new_status == 3
         assert need_status_update.sw_id == self.child.social_worker.id
 
+    def test_list_need_status_update(self):
+        self.login_sw(self.child.social_worker)
+        res = self.client.get(
+            LIST_NEED_STATUS_UPDATE_URL,
+        )
+        self.assert_ok(res)
+        assert len(res.json) == 4
+
+        res = self.client.get(
+            LIST_NEED_STATUS_UPDATE_URL,
+            query_string=dict(id=1)
+        )
+        self.assert_ok(res)
+        assert len(res.json) == 1
+
+        res = self.client.get(
+            LIST_NEED_STATUS_UPDATE_URL,
+            query_string=dict(orderBy='id')
+        )
+        self.assert_ok(res)
+        assert res.json[0]['id'] == 1
+
+        res = self.client.get(
+            LIST_NEED_STATUS_UPDATE_URL,
+            query_string=dict(orderBy='-id')
+        )
+        self.assert_ok(res)
+        assert res.json[0]['id'] == 4

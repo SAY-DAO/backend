@@ -22,6 +22,7 @@ from say.models import EmailVerification
 from say.models import Family
 from say.models import Need
 from say.models import NeedFamily
+from say.models import NeedStatusUpdate
 from say.models import Ngo
 from say.models import Payment
 from say.models import PhoneVerification
@@ -183,6 +184,20 @@ class BaseTestClass:
         need = Need(**data)
         self.session.save(need)
         return need
+
+    def _create_random_need_status_update(self, need=None, sw=None, **kwargs):
+        need = need or self._create_random_need()
+        sw = sw or self._create_random_sw(role=SUPER_ADMIN)
+        data = dict(
+            need=need,
+            sw=sw,
+            new_status=1,
+            old_status=0,
+        )
+        data.update(kwargs)
+        need_status_update = NeedStatusUpdate(**data)
+        self.session.save(need_status_update)
+        return need_status_update
 
     def _create_random_receipt(self, owner=None, **kwargs):
         owner = owner or self._create_random_sw()

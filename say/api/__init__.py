@@ -10,6 +10,7 @@ from .geo_api import *
 from .invitation_api import *
 from .nakama import *
 from .need_api import *
+from .need_status_update import *
 from .ngo_api import *
 from .panel_auth_api import *
 from .payment_api import *
