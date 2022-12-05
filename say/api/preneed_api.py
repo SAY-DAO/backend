@@ -9,13 +9,14 @@ from say.models import Need
 from say.orm import session
 from say.roles import ADMIN
 from say.roles import NGO_SUPERVISOR
+from say.roles import SAY_SUPERVISOR
 from say.roles import SOCIAL_WORKER
 from say.roles import SUPER_ADMIN
 from say.schema.preneed import PreneedSummarySchema
 
 
 class PreNeedsAPi(Resource):
-    @authorize(SOCIAL_WORKER, NGO_SUPERVISOR, ADMIN, SUPER_ADMIN)
+    @authorize(SOCIAL_WORKER, NGO_SUPERVISOR, ADMIN, SUPER_ADMIN, SAY_SUPERVISOR)
     @json
     @swag_from('./docs/preneed/list.yml')
     def get(self):

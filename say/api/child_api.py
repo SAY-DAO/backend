@@ -953,7 +953,7 @@ class ConfirmChild(Resource):
 
 
 class MigrateChild(Resource):
-    @authorize(SUPER_ADMIN, ADMIN)  # TODO: priv
+    @authorize(SUPER_ADMIN, ADMIN, SAY_SUPERVISOR)  # TODO: priv
     @json
     @swag_from('./docs/child/migrate.yml')
     def patch(self, child_id):
@@ -1000,7 +1000,7 @@ class MigrateChild(Resource):
 
 
 class GetActiveChildrenApi(Resource):
-    @authorize(SUPER_ADMIN, ADMIN)  # TODO: priv
+    @authorize(SUPER_ADMIN, ADMIN, SAY_SUPERVISOR)  # TODO: priv
     @json
     @commit
     @swag_from('./docs/child/active-children.yml')

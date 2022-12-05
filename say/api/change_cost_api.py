@@ -120,7 +120,7 @@ class ChangeCostAPi(Resource):
 
 
 class ChangeCostRejectApi(Resource):
-    @authorize(ADMIN, SUPER_ADMIN)
+    @authorize(ADMIN, SUPER_ADMIN, SAY_SUPERVISOR)
     @json
     @commit
     @swag_from('./docs/change_cost/reject.yml')
@@ -160,7 +160,7 @@ class ChangeCostRejectApi(Resource):
 
 
 class ChangeCostAcceptApi(Resource):
-    @authorize(ADMIN, SUPER_ADMIN)
+    @authorize(ADMIN, SUPER_ADMIN, SAY_SUPERVISOR)
     @json
     @commit
     @swag_from('./docs/change_cost/accept.yml')

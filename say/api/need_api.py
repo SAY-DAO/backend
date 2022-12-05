@@ -278,7 +278,7 @@ class UpdateNeedById(Resource):
         if not os.path.isdir(temp_need_path):
             os.makedirs(temp_need_path, exist_ok=True)
 
-        if need.isConfirmed and sw_role not in (ADMIN, SUPER_ADMIN):
+        if need.isConfirmed and sw_role not in (ADMIN, SUPER_ADMIN, SAY_SUPERVISOR):
             safe_commit(session)
             need_dict = obj_to_dict(need)
             return need_dict

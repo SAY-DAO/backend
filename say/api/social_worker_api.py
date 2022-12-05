@@ -72,7 +72,7 @@ class ListCreateSocialWorkers(Resource):
     def get(self):
         return request._query
 
-    @authorize(SUPER_ADMIN)  # TODO: priv
+    @authorize(SUPER_ADMIN, ADMIN, SAY_SUPERVISOR)  # TODO: priv
     @validate(NewSocialWorkerSchema)
     @json(SocialWorkerSchema)
     @swag_from('./docs/social_worker/add.yml')
@@ -171,7 +171,7 @@ class GetUpdateDeleteSocialWorkers(Resource):
                 raise HTTP_PERMISION_DENIED()
 
         if data.ngo_id is not None:
-            if role not in {SUPER_ADMIN, SAY_SUPERVISOR}:
+            if role not in {SUPER_ADMIN, ADMIN, SAY_SUPERVISOR}:
                 raise HTTP_PERMISION_DENIED()
 
             new_ngo = (

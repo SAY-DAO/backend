@@ -1,5 +1,6 @@
 import pytest
 
+from say.roles import ADMIN
 from say.roles import ROLES
 from say.roles import SAY_SUPERVISOR
 from say.roles import SUPER_ADMIN
@@ -144,7 +145,7 @@ class TestUpdateSocialWorker(BaseTestClass):
 
         self.assert_code(res, 400)
 
-        for role in ROLES - {SUPER_ADMIN, SAY_SUPERVISOR}:
+        for role in ROLES - {SUPER_ADMIN, SAY_SUPERVISOR, ADMIN}:
             user = self.login_as_sw(role=role)
             new_ngo = self._create_random_ngo()
 
@@ -155,7 +156,6 @@ class TestUpdateSocialWorker(BaseTestClass):
                     'ngoId': new_ngo.id,
                 },
             )
-
             assert res.status_code == 403
 
     def test_update_social_worker_with_invalid_id(self):
