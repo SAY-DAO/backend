@@ -113,7 +113,7 @@ class BaseTestClass:
         return cart
 
     def _create_random_user(self, **kwargs):
-        seed = randint(10 ** 10, 10 ** 12)
+        seed = randint(10**10, 10**12)
         while True:
             try:
                 data = dict(
@@ -162,7 +162,7 @@ class BaseTestClass:
 
     def _create_random_need(self, child=None, confirmed=True, **kwargs):
         child = child or self._create_random_child()
-        seed = randint(1, 10 ** 3)
+        seed = randint(1, 10**3)
         randomstr = str(seed)
         data = dict(
             child=child,
@@ -201,7 +201,7 @@ class BaseTestClass:
     def _create_random_receipt(self, owner=None, **kwargs):
         owner = owner or self._create_random_sw()
 
-        seed = randint(1, 10 ** 3)
+        seed = randint(1, 10**3)
         randomstr = str(seed)
         data = dict(
             owner=owner,
@@ -240,7 +240,7 @@ class BaseTestClass:
         return family
 
     def _create_random_child(self, sw=None, **kwargs):
-        seed = randint(1, 10 ** 3)
+        seed = randint(1, 10**3)
         randomstr = str(seed)
         sw = sw or self._create_random_sw()
         data = dict(
@@ -270,7 +270,7 @@ class BaseTestClass:
         return child
 
     def _create_random_sw(self, role=SUPER_ADMIN, ngo=None, city=None, **kwargs):
-        seed = randint(10 ** 6, 10 ** 9)
+        seed = randint(10**6, 10**9)
         ngo = ngo or self._create_random_ngo()
         city = city or self._create_city()
 
@@ -292,13 +292,14 @@ class BaseTestClass:
             privilege=Privilege(name=role, privilege=1),
             city=city,
         )
+
         data.update(kwargs)
         sw = SocialWorker(**data)
         self.session.save(sw)
         return sw
 
     def _create_random_ngo(self):
-        seed = randint(1, 10 ** 3)
+        seed = randint(1, 10**3)
         ngo = Ngo(
             _city=self._create_city(),
             name=str(seed),
@@ -313,7 +314,7 @@ class BaseTestClass:
         return ngo
 
     def _create_phone_verification(self, **kwargs):
-        seed = randint(1, 10 ** 3)
+        seed = randint(1, 10**3)
         data = dict(
             phone_number=f'+9899{seed}',
         )
@@ -323,7 +324,7 @@ class BaseTestClass:
         return phone_verification
 
     def _create_email_verification(self, **kwargs):
-        seed = randint(1, 10 ** 3)
+        seed = randint(1, 10**3)
         data = dict(
             email=f'{seed}@test.test',
         )
