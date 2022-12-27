@@ -4,12 +4,6 @@ services:
     ports:
       - 35432:5432
 
-  sqlbak:
-    image: pranasnet/sqlbak
-    volumes:
-      - sqlbak_local_data:/opt/sqlbak
-      - sqlbak_backups:/tmp/sqlbak
-
   pgbackups:
     image: prodrigestivill/postgres-backup-local:12-alpine
     secrets:
