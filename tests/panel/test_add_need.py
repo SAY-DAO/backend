@@ -2,6 +2,7 @@ from datetime import datetime
 
 import ujson
 
+from say.models import Need
 from say.roles import ADMIN
 from say.roles import NGO_SUPERVISOR
 from say.roles import SAY_SUPERVISOR
@@ -40,4 +41,9 @@ class TestAddNeed(BaseTestClass):
             data=data,
         )
         self.assert_ok(res)
+        result = res.json
+        assert result['category'] == 0
+
+        need = self.session.query(Need).get(result['id'])
+        assert need.category == 0
         # TODO: Add more tests
