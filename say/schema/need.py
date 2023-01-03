@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from .base import BaseModel
 from .base import CamelModel
@@ -25,7 +25,7 @@ class NeedSummary(BaseModel):
     cost: int
     isDone: bool
     isUrgent: bool
-    category: int
+    category: Optional[int] = None
     type: int
     participants: List[Participant] = []
     created: datetime
