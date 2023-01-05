@@ -138,6 +138,12 @@ class ListNeeds(Resource):
         if data.is_reported is not None:
             needs = needs.filter_by(isReported=data.is_reported)
 
+        if data.created_by is not None:
+            needs = needs.filter(Need.created_by_id == data.created_by)
+
+        if data.confirmed_by is not None:
+            needs = needs.filter(Need.confirmUser == data.confirmed_by)
+
         if data.unpayable is not None:
             needs = needs.filter(
                 Need.unpayable == data.unpayable,

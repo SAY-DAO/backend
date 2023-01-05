@@ -7,13 +7,14 @@ NEED_URL = '/api/v2/needs'
 
 
 class TestNeed(BaseTestClass):
-    def _test_filtering(self, field, data):
-        values = set(map(lambda n: getattr(n, field), data))
+    def _test_filtering(self, field, data, db_column=None):
+        db_column = db_column or field
+        values = set(map(lambda n: getattr(n, db_column), data))
         for v in values:
             res = self.client.get(NEED_URL, query_string={field: v})
             assert res.status_code == 200
             assert res.json['totalCount'] == len(
-                [*filter(lambda n: getattr(n, field) == v, data)]
+                [*filter(lambda n: getattr(n, db_column) == v, data)]
             )
 
     def mockup(self):
@@ -44,6 +45,8 @@ class TestNeed(BaseTestClass):
         self._test_filtering('status', needs)
         self._test_filtering('is_reported', needs)
         self._test_filtering('type', needs)
+        self._test_filtering('created_by', needs, 'created_by_id')
+        self._test_filtering('confirmed_by', needs, 'confirmUser')
 
         need = needs[0]
         ngo_id = need.child.id_ngo

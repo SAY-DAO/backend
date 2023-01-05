@@ -60,6 +60,13 @@ parameters:
     name: unpayable
     type: boolean
 
+  - in: query
+    name: createdBy
+    type: integer
+
+  - in: query
+    name: confirmedBy
+    type: integer
 
 responses:
   500:
