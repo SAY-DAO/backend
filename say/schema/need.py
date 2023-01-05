@@ -1,5 +1,6 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List
+from typing import Optional
 
 from .base import BaseModel
 from .base import CamelModel
@@ -15,6 +16,9 @@ class AllNeedQuerySchema(CamelModel):
     type: int = None
     is_child_confirmed: bool = None
     unpayable: bool = None
+    created_by: int = None
+    purchased_by: int = None
+    confirmed_by: int = None
 
 
 class NeedSummary(BaseModel):
