@@ -109,6 +109,7 @@ class ListNeeds(Resource):
     @authorize(
         SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
     )  # TODO: priv
+
     @validate(AllNeedQuerySchema)
     @json
     @swag_from('./docs/need/all.yml')
@@ -143,6 +144,21 @@ class ListNeeds(Resource):
 
         if data.confirmed_by is not None:
             needs = needs.filter(Need.confirmUser == data.confirmed_by)
+
+        if data.purchased_by is not None:
+            needs = (
+                needs.join(
+                    NeedStatusUpdate,
+                    Need.id == NeedStatusUpdate.need_id,
+                )
+                .filter(
+                    NeedStatusUpdate.sw_id == data.purchased_by,
+                    NeedStatusUpdate.new_status == 3,
+                    NeedStatusUpdate.old_status == 2,
+                )
+                .distinct()
+            )
+            print(str(needs))
 
         if data.unpayable is not None:
             needs = needs.filter(

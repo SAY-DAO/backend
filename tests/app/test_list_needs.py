@@ -1,5 +1,6 @@
 from random import choice
 
+from say.models.need_status_update import NeedStatusUpdate
 from tests.helper import BaseTestClass
 
 
@@ -82,3 +83,47 @@ class TestNeed(BaseTestClass):
                 )
             ]
         )
+
+        # Test purchased_by
+        sw = self._create_random_sw()
+        other_sw = self._create_random_sw()
+        self.session.add(
+            NeedStatusUpdate(need=needs[0], sw=sw, new_status=3, old_status=2)
+        )
+        self.session.add(
+            NeedStatusUpdate(need=needs[1], sw=sw, new_status=3, old_status=2)
+        )
+        self.session.add(
+            NeedStatusUpdate(need=needs[5], sw=sw, new_status=3, old_status=2)
+        )
+        self.session.add(
+            NeedStatusUpdate(need=needs[5], sw=sw, new_status=3, old_status=4)
+        )
+        self.session.add(
+            NeedStatusUpdate(need=needs[0], sw=sw, new_status=3, old_status=2)
+        )
+        self.session.add(
+            NeedStatusUpdate(need=needs[0], sw=other_sw, new_status=3, old_status=2)
+        )
+        self.session.add(
+            NeedStatusUpdate(need=needs[2], sw=other_sw, new_status=3, old_status=2)
+        )
+        self.session.add(
+            NeedStatusUpdate(need=needs[3], sw=sw, new_status=2, old_status=3)
+        )
+
+        self.session.commit()
+
+        res = self.client.get(
+            NEED_URL,
+            query_string=dict(
+                purchased_by=sw.id,
+            ),
+        )
+        assert res.status_code == 200
+        assert res.json['totalCount'] == 3
+        assert set(n['id'] for n in res.json['needs']) == {
+            needs[0].id,
+            needs[1].id,
+            needs[5].id,
+        }
