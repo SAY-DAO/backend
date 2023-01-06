@@ -14,6 +14,7 @@ from flask_jwt_extended.exceptions import JWTExtendedException
 from flask_jwt_extended.utils import create_refresh_token
 from jwt.exceptions import PyJWTError
 from sentry_sdk import set_user
+from sqlalchemy.orm import defer
 
 from say.api.ext import jwt
 from say.config import configs
@@ -177,6 +178,11 @@ def authorize(*roles):
                             SocialWorker.id == user_id,
                             SocialWorker.is_deleted.is_(False),
                             SocialWorker.is_active.is_(True),
+                        )
+                        .options(
+                            defer('current_child_count'),
+                            defer('need_count'),
+                            defer('current_need_count'),
                         )
                         .one_or_none()
                     )
