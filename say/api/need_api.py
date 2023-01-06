@@ -121,8 +121,6 @@ class ListNeeds(Resource):
             .order_by(Need.doneAt.desc())
         )
 
-        all_needs_count = needs.count()
-
         if data.is_confirmed is not None:
             needs = needs.filter_by(isConfirmed=data.is_confirmed)
 
@@ -175,9 +173,9 @@ class ListNeeds(Resource):
             needs = needs.join(Child).filter(Child.id_ngo == data.ngo_id)
 
         needs = filter_by_privilege(needs, get=True)
-        need_count = needs.count()
-        pagination = PaginationSchema.parse_obj(request.headers)
+        all_needs_count = needs.count()
 
+        pagination = PaginationSchema.parse_obj(request.headers)
         if pagination.take:
             needs = needs.limit(pagination.take)
         else:
@@ -186,6 +184,7 @@ class ListNeeds(Resource):
         if pagination.skip:
             needs = needs.offset(pagination.skip)
 
+        need_count = needs.count()
         needs = needs.options(selectinload(Need.child)).options(selectinload('child.ngo'))
 
         if sw_role in [
