@@ -1,3 +1,4 @@
+from say.models.need_status_update import NeedStatusUpdate
 from say.roles import SUPER_ADMIN
 from tests.helper import BaseTestClass
 
@@ -25,7 +26,7 @@ class TestUpdateServiceStatus(BaseTestClass):
         )
 
     def test_update_service_status_to_delivered(self):
-        self.login_as_sw(role=SUPER_ADMIN)
+        sw = self.login_as_sw(role=SUPER_ADMIN)
         data = dict(
             status=4,
         )
@@ -43,3 +44,13 @@ class TestUpdateServiceStatus(BaseTestClass):
             data=data,
         )
         self.assert_ok(res)
+        nsu = (
+            self.session.query(NeedStatusUpdate)
+            .filter(NeedStatusUpdate.need_id == res.json['id'])
+            .one_or_none()
+        )
+
+        assert nsu is not None
+        assert nsu.sw_id == sw.id
+        assert nsu.old_status == 3
+        assert nsu.new_status == 4
