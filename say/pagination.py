@@ -16,7 +16,7 @@ def paginate(func):
             request.take = take
 
         except ValueError as ex:
-            return make_response(jsonify(message='Invaid skip or take'), 400)
+            return make_response(jsonify(message='Invalid skip or take'), 400)
 
         return func(*args, **kwargs)
 

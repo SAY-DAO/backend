@@ -144,6 +144,20 @@ class ListNeeds(Resource):
         if data.confirmed_by is not None:
             needs = needs.filter(Need.confirmUser == data.confirmed_by)
 
+        if data.purchased_by is not None:
+            needs = (
+                needs.join(
+                    NeedStatusUpdate,
+                    Need.id == NeedStatusUpdate.need_id,
+                )
+                .filter(
+                    NeedStatusUpdate.sw_id == data.purchased_by,
+                    NeedStatusUpdate.new_status == 3,
+                    NeedStatusUpdate.old_status == 2,
+                )
+                .distinct()
+            )
+
         if data.unpayable is not None:
             needs = needs.filter(
                 Need.unpayable == data.unpayable,
@@ -161,11 +175,13 @@ class ListNeeds(Resource):
             needs = needs.join(Child).filter(Child.id_ngo == data.ngo_id)
 
         needs = filter_by_privilege(needs, get=True)
-
+        need_count = needs.count()
         pagination = PaginationSchema.parse_obj(request.headers)
 
         if pagination.take:
             needs = needs.limit(pagination.take)
+        else:
+            needs = needs.limit(25)
 
         if pagination.skip:
             needs = needs.offset(pagination.skip)
@@ -185,7 +201,7 @@ class ListNeeds(Resource):
         needs = needs.options(selectinload(Need.child)).options(selectinload('child.ngo'))
         result = OrderedDict(
             all_needs_count=all_needs_count,
-            totalCount=needs.count(),
+            totalCount=need_count,
             needs=[],
         )
         for need in needs:
