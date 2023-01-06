@@ -25,7 +25,7 @@ parameters:
   - name: X-TAKE
     in: header
     type: integer
-    default: 50
+    default: 25
     description: Max 500
 
   - in: query
@@ -66,6 +66,10 @@ parameters:
 
   - in: query
     name: confirmedBy
+    type: integer
+
+  - in: query
+    name: purchasedBy
     type: integer
 
 responses:

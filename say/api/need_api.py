@@ -109,7 +109,6 @@ class ListNeeds(Resource):
     @authorize(
         SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
     )  # TODO: priv
-
     @validate(AllNeedQuerySchema)
     @json
     @swag_from('./docs/need/all.yml')
@@ -158,7 +157,6 @@ class ListNeeds(Resource):
                 )
                 .distinct()
             )
-            print(str(needs))
 
         if data.unpayable is not None:
             needs = needs.filter(
@@ -177,11 +175,13 @@ class ListNeeds(Resource):
             needs = needs.join(Child).filter(Child.id_ngo == data.ngo_id)
 
         needs = filter_by_privilege(needs, get=True)
-
+        need_count = needs.count()
         pagination = PaginationSchema.parse_obj(request.headers)
 
         if pagination.take:
             needs = needs.limit(pagination.take)
+        else:
+            needs = needs.limit(25)
 
         if pagination.skip:
             needs = needs.offset(pagination.skip)
@@ -201,7 +201,7 @@ class ListNeeds(Resource):
         needs = needs.options(selectinload(Need.child)).options(selectinload('child.ngo'))
         result = OrderedDict(
             all_needs_count=all_needs_count,
-            totalCount=needs.count(),
+            totalCount=need_count,
             needs=[],
         )
         for need in needs:
