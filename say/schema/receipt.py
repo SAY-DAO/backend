@@ -80,7 +80,7 @@ class ReceiptSchema(NewReceiptSchema):
     @validator('attachment')
     def attachment_validator(cls, v):
         return urljoin(
-            configs.BASE_URL,
+            configs.BASE_RESOURCE_URL,
             v,
         )
 
