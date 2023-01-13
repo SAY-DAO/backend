@@ -60,38 +60,16 @@ Need APIs
 '''
 
 
-def filter_by_privilege(query, get=False):  # TODO: priv
+def filter_by_privilege(query):  # TODO: priv
     user_role = get_user_role()
     user_id = get_user_id()
     ngo_id = get_sw_ngo_id()
 
     if user_role in [SOCIAL_WORKER, COORDINATOR]:
-        if get:
-            query = query.join(Child).filter(
-                or_(
-                    Child.id_social_worker == user_id,
-                    Child.id == DEFAULT_CHILD_ID,
-                )
-            )
-        else:
-            query = query.join(Child).filter(Child.id_social_worker == user_id)
+        query = query.join(Child).filter(Child.id_social_worker == user_id)
 
     elif user_role in [NGO_SUPERVISOR]:
-        if get:
-            query = (
-                query.join(Child)
-                .join(SocialWorker)
-                .filter(
-                    or_(
-                        SocialWorker.ngo_id == ngo_id,
-                        Child.id == DEFAULT_CHILD_ID,
-                    )
-                )
-            )
-        else:
-            query = (
-                query.join(Child).join(SocialWorker).filter(SocialWorker.ngo_id == ngo_id)
-            )
+        query = query.join(Child).join(SocialWorker).filter(SocialWorker.ngo_id == ngo_id)
 
     elif user_role in [USER]:
         query = (
@@ -118,7 +96,7 @@ class ListNeeds(Resource):
         needs = (
             session.query(Need)
             .filter(Need.isDeleted.is_(False))
-            .order_by(Need.doneAt.desc())
+            .order_by(Need.created.desc())
         )
 
         if data.is_confirmed is not None:
@@ -172,7 +150,7 @@ class ListNeeds(Resource):
         if data.ngo_id and sw_role in [SUPER_ADMIN, SAY_SUPERVISOR, ADMIN]:
             needs = needs.join(Child).filter(Child.id_ngo == data.ngo_id)
 
-        needs = filter_by_privilege(needs, get=True)
+        needs = filter_by_privilege(needs)
         all_needs_count = needs.count()
 
         pagination = PaginationSchema.parse_obj(request.headers)
@@ -251,7 +229,7 @@ class GetNeedById(Resource):
             .filter_by(id=need_id)
         )
 
-        need = filter_by_privilege(need_query, get=True).one_or_none()
+        need = filter_by_privilege(need_query).one_or_none()
 
         if need is None:
             raise HTTP_NOT_FOUND()
