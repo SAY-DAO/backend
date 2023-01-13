@@ -89,7 +89,6 @@ class NeedSchema(NeedSummary):
     receipts: str = None
     updated: datetime = None
     created_by: int = None
-    confirmed_by: int = None
 
     class Config:
         orm_mode = True
