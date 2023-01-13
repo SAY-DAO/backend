@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import List
 from typing import Optional
 
+from pydantic import Field
+
 from .base import BaseModel
 from .base import CamelModel
 from .child import Participant
@@ -88,7 +90,7 @@ class NeedSchema(NeedSummary):
     type_name: str
     receipts: str = None
     updated: datetime = None
-    created_by: int = None
+    createdBy: int = Field(alias='created_by_id')
 
     class Config:
         orm_mode = True

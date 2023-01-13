@@ -185,7 +185,6 @@ class ListNeeds(Resource):
             needs = needs.offset(pagination.skip)
 
         need_count = needs.count()
-        needs = needs.options(selectinload(Need.child)).options(selectinload('child.ngo'))
 
         if sw_role in [
             SOCIAL_WORKER,
