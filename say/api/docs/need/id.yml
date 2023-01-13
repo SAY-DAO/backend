@@ -125,3 +125,8 @@ responses:
         informations:
           type: string
 
+        createdBy:
+          type: integer
+
+        confirmedBy:
+          type: integer
