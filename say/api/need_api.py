@@ -60,16 +60,30 @@ Need APIs
 '''
 
 
-def filter_by_privilege(query):  # TODO: priv
+def filter_by_privilege(query, get=False):  # TODO: priv
     user_role = get_user_role()
     user_id = get_user_id()
     ngo_id = get_sw_ngo_id()
 
     if user_role in [SOCIAL_WORKER, COORDINATOR]:
-        query = query.join(Child).filter(Child.id_social_worker == user_id)
+        if get:
+            query = query.join(Child).filter(
+                or_(Child.id_social_worker == user_id, Child.id == 104)
+            )
+        else:
+            query = query.join(Child).filter(Child.id_social_worker == user_id)
 
     elif user_role in [NGO_SUPERVISOR]:
-        query = query.join(Child).join(SocialWorker).filter(SocialWorker.ngo_id == ngo_id)
+        if get:
+            query = (
+                query.join(Child)
+                .join(SocialWorker)
+                .filter(or_(SocialWorker.ngo_id == ngo_id, Child.id == 104))
+            )
+        else:
+            query = (
+                query.join(Child).join(SocialWorker).filter(SocialWorker.ngo_id == ngo_id)
+            )
 
     elif user_role in [USER]:
         query = (
@@ -229,7 +243,7 @@ class GetNeedById(Resource):
             .filter_by(id=need_id)
         )
 
-        need = filter_by_privilege(need_query).one_or_none()
+        need = filter_by_privilege(need_query, get=True).one_or_none()
 
         if need is None:
             raise HTTP_NOT_FOUND()
