@@ -317,3 +317,18 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin, SoftDeleteMixin):
                 'bcc': bcc,
                 'needs': [need.id for need in needs],
             }
+
+    @property
+    def _generated_code(self):
+        return format(self.ngo_id, '03d') + format(
+            self.ngo.socialWorkerCount + 1,
+            '03d',
+        )
+
+    def change_ngo(self, new_ngo_id: int):
+        self.ngo_id = new_ngo_id
+        self.generated_code = self._generated_code
+
+        for child in self.children:
+            child.id_ngo = new_ngo_id
+            child.generatedCode = self.generated_code + child.generatedCode[-4:]

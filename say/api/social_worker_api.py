@@ -1,6 +1,7 @@
 from flasgger import swag_from
 from flask import request
 from flask_restful import Resource
+from sqlalchemy.orm import selectinload
 
 from say.models import Child
 from say.models import City
@@ -54,9 +55,7 @@ def filter_by_privilege(query):
 
 
 class ListCreateSocialWorkers(Resource):
-    @authorize(
-        COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
-    )  # TODO: priv
+    @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @query(
         SocialWorker,
         SocialWorker.is_deleted.is_(False),
@@ -127,9 +126,7 @@ class ListCreateSocialWorkers(Resource):
 
 
 class GetUpdateDeleteSocialWorkers(Resource):
-    @authorize(
-        COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN, SOCIAL_WORKER
-    )  # TODO: priv
+    @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN, SOCIAL_WORKER)  # TODO: priv
     @query(
         SocialWorker,
         SocialWorker.is_deleted.is_(False),
@@ -145,26 +142,22 @@ class GetUpdateDeleteSocialWorkers(Resource):
 
         return social_worker
 
-    @authorize(
-        COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
-    )  # TODO: priv
+    @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @validate(UpdateSocialWorkerSchema)
     @json(SocialWorkerSchema)
     @commit
     @swag_from('./docs/social_worker/update.yml')
     def patch(self, id, data: UpdateSocialWorkerSchema):
         role = get_user_role()
-        sw = (
-            session.query(SocialWorker)
-            .filter_by(id=id)
-            .filter_by(is_deleted=False)
-            .one_or_none()
-        )
+        sw: SocialWorker = session.query(SocialWorker).filter_by(id=id).filter_by(is_deleted=False).with_for_update()
+        if data.ngo_id:
+            sw.options(selectinload(SocialWorker.children))
 
+        sw = sw.one_or_none()
         if sw is None:
             raise HTTP_NOT_FOUND()
 
-        if get_user_role() in [COORDINATOR, NGO_SUPERVISOR]:  # TODO: priv
+        if role in [COORDINATOR, NGO_SUPERVISOR]:  # TODO: priv
             user_id = get_user_id()
             user = session.query(SocialWorker).get(user_id)
             if user is None or user.ngo_id != sw.ngo_id:
@@ -186,9 +179,7 @@ class GetUpdateDeleteSocialWorkers(Resource):
             if new_ngo is None:
                 raise HTTP_BAD_REQUEST(message='NGO not found')
 
-            sw.ngo_id = data.ngo_id
-            for chid in sw.children:
-                chid.id_ngo = data.ngo_id
+            sw.change_ngo(data.ngo_id)
 
         if data.city_id:
             city = (
@@ -237,10 +228,7 @@ class GetUpdateDeleteSocialWorkers(Resource):
         )
 
         if has_active_child:
-            raise HTTP_BAD_REQUEST(
-                message=f'Social worker {id} has active'
-                f' children and can not deactivate'
-            )
+            raise HTTP_BAD_REQUEST(message=f'Social worker {id} has active' f' children and can not deactivate')
 
         sw.is_deleted = True
         return sw
@@ -274,10 +262,7 @@ class DeactivateSocialWorker(Resource):
         )
 
         if has_active_child:
-            raise HTTP_BAD_REQUEST(
-                message=f'Social worker {id} has active'
-                f' children and can not deactivate'
-            )
+            raise HTTP_BAD_REQUEST(message=f'Social worker {id} has active' f' children and can not deactivate')
 
         sw.deactivate()
         return sw
@@ -383,9 +368,7 @@ class SocialWorkerCreatedNeeds(Resource):
 
         return query
 
-    @authorize(
-        COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN, SOCIAL_WORKER
-    )  # TODO: priv
+    @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN, SOCIAL_WORKER)  # TODO: priv
     @query(
         Need,
         Need.isDeleted.is_(False),
