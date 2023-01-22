@@ -167,19 +167,20 @@ class GetUpdateDeleteSocialWorkers(Resource):
             if role not in {SUPER_ADMIN, ADMIN, SAY_SUPERVISOR}:
                 raise HTTP_PERMISION_DENIED()
 
-            new_ngo = (
-                session.query(Ngo.id)
-                .filter(
-                    Ngo.id == data.ngo_id,
-                    Ngo.isDeleted.is_(False),
+            if data.ngo_id != sw.ngo_id:
+                new_ngo = (
+                    session.query(Ngo.id)
+                    .filter(
+                        Ngo.id == data.ngo_id,
+                        Ngo.isDeleted.is_(False),
+                    )
+                    .one_or_none()
                 )
-                .one_or_none()
-            )
 
-            if new_ngo is None:
-                raise HTTP_BAD_REQUEST(message='NGO not found')
+                if new_ngo is None:
+                    raise HTTP_BAD_REQUEST(message='NGO not found')
 
-            sw.change_ngo(data.ngo_id)
+                sw.change_ngo(data.ngo_id)
 
         if data.city_id:
             city = (
