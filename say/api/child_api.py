@@ -185,7 +185,7 @@ class GetAllChildren(Resource):
                 Child.existence_status == int(ex_status)
             )
 
-        children_query = filter_by_privilege(children_query, get=True)
+        children_query = filter_by_privilege(children_query)
         children_query = filter_by_query(children_query)
 
         if int(confirm) == 0:
@@ -230,7 +230,7 @@ class GetChildById(Resource):
         )
 
         if child_id != DEFAULT_CHILD_ID:  # TODO: need needs
-            child_query = filter_by_privilege(child_query, get=True)
+            child_query = filter_by_privilege(child_query)
 
         child_query = filter_by_confirm(child_query, confirm)
 
