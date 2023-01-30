@@ -14,12 +14,10 @@ from say.schema import NeedStatusUpdateSchema
 
 
 class ListNeedStatusUpdates(Resource):
-    @authorize(
-        SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
-    )  # TODO: priv
+    @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
     @query(
         NeedStatusUpdate,
-        enbale_filtering=True,
+        enable_filtering=True,
         filtering_schema=NeedStatusUpdateSchema,
         enable_pagination=True,
         enable_ordering=True,

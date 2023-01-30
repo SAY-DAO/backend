@@ -3,6 +3,7 @@ from flask import request
 from flask_restful import Resource
 from sqlalchemy.orm import selectinload
 
+from say.crud import child
 from say.models import Child
 from say.models import City
 from say.models import Need
@@ -28,7 +29,7 @@ from ..roles import NGO_SUPERVISOR
 from ..roles import SAY_SUPERVISOR
 from ..roles import SOCIAL_WORKER
 from ..roles import SUPER_ADMIN
-from ..schema.social_worker import MigrateSocialWorkerChildrenSchema
+from ..schema.social_worker import MigrateSocialWorkerChildrenSchema, SocialWorkerMyPageSchema
 from ..schema.social_worker import NewSocialWorkerSchema
 from ..schema.social_worker import SocialWorkerSchema
 from ..schema.social_worker import UpdateSocialWorkerSchema
@@ -60,7 +61,7 @@ class ListCreateSocialWorkers(Resource):
         SocialWorker,
         SocialWorker.is_deleted.is_(False),
         filter_callbacks=[filter_by_privilege],
-        enbale_filtering=True,
+        enable_filtering=True,
         filtering_schema=SocialWorkerSchema,
         enable_pagination=True,
         enable_ordering=True,
@@ -126,7 +127,9 @@ class ListCreateSocialWorkers(Resource):
 
 
 class GetUpdateDeleteSocialWorkers(Resource):
-    @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN, SOCIAL_WORKER)  # TODO: priv
+    @authorize(
+        COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN, SOCIAL_WORKER
+    )  # TODO: priv
     @query(
         SocialWorker,
         SocialWorker.is_deleted.is_(False),
@@ -149,7 +152,12 @@ class GetUpdateDeleteSocialWorkers(Resource):
     @swag_from('./docs/social_worker/update.yml')
     def patch(self, id, data: UpdateSocialWorkerSchema):
         role = get_user_role()
-        sw: SocialWorker = session.query(SocialWorker).filter_by(id=id).filter_by(is_deleted=False).with_for_update()
+        sw: SocialWorker = (
+            session.query(SocialWorker)
+            .filter_by(id=id)
+            .filter_by(is_deleted=False)
+            .with_for_update()
+        )
         if data.ngo_id:
             sw.options(selectinload(SocialWorker.children))
 
@@ -229,7 +237,9 @@ class GetUpdateDeleteSocialWorkers(Resource):
         )
 
         if has_active_child:
-            raise HTTP_BAD_REQUEST(message=f'Social worker {id} has active' f' children and can not deactivate')
+            raise HTTP_BAD_REQUEST(
+                message=f'Social worker {id} has active' f' children and can not deactivate'
+            )
 
         sw.is_deleted = True
         return sw
@@ -263,7 +273,9 @@ class DeactivateSocialWorker(Resource):
         )
 
         if has_active_child:
-            raise HTTP_BAD_REQUEST(message=f'Social worker {id} has active' f' children and can not deactivate')
+            raise HTTP_BAD_REQUEST(
+                message=f'Social worker {id} has active' f' children and can not deactivate'
+            )
 
         sw.deactivate()
         return sw
@@ -369,7 +381,9 @@ class SocialWorkerCreatedNeeds(Resource):
 
         return query
 
-    @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN, SOCIAL_WORKER)  # TODO: priv
+    @authorize(
+        COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN, SOCIAL_WORKER
+    )  # TODO: priv
     @query(
         Need,
         Need.isDeleted.is_(False),
@@ -379,8 +393,24 @@ class SocialWorkerCreatedNeeds(Resource):
     @json
     @swag_from('./docs/social_worker/created_needs.yml')
     def get(self, id):
-
         return request._query
+
+
+class SocialWorkerMyPage(Resource):
+    @authorize(
+        COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN, SOCIAL_WORKER
+    )  # TODO: priv
+    @json(SocialWorkerMyPageSchema, use_list=True)
+    @swag_from('./docs/social_worker/my_page.yml')
+    def get(self):
+        sw_id = get_user_id()
+        children_query = session.query(Child).filter(
+            Child.id_social_worker == sw_id,
+            Child.isDeleted.is_(False),
+            Child.existence_status == 1,
+            Child.isMigrated.is_(False),
+        )
+        return children_query
 
 
 api.add_resource(
@@ -411,4 +441,9 @@ api.add_resource(
 api.add_resource(
     SocialWorkerCreatedNeeds,
     '/api/v2/socialworkers/<int:id>/createdNeeds',
+)
+
+api.add_resource(
+    SocialWorkerMyPage,
+    '/api/v2/socialworkers/my-page',
 )

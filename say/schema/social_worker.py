@@ -1,6 +1,7 @@
 from datetime import date
 from datetime import datetime
 from typing import Optional
+from pydantic import Field
 
 from pydantic.networks import EmailStr
 from pydantic.types import constr
@@ -85,3 +86,12 @@ class SocialWorkerSchema(NewSocialWorkerSchema):
     type_name: str
     ngo_name: str
     city: Optional[CitySchema]
+
+
+class SocialWorkerMyPageSchema(CamelModel):
+    id: int
+    sayName: str = Field(alias='sayName')
+    firstName: str = Field(alias='firstName')
+    lastName: str = Field(alias='lastName')
+    birthDate: date = Field(alias='birthDate')
+    awakeAvatarUrl: str = Field(alias='awakeAvatarUrl')
