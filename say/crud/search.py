@@ -1,6 +1,8 @@
 import itertools
 import random
 
+from sqlalchemy.orm import joinedload
+
 from say.config import configs
 from say.exceptions import HTTPException
 from say.models import Child
@@ -47,9 +49,7 @@ def create_v2(family_id, type_: SearchType):
 def create_v3(child: Child, user_id, type):
     token = generate_token()
     while True:
-        token_exists = bool(
-            session.query(Search.id).filter(Search.token == token).one_or_none()
-        )
+        token_exists = bool(session.query(Search.id).filter(Search.token == token).one_or_none())
         if not token_exists:
             break
         token = generate_token()
@@ -64,15 +64,10 @@ def select_random_child(user_id):
     excluded = []
 
     all_user_children_ids_tuple = (
-        session.query(Child.id)
-        .join(Family)
-        .join(UserFamily)
-        .filter(UserFamily.id_user == user_id)
+        session.query(Child.id).join(Family).join(UserFamily).filter(UserFamily.id_user == user_id)
     )
 
-    user_children_ids_tuple = all_user_children_ids_tuple.filter(
-        UserFamily.isDeleted.is_(False)
-    )
+    user_children_ids_tuple = all_user_children_ids_tuple.filter(UserFamily.isDeleted.is_(False))
 
     # Flating a nested list like [(1,), (2,)] to [1, 2]
     user_children_ids = list(itertools.chain.from_iterable(user_children_ids_tuple))
@@ -104,6 +99,13 @@ def select_random_child(user_id):
 
         excluded.append(random_child.id)
 
+    random_child: Child = (
+        session.query(Child)
+        .options(
+            joinedload(Child.social_worker), joinedload(Child.family).joinedload(Family.members)
+        )
+        .get(selected_child_id)
+    )
     return random_child
 
 

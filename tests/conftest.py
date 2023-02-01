@@ -74,9 +74,7 @@ def db():
     sessions = []
 
     def _connect(*a, expire_on_commit=True, **kw):
-        session_factory = sessionmaker(
-            bind=engine, *a, expire_on_commit=expire_on_commit, **kw
-        )
+        session_factory = sessionmaker(bind=engine, *a, expire_on_commit=expire_on_commit, **kw)
         new_session = scoped_session(session_factory)
         sessions.append(new_session)
 
@@ -111,7 +109,5 @@ def db():
     engine.dispose()
 
     # Dropping the previously created database
-    with DBManager(
-        url=configs.postgres_test_url, admin_url=configs.postgres_admin_url
-    ) as m:
+    with DBManager(url=configs.postgres_test_url, admin_url=configs.postgres_admin_url) as m:
         m.drop_database()

@@ -72,7 +72,7 @@ class Child(base, Timestamp):
     status = Column(Integer, nullable=True)  # happy, sad, etc
     existence_status = Column(
         Integer, nullable=True, default=1, index=True
-    )  # 0: dead :( | 1: alive and present | 2: alive but gone | 3: Temporarry gone
+    )  # 0: dead :( | 1: alive and present | 2: alive but gone | 3: Temporarily gone
     isDeleted = Column(Boolean, nullable=False, default=False, index=True)
     isConfirmed = Column(Boolean, nullable=False, default=False)
     confirmUser = Column(Integer, nullable=True)
