@@ -3,7 +3,6 @@ from flask import request
 from flask_restful import Resource
 from sqlalchemy.orm import selectinload
 
-from say.crud import child
 from say.models import Child
 from say.models import City
 from say.models import Need
@@ -17,6 +16,7 @@ from say.schema.child_migration import ChildMigrationSchema
 from ..authorization import authorize
 from ..authorization import get_user_id
 from ..authorization import get_user_role
+from ..decorators import get_skip_take
 from ..decorators import json
 from ..decorators import query
 from ..decorators import validate
@@ -29,8 +29,10 @@ from ..roles import NGO_SUPERVISOR
 from ..roles import SAY_SUPERVISOR
 from ..roles import SOCIAL_WORKER
 from ..roles import SUPER_ADMIN
-from ..schema.social_worker import MigrateSocialWorkerChildrenSchema, SocialWorkerMyPageSchema
+from ..schema.social_worker import MigrateSocialWorkerChildrenSchema
+from ..schema.social_worker import MyPagePaginationSchema
 from ..schema.social_worker import NewSocialWorkerSchema
+from ..schema.social_worker import SocialWorkerMyPageSchema
 from ..schema.social_worker import SocialWorkerSchema
 from ..schema.social_worker import UpdateSocialWorkerSchema
 from .ext import api
@@ -403,13 +405,28 @@ class SocialWorkerMyPage(Resource):
     @json(SocialWorkerMyPageSchema, use_list=True)
     @swag_from('./docs/social_worker/my_page.yml')
     def get(self):
+
+        take, skip = get_skip_take(request, MyPagePaginationSchema)
         sw_id = get_user_id()
-        children_query = session.query(Child).filter(
-            Child.id_social_worker == sw_id,
-            Child.isDeleted.is_(False),
-            Child.existence_status == 1,
-            Child.isMigrated.is_(False),
+        children_query = (
+            session.query(Child)
+            .filter(
+                Child.id_social_worker == sw_id,
+                Child.isDeleted.is_(False),
+                Child.existence_status == 1,
+                Child.isMigrated.is_(False),
+            )
+            .options(
+                selectinload(Child.needs).selectinload(Need.verified_payments),
+                selectinload(Child.needs).selectinload(Need.receipts_),
+                selectinload(Child.needs).selectinload(Need.participants),
+                selectinload(Child.needs).selectinload(Need.status_updates),
+            )
+            .order_by(Child.created.desc())
+            .limit(take)
+            .offset(skip)
         )
+
         return children_query
 
 
