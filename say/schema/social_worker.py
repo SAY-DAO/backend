@@ -1,14 +1,22 @@
 from datetime import date
 from datetime import datetime
+from typing import List
 from typing import Optional
 
+from pydantic import Field
+from pydantic import conint
 from pydantic.networks import EmailStr
 from pydantic.types import constr
 
+from say.config import configs
 from say.constants import MB
 from say.schema.base import AllOptionalMeta
 from say.schema.base import CamelModel
 from say.schema.city import CitySchema
+from say.schema.need_status_update import NeedStatusUpdateSchema
+from say.schema.participant import ParticipantSchema
+from say.schema.payment import PaymentSchema
+from say.schema.receipt import ReceiptSchema
 from say.schema.types import Locale
 from say.schema.types import Password
 from say.schema.types import PhoneNumber
@@ -85,3 +93,63 @@ class SocialWorkerSchema(NewSocialWorkerSchema):
     type_name: str
     ngo_name: str
     city: Optional[CitySchema]
+
+
+class NeedSchema(CamelModel):
+    id: int
+    created_by_id: int = None
+    name_translations: dict
+    name: str
+    title: str = None
+    description_translations: dict
+    description: str
+    details: str = None
+    imageUrl: str = Field(alias='imageUrl')
+    category: int
+    type: int
+    isUrgent: bool = Field(alias='isUrgent')
+    link: str = None
+    affiliateLinkUrl: str = Field(None, alias='affiliateLinkUrl')
+    doing_duration: int
+    img: str = None
+    paid: int
+    purchase_cost: int = None
+    cost: int
+    unpayable: bool
+    isDone: bool = Field(alias='isDone')
+    isDeleted: bool = Field(alias='isDeleted')
+    isConfirmed: bool = Field(alias='isConfirmed')
+    unpayable_from: datetime = None
+    created: datetime
+    updated: datetime
+    confirmDate: datetime = Field(None, alias='confirmDate')
+    deleted_at: datetime = None
+    status_updates: List[NeedStatusUpdateSchema]
+    receipts_: List[ReceiptSchema] = Field(alias='receipts_')
+    verified_payments: List[PaymentSchema]
+    participants: List[ParticipantSchema]
+
+
+class SocialWorkerMyPageSchema(CamelModel):
+    id: int
+    sayName: str = Field(alias='sayName')
+    firstName: str = Field(alias='firstName')
+    lastName: str = Field(alias='lastName')
+    birthDate: date = Field(alias='birthDate')
+    awakeAvatarUrl: str = Field(alias='awakeAvatarUrl')
+    needs: List[NeedSchema]
+
+
+class MyPagePaginationSchema(CamelModel):
+    take: conint(ge=1, le=50) = Field(
+        10,
+        alias=configs.PAGINATION_TAKE_HEADER_KEY,
+    )
+
+    skip: conint(ge=0, le=configs.POSTRGES_MAX_BIG_INT) = Field(
+        0,
+        alias=configs.PAGINATION_SKIP_HEADER_KEY,
+    )
+
+    class Config:
+        extra = 'ignore'

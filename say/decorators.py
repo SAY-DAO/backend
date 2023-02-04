@@ -44,12 +44,7 @@ def json(schema, use_list=False):
                             # Using dumb loads/dumps workaround becuase pydantic doesn't
                             # direct list serialization
                             # See https://github.com/samuelcolvin/pydantic/issues/1409
-                            ujson.dumps(
-                                [
-                                    ujson.loads(schema.from_orm(row).json(by_alias=True))
-                                    for row in result
-                                ]
-                            ),
+                            ujson.dumps([ujson.loads(schema.from_orm(row).json(by_alias=True)) for row in result]),
                             mimetype='application/json',
                         )
                     else:
@@ -74,12 +69,7 @@ def json(schema, use_list=False):
                     # Using dumb loads/dumps workaround becuase pydantic doesn't
                     # direct list serialization
                     # See https://github.com/samuelcolvin/pydantic/issues/1409
-                    result = ujson.dumps(
-                        [
-                            ujson.loads(schema.from_orm(row).json(by_alias=True))
-                            for row in result
-                        ]
-                    )
+                    result = ujson.dumps([ujson.loads(schema.from_orm(row).json(by_alias=True)) for row in result])
                 return Response(
                     result,
                     mimetype='application/json',
@@ -125,7 +115,7 @@ def validate(schema):
 def query(
     model,
     *filters,
-    enbale_filtering=False,
+    enable_filtering=False,
     filter_callbacks=None,
     filtering_schema=None,
     enable_pagination=False,
@@ -139,7 +129,7 @@ def query(
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            if enbale_filtering:
+            if enable_filtering:
 
                 class FilteringSchema(filtering_schema, metaclass=AllOptionalMeta):
                     class Config:
@@ -152,9 +142,7 @@ def query(
                 filter_by = None
 
             if enable_pagination:
-                pagination = pagination_schema.parse_obj(request.headers)
-                take = pagination.take
-                skip = pagination.skip
+                take, skip = get_skip_take(request, pagination_schema)
 
             else:
                 take = skip = None
@@ -196,3 +184,10 @@ def query(
         return wrapper
 
     return decorator
+
+
+def get_skip_take(request, pagination_schema=PaginationSchema):
+    pagination = pagination_schema.parse_obj(request.headers)
+    take = pagination.take
+    skip = pagination.skip
+    return take, skip
