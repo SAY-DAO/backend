@@ -14,15 +14,17 @@ class TestSocialWorkerMyPage(BaseTestClass):
     def mockup(self):
         self.sw = self._create_random_sw()
         self.child1 = self._create_random_child(sw=self.sw, isDeleted=False, existence_status=1)
-        self.child2 = self._create_random_child(sw=self.sw, isDeleted=False, existence_status=1)
-        self._create_random_need(child=self.child1)
-        self._create_random_need(child=self.child1)
-        self._create_random_need(child=self.child1)
-        self._create_random_need(child=self.child2)
+        n1 = self._create_random_need(child=self.child1)
+
+        self._create_need_receipt(n1)
+        self._create_need_receipt(n1)
+
+        self._create_payment(n1)
+
+        self._create_random_need_status_update(n1)
 
     def test_social_worker_my_page(self):
         self.login_sw(self.sw)
-
         res = self.client.get(
             SW_MY_PAGE_URL,
         )
@@ -35,3 +37,48 @@ class TestSocialWorkerMyPage(BaseTestClass):
         assert 'lastName' in children[0]
         assert 'birthDate' in children[0]
         assert 'awakeAvatarUrl' in children[0]
+
+        needs = children[0]['needs']
+        assert needs is not None
+        need = needs[0]
+        assert [
+            'id',
+            'createdById',
+            'nameTranslations',
+            'name',
+            'title',
+            'descriptionTranslations',
+            'description',
+            'details',
+            'imageUrl',
+            'category',
+            'type',
+            'isUrgent',
+            'link',
+            'affiliateLinkUrl',
+            'doingDuration',
+            'img',
+            'paid',
+            'purchaseCost',
+            'cost',
+            'unpayable',
+            'isDone',
+            'isDeleted',
+            'isConfirmed',
+            'unpayableFrom',
+            'created',
+            'updated',
+            'confirmDate',
+            'deletedAt',
+            'statusUpdates',
+            'receipts_',
+            'verifiedPayments',
+            'participants',
+        ] == list(need.keys())
+
+        assert need['id']
+        assert need['createdById']
+        assert need['participants']
+        assert need['receipts_']
+        assert need['statusUpdates']
+        assert need['verifiedPayments']

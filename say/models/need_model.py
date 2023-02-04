@@ -130,6 +130,14 @@ class Need(base, Timestamp):
         back_populates='need',
     )
 
+    verified_payments = relationship(
+        'Payment',
+        primaryjoin='''and_(
+            Need.id==Payment.id_need,
+            Payment.verified.isnot(None),
+        )''',
+    )
+
     participants = relationship(
         'NeedFamily',
         back_populates='need',
@@ -308,9 +316,7 @@ class Need(base, Timestamp):
             '''
             return raw_status % need_name
 
-        elif (self.type == 1 and self.status == 5) or (
-            self.type == 0 and self.status == 4
-        ):
+        elif (self.type == 1 and self.status == 5) or (self.type == 0 and self.status == 4):
             '''
             p5s4 need status condition
             کالا به دست اصغر رسید

@@ -1,0 +1,206 @@
+Social Worker Page
+---
+tags:
+  - Social Worker API
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - name: X-SKIP
+    in: header
+    type: integer
+    default: 0
+
+  - name: X-TAKE
+    in: header
+    type: integer
+    default: 10
+    description: Max 500
+responses:
+  500:
+    description: Error occurred somewhere!
+
+  200:
+    description: Ok
+    schema:
+      id: sw-my-page
+      title: SocialWorkerMyPage
+      type: array
+      items:
+        type: object
+        properties:
+          id:
+            type: integer
+          sayName:
+            type: string
+          firstName:
+            type: string
+          lastName:
+            type: string
+          birthDate:
+            type: string
+          awakeAvatarUrl:
+            type: string
+          needs:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: integer
+                createdById:
+                  type: integer
+                nameTranslations:
+                  type: object
+                  properties:
+                    en:
+                      type: str
+                    fa:
+                      type: str
+                name:
+                  type: string
+
+                title:
+                  type: string
+                descriptionTranslations:
+                  type: object
+                  properties:
+                    en:
+                      type: str
+                    fa:
+                      type: str
+                description:
+                  type: string
+                details:
+                  type: string
+                imageUrl:
+                  type: string
+                category:
+                  type: integer
+                type:
+                  type: integer
+                isUrgent:
+                  type: boolean
+                link:
+                  type: string
+                affiliateLinkUrl:
+                  type: string
+                doingDuration:
+                  type: integer
+                img:
+                  type: string
+                paid:
+                  type: integer
+                purchaseCost:
+                  type: integer
+                cost:
+                  type: integer
+                unpayable:
+                  type: boolean
+                isDone:
+                  type: boolean
+                isDeleted:
+                  type: boolean
+                isConfirmed:
+                  type: boolean
+                unpayableFrom:
+                  type: string
+                  format: date-time
+                created:
+                  type: string
+                  format: date-time
+                updated:
+                  type: string
+                  format: date-time
+                confirmDate:
+                  type: string
+                  format: date-time
+                deletedAt:
+                  type: string
+                  format: date-time
+                statusUpdates:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    swId:
+                      type: integer
+
+                    needId:
+                      type: integer
+
+                    newStatus:
+                      type: integer
+
+                    oldStatus:
+                      type: integer
+                    created:
+                      type: string
+                      format: date-time
+                    updated:
+                      type: string
+                      format: date-time
+                receipts_:
+                  type: object
+                  properties:
+                    attachment:
+                      type: string
+                    description:
+                      type: string
+                    title:
+                      type: string
+                    isPublic:
+                      type: boolean
+                    code:
+                      type: string
+                    ownerId:
+                      type: integer
+                    needStatus:
+                      type: integer
+                    id:
+                      type: integer
+                    deleted:
+                      type: string
+                      format: date-time
+                verifiedPayments:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    idNeed:
+                      type: integer
+                    idUser:
+                      type: integer
+                    verified:
+                      type: string
+                      format: date-time
+                    needAmount:
+                      type: integer
+                    donationAmount:
+                      type: integer
+                    creditAmount:
+                      type: integer
+                    useCredit:
+                      type: boolean
+
+                participants:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    idFamily:
+                      type: integer
+                    idUser:
+                      type: integer
+                    idNeed:
+                      type: integer
+                    type:
+                      type: string
+                    userRole:
+                      type: integer
+                    paid:
+                      type: integer
