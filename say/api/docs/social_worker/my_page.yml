@@ -19,7 +19,7 @@ parameters:
     in: header
     type: integer
     default: 10
-    description: Max 500
+    description: Max 50
 responses:
   500:
     description: Error occurred somewhere!
@@ -119,6 +119,8 @@ responses:
                 confirmDate:
                   type: string
                   format: date-time
+                confirmedBy:
+                  type: integer
                 deletedAt:
                   type: string
                   format: date-time

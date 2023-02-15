@@ -40,7 +40,7 @@ class Config(object):
     DELIVER_TO_CHILD_DELAY = 4 * 60 * 60
     RATELIMIT_DEFAULT = '100 per minutes'
     PAYMENT_ORDER_ID_LENGTH = 8
-    PRODUCT_UNPAYABLE_PERIOD = 7
+    PRODUCT_UNPAYABLE_PERIOD = 1
     MELI_PAYAMAK_USERNAME = 'change-this'
     MELI_PAYAMAK_PASSWORD = 'change-this'
     MELI_PAYAMAK_FROM = 'change-this'

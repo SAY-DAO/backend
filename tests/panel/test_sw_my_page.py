@@ -41,7 +41,7 @@ class TestSocialWorkerMyPage(BaseTestClass):
         needs = children[0]['needs']
         assert needs is not None
         need = needs[0]
-        assert [
+        assert sorted([
             'id',
             'createdById',
             'nameTranslations',
@@ -74,7 +74,8 @@ class TestSocialWorkerMyPage(BaseTestClass):
             'receipts_',
             'verifiedPayments',
             'participants',
-        ] == list(need.keys())
+            'confirmedBy',
+        ]) == sorted(list(need.keys()))
 
         assert need['id']
         assert need['createdById']
