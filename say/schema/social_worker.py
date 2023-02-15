@@ -123,6 +123,7 @@ class NeedSchema(CamelModel):
     created: datetime
     updated: datetime
     confirmDate: datetime = Field(None, alias='confirmDate')
+    confirmUser: datetime = Field(None, alias='confirmedBy')
     deleted_at: datetime = None
     status_updates: List[NeedStatusUpdateSchema]
     receipts_: List[ReceiptSchema] = Field(alias='receipts_')
