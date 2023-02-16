@@ -14,6 +14,7 @@ from say.orm import session
 from say.schema.child_migration import ChildMigrationSchema
 
 from ..authorization import authorize
+from ..authorization import get_sw_ngo_id
 from ..authorization import get_user_id
 from ..authorization import get_user_role
 from ..decorators import get_skip_take
@@ -31,6 +32,7 @@ from ..roles import SOCIAL_WORKER
 from ..roles import SUPER_ADMIN
 from ..schema.social_worker import MigrateSocialWorkerChildrenSchema
 from ..schema.social_worker import MyPagePaginationSchema
+from ..schema.social_worker import MyPageQuerySchema
 from ..schema.social_worker import NewSocialWorkerSchema
 from ..schema.social_worker import SocialWorkerMyPageSchema
 from ..schema.social_worker import SocialWorkerSchema
@@ -402,21 +404,31 @@ class SocialWorkerMyPage(Resource):
     @authorize(
         COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN, SOCIAL_WORKER
     )  # TODO: priv
+    @validate(MyPageQuerySchema)
     @json(SocialWorkerMyPageSchema, use_list=True)
     @swag_from('./docs/social_worker/my_page.yml')
-    def get(self):
-
+    def get(self, data: MyPageQuerySchema):
         take, skip = get_skip_take(request, MyPagePaginationSchema)
+        user_role = get_user_role()
+        ngo_id = get_sw_ngo_id()
         sw_id = get_user_id()
+
+        query = session.query(Child).filter(
+            Child.isDeleted.is_(False),
+            Child.existence_status == 1,
+            Child.isMigrated.is_(False),
+        )
+
+        if data.sw_id:
+            query = query.filter(Child.id_social_worker == data.sw_id)
+
+        if user_role in [SOCIAL_WORKER, COORDINATOR]:
+            query = query.filter(Child.id_social_worker == sw_id)
+        elif user_role in [NGO_SUPERVISOR]:
+            query = query.filter(Child.id_ngo == ngo_id)
+
         children_query = (
-            session.query(Child)
-            .filter(
-                Child.id_social_worker == sw_id,
-                Child.isDeleted.is_(False),
-                Child.existence_status == 1,
-                Child.isMigrated.is_(False),
-            )
-            .options(
+            query.options(
                 selectinload(Child.needs).selectinload(Need.verified_payments),
                 selectinload(Child.needs).selectinload(Need.receipts_),
                 selectinload(Child.needs).selectinload(Need.participants),

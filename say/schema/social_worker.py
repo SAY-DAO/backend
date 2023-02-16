@@ -101,6 +101,7 @@ class NeedSchema(CamelModel):
     name_translations: dict
     name: str
     title: str = None
+    status: int
     description_translations: dict
     description: str
     details: str = None
@@ -154,3 +155,7 @@ class MyPagePaginationSchema(CamelModel):
 
     class Config:
         extra = 'ignore'
+
+
+class MyPageQuerySchema(CamelModel):
+    sw_id: Optional[int]

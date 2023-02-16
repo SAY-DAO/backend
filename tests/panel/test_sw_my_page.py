@@ -75,6 +75,7 @@ class TestSocialWorkerMyPage(BaseTestClass):
             'verifiedPayments',
             'participants',
             'confirmedBy',
+            'status',
         ]) == sorted(list(need.keys()))
 
         assert need['id']
