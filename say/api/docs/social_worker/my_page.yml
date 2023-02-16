@@ -20,10 +20,12 @@ parameters:
     type: integer
     default: 10
     description: Max 50
-responses:
-  500:
-    description: Error occurred somewhere!
 
+  - name: swId
+    in: query
+    type: integer
+
+responses:
   200:
     description: Ok
     schema:
