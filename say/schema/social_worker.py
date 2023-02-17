@@ -134,6 +134,7 @@ class NeedSchema(CamelModel):
     ngo_delivery_date: datetime = None
     child_delivery_date: datetime = None
     purchase_date: datetime = None
+    bank_track_id: str = None
 
 
 class SocialWorkerMyPageSchema(CamelModel):
