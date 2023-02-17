@@ -49,7 +49,7 @@ def test_order_by_field():
 
 
 def test_query_builder_order_by():
-    query = query_builder(
+    query, _ = query_builder(
         session,
         Model,
         order_by=OrderedDict(id=OrderingDirection.Asc, username=OrderingDirection.Desc),
@@ -63,26 +63,26 @@ def test_query_builder_order_by():
 
 
 def test_query_builder_paginate():
-    query = query_builder(session, Model, skip=1, take=5)
+    query, _ = query_builder(session, Model, skip=1, take=5)
     assert str(query) == str(session.query(Model).limit(5).offset(1))
 
 
 def test_query_builder_filters():
-    query = query_builder(session, Model, filters=[Model.id == 1, Model.username == 11])
+    query, _ = query_builder(session, Model, filters=[Model.id == 1, Model.username == 11])
     assert str(query) == str(
         session.query(Model).filter(Model.id == 1, Model.username == 11)
     )
 
 
 def test_query_builder_filter_by():
-    query = query_builder(session, Model, filter_by=dict(id=1, username=3))
+    query, _ = query_builder(session, Model, filter_by=dict(id=1, username=3))
     assert str(query) == str(
         session.query(Model).filter(Model.id == 1, Model.username == 3)
     )
 
 
 def test_query_builder_filter_callback():
-    query = query_builder(
+    query, _ = query_builder(
         session,
         Model,
         filter_callbacks=[
