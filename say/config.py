@@ -81,6 +81,7 @@ class Config(object):
     PAGINATION_SKIP_HEADER_KEY = 'X-Skip'
     PAGINATION_DEFAULT_TAKE = 50
     PAGINATION_MAX_TAKE = 500
+    COUNT_HEADER_KEY = 'X-Total-Count'
 
     # Ordering
     ORDERING_DESC_SYMBOL = '-'

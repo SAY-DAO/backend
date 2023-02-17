@@ -30,7 +30,7 @@ class TestListSocialWorkerCreatedNeeds(BaseTestClass):
         self.assert_ok(res)
         assert isinstance(res.json, list)
         assert len(res.json) == 3
-
+        assert int(res.headers['X-Total-Count']) == 3
         res = self.client.get(
             LIST_SW_CREATED_NEEDS_URL % 'invalid_id',
         )

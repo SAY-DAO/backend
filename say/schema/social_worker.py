@@ -118,6 +118,7 @@ class NeedSchema(CamelModel):
     cost: int
     unpayable: bool
     isDone: bool = Field(alias='isDone')
+    doneAt: datetime = Field(None, alias='doneAt')
     isDeleted: bool = Field(alias='isDeleted')
     isConfirmed: bool = Field(alias='isConfirmed')
     unpayable_from: datetime = None
