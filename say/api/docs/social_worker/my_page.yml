@@ -129,6 +129,15 @@ responses:
                 doneAt:
                   type: string
                   format: date-time
+                ngoDeliveryDate:
+                  type: string
+                  format: date-time
+                childDeliveryDate:
+                  type: string
+                  format: date-time
+                purchaseDate:
+                  type: string
+                  format: date-time
                 statusUpdates:
                   type: object
                   properties:
