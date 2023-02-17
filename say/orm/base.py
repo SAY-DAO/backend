@@ -113,7 +113,9 @@ def query_builder(
     skip: int = None,
     take: int = None,
     order_by: OrderedDict = None,
+    enable_count=False,
 ):
+    count = None
     _query = session.query(model)
 
     # Apply custom filters
@@ -131,10 +133,14 @@ def query_builder(
         for field, dir in order_by.items():
             _query = order_by_field(model, _query, field, dir)
 
+    if enable_count:
+        from pudb import set_trace; set_trace()
+        count = _query.count()
+
     if take:
         _query = _query.limit(take)
 
     if skip:
         _query = _query.offset(skip)
 
-    return _query
+    return _query, count

@@ -119,6 +119,7 @@ def query(
     filter_callbacks=None,
     filtering_schema=None,
     enable_pagination=False,
+    enable_count=False,
     pagination_schema=PaginationSchema,
     enable_ordering=False,
     ordering_schema=None,
@@ -167,7 +168,7 @@ def query(
             else:
                 order_by = None
 
-            _query = query_builder(
+            _query, count = query_builder(
                 session=session,
                 model=model,
                 filters=filters,
@@ -176,9 +177,11 @@ def query(
                 skip=skip,
                 take=take,
                 order_by=order_by,
+                enable_count=enable_count,
             )
 
             request._query = _query
+            request.count = count
             return func(*args, **kwargs)
 
         return wrapper

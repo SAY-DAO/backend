@@ -126,6 +126,9 @@ responses:
                 deletedAt:
                   type: string
                   format: date-time
+                doneAt:
+                  type: string
+                  format: date-time
                 statusUpdates:
                   type: object
                   properties:

@@ -389,6 +389,7 @@ class SocialWorkerCreatedNeeds(Resource):
         Need.isDeleted.is_(False),
         filter_callbacks=[filter_by_sw],
         enable_pagination=True,
+        enable_count=True,
     )
     @json
     @swag_from('./docs/social_worker/created_needs.yml')

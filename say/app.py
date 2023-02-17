@@ -7,6 +7,7 @@ import sqlalchemy
 from flasgger import Swagger
 from flask import Flask
 from flask import jsonify
+from flask import request
 from flask_cors import CORS
 from pydantic.error_wrappers import ValidationError
 
@@ -39,9 +40,7 @@ app.config.update(configs.to_dict())
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config["SWAGGER"] = {
     # "swagger_version": "3.20.9",
-    "specs": [
-        {"version": "2.0", "title": "SAY API", "endpoint": "api_v2", "route": "/api/v2"}
-    ]
+    "specs": [{"version": "2.0", "title": "SAY API", "endpoint": "api_v2", "route": "/api/v2"}]
 }
 
 
@@ -106,3 +105,10 @@ def create_data_dir():
 def shutdown_session(response_or_exc):
     session.remove()
     return response_or_exc
+
+
+@app.after_request
+def add_header(response):
+    if getattr(request, 'count', None) is not None:
+        response.headers[configs.COUNT_HEADER_KEY] = request.count
+    return response
