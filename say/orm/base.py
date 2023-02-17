@@ -134,7 +134,6 @@ def query_builder(
             _query = order_by_field(model, _query, field, dir)
 
     if enable_count:
-        from pudb import set_trace; set_trace()
         count = _query.count()
 
     if take:
