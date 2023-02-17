@@ -131,6 +131,9 @@ class NeedSchema(CamelModel):
     receipts_: List[ReceiptSchema] = Field(alias='receipts_')
     verified_payments: List[PaymentSchema]
     participants: List[ParticipantSchema]
+    ngo_delivery_date: datetime = None
+    child_delivery_date: datetime = None
+    purchase_date: datetime = None
 
 
 class SocialWorkerMyPageSchema(CamelModel):
