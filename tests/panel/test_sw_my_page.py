@@ -81,6 +81,7 @@ class TestSocialWorkerMyPage(BaseTestClass):
                 'ngoDeliveryDate',
                 'purchaseDate',
                 'childDeliveryDate',
+                'bankTrackId',
             ]
         ) == sorted(list(need.keys()))
 

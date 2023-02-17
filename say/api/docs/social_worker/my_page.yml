@@ -91,6 +91,8 @@ responses:
                   type: string
                 affiliateLinkUrl:
                   type: string
+                bankTrackId:
+                  type: string
                 doingDuration:
                   type: integer
                 img:
