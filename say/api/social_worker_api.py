@@ -3,6 +3,7 @@ from flask import request
 from flask_restful import Resource
 from sqlalchemy.orm import selectinload
 
+from say.constants import DEFAULT_CHILD_ID
 from say.models import Child
 from say.models import City
 from say.models import Need
@@ -418,6 +419,7 @@ class SocialWorkerMyPage(Resource):
             Child.isDeleted.is_(False),
             Child.existence_status == 1,
             Child.isMigrated.is_(False),
+            Child.id != DEFAULT_CHILD_ID,
         )
 
         if data.sw_id:
