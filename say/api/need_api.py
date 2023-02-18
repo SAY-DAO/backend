@@ -567,18 +567,16 @@ class AddNeed(Resource):
         image_url = image_path
 
         category = request.form.get('category')
-        if category:
-            try:
-                category = int(request.form['category'])
-                if (
-                    category == -1
-                ):  # TODO: Added to be backward-compatible with current panel, Delete after new panel
-                    category = None
-            except ValueError:
-                return {'message': 'error: category should be integer!'}, 400
+        if not category:
+            return {'message': 'error: category is required!'}, 400
 
-            if category is not None and category not in CATEGORIES:
-                return {'message': f'error: category should be {CATEGORIES}'}, 400
+        try:
+            category = int(request.form['category'])
+        except ValueError:
+            return {'message': 'error: category should be integer!'}, 400
+
+        if category not in CATEGORIES:
+            return {'message': f'error: category should be {CATEGORIES}'}, 400
 
         cost = request.form['cost'].replace(',', '')
 
