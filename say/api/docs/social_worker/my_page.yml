@@ -95,6 +95,8 @@ responses:
                   type: string
                 doingDuration:
                   type: integer
+                status:
+                  type: integer
                 img:
                   type: string
                 paid:
@@ -141,84 +143,92 @@ responses:
                   type: string
                   format: date-time
                 statusUpdates:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    swId:
-                      type: integer
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      swId:
+                        type: integer
 
-                    needId:
-                      type: integer
+                      needId:
+                        type: integer
 
-                    newStatus:
-                      type: integer
+                      newStatus:
+                        type: integer
 
-                    oldStatus:
-                      type: integer
-                    created:
-                      type: string
-                      format: date-time
-                    updated:
-                      type: string
-                      format: date-time
+                      oldStatus:
+                        type: integer
+                      created:
+                        type: string
+                        format: date-time
+                      updated:
+                        type: string
+                        format: date-time
                 receipts_:
-                  type: object
-                  properties:
-                    attachment:
-                      type: string
-                    description:
-                      type: string
-                    title:
-                      type: string
-                    isPublic:
-                      type: boolean
-                    code:
-                      type: string
-                    ownerId:
-                      type: integer
-                    needStatus:
-                      type: integer
-                    id:
-                      type: integer
-                    deleted:
-                      type: string
-                      format: date-time
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      attachment:
+                        type: string
+                      description:
+                        type: string
+                      title:
+                        type: string
+                      isPublic:
+                        type: boolean
+                      code:
+                        type: string
+                      ownerId:
+                        type: integer
+                      needStatus:
+                        type: integer
+                      id:
+                        type: integer
+                      deleted:
+                        type: string
+                        format: date-time
                 verifiedPayments:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    idNeed:
-                      type: integer
-                    idUser:
-                      type: integer
-                    verified:
-                      type: string
-                      format: date-time
-                    needAmount:
-                      type: integer
-                    donationAmount:
-                      type: integer
-                    creditAmount:
-                      type: integer
-                    useCredit:
-                      type: boolean
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      idNeed:
+                        type: integer
+                      idUser:
+                        type: integer
+                      verified:
+                        type: string
+                        format: date-time
+                      needAmount:
+                        type: integer
+                      donationAmount:
+                        type: integer
+                      creditAmount:
+                        type: integer
+                      useCredit:
+                        type: boolean
 
                 participants:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    idFamily:
-                      type: integer
-                    idUser:
-                      type: integer
-                    idNeed:
-                      type: integer
-                    type:
-                      type: string
-                    userRole:
-                      type: integer
-                    paid:
-                      type: integer
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      idFamily:
+                        type: integer
+                      idUser:
+                        type: integer
+                      idNeed:
+                        type: integer
+                      type:
+                        type: string
+                      userRole:
+                        type: integer
+                      paid:
+                        type: integer
