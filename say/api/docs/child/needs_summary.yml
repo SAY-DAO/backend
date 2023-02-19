@@ -16,6 +16,14 @@ parameters:
     required: true
     type: integer
 
+  - name: isDone
+    in: query
+    type: boolean
+
+  - name: status
+    in: query
+    type: integer
+
 responses:
   500:
     description: Error occurred somewhere!

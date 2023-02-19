@@ -37,6 +37,9 @@ class NeedSummary(BaseModel):
     created: datetime
     doneAt: datetime = None
     unpayable: bool = None
+    status: int
+    status_updated_at: datetime = Field(None, alias='statusUpdatedAt')
+    doing_duration: datetime = Field(None, alias='doingDuration')
 
     class Config:
         orm_mode = True
@@ -94,3 +97,8 @@ class NeedSchema(NeedSummary):
 
     class Config:
         orm_mode = True
+
+
+class NeedSummaryQuery(CamelModel):
+    status: Optional[int]
+    is_done: Optional[bool]
