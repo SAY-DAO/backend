@@ -35,6 +35,7 @@ from say.authorization import get_user_role
 from say.config import configs
 from say.constants import DEFAULT_CHILD_ID
 from say.decorators import json
+from say.decorators import validate
 from say.exceptions import HTTP_NOT_FOUND
 from say.exceptions import HTTP_PERMISION_DENIED
 from say.models import Child
@@ -62,6 +63,7 @@ from say.roles import USER
 from say.schema.child import UserChildSchema
 from say.schema.need import NeedSchema
 from say.schema.need import NeedSummary
+from say.schema.need import NeedSummaryQuery
 from say.validations import valid_image_extension
 from say.validations import valid_voice_extension
 
@@ -389,11 +391,11 @@ class GetChildNeedsSummary(Resource):
         SAY_SUPERVISOR,
         ADMIN,
     )  # TODO: priv
+    @validate(NeedSummaryQuery)
     @json
     @swag_from('./docs/child/needs_summary.yml')
-    def get(self, child_id):
+    def get(self, child_id, data: NeedSummaryQuery):
         role = get_user_role()
-
         child_id = int(child_id)
 
         child_query = (
@@ -418,6 +420,12 @@ class GetChildNeedsSummary(Resource):
             )
             .order_by(Need.name, Need.doneAt)
         )
+
+        if data.is_done:
+            needs_query = needs_query.filter(Need.isDone.is_(data.is_done))
+
+        if data.status:
+            needs_query = needs_query.filter(Need.status == data.status)
 
         needs = []
         for need in needs_query:
