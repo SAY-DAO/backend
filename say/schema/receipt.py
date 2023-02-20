@@ -74,7 +74,6 @@ class ReceiptSchema(NewReceiptSchema):
     deleted: datetime = None
 
     class Config:
-        exclude = 'owner_id'
         orm_mode = True
 
     @validator('attachment')
@@ -86,15 +85,4 @@ class ReceiptSchema(NewReceiptSchema):
 
     @validator('is_public')
     def is_public_validator(cls, v):
-        return v
-
-    @validator('owner_id')
-    def owner_id_validator(cls, v):
-        try:
-            role = get_user_role()
-        except NoAuthorizationError:
-            role = None
-
-        if role not in [SUPER_ADMIN, SAY_SUPERVISOR, ADMIN]:
-            return None
         return v
