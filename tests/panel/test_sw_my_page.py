@@ -45,12 +45,8 @@ class TestSocialWorkerMyPage(BaseTestClass):
             [
                 'id',
                 'createdById',
-                'nameTranslations',
                 'name',
                 'title',
-                'descriptionTranslations',
-                'description',
-                'details',
                 'imageUrl',
                 'category',
                 'type',
@@ -64,17 +60,14 @@ class TestSocialWorkerMyPage(BaseTestClass):
                 'cost',
                 'unpayable',
                 'isDone',
-                'isDeleted',
                 'isConfirmed',
                 'unpayableFrom',
                 'created',
                 'updated',
                 'confirmDate',
-                'deletedAt',
                 'statusUpdates',
                 'receipts_',
                 'verifiedPayments',
-                'participants',
                 'confirmedBy',
                 'status',
                 'doneAt',
@@ -82,12 +75,12 @@ class TestSocialWorkerMyPage(BaseTestClass):
                 'purchaseDate',
                 'childDeliveryDate',
                 'bankTrackId',
+                'expectedDeliveryDate',
             ]
         ) == sorted(list(need.keys()))
 
         assert need['id']
         assert need['createdById']
-        assert need['participants']
         assert need['receipts_']
         assert need['statusUpdates']
         assert need['verifiedPayments']
