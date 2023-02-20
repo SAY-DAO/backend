@@ -98,13 +98,9 @@ class SocialWorkerSchema(NewSocialWorkerSchema):
 class NeedSchema(CamelModel):
     id: int
     created_by_id: int = None
-    name_translations: dict
     name: str
     title: str = None
     status: int
-    description_translations: dict
-    description: str
-    details: str = None
     imageUrl: str = Field(alias='imageUrl')
     category: int
     type: int
@@ -119,22 +115,20 @@ class NeedSchema(CamelModel):
     unpayable: bool
     isDone: bool = Field(alias='isDone')
     doneAt: datetime = Field(None, alias='doneAt')
-    isDeleted: bool = Field(alias='isDeleted')
     isConfirmed: bool = Field(alias='isConfirmed')
     unpayable_from: datetime = None
     created: datetime
     updated: datetime
     confirmDate: datetime = Field(None, alias='confirmDate')
     confirmUser: int = Field(None, alias='confirmedBy')
-    deleted_at: datetime = None
     status_updates: List[NeedStatusUpdateSchema]
     receipts_: List[ReceiptSchema] = Field(alias='receipts_')
     verified_payments: List[PaymentSchema]
-    participants: List[ParticipantSchema]
     ngo_delivery_date: datetime = None
     child_delivery_date: datetime = None
     purchase_date: datetime = None
     bank_track_id: str = None
+    expected_delivery_date: datetime = None
 
 
 class SocialWorkerMyPageSchema(CamelModel):

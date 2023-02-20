@@ -426,6 +426,9 @@ class SocialWorkerMyPage(Resource):
         elif user_role in [NGO_SUPERVISOR]:
             query = query.filter(Child.id_ngo == ngo_id)
 
+        count = query.count()
+        request.count = count
+
         children_query = (
             query.options(
                 selectinload(Child.needs).selectinload(Need.verified_payments),
@@ -437,7 +440,6 @@ class SocialWorkerMyPage(Resource):
             .limit(take)
             .offset(skip)
         )
-
         return children_query
 
 

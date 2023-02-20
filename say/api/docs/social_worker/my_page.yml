@@ -27,6 +27,11 @@ parameters:
 
 responses:
   200:
+    headers:
+      X-Total-Count:
+        schema:
+          type: integer
+          description: Total count
     description: Ok
     schema:
       id: sw-my-page
@@ -56,28 +61,9 @@ responses:
                   type: integer
                 createdById:
                   type: integer
-                nameTranslations:
-                  type: object
-                  properties:
-                    en:
-                      type: str
-                    fa:
-                      type: str
                 name:
                   type: string
-
                 title:
-                  type: string
-                descriptionTranslations:
-                  type: object
-                  properties:
-                    en:
-                      type: str
-                    fa:
-                      type: str
-                description:
-                  type: string
-                details:
                   type: string
                 imageUrl:
                   type: string
@@ -109,8 +95,6 @@ responses:
                   type: boolean
                 isDone:
                   type: boolean
-                isDeleted:
-                  type: boolean
                 isConfirmed:
                   type: boolean
                 unpayableFrom:
@@ -127,9 +111,6 @@ responses:
                   format: date-time
                 confirmedBy:
                   type: integer
-                deletedAt:
-                  type: string
-                  format: date-time
                 doneAt:
                   type: string
                   format: date-time
@@ -140,6 +121,9 @@ responses:
                   type: string
                   format: date-time
                 purchaseDate:
+                  type: string
+                  format: date-time
+                expectedDeliveryDate:
                   type: string
                   format: date-time
                 statusUpdates:
@@ -213,22 +197,22 @@ responses:
                       useCredit:
                         type: boolean
 
-                participants:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      id:
-                        type: integer
-                      idFamily:
-                        type: integer
-                      idUser:
-                        type: integer
-                      idNeed:
-                        type: integer
-                      type:
-                        type: string
-                      userRole:
-                        type: integer
-                      paid:
-                        type: integer
+                # participants:
+                #   type: array
+                #   items:
+                #     type: object
+                #     properties:
+                #       id:
+                #         type: integer
+                #       idFamily:
+                #         type: integer
+                #       idUser:
+                #         type: integer
+                #       idNeed:
+                #         type: integer
+                #       type:
+                #         type: string
+                #       userRole:
+                #         type: integer
+                #       paid:
+                #         type: integer
