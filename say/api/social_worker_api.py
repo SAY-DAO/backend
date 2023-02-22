@@ -407,7 +407,7 @@ class SocialWorkerMyPage(Resource):
         COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN, SOCIAL_WORKER
     )  # TODO: priv
     @validate(MyPageQuerySchema)
-    @json(SocialWorkerMyPageSchema, use_list=True)
+    @json(SocialWorkerMyPageSchema, use_list=True, paginate=True)
     @swag_from('./docs/social_worker/my_page.yml')
     def get(self, data: MyPageQuerySchema):
         take, skip = get_skip_take(request, MyPagePaginationSchema)
@@ -430,9 +430,6 @@ class SocialWorkerMyPage(Resource):
         elif user_role in [NGO_SUPERVISOR]:
             query = query.filter(Child.id_ngo == ngo_id)
 
-        count = query.count()
-        request.count = count
-
         children_query = (
             query.options(
                 selectinload(Child.needs).selectinload(Need.verified_payments),
@@ -441,8 +438,6 @@ class SocialWorkerMyPage(Resource):
                 selectinload(Child.needs).selectinload(Need.status_updates),
             )
             .order_by(Child.created.desc())
-            .limit(take)
-            .offset(skip)
         )
         return children_query
 

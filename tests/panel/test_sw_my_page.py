@@ -30,7 +30,8 @@ class TestSocialWorkerMyPage(BaseTestClass):
         )
 
         self.assert_code(res, 200)
-        children = res.json
+        assert res.json['count'] == 1
+        children = res.json['result']
         assert 'id' in children[0]
         assert 'sayName' in children[0]
         assert 'firstName' in children[0]
