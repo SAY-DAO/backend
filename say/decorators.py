@@ -15,7 +15,7 @@ from sqlalchemy.orm.query import Query
 from say.config import configs
 from say.constants import OrderingDirection
 from say.exceptions import HTTP_NOT_FOUND
-from say.helpers import paginate_list
+from say.helpers import get_skip_take
 from say.helpers import paginate_query
 from say.orm import obj_to_dict
 from say.orm import query_builder
@@ -45,7 +45,7 @@ def json(schema, use_list=False, paginate=False):
                         # direct list serialization
                         # See https://github.com/samuelcolvin/pydantic/issues/1409
                         if paginate:
-                            result, count = paginate_query(result, request)
+                            result, count = paginate_query(result, request, PaginationSchema)
                             r = (
                                 ujson.dumps(
                                     dict(
@@ -213,10 +213,3 @@ def query(
         return wrapper
 
     return decorator
-
-
-def get_skip_take(request, pagination_schema=PaginationSchema):
-    pagination = pagination_schema.parse_obj(request.headers)
-    take = pagination.take
-    skip = pagination.skip
-    return take, skip

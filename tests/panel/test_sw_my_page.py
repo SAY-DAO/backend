@@ -1,5 +1,6 @@
 import pytest
 
+from say.config import configs
 from say.roles import ADMIN
 from say.roles import ROLES
 from say.roles import SAY_SUPERVISOR
@@ -13,7 +14,9 @@ SW_MY_PAGE_URL = '/api/v2/socialworkers/my-page'
 class TestSocialWorkerMyPage(BaseTestClass):
     def mockup(self):
         self.sw = self._create_random_sw()
+        self._create_random_child(sw=self.sw, isDeleted=False, existence_status=1)
         self.child1 = self._create_random_child(sw=self.sw, isDeleted=False, existence_status=1)
+
         n1 = self._create_random_need(child=self.child1)
 
         self._create_need_receipt(n1)
@@ -27,11 +30,16 @@ class TestSocialWorkerMyPage(BaseTestClass):
         self.login_sw(self.sw)
         res = self.client.get(
             SW_MY_PAGE_URL,
+            headers={
+                configs.PAGINATION_TAKE_HEADER_KEY: 1,
+                configs.PAGINATION_SKIP_HEADER_KEY: 0,
+            },
         )
 
         self.assert_code(res, 200)
-        assert res.json['count'] == 1
+        assert res.json['count'] == 2
         children = res.json['result']
+        assert len(children) == 1
         assert 'id' in children[0]
         assert 'sayName' in children[0]
         assert 'firstName' in children[0]
