@@ -18,7 +18,6 @@ from ..authorization import authorize
 from ..authorization import get_sw_ngo_id
 from ..authorization import get_user_id
 from ..authorization import get_user_role
-from ..decorators import get_skip_take
 from ..decorators import json
 from ..decorators import query
 from ..decorators import validate
@@ -410,7 +409,6 @@ class SocialWorkerMyPage(Resource):
     @json(SocialWorkerMyPageSchema, use_list=True, paginate=True)
     @swag_from('./docs/social_worker/my_page.yml')
     def get(self, data: MyPageQuerySchema):
-        take, skip = get_skip_take(request, MyPagePaginationSchema)
         user_role = get_user_role()
         ngo_id = get_sw_ngo_id()
         sw_id = get_user_id()
