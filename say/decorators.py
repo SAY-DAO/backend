@@ -15,6 +15,8 @@ from sqlalchemy.orm.query import Query
 from say.config import configs
 from say.constants import OrderingDirection
 from say.exceptions import HTTP_NOT_FOUND
+from say.helpers import paginate_list
+from say.helpers import paginate_query
 from say.orm import obj_to_dict
 from say.orm import query_builder
 from say.orm import session
@@ -23,12 +25,11 @@ from say.schema.base import OrderingMeta
 from say.schema.base import PaginationSchema
 
 
-def json(schema, use_list=False):
+def json(schema, use_list=False, paginate=False):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             nonlocal schema
-
             result = func(*args, **kwargs)
 
             if isinstance(result, Response):
@@ -40,11 +41,34 @@ def json(schema, use_list=False):
             elif isinstance(result, Query):
                 if schema:
                     if use_list:
+                        # Using dumb loads/dumps workaround becuase pydantic doesn't
+                        # direct list serialization
+                        # See https://github.com/samuelcolvin/pydantic/issues/1409
+                        if paginate:
+                            result, count = paginate_query(result, request)
+                            r = (
+                                ujson.dumps(
+                                    dict(
+                                        count=count,
+                                        result=[
+                                            ujson.loads(schema.from_orm(row).json(by_alias=True))
+                                            for row in result
+                                        ],
+                                    )
+                                ),
+                            )
+                        else:
+                            r = (
+                                ujson.dumps(
+                                    [
+                                        ujson.loads(schema.from_orm(row).json(by_alias=True))
+                                        for row in result
+                                    ]
+                                ),
+                            )
+
                         return Response(
-                            # Using dumb loads/dumps workaround becuase pydantic doesn't
-                            # direct list serialization
-                            # See https://github.com/samuelcolvin/pydantic/issues/1409
-                            ujson.dumps([ujson.loads(schema.from_orm(row).json(by_alias=True)) for row in result]),
+                            r,
                             mimetype='application/json',
                         )
                     else:
@@ -69,7 +93,9 @@ def json(schema, use_list=False):
                     # Using dumb loads/dumps workaround becuase pydantic doesn't
                     # direct list serialization
                     # See https://github.com/samuelcolvin/pydantic/issues/1409
-                    result = ujson.dumps([ujson.loads(schema.from_orm(row).json(by_alias=True)) for row in result])
+                    result = ujson.dumps(
+                        [ujson.loads(schema.from_orm(row).json(by_alias=True)) for row in result]
+                    )
                 return Response(
                     result,
                     mimetype='application/json',
