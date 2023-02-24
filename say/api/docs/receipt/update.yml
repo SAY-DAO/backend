@@ -52,3 +52,7 @@ responses:
     description: not found
   200:
     description: Ok
+    schema:
+      type: array
+      items:
+        $ref: "#/definitions/need_receipt"

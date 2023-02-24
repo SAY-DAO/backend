@@ -60,3 +60,26 @@ responses:
 
   200:
     description: Ok
+    schema:
+      id: need_receipt
+      type: object
+      properties:
+        id:
+          type: integer
+        deleted:
+          type: string
+          format: date-time
+        attachment:
+          type: string
+        code:
+          type: string
+        description:
+          type: string
+        title:
+          type: string
+        isPublic:
+          type: boolean
+        ownerId:
+          type: integer
+        needStatus:
+          type: integer
