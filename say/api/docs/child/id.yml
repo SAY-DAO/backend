@@ -94,9 +94,8 @@ responses:
           description: the child's voice file path url
 
         birthPlace:
-          type: integer
+          type: string
           description: the child's birth place, the international city codes
-          example: 21
 
         birthDate:
           type: string
@@ -135,11 +134,11 @@ responses:
           description: number of done needs of child
           default: 0
 
-        ngoId:
+        id_ngo:
           type: integer
           description: the ngo that the child is in
 
-        socialWorkerId:
+        id_social_worker:
           type: integer
           description: the social worker who covers the child's needs
 

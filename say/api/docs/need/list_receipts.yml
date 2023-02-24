@@ -18,3 +18,7 @@ parameters:
 responses:
   200:
     description: list of receipts
+    schema:
+      type: array
+      items:
+        $ref: "#/definitions/need_receipt"

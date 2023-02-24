@@ -1,7 +1,5 @@
 Get a receipt
-
 ---
-
 tags:
   - Receipt API
 
@@ -18,3 +16,6 @@ parameters:
 responses:
   200:
     description: receipt
+    schema:
+      type: object
+      $ref: "#/definitions/need_receipt"

@@ -18,10 +18,14 @@ parameters:
   - name: take
     in: query
     description: max 100, default = 10
-    
+
   - name: skip
     in: query
 
 responses:
   200:
     description: list of receipts
+    schema:
+      type: array
+      items:
+        $ref: "#/definitions/need_receipt"
