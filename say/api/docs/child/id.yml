@@ -129,7 +129,7 @@ responses:
           description: child's state of happiness
           example: 0
 
-        doneNeedCount:
+        done_need_count:
           type: integer
           description: number of done needs of child
           default: 0
@@ -190,3 +190,6 @@ responses:
         migrateDate:
           type: string
           description: the date that the child has been migrated
+
+        is_gone:
+          type: boolean

@@ -145,8 +145,16 @@ class Need(base, Timestamp):
 
     receipts_ = relationship(
         'Receipt',
-        secondary='need_receipt',
         back_populates='needs',
+        secondary='need_receipt',
+        primaryjoin='''and_(
+            Need.id==NeedReceipt.need_id,
+            NeedReceipt.deleted.is_(None),
+        )''',
+        secondaryjoin='''and_(
+            Receipt.id==NeedReceipt.receipt_id,
+            Receipt.deleted.is_(None),
+        )''',
     )
 
     status_updates = relationship(
