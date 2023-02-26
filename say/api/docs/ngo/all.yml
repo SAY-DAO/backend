@@ -104,3 +104,5 @@ responses:
           type: boolean
           default: false
           description: ngo is deleted or not
+        city:
+          $ref: "#/definitions/city_model"
