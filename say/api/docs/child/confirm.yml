@@ -27,6 +27,3 @@ responses:
 
   200:
     description: Ok
-
-    schema:
-      id: child_model

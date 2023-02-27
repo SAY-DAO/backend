@@ -2,7 +2,6 @@ get user children
 Returns all children this user has.
 Calling this API affects family, user_family, user, child_need, need and need_family tables.
 ---
-
 tags:
   - User API
 
@@ -27,4 +26,11 @@ responses:
     description: Ok
 
     schema:
-      id: child_model
+      type: object
+      properties:
+        total_count:
+          type: integer
+        children:
+          type: array
+          items:
+            $ref: "#definitions/child_model"

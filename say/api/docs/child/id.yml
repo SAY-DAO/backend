@@ -40,156 +40,129 @@ responses:
       properties:
         id:
           type: integer
-          description: the child's id
-
-        firstName:
-          type: string
-          description: the child's real first name
-
-        lastName:
-          type: string
-          description: the child's real last name
-
-        sayName:
-          type: string
-          description: the child's virtual name
-
-        phoneNumber:
-          type: string
-          description: the child's phone number or a contact way
-
-        nationality:
-          type: integer
-          description: the child's nationality, the international country codes
-          example: 98
-
-        country:
-          type: integer
-          description: the child's country, the international country codes
-          example: 98
-
-        city:
-          type: integer
-          description: the child's city, the international city codes
-          example: 21
-
-        avatarUrl:
-          type: string
-          description: the child's avatar image path url
-
-        gender:
-          type: boolean
-          description: determines the child's gender, true for male and false for female
-
-        bio:
-          type: string
-          description: a text that describes the child
-
-        bioSummary:
-          type: string
-          description: summary of bio
-
-        voiceUrl:
-          type: string
-          description: the child's voice file path url
-
-        birthPlace:
-          type: string
-          description: the child's birth place, the international city codes
-
-        birthDate:
-          type: string
-          description: the child's birth date
-
-        address:
-          type: string
-          description: the child's address
-
-        housingStatus:
-          type: integer
-          description: describes how does the child lives
-          example: 0
-
-        familyCount:
-          type: integer
-          description: number of child's real family members
-
-        sayFamilyCount:
-          type: integer
-          description: number of child's SAY family members
-          default: 0
-
-        education:
-          type: integer
-          description: describes the child's education level
-          example: 7
-
-        status:
-          type: integer
-          description: child's state of happiness
-          example: 0
-
-        done_need_count:
-          type: integer
-          description: number of done needs of child
-          default: 0
-
+          format: int32
         id_ngo:
           type: integer
-          description: the ngo that the child is in
-
+          format: int32
         id_social_worker:
           type: integer
-          description: the social worker who covers the child's needs
-
-        spentCredit:
+          format: int32
+        firstName_translations:
+          type: object
+          properties:
+            en:
+              type: string
+            fa:
+              type: string
+        firstName:
+          type: string
+        lastName_translations:
+          type: object
+          properties:
+            en:
+              type: string
+            fa:
+              type: string
+        lastName:
+          type: string
+        sayname_translations:
+          type: object
+          properties:
+            en:
+              type: string
+            fa:
+              type: string
+        sayName:
+          type: string
+        phoneNumber:
+          type: string
+        nationality:
+          type: string
+          format: nullable
+        country:
           type: integer
-          description: total credit spent on child
-          default: 0
-
-        created:
+          format: int32
+        city:
+          type: integer
+          format: int32
+        awakeAvatarUrl:
           type: string
-          description: the date that the child has been created
-
-        updated:
+        sleptAvatarUrl:
           type: string
-          description: the last date that the child has been updated
-
+        gender:
+          type: boolean
+        bio_translations:
+          type: object
+          properties:
+            en:
+              type: string
+            fa:
+              type: string
+        bio:
+          type: string
+        bio_summary_translations:
+          type: object
+          properties:
+            en:
+              type: string
+            fa:
+              type: string
+        bioSummary:
+          type: string
+        sayFamilyCount:
+          type: integer
+          format: int32
+        voiceUrl:
+          type: string
+        birthPlace:
+          type: string
+        birthDate:
+          type: string
+        address:
+          type: string
+        housingStatus:
+          type: string
+        familyCount:
+          type: integer
+          format: int32
+        education:
+          type: string
+        status:
+          type: string
+          format: nullable
+        existence_status:
+          type: integer
+          format: int32
         isDeleted:
           type: boolean
-          description: determines if the child is confirmed or not
-          default: False
-
         isConfirmed:
           type: boolean
-          description: determines if the child is confirmed or not
-          default: False
-
         confirmUser:
           type: integer
-          description: the panel user who confirms the child
-
+          format: int32
         confirmDate:
           type: string
-          description: the date that the child has been confirmed
-
         generatedCode:
           type: string
-          description: a unique code generated automatically from ngo id, ngo's social workers count and social worker's children count
-          example: 0010010001
-
         isMigrated:
           type: boolean
-          description: determines if the child is migrated or not
-          default: false
-
         migratedId:
-          type: integer
-          description: the social worker whom the child is migrated to
-
+          type: string
+          format: nullable
         migrateDate:
           type: string
-          description: the date that the child has been migrated
-
+          format: nullable
+        avatarUrl:
+          type: string
         is_gone:
           type: boolean
+        done_needs_count:
+          type: integer
+          format: int32
+        spent_credit:
+          type: integer
+          format: int32
+        created:
+          type: string
+        updated:
+          type: string

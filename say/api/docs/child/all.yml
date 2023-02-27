@@ -15,7 +15,7 @@ parameters:
     description: Access Token
     required: true
     type: string
- 
+
   - in: path
     name: confirm
     required: true
@@ -55,10 +55,10 @@ responses:
     description: Ok
     schema:
       properties:
-        totalCount: 
+        totalCount:
           type: integer
-        children: 
+        children:
           type: array
           items:
-            schema: 
+            schema:
               id: child_model
