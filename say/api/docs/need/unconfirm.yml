@@ -1,0 +1,38 @@
+Unconfirm a Need
+---
+tags:
+  - Need API
+
+consumes:
+  - application/json
+
+parameters:
+  - name: Authorization
+    in: header
+    description: Access Token
+    required: true
+    type: string
+
+  - in: path
+    name: id
+    required: true
+    type: integer
+
+responses:
+  200:
+    description: Ok
+
+    schema:
+      id: need_model
+
+  404:
+    description: Need not found
+
+  403:
+    description: This sw cannot delete a paid need
+
+  600:
+    description: Need is not confirmed
+
+  601:
+    description: Cannot unconfirm delivered need

@@ -395,10 +395,13 @@ class UpdateNeedById(Resource):
                     return {'message': 'Need has not been reported to ngo yet'}, 400
 
                 if new_status == 4 and need.type == 0 and len(need.receipts_) == 0:
-                    return {
-                        'message': 'There is not receipt for this need, '
-                        'please upload related receipt before changing the status.'
-                    }, 400
+                    return (
+                        {
+                            'message': 'There is not receipt for this need, '
+                            'please upload related receipt before changing the status.'
+                        },
+                        400,
+                    )
 
                 session.flush()
                 need_status = NeedStatusUpdate(
@@ -411,10 +414,13 @@ class UpdateNeedById(Resource):
                 need.status_updates.append(need_status)
 
             elif new_status != prev_status:
-                return {
-                    'message': f'Can not change status from '
-                    f'{prev_status} to {new_status}',
-                }, 400
+                return (
+                    {
+                        'message': f'Can not change status from '
+                        f'{prev_status} to {new_status}',
+                    },
+                    400,
+                )
 
         if need.type == 0 and need.status == 3:
             bank_track_id = request.form.get('bank_track_id')
@@ -506,6 +512,38 @@ class ConfirmNeed(Resource):
         safe_commit(session)
 
         return {'message': 'need confirmed successfully!'}
+
+
+class UnconfirmNeed(Resource):
+    @json
+    @commit
+    @authorize(
+        SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+    )  # TODO: priv
+    @swag_from('./docs/need/unconfirm.yml')
+    def post(self, id):
+        need = session.query(Need).filter_by(isDeleted=False).filter_by(id=id)
+        need = filter_by_privilege(need).with_for_update().one_or_none()
+
+        if not need:
+            return {'message': 'need not found'}, 404
+
+        if not need.isConfirmed:
+            return {'message': 'need is not confirmed'}, 600
+
+        if (
+            get_user_role() in (SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR)
+            and need.status > 0
+        ):
+            return {'message': 'permission denied'}, 403
+
+        if (need.type == 0 and need.status >= 3) or (need.type == 1 and need.status >= 4):
+            return {
+                'message': f'need with status {need.status} cannot be unconfirmed'
+            }, 601
+
+        need.unconfirm()
+        return need
 
 
 class AddNeed(Resource):
@@ -778,16 +816,8 @@ api.add_resource(GetNeedById, '/api/v2/need/needId=<int:need_id>')
 api.add_resource(ListNeeds, '/api/v2/needs')
 api.add_resource(UpdateNeedById, '/api/v2/need/update/needId=<int:need_id>')
 api.add_resource(DeleteNeedById, '/api/v2/need/delete/needId=<int:need_id>')
-api.add_resource(
-    ConfirmNeed,
-    '/api/v2/need/confirm/needId=<int:need_id>',
-)
-api.add_resource(AddNeed, "/api/v2/need/")
-api.add_resource(
-    NeedReceipts,
-    "/api/v2/needs/<int:id>/receipts",
-)
-api.add_resource(
-    NeedReceiptAPI,
-    "/api/v2/needs/<int:id>/receipts/<int:receiptId>",
-)
+api.add_resource(ConfirmNeed, '/api/v2/need/confirm/needId=<int:need_id>')
+api.add_resource(UnconfirmNeed, '/api/v2/needs/<int:id>/unconfirm')
+api.add_resource(AddNeed, '/api/v2/need/')
+api.add_resource(NeedReceipts, '/api/v2/needs/<int:id>/receipts')
+api.add_resource(NeedReceiptAPI, '/api/v2/needs/<int:id>/receipts/<int:receiptId>')
