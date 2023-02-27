@@ -2,11 +2,6 @@ from datetime import datetime
 
 import ujson
 
-from say.roles import ADMIN
-from say.roles import NGO_SUPERVISOR
-from say.roles import SAY_SUPERVISOR
-from say.roles import SOCIAL_WORKER
-from say.roles import SUPER_ADMIN
 from tests.helper import BaseTestClass
 
 

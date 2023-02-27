@@ -32,6 +32,7 @@ class Need(base, Timestamp):
 
     child_id = Column(Integer, ForeignKey('child.id'), index=True)
     created_by_id = Column(Integer, ForeignKey('social_worker.id'), nullable=False)
+    # unconfirmed_by_id = Column(Integer, ForeignKey('social_worker.id'), nullable=True)
 
     name_translations = Column(HSTORE)
     name = translation_hybrid(name_translations)
@@ -324,7 +325,9 @@ class Need(base, Timestamp):
             '''
             return raw_status % need_name
 
-        elif (self.type == 1 and self.status == 5) or (self.type == 0 and self.status == 4):
+        elif (self.type == 1 and self.status == 5) or (
+            self.type == 0 and self.status == 4
+        ):
             '''
             p5s4 need status condition
             کالا به دست اصغر رسید
@@ -499,6 +502,9 @@ class Need(base, Timestamp):
                 self.unavailable_from = datetime.utcnow()
 
     def unconfirm(self):
+        # TODO: uncomment after merge with release
+        # from say.authorization import get_user_id
+
         self.refund_extra_credit(0)
         self.purchase_cost = None
         self.confirmDate = None
@@ -506,6 +512,7 @@ class Need(base, Timestamp):
         self.isConfirmed = False
         self.status = 0
         self.unconfirmed_at = datetime.utcnow()
+        # self.unconfirmed_by_id = get_user_id()
         self.delete_from_carts()
         for participant in self.participants:
             participant.isDeleted = True

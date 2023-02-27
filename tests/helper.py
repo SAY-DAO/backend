@@ -179,6 +179,7 @@ class BaseTestClass:
             confirmDate=confirmed and datetime.utcnow(),
             isUrgent=False,
             created_by_id=child.id_social_worker,
+            isReported=True,
         )
         data.update(kwargs)
         need = Need(**data)
