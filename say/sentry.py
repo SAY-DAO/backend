@@ -5,6 +5,7 @@ from sentry_sdk.integrations.redis import RedisIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from say.exceptions import HTTPException
+
 from .config import configs
 
 
@@ -51,6 +52,6 @@ def setup_sentry():
         ],
         # traces_sample_rate=configs.SENTRY_SAMPLE_RATE,
         traces_sampler=traces_sampler,
-        _experiments={"auto_enabling_integrations": True},
+        _experiments={'auto_enabling_integrations': True, 'profiles_sample_rate': 1},
         before_send=before_send,
     )
