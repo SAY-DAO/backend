@@ -1,3 +1,4 @@
+import argon2
 from flasgger import swag_from
 from flask import request
 from flask_restful import Resource
@@ -24,12 +25,14 @@ from ..decorators import validate
 from ..exceptions import HTTP_BAD_REQUEST
 from ..exceptions import HTTP_NOT_FOUND
 from ..exceptions import HTTP_PERMISION_DENIED
+from ..exceptions import HTTPException
 from ..roles import ADMIN
 from ..roles import COORDINATOR
 from ..roles import NGO_SUPERVISOR
 from ..roles import SAY_SUPERVISOR
 from ..roles import SOCIAL_WORKER
 from ..roles import SUPER_ADMIN
+from ..schema.social_worker import ChangePassword
 from ..schema.social_worker import MigrateSocialWorkerChildrenSchema
 from ..schema.social_worker import MyPagePaginationSchema
 from ..schema.social_worker import MyPageQuerySchema
@@ -60,7 +63,9 @@ def filter_by_privilege(query):
 
 
 class ListCreateSocialWorkers(Resource):
-    @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @authorize(
+        COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+    )  # TODO: priv
     @query(
         SocialWorker,
         SocialWorker.is_deleted.is_(False),
@@ -149,7 +154,9 @@ class GetUpdateDeleteSocialWorkers(Resource):
 
         return social_worker
 
-    @authorize(COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)  # TODO: priv
+    @authorize(
+        COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN
+    )  # TODO: priv
     @validate(UpdateSocialWorkerSchema)
     @json(SocialWorkerSchema)
     @commit
@@ -242,7 +249,8 @@ class GetUpdateDeleteSocialWorkers(Resource):
 
         if has_active_child:
             raise HTTP_BAD_REQUEST(
-                message=f'Social worker {id} has active' f' children and can not deactivate'
+                message=f'Social worker {id} has active'
+                f' children and can not deactivate'
             )
 
         sw.is_deleted = True
@@ -278,7 +286,8 @@ class DeactivateSocialWorker(Resource):
 
         if has_active_child:
             raise HTTP_BAD_REQUEST(
-                message=f'Social worker {id} has active' f' children and can not deactivate'
+                message=f'Social worker {id} has active'
+                f' children and can not deactivate'
             )
 
         sw.deactivate()
@@ -428,16 +437,43 @@ class SocialWorkerMyPage(Resource):
         elif user_role in [NGO_SUPERVISOR]:
             query = query.filter(Child.id_ngo == ngo_id)
 
-        children_query = (
-            query.options(
-                selectinload(Child.needs).selectinload(Need.verified_payments),
-                selectinload(Child.needs).selectinload(Need.receipts_),
-                selectinload(Child.needs).selectinload(Need.participants),
-                selectinload(Child.needs).selectinload(Need.status_updates),
-            )
-            .order_by(Child.created.desc())
-        )
+        children_query = query.options(
+            selectinload(Child.needs).selectinload(Need.verified_payments),
+            selectinload(Child.needs).selectinload(Need.receipts_),
+            selectinload(Child.needs).selectinload(Need.participants),
+            selectinload(Child.needs).selectinload(Need.status_updates),
+        ).order_by(Child.created.desc())
         return children_query
+
+
+class SocialWorkerChangePassword(Resource):
+    @authorize(
+        COORDINATOR, NGO_SUPERVISOR, SUPER_ADMIN, SAY_SUPERVISOR, ADMIN, SOCIAL_WORKER
+    )  # TODO: priv
+    @validate(ChangePassword)
+    @json
+    @commit
+    @swag_from('./docs/social_worker/change_password.yml')
+    def post(self, data: ChangePassword):
+        sw_id = get_user_id()
+        sw: SocialWorker = (
+            session.query(SocialWorker)
+            .filter(
+                SocialWorker.is_deleted.is_(False),
+                SocialWorker.id == sw_id,
+            )
+            .one_or_none()
+        )
+        if sw is None:
+            raise HTTP_NOT_FOUND()
+
+        try:
+            sw.validate_password(data.current_password)
+        except (argon2.exceptions.VerifyMismatchError, argon2.exceptions.InvalidHash):
+            raise HTTPException(600, 'Current password is wrong.')
+
+        sw.password = data.new_password.get_secret_value()
+        return 'Password changed successfully!'
 
 
 api.add_resource(
@@ -473,4 +509,9 @@ api.add_resource(
 api.add_resource(
     SocialWorkerMyPage,
     '/api/v2/socialworkers/my-page',
+)
+
+api.add_resource(
+    SocialWorkerChangePassword,
+    '/api/v2/socialworkers/me/change-password',
 )

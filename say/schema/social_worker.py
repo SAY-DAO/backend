@@ -21,6 +21,7 @@ from say.schema.types import Locale
 from say.schema.types import Password
 from say.schema.types import PhoneNumber
 from say.schema.types import confilestorage
+from say.schema.types.password import conpassword
 from say.validations import ALLOWED_IMAGE_EXTENSIONS
 
 
@@ -71,6 +72,7 @@ class NewSocialWorkerSchema(CamelModel):
 class UpdateSocialWorkerSchema(NewSocialWorkerSchema, metaclass=AllOptionalMeta):
     username: Optional[constr(strip_whitespace=True, min_length=3)]  # TODO: add validator
     password: Optional[Password]
+    current_password: Optional[Password]
 
 
 class SocialWorkerSchema(NewSocialWorkerSchema):
@@ -158,3 +160,14 @@ class MyPagePaginationSchema(CamelModel):
 
 class MyPageQuerySchema(CamelModel):
     sw_id: Optional[int]
+
+
+class ChangePassword(CamelModel):
+    new_password: conpassword(
+        min_length=8,
+        includes_lowercase=True,
+        includes_special_chars=True,
+        includes_numbers=True,
+        includes_uppercase=True,
+    )
+    current_password: str
