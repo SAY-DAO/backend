@@ -25,10 +25,12 @@ def paginate(func):
     return wrapper
 
 
-def paginate_query(query, request, pagination_schema=PaginationSchema, take=None):
+def paginate_query(query, request, pagination_schema=PaginationSchema, max_take=None):
     _take, skip = get_skip_take(request, pagination_schema)
     count = query.count()
-    result = query.limit(take or _take).offset(skip)
+    if max_take:
+        _take = min(max_take, _take)
+    result = query.limit(_take or _take).offset(skip)
     return result, count
 
 
