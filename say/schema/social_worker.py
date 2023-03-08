@@ -143,21 +143,6 @@ class SocialWorkerMyPageSchema(CamelModel):
     needs: List[NeedSchema]
 
 
-class MyPagePaginationSchema(CamelModel):
-    take: conint(ge=1, le=50) = Field(
-        10,
-        alias=configs.PAGINATION_TAKE_HEADER_KEY,
-    )
-
-    skip: conint(ge=0, le=configs.POSTRGES_MAX_BIG_INT) = Field(
-        0,
-        alias=configs.PAGINATION_SKIP_HEADER_KEY,
-    )
-
-    class Config:
-        extra = 'ignore'
-
-
 class MyPageQuerySchema(CamelModel):
     sw_id: Optional[int]
 
