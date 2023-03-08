@@ -1,6 +1,5 @@
 get child needs
 ---
-
 tags:
   - Child API
 
@@ -16,6 +15,17 @@ parameters:
     required: true
     type: integer
 
+  - name: X-SKIP
+    in: header
+    type: integer
+    default: 0
+
+  - name: X-TAKE
+    in: header
+    type: integer
+    default: 200
+    description: Max 500
+
 responses:
   500:
     description: Error occurred somewhere!
@@ -25,5 +35,3 @@ responses:
 
     schema:
       id: need_model
-
-

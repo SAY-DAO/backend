@@ -34,7 +34,6 @@ from ..roles import SOCIAL_WORKER
 from ..roles import SUPER_ADMIN
 from ..schema.social_worker import ChangePassword
 from ..schema.social_worker import MigrateSocialWorkerChildrenSchema
-from ..schema.social_worker import MyPagePaginationSchema
 from ..schema.social_worker import MyPageQuerySchema
 from ..schema.social_worker import NewSocialWorkerSchema
 from ..schema.social_worker import SocialWorkerMyPageSchema

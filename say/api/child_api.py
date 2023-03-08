@@ -3,7 +3,6 @@ Child APIs
 '''
 
 
-import collections
 import functools
 import os
 from collections import OrderedDict
@@ -17,13 +16,7 @@ from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_restful import Resource
 from flask_restful import abort
 from sqlalchemy import or_
-from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import selectinload
-from sqlalchemy.sql.functions import count
-from sqlalchemy.sql.functions import func
-from sqlalchemy.sql.sqltypes import ARRAY
-from sqlalchemy.sql.sqltypes import Integer
-from sqlalchemy.sql.sqltypes import String
 
 from say import crud
 from say.api.ext import api
@@ -45,14 +38,13 @@ from say.models import Country
 from say.models import Family
 from say.models import Invitation
 from say.models import Need
-from say.models import NeedFamily
 from say.models import SocialWorker
-from say.models import User
 from say.models import UserFamily
 from say.models import commit
 from say.models import obj_to_dict
 from say.orm import safe_commit
 from say.orm import session
+from say.pagination import paginate_query
 from say.roles import ADMIN
 from say.roles import COORDINATOR
 from say.roles import NGO_SUPERVISOR
@@ -368,13 +360,14 @@ class GetChildNeeds(Resource):
             .order_by(Need.name)
         )
 
+        paginated_needs, count = paginate_query(needs_query, request, take=200)
         needs = []
-        for need in needs_query:
+        for need in paginated_needs:
             need_dict = NeedSchema.from_orm(need)
             needs.append(need_dict.dict())
 
         result = dict(
-            total_count=len(needs),
+            total_count=count,
             needs=needs,
         )
         return result

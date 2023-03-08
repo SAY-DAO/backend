@@ -48,7 +48,7 @@ from say.roles import SUPER_ADMIN
 from say.roles import USER
 from say.schema import NewReceiptSchema
 from say.schema import ReceiptSchema
-from say.schema.base import PaginationSchema
+from say.schema.pagination import PaginationSchema
 from say.schema.need import AllNeedQuerySchema
 from say.validations import valid_image_extension
 

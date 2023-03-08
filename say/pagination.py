@@ -4,6 +4,8 @@ from flask import jsonify
 from flask import make_response
 from flask import request
 
+from say.schema.pagination import PaginationSchema
+
 
 def paginate(func):
     @functools.wraps(func)
@@ -21,3 +23,24 @@ def paginate(func):
         return func(*args, **kwargs)
 
     return wrapper
+
+
+def paginate_query(query, request, pagination_schema=PaginationSchema, take=None):
+    _take, skip = get_skip_take(request, pagination_schema)
+    count = query.count()
+    result = query.limit(take or _take).offset(skip)
+    return result, count
+
+
+def paginate_list(list, request, pagination_schema=PaginationSchema):
+    take, skip = get_skip_take(request, pagination_schema)
+    count = len(list)
+    result = list[skip + 1 : skip + 1 + take]
+    return result, count
+
+
+def get_skip_take(request, pagination_schema):
+    pagination = pagination_schema.parse_obj(request.headers)
+    take = pagination.take
+    skip = pagination.skip
+    return take, skip

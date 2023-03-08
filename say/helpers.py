@@ -25,24 +25,3 @@ def get_secret(secret_name, default=None):
     except IOError:
         env_name = secret_name.upper().replace('-', '_')
         return os.environ.get(env_name, default)
-
-
-def paginate_query(query, request, pagination_schema):
-    take, skip = get_skip_take(request, pagination_schema)
-    count = query.count()
-    result = query.limit(take).offset(skip)
-    return result, count
-
-
-def paginate_list(list, request, pagination_schema):
-    take, skip = get_skip_take(request, pagination_schema)
-    count = len(list)
-    result = list[skip + 1 : skip + 1 + take]
-    return result, count
-
-
-def get_skip_take(request, pagination_schema):
-    pagination = pagination_schema.parse_obj(request.headers)
-    take = pagination.take
-    skip = pagination.skip
-    return take, skip
