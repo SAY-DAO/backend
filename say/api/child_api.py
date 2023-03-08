@@ -360,7 +360,7 @@ class GetChildNeeds(Resource):
             .order_by(Need.name)
         )
 
-        paginated_needs, count = paginate_query(needs_query, request, take=200)
+        paginated_needs, count = paginate_query(needs_query, request, max_take=200)
         needs = []
         for need in paginated_needs:
             need_dict = NeedSchema.from_orm(need)
