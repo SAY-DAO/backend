@@ -52,7 +52,8 @@ class Config(object):
     CACHE_TYPE = 'redis'  # Flask-Caching related configs
     CACHE_REDIS_HOST = 'redis'
     CACHE_DEFAULT_TIMEOUT = 300
-    SENTRY_DSN = 'https://e7665a883afe47d082b3fa4e0b956c07@sentry.say.company/4'
+    # SENTRY_DSN = 'https://e7665a883afe47d082b3fa4e0b956c07@sentry.say.company/4'
+    SENTRY_DSN = 'https://c2876394dc0d40ef84b7f15dd057d2b0@o436293.ingest.sentry.io/4504802641313792'
     INFURA_URL = 'https://mainnet.infura.io/v3/0be880209fd94507a2b7b340f638f8a0'
     NAKAMA_ADDRESS = '0x052e909bd1a6b20d35c850d2a188fd515a738953'
     ORPHAN_NAKAMA_TX_RANGE = 2  # Days
