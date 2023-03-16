@@ -34,7 +34,11 @@ dashboard_child_fields = (
     'avatarUrl',
     'sayName',
     'done_needs_count',
+    'totalNeedsCount',
+    'availableNeedsCount',
     'spent_credit',
+    'adultAvatarUrl',
+    'description',
 )
 
 
