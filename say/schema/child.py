@@ -45,6 +45,10 @@ class ChildSchema(BaseModel):
     spent_credit: int
     voiceUrl: str
     socialWorkerGeneratedCode: str
+    totalNeedsCount: int
+    availableNeedsCount: int
+    adultAvatarUrl: str = None
+    description: str = None
 
     class Config:
         orm_mode = True
@@ -67,6 +71,10 @@ class ChildSchemaV3(CamelModel):
     spent_credit: int
     voiceUrl: str
     social_worker_generated_code: str
+    totalNeedsCount: int
+    availableNeedsCount: int
+    adultAvatarUrl: str = None
+    description: str = None
 
     class Config:
         orm_mode = True

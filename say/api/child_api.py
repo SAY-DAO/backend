@@ -535,6 +535,10 @@ class AddChild(Resource):
         else:
             family_count = None
 
+        description = None
+        if 'description' in request.form.keys():
+            description = request.form['description']
+
         birth_date = datetime.strptime(request.form['birthDate'], '%Y-%m-%d')
         phone_number = request.form['phoneNumber']
         country = int(request.form['country'])
@@ -568,6 +572,7 @@ class AddChild(Resource):
             gender=gender,
             status=status,
             generatedCode=code,
+            description=description,
         )
 
         session.add(new_child)
@@ -616,6 +621,15 @@ class AddChild(Resource):
             slpet_avatar_file.save(new_child.sleptAvatarUrl)
         else:
             return {'message': 'invalid sleep avatar file!'}, 400
+
+        if 'adultAvatarUrl' in request.files.keys():
+            adult_avatar_url = request.files['adultAvatarUrl']
+            if extension := valid_image_extension(adult_avatar_url):
+                adult_avatar_name = uuid4().hex + extension
+                new_child.adult_avatar_url = os.path.join(child_path, adult_avatar_name)
+                adult_avatar_url.save(new_child.adult_avatar_url)
+            else:
+                return {'message': 'invalid adult avatar file!'}, 400
 
         safe_commit(session)
         return new_child
@@ -717,6 +731,24 @@ class UpdateChildById(Resource):
             else:
                 return {'message': 'invalid slept avatar file!'}, 400
 
+        if 'adultAvatarUrl' in request.files.keys():
+            if not primary_child.age or primary_child.age < 18:
+                return {'message': 'Child is under 18 years old!'}, 400
+
+            adult_avatar_url = request.files['adultAvatarUrl']
+            if extension := valid_image_extension(adult_avatar_url):
+                adult_avatar_name = uuid4().hex + extension
+                adult_avatar_path = os.path.join(
+                    configs.UPLOAD_FOLDER, str(primary_child.id) + '-child'
+                )
+
+                primary_child.adult_avatar_url = os.path.join(
+                    adult_avatar_path, adult_avatar_name
+                )
+                adult_avatar_url.save(primary_child.adult_avatar_url)
+            else:
+                return {'message': 'invalid adult avatar file!'}, 400
+
         if 'voiceUrl' in request.files.keys():
             voice_file = request.files['voiceUrl']
             if extension := valid_voice_extension(voice_file):
@@ -814,6 +846,9 @@ class UpdateChildById(Resource):
                     need.delete()
 
                 primary_child.ngo.currentChildrenCount -= 1
+
+        if 'description' in request.form.keys():
+            primary_child.description = request.form['description']
 
         safe_commit(session)
 

@@ -166,3 +166,13 @@ responses:
           type: string
         updated:
           type: string
+        description:
+          type: string
+        totalNeedsCount:
+          type: integer
+          format: int32
+        availableNeedsCount:
+          type: integer
+          format: int32
+        adultAvatarUrl:
+          type: string

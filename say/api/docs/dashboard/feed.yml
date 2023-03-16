@@ -13,7 +13,7 @@ parameters:
     description: Access Token
     required: true
     type: string
- 
+
 responses:
   500:
     description: Error occurred somewhere!
@@ -22,94 +22,47 @@ responses:
     description: Ok
 
     schema:
+      type: object
       properties:
-        id:
-          type: integer
-          description: the user's id
-
-        firstName:
-          type: string
-          description: the user's first name
-
-        lastName:
-          type: string
-          description: the user's last name
-
-        userName:
-          type: string
-          description: the user's username
-
-        phoneNumber:
-          type: string
-          description: the user's phone number
-
-        credit:
-          type: integer
-          description: the user's credit amount in integer
-          default: 0
-
-        country:
-          type: integer
-          description: the user's international country code
-          example: 98
-
-        city:
-          type: integer
-          description: the user's international city code
-          example: 21
-
-        avatarUrl:
-          type: string
-          description: the user's avatar image path
-
-        gender:
-          type: boolean
-          description: the user's gender, true for male and false for female
-
-        emailAddress:
-          type: string
-          description: the user's email address in correct format
-          example: "sample@mail.com"
-
-        birthPlace:
-          type: integer
-          description: the user's birth place international code
-
-        birthDate:
-          type: string
-          description: the user's birth date
-
-        password:
-          type: string
-          description: the user's password, stored as a hashed string
-
-        spentCredit:
-          type: integer
-          description: the user's total credit spent
-          default: 0
-
-        created:
-          type: string
-          description: the date that the user has been created
-
-        updated:
-          type: string
-          description: the last date that the user has been updated
-
-        isDeleted:
-          type: boolean
-          description: determines if the user is deleted or not
-          default: False
-
-        lastLogin:
-          type: string
-          description: the last date that the user has logged in
-
-        doneNeedCount:
-          type: string
-          description: the needs that user has done for their children
-          default: 0
-
-        userUrgentNeeds:
-          schema:
-            id: need_model
+        user:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int32
+            userName:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+            avatarUrl:
+              type: string
+        children:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                format: int32
+              avatarUrl:
+                type: string
+              done_needs_count:
+                type: integer
+                format: int32
+              sayName:
+                type: string
+              spent_credit:
+                type: integer
+                format: int32
+              totalNeedsCount:
+                type: integer
+                format: int32
+              availableNeedsCount:
+                type: integer
+                format: int32
+              adultAvatarUrl:
+                type: string
+              description:
+                type: string
