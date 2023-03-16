@@ -138,6 +138,44 @@ class Child(base, Timestamp):
         .correlate_except(Need),
     )
 
+    available_needs_count = column_property(
+        select(
+            [
+                coalesce(
+                    func.count(Need.id),
+                    0,
+                )
+            ]
+        )
+        .where(
+            and_(
+                Need.status < 2,
+                Need.isDeleted.is_(False),
+                Need.isConfirmed.is_(True),
+                Need.child_id == id,
+            )
+        )
+        .correlate_except(Need),
+    )
+
+    total_needs_count = column_property(
+        select(
+            [
+                coalesce(
+                    func.count(Need.id),
+                    0,
+                )
+            ]
+        )
+        .where(
+            and_(
+                Need.isDeleted.is_(False),
+                Need.child_id == id,
+            )
+        )
+        .correlate_except(Need),
+    )
+
     spent_credit = column_property(
         select(
             [
