@@ -1,5 +1,6 @@
 
-from datetime import time
+from datetime import date, time
+from typing import Union
 
 import pytz
 from sqlalchemy.dialects.postgresql import HSTORE
@@ -91,10 +92,17 @@ class Child(base, Timestamp):
     isMigrated = Column(Boolean, nullable=False, default=False, index=True)
     migratedId = Column(Integer, nullable=True, index=True)
     migrateDate = Column(Date, nullable=True)
+    description = Column(String, nullable=True)
+
+    # Over 18
+    adult_avatar_url = Column(ResourceURL, nullable=True)
 
     familyId = association_proxy('family', 'id')
     socialWorkerGeneratedCode = association_proxy('social_worker', 'generated_code')
     childFamilyMembers = association_proxy('family', 'members')
+    adultAvatarUrl = synonym('adult_avatar_url')
+    availableNeedsCount = synonym('available_needs_count')
+    totalNeedsCount = synonym('total_needs_count')
 
     city = relationship('City', foreign_keys=city_id, lazy='selectin')
     birth_place = relationship('City', foreign_keys=birth_place_id)
@@ -220,6 +228,12 @@ class Child(base, Timestamp):
         .where(and_(Need.child_id == id, Need.isDeleted.is_(False)))
         .correlate_except(Need),
     )
+
+    @property
+    def age(self) -> Union[int, None]:
+        if not self.birthDate:
+            return None
+        return (date.today() - self.birthDate).year
 
     @classmethod
     def get_actives(cls):

@@ -126,6 +126,14 @@ parameters:
     in: formData
     type: integer
 
+  - name: description
+    in: formData
+    type: string
+
+  - name: adultAvatarUrl
+    in: formData
+    type: file
+
 responses:
   500:
     description: Error occurred somewhere!

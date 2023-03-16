@@ -16,8 +16,12 @@ class ChildSchema(BaseModel):
     id: int
     avatarUrl: str
     done_needs_count: int
+    totalNeedsCount: int
+    availableNeedsCount: int
+    adultAvatarUrl: str = None
     sayName: str
     spent_credit: int
+    description: str = None
 
 
 class DashboardSchema(BaseModel):
