@@ -928,11 +928,8 @@ class DeleteChildById(Resource):
         if family:
             family.isDeleted = True
 
-        if child.social_worker.currentChildCount:
-            child.social_worker.currentChildCount -= 1
-
-        if child.ngo.currentChildrenCount:
-            child.ngo.currentChildrenCount -= 1
+        child.social_worker.currentChildCount -= 1
+        child.ngo.currentChildrenCount -= 1
 
         safe_commit(session)
 
