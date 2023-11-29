@@ -210,7 +210,7 @@ class AddPayment(Resource):
             payment.credit_amount -= configs.MIN_BANK_AMOUNT - payment.bank_amount
 
         # idpay gateway
-        if newGateway is None:
+        if second_gateWay is None:
             api_data = {
                 "order_id": payment.order_id,
                 "amount": payment.bank_amount,
@@ -230,7 +230,7 @@ class AddPayment(Resource):
             payment.link = transaction["link"]
 
         # zibal gateway
-        if newGateway:
+        if second_gateWay:
             zibal_request = zibal.request(payment.bank_amount, payment.order_id, desc)
             if zibal_request["result"] != 100:
                 raise HTTPException(
