@@ -35,25 +35,26 @@ from ..roles import SAY_SUPERVISOR
 from ..roles import SUPER_ADMIN
 from .ext import api
 from .ext import idpay
+from .ext import zibal
 
 
 def validate_amount(need, amount):
     amount = int(amount)
     need_unpaid = need.cost - need.paid
     if int(amount) > need_unpaid:
-        raise AmountTooHigh(f'Amount can not be greater that {need_unpaid}')
+        raise AmountTooHigh(f"Amount can not be greater that {need_unpaid}")
     if int(amount) < configs.MIN_BANK_AMOUNT:
-        raise AmountTooLow(f'Amount can not be smaller than {configs.MIN_BANK_AMOUNT}')
+        raise AmountTooLow(f"Amount can not be smaller than {configs.MIN_BANK_AMOUNT}")
     return amount
 
 
 def generate_order_id(N=configs.PAYMENT_ORDER_ID_LENGTH):
-    '''
+    """
     Generate a random string containing lowercase, uppercase and digits
-    '''
+    """
 
     while True:
-        order_id = ''.join(
+        order_id = "".join(
             random.SystemRandom().choice(
                 string.ascii_uppercase + string.ascii_lowercase + string.digits
             )
@@ -73,12 +74,12 @@ class GetAllPayment(Resource):
 
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
     @json
-    @swag_from('./docs/payment/all.yml')
+    @swag_from("./docs/payment/all.yml")
     def get(self):
         args = request.args
-        take = args.get('take', 10)
-        skip = args.get('skip', 0)
-        need_id = args.get('need_id', None)
+        take = args.get("take", 10)
+        skip = args.get("skip", 0)
+        need_id = args.get("need_id", None)
 
         try:
             if need_id:
@@ -88,7 +89,7 @@ class GetAllPayment(Resource):
             if take < 1 or skip < 0:
                 raise ValueError()
         except (ValueError, TypeError):
-            return {'message': 'Invalid skip or take'}, 400
+            return {"message": "Invalid skip or take"}, 400
 
         payments = session.query(Payment).filter(Payment.verified.isnot(None))
 
@@ -104,7 +105,7 @@ class GetAllPayment(Resource):
             payments=list(),
         )
         for payment in payments:
-            result['payments'].append(obj_to_dict(payment))
+            result["payments"].append(obj_to_dict(payment))
         session.close()
         return result
 
@@ -112,7 +113,7 @@ class GetAllPayment(Resource):
 class GetPayment(Resource):
     @authorize(SUPER_ADMIN, SAY_SUPERVISOR, ADMIN)
     @json
-    @swag_from('./docs/payment/id.yml')
+    @swag_from("./docs/payment/id.yml")
     def get(self, id):
         payment = session.query(Payment).get(id)
         session.close()
@@ -127,7 +128,7 @@ class AddPayment(Resource):
     @validate(NewPaymentSchema)
     @json
     @commit
-    @swag_from('./docs/payment/new_payment.yml')
+    @swag_from("./docs/payment/new_payment.yml")
     def post(self, data: NewPaymentSchema):
         user_id = get_user_id()
 
@@ -135,20 +136,21 @@ class AddPayment(Resource):
         need_id = data.need_id
         donation = data.donate
         use_credit = data.use_credit
+        newGateway = data.gateway  # added for second payment gateway
 
         need = session.query(Need).get(need_id)
         if need is None or need.isDeleted:
-            return {'message': 'Need Not Found'}, 400
+            return {"message": "Need Not Found"}, 400
 
         if need.isDone:
-            return {'message': 'Need is already done'}, 422
+            return {"message": "Need is already done"}, 422
 
         if not need.isConfirmed:
-            return {'message': 'error: need is not confirmed yet!'}, 422
+            return {"message": "error: need is not confirmed yet!"}, 422
 
         user = session.query(User).get(user_id)
         if user is None:
-            return {'message': 'User Not Found'}
+            return {"message": "User Not Found"}
 
         family = (
             session.query(Family)
@@ -165,16 +167,16 @@ class AddPayment(Resource):
             .first()
             is None
         ):
-            return {'message': 'payment must be added by the child\'s family!'}, 422
+            return {"message": "payment must be added by the child's family!"}, 422
 
         try:
             need_amount = validate_amount(need, need_amount)
         except ValueError as e:
-            return {'message': str(e)}, 422
+            return {"message": str(e)}, 422
 
-        desc = f'{need.name}-{need.child.sayName}'
-        name = f'{user.firstName} {user.lastName}'
-        callback = urljoin(configs.API_URL, 'api/v2/payment/verify')
+        desc = f"{need.name}-{need.child.sayName}"
+        name = f"{user.firstName} {user.lastName}"
+        callback = urljoin(configs.API_URL, "api/v2/payment/verify")
 
         credit = 0
         if use_credit:
@@ -196,35 +198,51 @@ class AddPayment(Resource):
             payment.verify()
 
             success_payment = render_template_i18n(
-                'successful_payment.html',
+                "successful_payment.html",
                 payment=payment,
                 user=user,
                 locale=user.locale,
             )
-            return {'response': success_payment}, 299
+            return {"response": success_payment}, 299
 
         # Save some credit for the user
         if payment.bank_amount < configs.MIN_BANK_AMOUNT:
             payment.credit_amount -= configs.MIN_BANK_AMOUNT - payment.bank_amount
 
-        api_data = {
-            'order_id': payment.order_id,
-            'amount': payment.bank_amount,
-            'name': name,
-            'desc': desc,
-            'callback': callback,
-        }
+        # idpay gateway
+        if newGateway is None:
+            api_data = {
+                "order_id": payment.order_id,
+                "amount": payment.bank_amount,
+                "name": name,
+                "desc": desc,
+                "callback": callback,
+            }
 
-        transaction = idpay.new_transaction(**api_data)
-        if 'error_code' in transaction:
-            raise HTTPException(
-                status_code=422,
-                message=idpay.ERRORS[transaction['error_code']],
-            )
+            transaction = idpay.new_transaction(**api_data)
+            if "error_code" in transaction:
+                raise HTTPException(
+                    status_code=422,
+                    message=idpay.ERRORS[transaction["error_code"]],
+                )
 
-        payment.gateway_payment_id = transaction['id']
-        payment.link = transaction['link']
+            payment.gateway_payment_id = transaction["id"]
+            payment.link = transaction["link"]
 
+        # zibal gateway
+        if newGateway:
+            zibal_request = zibal.request(payment.bank_amount, payment.order_id, desc)
+            if zibal_request["result"] != 100:
+                raise HTTPException(
+                    status_code=422,
+                    message=zibal.ERRORS[zibal_request["result"]],
+                )
+            if zibal_request["result"] = 100:
+                trackId = zibal_request["trackId"]
+
+            link = "https://gateway.zibal.ir/start/" + zibal_request["trackId"]
+            payment.gateway_payment_id = zibal_request["trackId"]
+            payment.link = link
         return payment
 
 
@@ -232,7 +250,7 @@ class VerifyPayment(Resource):
     @staticmethod
     def _verify_payment(payment_id, order_id):
         unsuccessful_response = render_template_i18n(
-            'unsuccessful_payment.html',
+            "unsuccessful_payment.html",
             locale=DEFAULT_LOCALE,
         )
 
@@ -270,8 +288,8 @@ class VerifyPayment(Resource):
 
         if (
             not response
-            or 'error_code' in response
-            or response['status']
+            or "error_code" in response
+            or response["status"]
             not in (
                 100,
                 101,
@@ -280,11 +298,11 @@ class VerifyPayment(Resource):
         ):
             return make_response(unsuccessful_response)
 
-        transaction_date = datetime.fromtimestamp(int(response['date']))
-        gateway_track_id = response['track_id']
-        verified = datetime.fromtimestamp(int(response['verify']['date']))
-        card_no = response['payment']['card_no']
-        hashed_card_no = response['payment']['hashed_card_no']
+        transaction_date = datetime.fromtimestamp(int(response["date"]))
+        gateway_track_id = response["track_id"]
+        verified = datetime.fromtimestamp(int(response["verify"]["date"]))
+        card_no = response["payment"]["card_no"]
+        hashed_card_no = response["payment"]["hashed_card_no"]
 
         pending_payment.verify(
             transaction_date,
@@ -297,7 +315,7 @@ class VerifyPayment(Resource):
         need.payments.append(pending_payment)
         return make_response(
             render_template_i18n(
-                'successful_payment.html',
+                "successful_payment.html",
                 payment=pending_payment,
                 user=user,
                 locale=user.locale,
@@ -307,19 +325,19 @@ class VerifyPayment(Resource):
     @json
     @commit
     def post(self):
-        payment_id = request.form.get('id')
-        order_id = request.form.get('order_id')
+        payment_id = request.form.get("id")
+        order_id = request.form.get("order_id")
         return self._verify_payment(payment_id, order_id)
 
     @json
     @commit
     def get(self):
-        payment_id = request.args.get('id')
-        order_id = request.args.get('order_id')
+        payment_id = request.args.get("id")
+        order_id = request.args.get("order_id")
         return self._verify_payment(payment_id, order_id)
 
 
-api.add_resource(AddPayment, '/api/v2/payment')
-api.add_resource(GetPayment, '/api/v2/payment/<int:id>')
-api.add_resource(GetAllPayment, '/api/v2/payment/all')
-api.add_resource(VerifyPayment, '/api/v2/payment/verify')
+api.add_resource(AddPayment, "/api/v2/payment")
+api.add_resource(GetPayment, "/api/v2/payment/<int:id>")
+api.add_resource(GetAllPayment, "/api/v2/payment/all")
+api.add_resource(VerifyPayment, "/api/v2/payment/verify")
