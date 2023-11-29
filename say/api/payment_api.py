@@ -319,8 +319,7 @@ class VerifyPayment(Resource):
             gateway_track_id = request.args.get("trackId")
             verified = response["paidAt"]
             card_no = response["cardNumber"]
-            hashed_card_no = "N/A from zibal"
-        return response
+            hashed_card_no = response["cardNumber"]
 
         pending_payment.verify(
             transaction_date,
