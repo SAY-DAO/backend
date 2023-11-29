@@ -255,7 +255,8 @@ class VerifyPayment(Resource):
         )
 
         if not payment_id or not order_id:
-            return make_response(unsuccessful_response)
+            return 1
+            # return make_response(unsuccessful_response)
 
         pending_payment = (
             session.query(Payment)
@@ -270,13 +271,15 @@ class VerifyPayment(Resource):
         )
 
         if pending_payment is None:
-            return make_response(unsuccessful_response)
+            return 2
+            # return make_response(unsuccessful_response)
 
         user = session.query(User).with_for_update().get(pending_payment.id_user)
         need = session.query(Need).with_for_update().get(pending_payment.id_need)
 
         if need.isDone:
-            return make_response(unsuccessful_response)
+            return 3
+            # return make_response(unsuccessful_response)
 
         try:
             response = idpay.verify(
@@ -284,7 +287,8 @@ class VerifyPayment(Resource):
                 pending_payment.order_id,
             )
         except requests.exceptions.RequestException:
-            return make_response(unsuccessful_response)
+            return 4
+            # return make_response(unsuccessful_response)
 
         if (
             not response
@@ -296,7 +300,8 @@ class VerifyPayment(Resource):
                 200,
             )
         ):
-            return make_response(unsuccessful_response)
+            return 5
+            # return make_response(unsuccessful_response)
 
         transaction_date = datetime.fromtimestamp(int(response["date"]))
         gateway_track_id = response["track_id"]
