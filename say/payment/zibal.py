@@ -4,7 +4,7 @@ from ..config import configs
 
 class ZIBAL:
     merchant = configs.ZIBAL_MERCHANT_ID
-    callback_url = "https://api.sayapp.company/api/payments/verify"
+    callback_url = "https://api.sayapp.company/api/v2/payment/verify"
 
     ERRORS = {
         100: "کاربر مسدود شده است.",
