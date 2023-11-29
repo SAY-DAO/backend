@@ -320,7 +320,7 @@ class VerifyPayment(Resource):
             verified = response["paidAt"]
             card_no = response["cardNumber"]
             hashed_card_no = "N/A from zibal"
-        return "nice", response
+        return response
 
         pending_payment.verify(
             transaction_date,
