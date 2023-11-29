@@ -103,8 +103,6 @@ class Child(base, Timestamp):
     adultAvatarUrl = synonym('adult_avatar_url')
     availableNeedsCount = synonym('available_needs_count')
     totalNeedsCount = synonym('total_needs_count')
-<<<<<<< HEAD
-=======
 
     city = relationship('City', foreign_keys=city_id, lazy='selectin')
     birth_place = relationship('City', foreign_keys=birth_place_id)
@@ -127,7 +125,6 @@ class Child(base, Timestamp):
         'ChildMigration',
         back_populates='child',
     )
->>>>>>> master
 
     @hybrid_property
     def avatarUrl(self):
@@ -232,7 +229,6 @@ class Child(base, Timestamp):
         .correlate_except(Need),
     )
 
-<<<<<<< HEAD
     needs = relationship(
         'Need',
         back_populates='child',
@@ -252,8 +248,6 @@ class Child(base, Timestamp):
         back_populates='child',
     )
     
-=======
->>>>>>> master
     @property
     def age(self) -> Union[int, None]:
         if not self.birthDate:

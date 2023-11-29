@@ -4,6 +4,7 @@ say brain search
 tags:
   - Search API
 
+
 parameters:
   - name: Authorization
     in: header
