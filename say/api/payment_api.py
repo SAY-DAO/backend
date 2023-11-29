@@ -282,9 +282,8 @@ class VerifyPayment(Resource):
             # return make_response(unsuccessful_response)
 
         try:
-            response = idpay.verify(
+            response = zibal.verify(
                 pending_payment.gateway_payment_id,
-                pending_payment.order_id,
             )
         except requests.exceptions.RequestException:
             return 4
