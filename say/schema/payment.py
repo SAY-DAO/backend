@@ -10,7 +10,7 @@ class NewPaymentSchema(CamelModel):
     amount: conint(gt=0)
     donate: conint(ge=0) = 0
     use_credit: bool = True
-    gateWay: int = 1
+    # gateWay: int = 1
 
 
 class PaymentSchema(CamelModel):
