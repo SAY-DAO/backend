@@ -327,8 +327,8 @@ class VerifyPayment(Resource):
     def post(self):
         gate_one_payment_id = request.form.get("id")
         gate_one_order_id = request.form.get("order_id")
-        gate_two_payment_id = request.form.get("trackId")
-        gate_two_order_id = request.form.get("orderId")
+        gate_two_payment_id = request.args.get("trackId")
+        gate_two_order_id = request.args.get("orderId")
         if gate_one_payment_id:
             return self._verify_payment(gate_one_payment_id, gate_one_order_id)
         if gate_two_payment_id:
@@ -339,8 +339,8 @@ class VerifyPayment(Resource):
     def get(self):
         gate_one_payment_id = request.form.get("id")
         gate_one_order_id = request.form.get("order_id")
-        gate_two_payment_id = request.form.get("trackId")
-        gate_two_order_id = request.form.get("orderId")
+        gate_two_payment_id = request.args.get("trackId")
+        gate_two_order_id = request.args.get("orderId")
         if gate_one_payment_id:
             return self._verify_payment(gate_one_payment_id, gate_one_order_id)
         if gate_two_payment_id:
