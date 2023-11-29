@@ -10,6 +10,10 @@ class NewPaymentSchema(CamelModel):
     amount: conint(gt=0)
     donate: conint(ge=0) = 0
     use_credit: bool = True
+<<<<<<< HEAD
+=======
+    gateWay: int = 1
+>>>>>>> release
 
 
 class PaymentSchema(CamelModel):

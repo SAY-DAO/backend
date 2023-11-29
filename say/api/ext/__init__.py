@@ -11,6 +11,7 @@ from mailerlite import MailerLiteApi
 
 from say.config import configs
 from say.payment import IDPay
+from say.payment import ZIBAL
 from say.sms import MeliPayamak
 
 from .remote_address import get_remote_address
@@ -19,6 +20,7 @@ from .remote_address import get_remote_address
 api = Api()
 jwt = JWTManager()
 idpay = IDPay(configs.IDPAY_API_KEY, configs.SANDBOX)
+zibal = ZIBAL()
 sms_provider = MeliPayamak(
     configs.MELI_PAYAMAK_USERNAME,
     configs.MELI_PAYAMAK_PASSWORD,

@@ -19,8 +19,8 @@ def report_to_families(self):
     from say.models.family_model import Family
 
     families_id = self.session.query(Family.id)
-    for family_id in families_id:
-        report_to_family.delay(family_id[0])
+    # for family_id in families_id:
+        # report_to_family.delay(family_id[0]) // Deprecated in favor of Nest js scheduler
 
 
 @celery.task(base=celery.DBTask, bind=True)
