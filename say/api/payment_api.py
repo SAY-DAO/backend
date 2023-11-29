@@ -232,7 +232,6 @@ class AddPayment(Resource):
         # zibal gateway
         if gateWay == 2:
             zibal_request = zibal.request(payment.bank_amount, payment.order_id, desc)
-            return zibal_request
             if int(zibal_request["result"]) != 100:
                 raise HTTPException(
                     status_code=422,

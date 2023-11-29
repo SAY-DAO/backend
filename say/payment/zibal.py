@@ -43,7 +43,8 @@ class ZIBAL:
         data["multiplexingInfos"] = multiplexingInfos
 
         if self.merchant == "zibal":
-            return "Zibal test account!"
+            return {"response": 'Zibal test account!'}, 400
+
         response = self.postTo("request", data)
         return response
 
