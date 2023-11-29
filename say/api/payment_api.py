@@ -239,10 +239,10 @@ class AddPayment(Resource):
                 )
             if zibal_request["result"] == 100:
                 trackId = zibal_request["trackId"]
-
-            link = "https://gateway.zibal.ir/start/" + zibal_request["trackId"]
-            payment.gateway_payment_id = zibal_request["trackId"]
-            payment.link = link
+                link = urljoin("https://gateway.zibal.ir/start/", trackId)
+                payment.gateway_payment_id = trackId
+                payment.link = link
+                
         return payment
 
 
