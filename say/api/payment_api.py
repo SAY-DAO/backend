@@ -242,7 +242,7 @@ class AddPayment(Resource):
                 link = urljoin("https://gateway.zibal.ir/start/", str(trackId))
                 payment.gateway_payment_id = trackId
                 payment.link = link
-                
+
         return payment
 
 
@@ -341,7 +341,7 @@ class VerifyPayment(Resource):
         gate_one_order_id = request.form.get("order_id")
         gate_two_payment_id = request.args.get("trackId")
         gate_two_order_id = request.args.get("orderId")
-        if gate_one_payment_id:
+        if gate_two_payment_id is None:
             return self._verify_payment(gate_one_payment_id, gate_one_order_id)
         if gate_two_payment_id:
             return self._verify_payment(gate_two_payment_id, gate_two_order_id)
