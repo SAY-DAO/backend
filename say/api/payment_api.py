@@ -136,7 +136,7 @@ class AddPayment(Resource):
         need_id = data.need_id
         donation = data.donate
         use_credit = data.use_credit
-        # newGateway = data.gateway  # added for second payment gateway
+        second_gateWay = data.second_gateWay  # added for second payment gateway
 
         need = session.query(Need).get(need_id)
         if need is None or need.isDeleted:
