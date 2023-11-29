@@ -605,18 +605,14 @@ class AddNeed(Resource):
 
         image_url = image_path
 
-<<<<<<< HEAD
         category = request.form.get('category')
         if not category:
             return {'message': 'error: category is required!'}, 400
 
-=======
-
         category = request.form.get('category')
         if not category:
             return {'message': 'error: category is required!'}, 400
 
->>>>>>> release
         try:
             category = int(request.form['category'])
         except ValueError:

@@ -2,10 +2,7 @@ from datetime import datetime
 
 import ujson
 
-<<<<<<< HEAD
 from say.models import Need
-=======
->>>>>>> release
 from tests.helper import BaseTestClass
 
 
