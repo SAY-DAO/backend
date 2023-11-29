@@ -136,7 +136,7 @@ class AddPayment(Resource):
         need_id = data.need_id
         donation = data.donate
         use_credit = data.use_credit
-        second_gateWay = data.second_gateWay  # added for second payment gateway
+        gateWay = data.gateWay  # added for second payment gateway
 
         need = session.query(Need).get(need_id)
         if need is None or need.isDeleted:
@@ -210,7 +210,7 @@ class AddPayment(Resource):
             payment.credit_amount -= configs.MIN_BANK_AMOUNT - payment.bank_amount
 
         # idpay gateway
-        if second_gateWay is None:
+        if gateWay == 1:
             api_data = {
                 "order_id": payment.order_id,
                 "amount": payment.bank_amount,
@@ -230,7 +230,7 @@ class AddPayment(Resource):
             payment.link = transaction["link"]
 
         # zibal gateway
-        if second_gateWay:
+        if gateWay == 2:
             zibal_request = zibal.request(payment.bank_amount, payment.order_id, desc)
             if zibal_request["result"] != 100:
                 raise HTTPException(
