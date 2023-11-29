@@ -232,12 +232,12 @@ class AddPayment(Resource):
         # zibal gateway
         if gateWay == 2:
             zibal_request = zibal.request(payment.bank_amount, payment.order_id, desc)
-            if zibal_request["result"] != 100:
+            if int(zibal_request["result"]) != 100:
                 raise HTTPException(
                     status_code=422,
                     message=zibal.ERRORS[zibal_request["result"]],
                 )
-            if zibal_request["result"] == 100:
+            if int(zibal_request["result"]) == 100:
                 trackId = zibal_request["trackId"]
                 link = urljoin("https://gateway.zibal.ir/start/", str(trackId))
                 payment.gateway_payment_id = trackId
