@@ -298,7 +298,7 @@ class VerifyPayment(Resource):
             ):
                 return make_response(unsuccessful_response)
 
-            transaction_date = response["date"]
+            transaction_date = datetime.fromtimestamp(int(response["date"]))
             gateway_track_id = response["track_id"]
             verified = datetime.fromtimestamp(int(response["verify"]["date"]))
             card_no = response["payment"]["card_no"]
@@ -315,7 +315,7 @@ class VerifyPayment(Resource):
             if response["message"] != "success":
                 return make_response(unsuccessful_response)
 
-            transaction_date = datetime.fromtimestamp(int(response["paidAt"]))
+            transaction_date = response["date"]
             gateway_track_id = response.args.get("trackId")
             verified = datetime.fromtimestamp(int(response["paidAt"]))
             card_no = response["cardNumber"]
