@@ -237,7 +237,7 @@ class AddPayment(Resource):
                     status_code=422,
                     message=zibal.ERRORS[zibal_request["result"]],
                 )
-            if zibal_request["result"] = 100:
+            if zibal_request["result"] == 100:
                 trackId = zibal_request["trackId"]
 
             link = "https://gateway.zibal.ir/start/" + zibal_request["trackId"]
