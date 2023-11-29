@@ -248,6 +248,7 @@ class Child(base, Timestamp):
         back_populates='child',
     )
     
+>>>>>>> release
     @property
     def age(self) -> Union[int, None]:
         if not self.birthDate:
