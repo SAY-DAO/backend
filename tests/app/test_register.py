@@ -25,6 +25,7 @@ class TestRegister(BaseTestClass):
             'username': seed,
             'password': 'password',
             'phoneNumber': self.phone,
+            'countryCode': 'ir',
             'verifyCode': self.phone_verification._code,
             'isInstalled': '0',
         }
@@ -150,6 +151,10 @@ class TestRegister(BaseTestClass):
             ('username', 'a' * 13, 400),
             ('password', 'a' * 5, 400),
             ('password', 'a' * 65, 400),
+            ('countryCode', None, 200),
+            ('countryCode', '', 200),
+            ('countryCode', 'axsda', 400),
+            ('countryCode', 'ca', 200),
         ],
     )
     def test_register_user_invalid_data(self, field, value, expected):

@@ -3,6 +3,7 @@ Returns information of a user with given id as a json object.
 Calling this API affects child, need, child_need and need_family and user tables.
 It contains user info, its children and those children's needs.
 ---
+
 tags:
   - User API
 
@@ -78,6 +79,10 @@ responses:
           description: the user's email address in correct format
           example: "sample@mail.com"
 
+        birthPlace:
+          type: integer
+          description: the user's birth place international code
+
         birthDate:
           type: string
           description: the user's birth date
@@ -112,3 +117,4 @@ responses:
           type: string
           description: the needs that user has done for their children
           default: 0
+

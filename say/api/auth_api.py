@@ -9,11 +9,11 @@ from flasgger import swag_from
 from flask import request
 from flask_jwt_extended import get_raw_jwt
 from flask_restful import Resource
+from sqlalchemy_utils import Country
 from sqlalchemy_utils import PhoneNumber
 from sqlalchemy_utils import PhoneNumberParseException
 
 from say.exceptions import HTTPException
-from say.models import City
 from say.models import EmailVerification
 from say.models import PhoneVerification
 from say.models import ResetPassword
@@ -74,10 +74,20 @@ class RegisterUser(Resource):
             if phone_number == '':
                 phone_number = None
 
+        if 'countryCode' in request.form.keys() and request.form['countryCode']:
+            country = request.form['countryCode']
+            try:
+                country = Country(country.upper())
+            except ValueError:
+                return {'message': 'Invalid countryCode'}, 400
+        else:
+            country = None
+
         if 'password' in request.form.keys():
             password = request.form['password']
             if not validate_password(password):
                 return {'message': 'password must be at least 6 charachters'}, 400
+
         else:
             return {'message': 'password is needed'}, 400
 
@@ -117,11 +127,6 @@ class RegisterUser(Resource):
                 validate_email(email)
             except EmailNotValidError:
                 return {'message': 'Invalid email'}, 400
-
-        if data.city_id:
-            city = session.query(City).get(data.city_id)
-            if city is None:
-                return {'message': 'Invalid cityId'}, 400
 
         code = code.replace('-', '')
 
@@ -176,14 +181,16 @@ class RegisterUser(Resource):
             avatarUrl=None,
             emailAddress=email,
             gender=None,
+            city=0,
             birthDate=None,
+            birthPlace=None,
             lastLogin=last_login,
             password=password,
             locale=locale,
             phone_number=phone_number,
+            country=country,
             is_installed=is_installed,
             is_nakama=False,
-            city_id=data.city_id,
         )
 
         if isinstance(verification, EmailVerification):

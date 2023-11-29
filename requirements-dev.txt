@@ -4,4 +4,3 @@ pytest-pudb
 pytest-cov
 pytest-mock
 devtools[pygments]
-flake8
