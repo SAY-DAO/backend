@@ -255,8 +255,7 @@ class VerifyPayment(Resource):
         )
 
         if not payment_id or not order_id:
-            return 1
-            # return make_response(unsuccessful_response)
+            return make_response(unsuccessful_response)
 
         pending_payment = (
             session.query(Payment)
@@ -271,23 +270,20 @@ class VerifyPayment(Resource):
         )
 
         if pending_payment is None:
-            return 2
-            # return make_response(unsuccessful_response)
+            return make_response(unsuccessful_response)
 
         user = session.query(User).with_for_update().get(pending_payment.id_user)
         need = session.query(Need).with_for_update().get(pending_payment.id_need)
 
         if need.isDone:
-            return 3
-            # return make_response(unsuccessful_response)
+            return make_response(unsuccessful_response)
 
         try:
             response = zibal.verify(
                 pending_payment.gateway_payment_id,
             )
         except requests.exceptions.RequestException:
-            return 4
-            # return make_response(unsuccessful_response)
+            return make_response(unsuccessful_response)
 
         if (
             not response
@@ -299,7 +295,7 @@ class VerifyPayment(Resource):
                 200,
             )
         ):
-            return 5
+            return response
             # return make_response(unsuccessful_response)
 
         transaction_date = datetime.fromtimestamp(int(response["date"]))
