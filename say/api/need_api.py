@@ -609,10 +609,6 @@ class AddNeed(Resource):
         if not category:
             return {'message': 'error: category is required!'}, 400
 
-        category = request.form.get('category')
-        if not category:
-            return {'message': 'error: category is required!'}, 400
-
         try:
             category = int(request.form['category'])
         except ValueError:

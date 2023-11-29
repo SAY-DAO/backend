@@ -42,7 +42,7 @@ class ResetPassword(base):
     @property
     def link(self):
         return urljoin(
-            'https://dapp.saydao.org', 'auth/reset-password' + f'?token={self.token}'
+            configs.BASE_URL, configs.SET_PASSWORD_URL + f'?token={self.token}'
         )
 
     def send_email(self, language):
