@@ -285,7 +285,7 @@ class VerifyPayment(Resource):
         except requests.exceptions.RequestException:
             return make_response(unsuccessful_response)
 
-        if response["message"] != "success" and (
+        if (response["message"] != "success") and (
             not response
             or "error_code" in response
             or response["status"]
@@ -295,7 +295,8 @@ class VerifyPayment(Resource):
                 200,
             )
         ):
-            return make_response(unsuccessful_response)
+            return response
+            # return make_response(unsuccessful_response)
 
         transaction_date = datetime.fromtimestamp(int(response["date"]))
         gateway_track_id = response["track_id"]
