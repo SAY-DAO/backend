@@ -1,6 +1,5 @@
 import requests
-from ..config import configs
-
+from say.config import configs
 
 class ZIBAL:
     merchant = configs.ZIBAL_MERCHANT_ID
