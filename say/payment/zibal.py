@@ -24,7 +24,7 @@ class ZIBAL:
         data["orderId"] = order_id
         data["description"] = description
         data["multiplexingInfos"] = multiplexingInfos
-
+        print(self.merchant)
         response = self.postTo("request", data)
         return response
 
