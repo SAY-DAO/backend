@@ -262,7 +262,7 @@ class CartPaymentAPI(Resource):
         # zibal gateway
         if gateWay == 2:
             zibal_request = zibal.request(
-                True, payment.bank_amount, payment.order_id, "Cart Payment"
+                True, cart_payment.bank_amount, cart_payment.order_id, "Cart Payment"
             )
             if int(zibal_request["result"]) != 100:
                 raise HTTPException(
