@@ -1,9 +1,11 @@
 import requests
 from say.config import configs
 
+
 class ZIBAL:
     merchant = configs.ZIBAL_MERCHANT_ID
-    callback_url = "https://api.sayapp.company/api/v2/payment/verify"
+    pay_callback_url = "https://api.sayapp.company/api/v2/payment/verify"
+    cart_callback_url = "https://api.sayapp.company/api/v2/mycart/payment/verify"
 
     RESPONSES = {
         -1: " در انتظار پردخت",
@@ -32,18 +34,20 @@ class ZIBAL:
         113: "amount مبلغ تراکنش از سقف میزان تراکنش بیشتر است.",
     }
 
-    def request(self, amount, order_id, description, multiplexingInfos=None):
+    def request(self, is_cart, amount, order_id, description, multiplexingInfos=None):
         data = {}
         data["merchant"] = self.merchant
-        data["callbackUrl"] = self.callback_url
+        if is_cart == False:
+            data["callbackUrl"] = self.pay_callback_url
+        if is_cart == True:
+            data["callbackUrl"] = self.cart_callback_url
         data["amount"] = amount
         data["orderId"] = order_id
         data["description"] = description
         data["multiplexingInfos"] = multiplexingInfos
-        print(self.merchant)
 
         if self.merchant == "zibal":
-            return {"response": 'Zibal test account!'}, 400
+            return {"response": "Zibal test account!"}, 400
 
         response = self.postTo("request", data)
         return response

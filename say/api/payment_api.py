@@ -211,10 +211,6 @@ class AddPayment(Resource):
 
         # idpay gateway
         if gateWay == 1:
-            print(configs.IDPAY_API_KEY)
-            print('----------------------')
-            print(configs)
-
             api_data = {
                 "order_id": payment.order_id,
                 "amount": payment.bank_amount,
@@ -235,7 +231,9 @@ class AddPayment(Resource):
 
         # zibal gateway
         if gateWay == 2:
-            zibal_request = zibal.request(payment.bank_amount, payment.order_id, desc)
+            zibal_request = zibal.request(
+                False, payment.bank_amount, payment.order_id, desc
+            )
             if int(zibal_request["result"]) != 100:
                 raise HTTPException(
                     status_code=422,
