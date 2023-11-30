@@ -211,9 +211,9 @@ class AddPayment(Resource):
 
         # idpay gateway
         if gateWay == 1:
-            print(self.configs.IDPAY_API_KEY)
+            print(configs.IDPAY_API_KEY)
             print('----------------------')
-            print(self.configs)
+            print(configs)
 
             api_data = {
                 "order_id": payment.order_id,
