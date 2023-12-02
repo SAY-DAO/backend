@@ -41,7 +41,7 @@ class ZIBAL:
             data["callbackUrl"] = self.pay_callback_url
         if is_cart == True:
             data["callbackUrl"] = self.cart_callback_url
-        data["amount"] = amount
+        data["amount"] = amount * 10  # RIAL to TOMAN
         data["orderId"] = order_id
         data["description"] = description
         data["multiplexingInfos"] = multiplexingInfos
