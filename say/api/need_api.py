@@ -600,8 +600,11 @@ class AddNeed(Resource):
         if not child.isConfirmed:
             return {'message': 'error: child is not confirmed yet!'}, 400
 
-#         image_path = 'wrong path'
+#       image_path = 'wrong path'
         image_path = request.form.get('imageUrl', '')
+
+        if not image_path:
+            return {'message': 'error: we need the need icon!'}, 400
 
         image_url = image_path
 
