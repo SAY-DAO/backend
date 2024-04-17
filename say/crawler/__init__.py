@@ -105,7 +105,7 @@ class Crawler:
 
 
 class DigikalaCrawler:
-    API_URL = 'https://api.digikala.com/v1/product/%s/'
+    API_URL = 'https://api.digikala.com/v2/product/%s/'
     DKP_PATTERN = re.compile(r'.*/dkp-(\d+).*')
 
     def __init__(self, url):
