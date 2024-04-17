@@ -602,8 +602,10 @@ class AddNeed(Resource):
 
 #       image_path = 'wrong path'
         image_path = request.form.get('imageUrl', '')
-        image_url = image_path || 'wrong path'
+        if not image_path:
+            return {'message': 'error: we need the need icon!'}, 400
 
+        image_url = image_path
 
         category = request.form.get('category')
         if not category:
