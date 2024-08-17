@@ -151,7 +151,7 @@ jobs:
   deploy_dev:
     name: Deploy to Development Server
     runs-on: ubuntu-latest
-    if: github.event.ref == 'refs/heads/develop'
+    # if: github.event.ref == 'refs/heads/develop'
     # needs:
     #   - run-tests
     env:
@@ -197,7 +197,7 @@ jobs:
   deploy_staging:
     name: Deploy to Staging Server
     runs-on: ubuntu-latest
-    if: github.event.ref == 'refs/heads/master'
+    # if: github.event.ref == 'refs/heads/master'
     # needs:
     #   - run-tests
     env:
@@ -243,7 +243,7 @@ jobs:
   deploy_production:
     name: Deploy to Production Server
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/heads/release')
+    # if: startsWith(github.ref, 'refs/heads/release')
     # needs:
     #   - run-tests
     env:
