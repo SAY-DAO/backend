@@ -151,9 +151,9 @@ jobs:
   deploy_dev:
     name: Deploy to Development Server
     runs-on: ubuntu-latest
-    # if: github.event.ref == 'refs/heads/develop'
-    # needs:
-    #   - run-tests
+    if: github.event.ref == 'refs/heads/develop'
+    needs:
+      - build_and_push
     env:
       IMAGE_ID: ${{ needs.run-tests.outputs.image_id }}
 
@@ -197,9 +197,9 @@ jobs:
   deploy_staging:
     name: Deploy to Staging Server
     runs-on: ubuntu-latest
-    # if: github.event.ref == 'refs/heads/master'
-    # needs:
-    #   - run-tests
+    if: github.event.ref == 'refs/heads/master'
+    needs:
+      - build_and_push
     env:
       IMAGE_ID: ${{ needs.run-tests.outputs.image_id }}
 
@@ -243,9 +243,9 @@ jobs:
   deploy_production:
     name: Deploy to Production Server
     runs-on: ubuntu-latest
-    # if: startsWith(github.ref, 'refs/heads/release')
-    # needs:
-    #   - run-tests
+    if: startsWith(github.ref, 'refs/heads/release')
+    needs:
+      - build_and_push
     env:
       IMAGE_ID: ${{ needs.run-tests.outputs.image_id }}
 
@@ -265,7 +265,7 @@ jobs:
         run: >
           ENVIRONMENT=${{ env.PRODUCTION }} DOMAIN=${{ env.PROD_DOMAIN }} CONTAINER_IMAGE=${IMAGE_ID} STACK_NAME=${{ env.PROD_STACK_NAME }}
           docker compose -f ${{ env.DOCKER_COMPOSE_PATH }} -f ${{ env.DOCKER_STACK_PATH }} ${{ env.OVERRIDE_STACK_FILE }}
-          config | sed 's/^name:.*/version: "3.6"/' >  ${{ env.STACK_FILE }}
+          config > | sed 's/^name:.*/version: "3.6"/' >  ${{ env.STACK_FILE }}
 
       - name: Move Stack File to Server
         uses: appleboy/scp-action@v0.1.1
