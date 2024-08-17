@@ -176,7 +176,8 @@ class AddPayment(Resource):
 
         desc = f"{need.name}-{need.child.sayName}"
         name = f"{user.firstName} {user.lastName}"
-        callback = urljoin(configs.API_URL, "api/v2/payment/verify")
+        # callback = urljoin(configs.API_URL, "api/v2/payment/verify")
+        callback = urljoin(configs.NEST_API_URL, "/api/dao/payment/verify")
 
         credit = 0
         if use_credit:

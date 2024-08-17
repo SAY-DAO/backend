@@ -22,6 +22,7 @@ class Config(object):
     POSTGRES_PASSWORD = "postgres"
     BASE_URL = "http://0.0.0.0:3100"
     API_URL = "http://0.0.0.0:5000"
+    NEST_API_URL = "http://0.0.0.0:5000"
     BASE_RESOURCE_URL = API_URL
     REDIS_HOST = "redis"
     ADD_TO_HOME_URL = "https://sayapp.company/add"
