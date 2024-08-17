@@ -124,7 +124,7 @@ jobs:
       - name: Build Compose File
         run: >
           CONTAINER_IMAGE=${IMAGE_ID}
-          docker-compose
+          docker compose
           -f docker-compose.yml
           -f docker-compose-dev.yml
           config > compose.yml
