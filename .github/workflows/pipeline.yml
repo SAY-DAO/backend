@@ -153,7 +153,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.ref == 'refs/heads/develop'
     needs:
-      - build_and_push
+      - run-tests
     env:
       IMAGE_ID: ${{ needs.run-tests.outputs.image_id }}
 
@@ -199,7 +199,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.ref == 'refs/heads/master'
     needs:
-      - build_and_push
+      - run-tests
     env:
       IMAGE_ID: ${{ needs.run-tests.outputs.image_id }}
 
@@ -245,7 +245,7 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/heads/release')
     needs:
-      - build_and_push
+      - run-tests
     env:
       IMAGE_ID: ${{ needs.run-tests.outputs.image_id }}
 
