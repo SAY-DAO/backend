@@ -124,17 +124,17 @@ jobs:
       - name: Build Compose File
         run: >
           CONTAINER_IMAGE=${IMAGE_ID}
-          docker-compose
+          docker compose
           -f docker-compose.yml
           -f docker-compose-dev.yml
           config > compose.yml
 
       - name: Pull Images
-        run: docker-compose -f compose.yml pull
+        run: docker compose -f compose.yml pull
 
       - name: Run Tests
         run: >
-          docker-compose -f compose.yml
+          docker compose -f compose.yml
           run --rm backend pytest -vvv --cov=./ --cov-report=xml
 
       - name: Upload coverage to Codecov
