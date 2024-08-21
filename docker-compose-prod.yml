@@ -31,3 +31,4 @@ volumes:
   sqlbak_local_data:
   sqlbak_backups:
   postgres_backup_volume:
+    name: "say-backend_postgres_backup_volume"
