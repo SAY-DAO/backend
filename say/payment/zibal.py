@@ -7,7 +7,6 @@ class ZIBAL:
     merchant = configs.ZIBAL_MERCHANT_ID
     pay_callback_url = urljoin(configs.NEST_API_URL, "api/dao/payment/verify")
     cart_callback_url = urljoin(configs.NEST_API_URL, "api/dao/payment/verify")
-
     RESPONSES = {
         -1: " در انتظار پردخت",
         -2: "خطای داخلی",
@@ -46,6 +45,11 @@ class ZIBAL:
         data["orderId"] = order_id
         data["description"] = description
         data["multiplexingInfos"] = multiplexingInfos
+        print(data["callbackUrl"])
+        print(data["amount"])
+        print(data["orderId"])
+        print(data["description"])
+        print(data["multiplexingInfos"])
 
         if self.merchant == "zibal":
             return {"response": "Zibal test account!"}, 400
