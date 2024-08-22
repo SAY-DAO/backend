@@ -45,11 +45,6 @@ class ZIBAL:
         data["orderId"] = order_id
         data["description"] = description
         data["multiplexingInfos"] = multiplexingInfos
-        print(data["callbackUrl"])
-        print(data["amount"])
-        print(data["orderId"])
-        print(data["description"])
-        print(data["multiplexingInfos"])
 
         if self.merchant == "zibal":
             return {"response": "Zibal test account!"}, 400

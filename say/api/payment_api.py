@@ -256,6 +256,8 @@ class VerifyPayment(Resource):
             "unsuccessful_payment.html",
             locale=DEFAULT_LOCALE,
         )
+        print(payment_id)
+        print(order_id)
 
         if not payment_id or not order_id:
             return make_response(unsuccessful_response)
