@@ -243,7 +243,8 @@ class CartPaymentAPI(Resource):
         # idpay gateway
         if gateWay == 1:
             name = f"{cart.user.firstName} {cart.user.lastName}"
-            callback = urljoin(configs.API_URL, "api/v2/mycart/payment/verify")
+            # callback = urljoin(configs.API_URL, "api/v2/mycart/payment/verify")
+            callback = urljoin(configs.NEST_API_URL, "api/dao/payment/cart/verify")
 
             api_data = {
                 "order_id": order_id,

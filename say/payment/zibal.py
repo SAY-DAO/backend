@@ -1,11 +1,12 @@
 import requests
 from say.config import configs
+from urllib.parse import urljoin
 
 
 class ZIBAL:
     merchant = configs.ZIBAL_MERCHANT_ID
-    pay_callback_url = "https://api.sayapp.company/api/v2/payment/verify"
-    cart_callback_url = "https://api.sayapp.company/api/v2/mycart/payment/verify"
+    pay_callback_url = urljoin(configs.NEST_API_URL, "api/dao/payment/verify")
+    cart_callback_url = urljoin(configs.NEST_API_URL, "api/dao/payment/verify")
 
     RESPONSES = {
         -1: " در انتظار پردخت",
