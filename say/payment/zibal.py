@@ -6,7 +6,7 @@ from urllib.parse import urljoin
 class ZIBAL:
     merchant = configs.ZIBAL_MERCHANT_ID
     pay_callback_url = urljoin(configs.NEST_API_URL, "api/dao/payment/verify")
-    cart_callback_url = urljoin(configs.NEST_API_URL, "api/dao/payment/cart/verify")
+    cart_callback_url = urljoin(configs.NEST_API_URL, "api/dao/payment/verify/cart")
     RESPONSES = {
         -1: " در انتظار پردخت",
         -2: "خطای داخلی",
