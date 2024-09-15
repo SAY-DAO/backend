@@ -36,12 +36,12 @@ def update_needs(self):
     retry_kwargs={'max_retries': 1},
     queue='slow',
 )
-def update_need(self, need_id, force=False):
+def update_need(self, need_id, fresh, force=False):
     from say.models.need_model import Need
 
     sleep(5)
     need = self.session.query(Need).get(need_id)
-    data = need.update(force=force)
+    data = need.update(fresh, force=force)
     safe_commit(self.session)
 
     return data

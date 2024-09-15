@@ -334,7 +334,10 @@ class UpdateNeedById(Resource):
 
                 need.link = new_link
                 session.flush()
-                update_need.delay(need.id, force=True)
+                if "Protein" in self.name_translations.en | "Dairy" in self.name_translations.en:
+                    update_need.delay(need.id, True)
+                else:
+                    update_need.delay(need.id, False)
 
         if 'affiliateLinkUrl' in request.form.keys():
             need.affiliateLinkUrl = request.form['affiliateLinkUrl']
@@ -691,8 +694,11 @@ class AddNeed(Resource):
 
         if new_need.link:
             from say.tasks import update_need
+            if "Protein" in name_translations.en | "Dairy" in name_translations.en:
+                update_need.delay(new_need.id, True)
+            else:
+                update_need.delay(new_need.id, False)
 
-            update_need.delay(new_need.id)
 
         return new_need
 
