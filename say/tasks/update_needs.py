@@ -41,7 +41,7 @@ def update_need(self, need_id, force=False):
 
     sleep(5)
     need = self.session.query(Need).get(need_id)    
-    data = need.update(force=force)
+    data = need.update(need_id, force=force)
     safe_commit(self.session)
 
     return data
