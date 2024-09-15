@@ -40,15 +40,8 @@ def update_need(self, need_id, force=False):
     from say.models.need_model import Need
 
     sleep(5)
-    need = self.session.query(Need).get(need_id)
-    if "fresh" in need.link:
-        fresh= True
-        print("Fresh Product: ", need.id)
-    else:
-        fresh= False
-        print("Not Fresh Product: ", need.id)
-    
-    data = need.update(fresh, force=force)
+    need = self.session.query(Need).get(need_id)    
+    data = need.update(force=force)
     safe_commit(self.session)
 
     return data

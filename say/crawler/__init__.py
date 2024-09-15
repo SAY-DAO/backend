@@ -115,20 +115,17 @@ class DigikalaCrawler:
         except IndexError:
             self.dkp = None
 
-    def get_data(self, fresh, force=False):
+    def get_data(self, force=False):
         if self.dkp is None:
             return
 
-        # fresh products have different api
-        if fresh == False:
-            url = self.API_URL_NOT_FRESH % self.dkp
-            if force:
-                r = requests.get(url)
-            else:
-                r = request_with_cache(url)
-            if r.status_code != 200:
-                return
+        # fresh products have different api / Digikala redirect to new link for fresh product
+        url = self.API_URL_NOT_FRESH % self.dkp
+        if force:
+            r = requests.get(url)
         else:
+            r = request_with_cache(url)
+        if r.status_code != 200:
             url = self.API_URL_FRESH % self.dkp
             if force:
                 r = requests.get(url)

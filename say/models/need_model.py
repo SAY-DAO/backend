@@ -442,12 +442,12 @@ class Need(base, Timestamp):
                 paid=past_participation.paid,
             )
 
-    def update(self, fresh, force=False):
+    def update(self, force=False):
         from say.crawler import Crawler
         from say.crawler import DigikalaCrawler
 
         if 'digikala' in self.link:
-            data = DigikalaCrawler(self.link).get_data(fresh, force=force)
+            data = DigikalaCrawler(self.link).get_data(force=force)
         else:
             data = Crawler(self.link).get_data(force=force)
 
