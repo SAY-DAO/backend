@@ -329,13 +329,12 @@ class UpdateNeedById(Resource):
 
         if 'link' in request.form.keys():
             new_link = request.form['link']
-            if new_link != need.link:
-                from say.tasks import update_need
+            from say.tasks import update_need
 
-                need.link = new_link
-                session.flush()
-                update_need.delay(need.id)
-             
+            need.link = new_link
+            session.flush()
+            update_need.delay(need.id)
+            
 
         if 'affiliateLinkUrl' in request.form.keys():
             need.affiliateLinkUrl = request.form['affiliateLinkUrl']
