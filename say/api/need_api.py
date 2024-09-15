@@ -696,7 +696,7 @@ class AddNeed(Resource):
 
         if new_need.link:
             from say.tasks import update_need
-            if "Protein" in name_translations.en | "Dairy" in name_translations.en:
+            if "Protein" in name_translations['en'] | "Dairy" in name_translations['en']:
                 update_need.delay(new_need.id, True)
             else:
                 update_need.delay(new_need.id, False)
