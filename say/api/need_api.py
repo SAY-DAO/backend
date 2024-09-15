@@ -334,7 +334,7 @@ class UpdateNeedById(Resource):
 
                 need.link = new_link
                 session.flush()
-                if "Protein" in need.name_translations['en'] | "Dairy" in need.name_translations['en']:
+                if "Protein" in need.name_translations['en'] or "Dairy" in need.name_translations['en']:
                     print("Fresh Products")
                     update_need.delay(need.id, True)
                 else:
@@ -696,7 +696,7 @@ class AddNeed(Resource):
 
         if new_need.link:
             from say.tasks import update_need
-            if "Protein" in name_translations['en'] | "Dairy" in name_translations['en']:
+            if "Protein" in name_translations['en'] or "Dairy" in name_translations['en']:
                 update_need.delay(new_need.id, True)
             else:
                 update_need.delay(new_need.id, False)
