@@ -105,7 +105,8 @@ class Crawler:
 
 
 class DigikalaCrawler:
-    API_URL = 'https://api.digikala.com/v2/product/%s/'
+    API_URL_NOT_FRESH = 'https://api.digikala.com/v2/product/%s/'
+    API_URL_FRESH = 'https://api-fresh.digikala.com/v1/product/%s/'
     DKP_PATTERN = re.compile(r'.*/dkp-(\d+).*')
 
     def __init__(self, url):
@@ -117,15 +118,23 @@ class DigikalaCrawler:
     def get_data(self, force=False):
         if self.dkp is None:
             return
-
-        url = self.API_URL % self.dkp
+    
+        url = self.API_URL_NOT_FRESH % self.dkp
         if force:
             r = requests.get(url)
         else:
             r = request_with_cache(url)
 
         if r.status_code != 200:
-            return
+            # fresh products have different api
+            url = self.API_URL_FRESH % self.dkp
+            if force:
+                r = requests.get(url)
+            else:
+                r = request_with_cache(url)
+
+            if r.status_code != 200:
+                return
 
         data = r.json()['data']
 
