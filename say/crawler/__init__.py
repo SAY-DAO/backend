@@ -118,10 +118,9 @@ class DigikalaCrawler:
     def get_data(self, fresh, force=False):
         if self.dkp is None:
             return
-   
 
         # fresh products have different api
-        if fresh:
+        if fresh == False:
             url = self.API_URL_NOT_FRESH % self.dkp
             if force:
                 r = requests.get(url)
