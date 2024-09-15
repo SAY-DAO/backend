@@ -37,6 +37,7 @@ from say.schema.cart import CartPutSchema
 from say.schema.cart import CartSchema
 
 from .ext import idpay
+from .ext import zibal
 
 
 def payable_needs(session, user_id, need_ids):
@@ -61,11 +62,11 @@ def payable_needs(session, user_id, need_ids):
 
 
 class CartAPI(Resource):
-    decorators = [limiter.limit('15/minute')]
+    decorators = [limiter.limit("15/minute")]
 
     @authorize(USER)
     @json(CartSchema)
-    @swag_from('./docs/cart/get.yml')
+    @swag_from("./docs/cart/get.yml")
     def get(self):
         user_id = get_user_id()
         cart = session.query(Cart).filter(Cart.user_id == user_id).one()
@@ -75,14 +76,14 @@ class CartAPI(Resource):
     @validate(CartPutSchema)
     @json(CartSchema)
     @commit
-    @swag_from('./docs/cart/put.yml')
+    @swag_from("./docs/cart/put.yml")
     def put(self, data):
         user_id = get_user_id()
         cart = session.query(Cart).filter(Cart.user_id == user_id).one()
         needs = payable_needs(session, user_id, data.need_ids)
         if len(needs) != len(data.need_ids):
             return {
-                'invalidNeedIds': list(set(data.need_ids) - set([n.id for n in needs]))
+                "invalidNeedIds": list(set(data.need_ids) - set([n.id for n in needs]))
             }, 600
 
         cart_needs = (
@@ -111,13 +112,13 @@ class CartNeedsAPI(Resource):
     @validate(CartNeedInputSchema)
     @json(CartSchema)
     @commit
-    @swag_from('./docs/cart/add.yml')
+    @swag_from("./docs/cart/add.yml")
     def post(self, data):
         user_id = get_user_id()
         needs = payable_needs(session, user_id, [data.need_id])
 
         if len(needs) != 1:
-            raise HTTPException(400, f'Can not add need {data.need_id} to cart')
+            raise HTTPException(400, f"Can not add need {data.need_id} to cart")
 
         need = needs[0]
         cart = session.query(Cart).filter(Cart.user_id == user_id).one()
@@ -132,7 +133,7 @@ class CartNeedsAPI(Resource):
         )
 
         if cart_need is not None:
-            raise HTTPException(600, 'Need already is in the cart')
+            raise HTTPException(600, "Need already is in the cart")
 
         cart_need = CartNeed(need=need, cart=cart)
         session.add(cart_need)
@@ -144,9 +145,8 @@ class CartNeedsAPI(Resource):
     @validate(CartNeedInputSchema)
     @json(CartSchema)
     @commit
-    @swag_from('./docs/cart/delete.yml')
+    @swag_from("./docs/cart/delete.yml")
     def delete(self, data):
-
         user_id = get_user_id()
         cart = session.query(Cart).filter(Cart.user_id == user_id).one()
         cart_need = (
@@ -173,18 +173,21 @@ class CartPaymentAPI(Resource):
     @validate(CartPaymentInSchema)
     @json(CartPaymentSchema)
     @commit
-    @swag_from('./docs/cart/payment.yml')
+    @swag_from("./docs/cart/payment.yml")
     def post(self, data):
         user_id = get_user_id()
-        cart = session.query(Cart).filter(Cart.user_id == user_id).with_for_update().one()
+        cart = (
+            session.query(Cart).filter(Cart.user_id == user_id).with_for_update().one()
+        )
 
         order_id = generate_order_id()
         if len(cart.needs) == 0:
-            raise HTTPException(600, 'Cart empty')
+            raise HTTPException(600, "Cart empty")
 
         total_amount = cart.total_amount + data.donation
         bank_amount = total_amount
         credit_amount = 0
+        gateWay = data.gateWay
 
         if data.use_credit:
             credit_amount = min(cart.user.credit, bank_amount)
@@ -222,7 +225,7 @@ class CartPaymentAPI(Resource):
             donation_amount=data.donation,
             credit_amount=credit_amount,
             order_id=order_id,
-            desc='Donation and credit payment',
+            desc="Donation and credit payment",
         )
         cart_payment.payments.append(extra_paymnent)
         session.flush()
@@ -231,28 +234,47 @@ class CartPaymentAPI(Resource):
             cart_payment.verify()
 
             success_payment = render_template_i18n(
-                'cart_successful_payment.html',
+                "cart_successful_payment.html",
                 cart_payment=cart_payment,
                 locale=cart.user.locale,
             )
-            return {'response': success_payment}, 299
+            return {"response": success_payment}, 299
 
-        name = f'{cart.user.firstName} {cart.user.lastName}'
-        callback = urljoin(configs.API_URL, 'api/v2/mycart/payment/verify')
+        # idpay gateway
+        if gateWay == 1:
+            name = f"{cart.user.firstName} {cart.user.lastName}"
+            # callback = urljoin(configs.API_URL, "api/v2/mycart/payment/verify")
+            callback = urljoin(configs.NEST_API_URL, "api/dao/payment/verify/cart")
 
-        api_data = {
-            'order_id': order_id,
-            'amount': bank_amount,
-            'name': name,
-            'callback': callback,
-        }
+            api_data = {
+                "order_id": order_id,
+                "amount": bank_amount,
+                "name": name,
+                "callback": callback,
+            }
 
-        transaction = idpay.new_transaction(**api_data)
-        if 'error_code' in transaction:
-            raise Exception(idpay.ERRORS[transaction['error_code']])
+            transaction = idpay.new_transaction(**api_data)
+            if "error_code" in transaction:
+                raise Exception(idpay.ERRORS[transaction["error_code"]])
 
-        cart_payment.gateway_payment_id = transaction['id']
-        cart_payment.link = transaction['link']
+            cart_payment.gateway_payment_id = transaction["id"]
+            cart_payment.link = transaction["link"]
+
+        # zibal gateway
+        if gateWay == 2:
+            zibal_request = zibal.request(
+                True, cart_payment.bank_amount, cart_payment.order_id, "Cart Payment"
+            )
+            if int(zibal_request["result"]) != 100:
+                raise HTTPException(
+                    status_code=422,
+                    message=zibal.ERRORS[zibal_request["result"]],
+                )
+            if int(zibal_request["result"]) == 100:
+                trackId = zibal_request["trackId"]
+                link = urljoin("https://gateway.zibal.ir/start/", str(trackId))
+                cart_payment.gateway_payment_id = trackId
+                cart_payment.link = link
 
         for payment in cart_payment.payments:
             payment.gateway_payment_id = cart_payment.gateway_payment_id
@@ -263,9 +285,9 @@ class CartPaymentAPI(Resource):
 
 class VerifyCartPayment(Resource):
     @staticmethod
-    def _verify_payment(payment_id, order_id):
+    def _verify_payment(payment_id, order_id, gateway):
         unsuccessful_response = render_template_i18n(
-            'unsuccessful_payment.html',
+            "unsuccessful_payment.html",
             locale=DEFAULT_LOCALE,
         )
 
@@ -286,31 +308,49 @@ class VerifyCartPayment(Resource):
         if pending_payment is None:
             return make_response(unsuccessful_response)
 
-        try:
-            response = idpay.verify(
-                pending_payment.gateway_payment_id,
-                pending_payment.order_id,
-            )
-        except requests.exceptions.RequestException:
-            return make_response(unsuccessful_response)
+        if gateway == 1:
+            try:
+                response = idpay.verify(
+                    pending_payment.gateway_payment_id,
+                    pending_payment.order_id,
+                )
+            except requests.exceptions.RequestException:
+                return make_response(unsuccessful_response)
 
-        if (
-            not response
-            or 'error_code' in response
-            or response['status']
-            not in (
-                100,
-                101,
-                200,
-            )
-        ):
-            return make_response(unsuccessful_response)
+            if (
+                not response
+                or "error_code" in response
+                or response["status"]
+                not in (
+                    100,
+                    101,
+                    200,
+                )
+            ):
+                return make_response(unsuccessful_response)
 
-        transaction_date = datetime.fromtimestamp(int(response['date']))
-        gateway_track_id = response['track_id']
-        verified = datetime.fromtimestamp(int(response['verify']['date']))
-        card_no = response['payment']['card_no']
-        hashed_card_no = response['payment']['hashed_card_no']
+            transaction_date = datetime.fromtimestamp(int(response["date"]))
+            gateway_track_id = response["track_id"]
+            verified = datetime.fromtimestamp(int(response["verify"]["date"]))
+            card_no = response["payment"]["card_no"]
+            hashed_card_no = response["payment"]["hashed_card_no"]
+
+        if gateway == 2:
+            try:
+                response = zibal.verify(
+                    pending_payment.gateway_payment_id,
+                )
+            except requests.exceptions.RequestException:
+                return make_response(unsuccessful_response)
+
+            if response["message"] != "success":
+                return make_response(unsuccessful_response)
+
+            transaction_date = response["paidAt"]
+            gateway_track_id = request.args.get("trackId")
+            verified = response["paidAt"]
+            card_no = response["cardNumber"]
+            hashed_card_no = response["cardNumber"]
 
         pending_payment.verify(
             transaction_date=transaction_date,
@@ -322,7 +362,7 @@ class VerifyCartPayment(Resource):
 
         return make_response(
             render_template_i18n(
-                'cart_successful_payment.html',
+                "cart_successful_payment.html",
                 cart_payment=pending_payment,
                 locale=pending_payment.cart.user.locale,
             )
@@ -331,31 +371,41 @@ class VerifyCartPayment(Resource):
     @json
     @commit
     def post(self):
-        payment_id = request.form.get('id')
-        order_id = request.form.get('order_id')
-        return self._verify_payment(payment_id, order_id)
+        gate_one_payment_id = request.form.get("id")
+        gate_one_order_id = request.form.get("order_id")
+        gate_two_payment_id = request.args.get("trackId")
+        gate_two_order_id = request.args.get("orderId")
+        if gate_one_payment_id:
+            return self._verify_payment(gate_one_payment_id, gate_one_order_id, 1)
+        if gate_two_payment_id:
+            return self._verify_payment(gate_two_payment_id, gate_two_order_id, 2)
 
     @json
     @commit
     def get(self):
-        payment_id = request.args.get('id')
-        order_id = request.args.get('order_id')
-        return self._verify_payment(payment_id, order_id)
+        gate_one_payment_id = request.form.get("id")
+        gate_one_order_id = request.form.get("order_id")
+        gate_two_payment_id = request.args.get("trackId")
+        gate_two_order_id = request.args.get("orderId")
+        if gate_one_payment_id:
+            return self._verify_payment(gate_one_payment_id, gate_one_order_id, 1)
+        if gate_two_payment_id:
+            return self._verify_payment(gate_two_payment_id, gate_two_order_id, 2)
 
 
 api.add_resource(
     CartAPI,
-    '/api/v2/mycart',
+    "/api/v2/mycart",
 )
 
 api.add_resource(
     CartNeedsAPI,
-    '/api/v2/mycart/needs',
+    "/api/v2/mycart/needs",
 )
 
 api.add_resource(
     CartPaymentAPI,
-    '/api/v2/mycart/payment',
+    "/api/v2/mycart/payment",
 )
 
-api.add_resource(VerifyCartPayment, '/api/v2/mycart/payment/verify')
+api.add_resource(VerifyCartPayment, "/api/v2/mycart/payment/verify")

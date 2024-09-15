@@ -1,5 +1,6 @@
 Register API
 ---
+
 tags:
   - Auth API
 
@@ -14,10 +15,11 @@ parameters:
     required: true
     type: string
 
-  - name: cityId
-    in: formData
+  - in: formData
+    name: countryCode
     required: false
-    type: integer
+    type: string
+    default: ir
 
   - in: formData
     name: username
@@ -66,10 +68,10 @@ responses:
 
     schema:
       properties:
-        accessToken:
+        accessToken: 
           type: string
         refreshToken:
           type: string
-        user:
+        user: 
           schema:
             id: user_model

@@ -12,7 +12,6 @@ class NewPaymentSchema(CamelModel):
     use_credit: bool = True
     gateWay: int = 1
 
-
 class PaymentSchema(CamelModel):
     id: int
     id_need: int

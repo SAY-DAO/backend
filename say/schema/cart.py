@@ -43,6 +43,7 @@ class CartSchema(CamelModel):
 class CartPaymentInSchema(CamelModel):
     donation: conint(ge=0) = 0
     use_credit: bool = True
+    gateWay: int = 1
 
 
 class CartPaymentSchema(CamelModel):

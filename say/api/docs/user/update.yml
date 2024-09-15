@@ -3,7 +3,7 @@ Updates a user information.
 All the fields are optional.
 For avatarUrl you have to upload a file in png, jpg or jpeg.
 Be aware that city and country are integer fields, so you cannot insert their names in those fields.
-You have to insert the international codes for countries and cities.
+You have to insert the international codes for countries and cities and the same rule is applied for birthPlace.
 Calling this API only affects on user table.
 For gender, [true] is male and [false] is female.
 ---
@@ -58,9 +58,16 @@ parameters:
     type: string
     enum: ["female", "male", "other"]
 
-  - name: cityId
+  - name: countryCode
     in: formData
-    required: false
+    type: string
+
+  - name: city
+    in: formData
+    type: integer
+
+  - name: birthPlace
+    in: formData
     type: integer
 
   - name: birthDate
@@ -83,6 +90,46 @@ parameters:
   - name: receiveEmail
     in: formData
     type: boolean
+
+  # - in: body
+  #   name: update info
+  #   schema:
+  #     properties:
+  #       userRole:
+  #         type: integer
+
+  #       firstName:
+  #         type: string
+
+  #       lastName:
+  #         type: string
+
+  #       userName:
+  #         type: string
+
+  #       avatarUrl:
+  #         type: file
+
+  #       emailAddress:
+  #         type: string
+
+  #       password:
+  #         type: string
+
+  #       gender:
+  #         type: boolean
+
+  #       country:
+  #         type: integer
+
+  #       city:
+  #         type: integer
+
+  #       birthPlace:
+  #         type: integer
+
+  #       birthDate:
+  #         type: string
 
 responses:
   498:

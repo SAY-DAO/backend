@@ -176,7 +176,8 @@ class AddPayment(Resource):
 
         desc = f"{need.name}-{need.child.sayName}"
         name = f"{user.firstName} {user.lastName}"
-        callback = urljoin(configs.API_URL, "api/v2/payment/verify")
+        # callback = urljoin(configs.API_URL, "api/v2/payment/verify")
+        callback = urljoin(configs.NEST_API_URL, "api/dao/payment/verify")
 
         credit = 0
         if use_credit:
@@ -231,25 +232,32 @@ class AddPayment(Resource):
 
         # zibal gateway
         if gateWay == 2:
+<<<<<<< HEAD
             zibal_request = zibal.request(payment.bank_amount, payment.order_id, desc)
             
             if zibal_request["result"] != 100:
+=======
+            zibal_request = zibal.request(
+                False, payment.bank_amount, payment.order_id, desc
+            )
+            if int(zibal_request["result"]) != 100:
+>>>>>>> release
                 raise HTTPException(
                     status_code=422,
                     message=zibal.ERRORS[zibal_request["result"]],
                 )
-            if zibal_request["result"] == 100:
+            if int(zibal_request["result"]) == 100:
                 trackId = zibal_request["trackId"]
                 link = urljoin("https://gateway.zibal.ir/start/", str(trackId))
                 payment.gateway_payment_id = trackId
                 payment.link = link
-                
+
         return payment
 
 
 class VerifyPayment(Resource):
     @staticmethod
-    def _verify_payment(payment_id, order_id):
+    def _verify_payment(payment_id, order_id, gateway):
         unsuccessful_response = render_template_i18n(
             "unsuccessful_payment.html",
             locale=DEFAULT_LOCALE,
@@ -278,32 +286,49 @@ class VerifyPayment(Resource):
 
         if need.isDone:
             return make_response(unsuccessful_response)
+        if gateway == 1:
+            try:
+                response = idpay.verify(
+                    pending_payment.gateway_payment_id,
+                    pending_payment.order_id,
+                )
+            except requests.exceptions.RequestException:
+                return make_response(unsuccessful_response)
 
-        try:
-            response = idpay.verify(
-                pending_payment.gateway_payment_id,
-                pending_payment.order_id,
-            )
-        except requests.exceptions.RequestException:
-            return make_response(unsuccessful_response)
+            if (
+                not response
+                or "error_code" in response
+                or response["status"]
+                not in (
+                    100,
+                    101,
+                    200,
+                )
+            ):
+                return make_response(unsuccessful_response)
 
-        if (
-            not response
-            or "error_code" in response
-            or response["status"]
-            not in (
-                100,
-                101,
-                200,
-            )
-        ):
-            return make_response(unsuccessful_response)
+            transaction_date = datetime.fromtimestamp(int(response["date"]))
+            gateway_track_id = response["track_id"]
+            verified = datetime.fromtimestamp(int(response["verify"]["date"]))
+            card_no = response["payment"]["card_no"]
+            hashed_card_no = response["payment"]["hashed_card_no"]
 
-        transaction_date = datetime.fromtimestamp(int(response["date"]))
-        gateway_track_id = response["track_id"]
-        verified = datetime.fromtimestamp(int(response["verify"]["date"]))
-        card_no = response["payment"]["card_no"]
-        hashed_card_no = response["payment"]["hashed_card_no"]
+        if gateway == 2:
+            try:
+                response = zibal.verify(
+                    pending_payment.gateway_payment_id,
+                )
+            except requests.exceptions.RequestException:
+                return make_response(unsuccessful_response)
+
+            if response["message"] != "success":
+                return make_response(unsuccessful_response)
+
+            transaction_date = response["paidAt"]
+            gateway_track_id = request.args.get("trackId")
+            verified = response["paidAt"]
+            card_no = response["cardNumber"]
+            hashed_card_no = response["cardNumber"]
 
         pending_payment.verify(
             transaction_date,
@@ -326,16 +351,26 @@ class VerifyPayment(Resource):
     @json
     @commit
     def post(self):
-        payment_id = request.form.get("id")
-        order_id = request.form.get("order_id")
-        return self._verify_payment(payment_id, order_id)
+        gate_one_payment_id = request.form.get("id")
+        gate_one_order_id = request.form.get("order_id")
+        gate_two_payment_id = request.args.get("trackId")
+        gate_two_order_id = request.args.get("orderId")
+        if gate_one_payment_id:
+            return self._verify_payment(gate_one_payment_id, gate_one_order_id, 1)
+        if gate_two_payment_id:
+            return self._verify_payment(gate_two_payment_id, gate_two_order_id, 2)
 
     @json
     @commit
     def get(self):
-        payment_id = request.args.get("id")
-        order_id = request.args.get("order_id")
-        return self._verify_payment(payment_id, order_id)
+        gate_one_payment_id = request.form.get("id")
+        gate_one_order_id = request.form.get("order_id")
+        gate_two_payment_id = request.args.get("trackId")
+        gate_two_order_id = request.args.get("orderId")
+        if gate_two_payment_id is None:
+            return self._verify_payment(gate_one_payment_id, gate_one_order_id, 1)
+        if gate_two_payment_id:
+            return self._verify_payment(gate_two_payment_id, gate_two_order_id, 2)
 
 
 api.add_resource(AddPayment, "/api/v2/payment")

@@ -21,6 +21,7 @@ api = Api()
 jwt = JWTManager()
 idpay = IDPay(configs.IDPAY_API_KEY, configs.SANDBOX)
 zibal = ZIBAL()
+
 sms_provider = MeliPayamak(
     configs.MELI_PAYAMAK_USERNAME,
     configs.MELI_PAYAMAK_PASSWORD,

@@ -21,7 +21,7 @@ services:
     expose:
       - 5000
     volumes:
-      - media_volume/:/app/files
+      - media_volume:/app/files
 
   worker: &worker
     <<: *backend
@@ -56,10 +56,16 @@ services:
 
 volumes:
   redis_volume:
+    name: "say-backend_redis_volume"
   postgres_volume:
+    name: "say-backend_postgres_volume"
   media_volume:
+    name: "say-backend_media_volume"
   static_volume:
+    name: "say-backend_static_volume"
   flower_volume:
+    name: "say-backend_flower_volume"
+
 
 configs:
   backned-config:

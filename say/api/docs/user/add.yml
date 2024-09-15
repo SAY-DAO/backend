@@ -1,8 +1,8 @@
 add a user
-Adds a user. Adding avatarUrl, emailAddress, gender, birthDate are optional.
+Adds a user. Adding avatarUrl, emailAddress, gender, birthDate and birthPlace are optional.
 For avatarUrl you have to upload a file in png, jpg or jpeg.
 Be aware that city is integer fields, so you cannot insert their names in those fields.
-You have to insert the international codes for countries and cities.
+You have to insert the international codes for countries and cities and the same rule is applied for birthPlace.
 Calling this API only affects on user table.
 For gender, [true] is male and [false] is female.
 ---
@@ -44,11 +44,20 @@ parameters:
   - name: gender
     in: formData
     type: string
-    enum: ["female", "male", "other"]
+    enum: ['female', 'male', 'other']
 
-  - name: cityId
+  - name: countryCode
     in: formData
-    required: false
+    required: true
+    type: string
+
+  - name: city
+    in: formData
+    required: true
+    type: integer
+
+  - name: birthPlace
+    in: formData
     type: integer
 
   - name: birthDate

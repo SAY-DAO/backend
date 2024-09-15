@@ -2,8 +2,8 @@ import os
 import sys
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from flask import json
+from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 
@@ -24,7 +24,6 @@ fileConfig(config.config_file_name)
 # target_metadata = mymodel.Base.metadata
 from say.models import base
 
-
 target_metadata = base.metadata
 
 # other values from the config, defined by the needs of env.py,
@@ -33,7 +32,6 @@ target_metadata = base.metadata
 # ... etc.
 
 from say.config import configs
-
 
 config.set_main_option('sqlalchemy.url', configs.postgres_url)
 
