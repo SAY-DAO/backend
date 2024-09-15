@@ -139,8 +139,7 @@ class DigikalaCrawler:
                 r = request_with_cache(url)
             if r.status_code != 200:
                 return
-        else:
-            return
+    
 
         data = result['data']
 
