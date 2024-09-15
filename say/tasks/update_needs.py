@@ -23,7 +23,12 @@ def update_needs(self):
     t = []
     for need in needs:
         t.append(need.id)
-        update_need.delay(need.id)
+        if "Protein" in need.name_translations['en'] or "Dairy" in need.name_translations['en']:
+            print("Fresh Products")
+            update_need.delay(need.id, True)
+        else:
+            print("Not Fresh Products")
+            update_need.delay(need.id, False)
 
     return t
 
