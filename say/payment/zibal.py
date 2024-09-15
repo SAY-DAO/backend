@@ -45,14 +45,10 @@ class ZIBAL:
         data["orderId"] = order_id
         data["description"] = description
         data["multiplexingInfos"] = multiplexingInfos
-<<<<<<< HEAD
-        print(self.merchant)
-=======
 
         if self.merchant == "zibal":
             return {"response": "Zibal test account!"}, 400
 
->>>>>>> release
         response = self.postTo("request", data)
         return response
 

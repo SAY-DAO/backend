@@ -37,13 +37,8 @@ class Config(object):
     SET_PASSWORD_URL = "setpassword"
     RESET_PASSWORD_EXPIRE_TIME = 2 * 3600
     RESET_PASSWORD_TOKEN_LENGTH = 8
-<<<<<<< HEAD
-    IDPAY_API_KEY = 'change-this'
-    ZIBAL_MERCHANT_ID='change-this'
-=======
     IDPAY_API_KEY = "change-this"
     ZIBAL_MERCHANT_ID = "change-this"
->>>>>>> release
     DELIVER_TO_CHILD_DELAY = 4 * 60 * 60
     RATELIMIT_DEFAULT = "100 per minutes"
     PAYMENT_ORDER_ID_LENGTH = 8
