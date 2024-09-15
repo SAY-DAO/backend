@@ -23,12 +23,7 @@ def update_needs(self):
     t = []
     for need in needs:
         t.append(need.id)
-        if "Protein" in need.name_translations['en'] or "Dairy" in need.name_translations['en']:
-            print("Fresh Products")
-            update_need.delay(need.id, True)
-        else:
-            print("Not Fresh Products")
-            update_need.delay(need.id, False)
+        update_need.delay(need.id)
 
     return t
 
@@ -41,11 +36,18 @@ def update_needs(self):
     retry_kwargs={'max_retries': 1},
     queue='slow',
 )
-def update_need(self, need_id, fresh, force=False):
+def update_need(self, need_id, force=False):
     from say.models.need_model import Need
 
     sleep(5)
     need = self.session.query(Need).get(need_id)
+    if "fresh" in need.link:
+        fresh= True
+        print("Fresh Product: ", need.id)
+    else:
+        fresh= False
+        print("Not Fresh Product: ", need.id)
+    
     data = need.update(fresh, force=force)
     safe_commit(self.session)
 
