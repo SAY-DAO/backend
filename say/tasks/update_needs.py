@@ -13,7 +13,7 @@ def update_needs(self):
     needs = self.session.query(Need).filter(
         Need.type == 1,
         or_(
-            # Need.status < 4, since digikala fresh api was not implemented many done needs could be missing tile
+            Need.status < 4,
             Need.title.is_(None),
         ),
         Need.isDeleted.is_(False),
