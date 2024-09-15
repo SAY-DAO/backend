@@ -125,18 +125,20 @@ class DigikalaCrawler:
             r = requests.get(url)
         else:
             r = request_with_cache(url)
-        if r.status_code != 200:
+        if r.status != 200:
             print(r)
-            if r.status_code == 302 and "fresh" in r["redirect_url"]["uri"]:
+            if r.status == 302 and "fresh" in r["redirect_url"]["uri"]:
                 print("Checking if fresh product...")
                 url = self.API_URL_FRESH % self.dkp
                 if force:
                     r = requests.get(url)
                 else:
                     r = request_with_cache(url)
-                if r.status_code != 200:
+                if r.status != 200:
                     print("Could not call the digikala api", need_id )
                     return
+            else:
+                return
             print(url)
 
         data = r.json()['data']
