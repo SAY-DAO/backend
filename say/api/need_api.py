@@ -334,9 +334,11 @@ class UpdateNeedById(Resource):
 
                 need.link = new_link
                 session.flush()
-                if "Protein" in self.name_translations.en | "Dairy" in self.name_translations.en:
+                if "Protein" in need.name_translations['en'] | "Dairy" in need.name_translations['en']:
+                    print("Fresh Products")
                     update_need.delay(need.id, True)
                 else:
+                    print("Not Fresh Products")
                     update_need.delay(need.id, False)
 
         if 'affiliateLinkUrl' in request.form.keys():
