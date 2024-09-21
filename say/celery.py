@@ -23,7 +23,7 @@ beat = {
     },
     'update-needs': {
         'task': 'say.tasks.update_needs.update_needs',
-        'schedule': crontab(minute=30, hour='0,4,8,12,15,20'),
+        'schedule': crontab(minute=45, hour='0,4,8,12,15,20'),
     },
     'report_to_family': {
         'task': 'say.tasks.report_to_family.report_to_families',
