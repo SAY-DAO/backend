@@ -128,9 +128,8 @@ class DigikalaCrawler:
             return
         
         # fresh products have different api / Digikala redirect to new link for fresh product
-        # Typical respond: {'status': 302, 'redirect_url': {'base': None, 'uri': '/fresh/product/dkp-10269403/'}}
+        # Typical response: {'status': 302, 'redirect_url': {'base': None, 'uri': '/fresh/product/dkp-10269403/'}}
         result = r.json()
-        print(result)
         if result["status"] == 302 and "fresh" in result["redirect_url"]["uri"]:            
             url = self.API_URL_FRESH % self.dkp
             if force:
@@ -139,7 +138,7 @@ class DigikalaCrawler:
                 r = request_with_cache(url)
             if r.status_code != 200:
                 return
-    
+            result = r.json()
 
         data = result['data']
 
