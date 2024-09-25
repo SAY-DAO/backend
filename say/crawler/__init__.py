@@ -118,25 +118,29 @@ class DigikalaCrawler:
     def get_data(self, force=False):
         if self.dkp is None:
             return
-    
+
         url = self.API_URL_NOT_FRESH % self.dkp
         if force:
             r = requests.get(url)
         else:
             r = request_with_cache(url)
-
         if r.status_code != 200:
-            # fresh products have different api
+            return
+        result = r.json()
+        
+        # fresh products have different api / Digikala redirect to new link for fresh product
+        # Typical response: {'status': 302, 'redirect_url': {'base': None, 'uri': '/fresh/product/dkp-10269403/'}}
+        if result["status"] == 302 and "fresh" in result["redirect_url"]["uri"]:            
             url = self.API_URL_FRESH % self.dkp
             if force:
                 r = requests.get(url)
             else:
                 r = request_with_cache(url)
-
             if r.status_code != 200:
                 return
+            result = r.json()
 
-        data = r.json()['data']
+        data = result['data']
 
         if data['product'].get('is_inactive'):
             return dict(cost='unavailable', img=None, title=None)

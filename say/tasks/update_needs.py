@@ -40,7 +40,7 @@ def update_need(self, need_id, force=False):
     from say.models.need_model import Need
 
     sleep(5)
-    need = self.session.query(Need).get(need_id)
+    need = self.session.query(Need).get(need_id)    
     data = need.update(force=force)
     safe_commit(self.session)
 
