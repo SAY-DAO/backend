@@ -1,6 +1,6 @@
 from time import sleep
 
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 
 from say.celery import celery
 from say.orm import safe_commit
@@ -12,7 +12,7 @@ def update_needs(self):
 
     needs = self.session.query(Need).filter(
         Need.type == 1,
-        or_(
+        and_(
             Need.status < 4,
             Need.title.is_(None),
         ),
@@ -39,7 +39,7 @@ def update_needs(self):
 def update_need(self, need_id, force=False):
     from say.models.need_model import Need
 
-    sleep(5)
+    sleep(10)
     need = self.session.query(Need).get(need_id)    
     data = need.update(force=force)
     safe_commit(self.session)
