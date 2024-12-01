@@ -127,9 +127,10 @@ class DigikalaCrawler:
         else:
             r = request_with_cache(url)
 
-        if r.status_code == 200 or r.status_code == 302:
+        if r.status_code == 200:
             result = r.json()
         else:
+            print(url)
             print("Cold not update!")
             return
 
