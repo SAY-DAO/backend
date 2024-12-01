@@ -126,7 +126,7 @@ class DigikalaCrawler:
             r = requests.get(url)
         else:
             r = request_with_cache(url)
-            
+
         if r.status_code == 200:
             result = r.json()
 
@@ -140,6 +140,9 @@ class DigikalaCrawler:
                 r = request_with_cache(url)
             result = r.json()
 
+        print("url and result:")
+        print(url)
+        print(result)
 
         if r.status_code != 200:
             return

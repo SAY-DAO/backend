@@ -449,6 +449,7 @@ class Need(base, Timestamp):
         if 'digikala' in self.link:
             print("updating via crawler.....")
             data = DigikalaCrawler(self.link).get_data(force=force)
+            print("Done updating.")
         else:
             data = Crawler(self.link).get_data(force=force)
 
