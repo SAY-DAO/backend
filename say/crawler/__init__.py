@@ -130,6 +130,7 @@ class DigikalaCrawler:
         if r.status_code == 200:
             result = r.json()
         else:
+            print(r)
             print(url)
             print("Cold not update!")
             return
