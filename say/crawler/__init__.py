@@ -127,12 +127,16 @@ class DigikalaCrawler:
         else:
             r = request_with_cache(url)
 
-        if r.status_code == 200:
+        if r.status == 200 or r.status == 302:
             result = r.json()
+        else:
+            print("Cold not update!")
+            return
+
 
         # fresh products have different api / Digikala redirect to new link for fresh product
         # Typical response: {'status': 302, 'redirect_url': {'base': None, 'uri': '/fresh/product/dkp-10269403/'}}
-        if result and result["status"] == 302 and "fresh" in result["redirect_url"]["uri"]:            
+        if result["status"] == 302 and "fresh" in result["redirect_url"]["uri"]:            
             url = self.API_URL_FRESH % self.dkp
             if force:
                 r = requests.get(url)
