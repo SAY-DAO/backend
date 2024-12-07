@@ -120,7 +120,9 @@ class DigikalaCrawler:
     def call_api(self, url):
         try:
             # Run the wget command and capture the output
+            print("result")
             result = subprocess.run(['wget', '-qO-', url], capture_output=True, text=True, check=True)
+            print(result)
             return result.stdout
         except subprocess.CalledProcessError as e:
             return f"An error occurred: {e}"
