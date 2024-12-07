@@ -39,3 +39,4 @@ ujson~=5.2.0
 web3~=5.13.1
 Werkzeug~=1.0.1
 markupsafe==2.0.1
+wget==3.2
