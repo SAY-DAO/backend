@@ -120,9 +120,7 @@ class DigikalaCrawler:
     def call_api(self, url):
         try:
             # Run the wget command and capture the output
-            print("result")
             result = subprocess.run(['wget', '-qO-', url], capture_output=True, text=True, check=True)
-            print(result)
             return result.stdout
         except subprocess.CalledProcessError as e:
             return f"An error occurred: {e}"
@@ -135,7 +133,7 @@ class DigikalaCrawler:
         except json.JSONDecodeError as e:
             return f"An error occurred while parsing JSON: {e}"
 
-    def get_data(self, force=False):
+    def get_data(self, force):
         result = None
         parsed_result = None
 
@@ -143,6 +141,8 @@ class DigikalaCrawler:
             return
 
         url = self.API_URL_NOT_FRESH % self.dkp
+        print("url:")
+        print(url)
         api_response = self.call_api(url)
         parsed_result = self.parse_result(api_response)
 
