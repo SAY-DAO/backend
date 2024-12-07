@@ -2,7 +2,7 @@ import functools
 import html
 import re
 from typing import NamedTuple
-import subprocess
+import urllib.request
 import json
 import requests
 from cachetools import TTLCache
@@ -119,16 +119,17 @@ class DigikalaCrawler:
 
     def call_api(self, url):
         try:
-            # Run the wget command and capture the output
-            result = subprocess.run(['wget', '-qO-', url], capture_output=True, text=True, check=True)
-            return result.stdout
-        except subprocess.CalledProcessError as e:
-            return f"An error occurred: {e}"
+            with urllib.request.urlopen(url) as response:
+                status_code = response.getcode()
+                content = response.read().decode('utf-8')
+                return status_code, content
+        except urllib.error.URLError as e:
+            return None, f"An error occurred: {e}"
 
     def parse_result(self, api_response):
         try:
             # Parse the JSON response
-            json_response = json.loads(api_response)
+            json_response = json.loads(api_response[1])
             return json_response
         except json.JSONDecodeError as e:
             return f"An error occurred while parsing JSON: {e}"
@@ -154,13 +155,13 @@ class DigikalaCrawler:
             api_response = self.call_api(url)
             parsed_result = self.parse_result(api_response)
             if parsed_result["status"] != 200:
-                print("Cold not update!")
+                print("Could not update!")
                 return
             else:
                 parsed_result = self.parse_result(api_response)
 
         else:
-            print("Cold not update!")
+            print("Could not update!")
             print(url)
             return
 
