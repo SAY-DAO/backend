@@ -133,7 +133,7 @@ class DigikalaCrawler:
         except json.JSONDecodeError as e:
             return f"An error occurred while parsing JSON: {e}"
 
-    def get_data(self):
+    def get_data(self, force=False):
         result = None
         parsed_result = None
 
