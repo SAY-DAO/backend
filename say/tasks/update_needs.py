@@ -12,7 +12,7 @@ def update_needs(self):
 
     needs = self.session.query(Need).filter(
         Need.type == 1,
-        and_(
+        or_(
             Need.status < 4,
             Need.title.is_(None),
         ),
