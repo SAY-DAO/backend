@@ -1,6 +1,6 @@
 from time import sleep
 
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 
 from say.celery import celery
 from say.orm import safe_commit
@@ -21,8 +21,12 @@ def update_needs(self):
     )
 
     t = []
+    counter = 0
+    print(f"Total needs to be updated: {len(needs)}")
     for need in needs:
+        counter+=1
         t.append(need.id)
+        print(f"{counter}/{len(needs)}-> updating need: {need.id}")
         update_need.delay(need.id)
 
     return t
@@ -39,8 +43,8 @@ def update_needs(self):
 def update_need(self, need_id, force=False):
     from say.models.need_model import Need
 
-    sleep(5)
-    need = self.session.query(Need).get(need_id)
+    sleep(10)
+    need = self.session.query(Need).get(need_id)    
     data = need.update(force=force)
     safe_commit(self.session)
 

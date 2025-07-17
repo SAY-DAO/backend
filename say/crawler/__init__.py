@@ -2,7 +2,8 @@ import functools
 import html
 import re
 from typing import NamedTuple
-
+import urllib.request
+import json
 import requests
 from cachetools import TTLCache
 from cachetools import cached
@@ -115,37 +116,66 @@ class DigikalaCrawler:
         except IndexError:
             self.dkp = None
 
-    def get_data(self, force=False):
+
+    def call_api(self, url):
+        try:
+            with urllib.request.urlopen(url) as response:
+                status_code = response.getcode()
+                content = response.read().decode('utf-8')
+                return status_code, content
+        except urllib.error.URLError as e:
+            return None, f"An error occurred: {e}"
+
+    def parse_result(self, api_response):
+        try:
+            # Parse the JSON response
+            json_response = json.loads(api_response[1])
+            return json_response
+        except json.JSONDecodeError as e:
+            return f"An error occurred while parsing JSON: {e}"
+
+    def get_data(self, force):
+        result = None
+        parsed_result = None
+
         if self.dkp is None:
             return
-    
+
         url = self.API_URL_NOT_FRESH % self.dkp
-        if force:
-            r = requests.get(url)
-        else:
-            r = request_with_cache(url)
+        api_response = self.call_api(url)
+        parsed_result = self.parse_result(api_response)
 
-        if r.status_code != 200:
-            # fresh products have different api
+        if int(parsed_result["status"]) == 200:
+            parsed_result = self.parse_result(api_response)
+        elif parsed_result["status"] == 302 and "fresh" in parsed_result["redirect_url"]["uri"]:
             url = self.API_URL_FRESH % self.dkp
-            if force:
-                r = requests.get(url)
-            else:
-                r = request_with_cache(url)
-
-            if r.status_code != 200:
+            api_response = self.call_api(url)
+            parsed_result = self.parse_result(api_response)
+            if parsed_result["status"] != 200:
+                print("Could not update!")
                 return
+            else:
+                parsed_result = self.parse_result(api_response)
 
-        data = r.json()['data']
+        else:
+            print("Could not update!")
+            print(url)
+            return
 
-        if data['product'].get('is_inactive'):
+        result = parsed_result["data"]
+
+
+        if result['product'].get('is_inactive'):
             return dict(cost='unavailable', img=None, title=None)
 
-        title = data['product']['title_fa']
-        if data['product']['status'] == 'marketable':
-            cost = int(data['product']['default_variant']['price']['rrp_price']) // 10
+        title = result['product']['title_fa']
+        if result['product']['status'] == 'marketable':
+            cost = int(result['product']['default_variant']['price']['rrp_price']) // 10
         else:
             cost = 'unavailable'
 
-        img = data['product']['images']['main']['url'][0]
+        img = result['product']['images']['main']['url'][0]
         return dict(cost=cost, img=img, title=title)
+
+
+

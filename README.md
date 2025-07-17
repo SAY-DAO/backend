@@ -12,6 +12,7 @@
 
 #### Run Server
 
+
 ```bash
 ./scripts/up.sh
 ```
