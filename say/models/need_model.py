@@ -314,6 +314,9 @@ class Need(base, Timestamp):
     @hybrid_property
     def status_description(self):
         locale = get_locale()
+        print('checking...')
+        print(self.id)
+        print(self.type_name)
         raw_status = NeedStatuses.get(self.status, self.type_name, locale)
         need_name = self.clean_title if self.type == 1 else self.name
 
