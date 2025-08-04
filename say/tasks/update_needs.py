@@ -22,11 +22,11 @@ def update_needs(self):
 
     t = []
     counter = 0
-    print(f"Total needs to be updated: {len(needs)}")
+    print(f"Total needs to be updated: {needs.count()}")
     for need in needs:
         counter+=1
         t.append(need.id)
-        print(f"{counter}/{len(needs)}-> updating need: {need.id}")
+        print(f"{counter}/{needs.count()}-> updating need: {need.id}")
         update_need.delay(need.id)
 
     return t
