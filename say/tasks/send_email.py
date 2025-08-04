@@ -21,6 +21,7 @@ def get_subject_from_html(html):
     retry_backoff=True,
     retry_backoff_max=600,
     retry_kwargs={'max_retries': 80},
+    soft_time_limit=60
 )
 def send_email(subject, to, html, cc=[], bcc=[]):
     if isinstance(to, str):
