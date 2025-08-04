@@ -454,12 +454,15 @@ class Need(base, Timestamp):
             data = Crawler(self.link).get_data(force=force)
 
         if data is None:
+            print(f"Could not get data for: {self.id}")
             return
 
         img = data['img']
         title = data['title']
         cost = data['cost']
-
+        print(f"Id: {self.id}")
+        print(f"fetched title: {title}")
+        print(f"fetched cost: {cost}")
         if img:
             self.img = img
 

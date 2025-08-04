@@ -298,9 +298,6 @@ class UpdateNeedById(Resource):
         if 'cost' in request.form.keys():
             print("updating cost...")
             new_cost = int(request.form['cost'].replace(',', ''))
-            print(f"Id: {need.id}")
-            print(f"oldCost: {need._cost}")
-            print(f"newCOst: {new_cost}")
             if (
                 (
                     sw_role in [SOCIAL_WORKER, COORDINATOR, NGO_SUPERVISOR]

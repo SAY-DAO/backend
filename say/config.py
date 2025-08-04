@@ -73,7 +73,7 @@ class Config(object):
 
     # Celery
     BROKER = "redis"
-    task_soft_time_limit = 60
+    task_soft_time_limit = 120
     task_acks_late = True
     worker_prefetch_multiplier = 1
 
