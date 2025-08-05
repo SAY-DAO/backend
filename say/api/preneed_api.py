@@ -30,6 +30,7 @@ class PreNeedsAPi(Resource):
         ).filter(
             Need.child_id == DEFAULT_CHILD_ID,
             Need.isDeleted.is_(False),
+            ~Need.imageUrl.ilike('%wrong path%')  # Case-insensitive
         )
 
         return PreneedSummarySchema.from_query_list(preneeds)
