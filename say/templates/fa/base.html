@@ -9,18 +9,11 @@
   <style>
     /* Gmail Fix */
 
-    *[class="gmail-fix"] {
-      display: none !important
-    }
 
-    u+.body .gmail-blend-screen {
-      background: #000;
-      mix-blend-mode: screen;
-    }
-
-    u+.body .gmail-blend-difference {
-      background: #000;
-      mix-blend-mode: difference;
+    @media only screen and (max-width: 600px) {
+      *[class='gmail-fix'] {
+        display: none !important;
+      }
     }
 
     /* Gmail Fix */
