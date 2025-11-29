@@ -106,6 +106,7 @@ class Crawler:
 
 
 class DigikalaCrawler:
+    PROXY = 'https://proxy.sayao.org/proxy?url=%s/'
     API_URL_NOT_FRESH = 'https://api.digikala.com/v2/product/%s/'
     API_URL_FRESH = 'https://api-fresh.digikala.com/v1/product/%s/'
     DKP_PATTERN = re.compile(r'.*/dkp-(\d+).*')
@@ -116,7 +117,6 @@ class DigikalaCrawler:
         except IndexError:
             self.dkp = None
 
-
     def call_api(self, url):
         try:
             with urllib.request.urlopen(url) as response:
@@ -124,8 +124,16 @@ class DigikalaCrawler:
                 content = response.read().decode('utf-8')
                 return status_code, content
         except urllib.error.URLError as e:
-            return None, f"An error occurred: {e}"
-
+            # If there's an error, use proxy
+            try:
+                proxy_url = self.PROXY 
+                with urllib.request.urlopen(proxy_url) as proxy_response:
+                    proxy_status_code = proxy_response.getcode()
+                    proxy_content = proxy_response.read().decode('utf-8')
+                    return proxy_status_code, proxy_content
+            except urllib.error.URLError as proxy_error:
+                return None, f"An error occurred with both APIs: {e} and {proxy_error}"
+        
     def parse_result(self, api_response):
         try:
             # Parse the JSON response

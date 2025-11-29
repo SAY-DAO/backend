@@ -13,7 +13,7 @@ def update_needs(self):
     needs = self.session.query(Need).filter(
         Need.type == 1,
         or_(
-            Need.status < 4,
+            Need.status < 3,
             Need.title.is_(None),
         ),
         Need.isDeleted.is_(False),
