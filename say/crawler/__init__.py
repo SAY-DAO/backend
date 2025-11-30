@@ -107,6 +107,7 @@ class Crawler:
 
 
 class DigikalaCrawler:
+    PROXY = "https://proxy.saydao.org"  
     API_URL_NOT_FRESH = 'https://api.digikala.com/v2/product/%s/'
     API_URL_FRESH = 'https://api-fresh.digikala.com/v1/product/%s/'
     DKP_PATTERN = re.compile(r'.*/dkp-(\d+).*')
@@ -129,8 +130,7 @@ class DigikalaCrawler:
             # If there's an error, use proxy
             try:
                 print("updating via proxy...")
-                proxy_url = urljoin(configs.NEST_API_URL, "api/dao/crawler/digikala?url=%s/") % url
-                print(proxy_url)
+                proxy_url = urljoin(self.PROXY, "proxy?url=%s/") % url
                 with urllib.request.urlopen(proxy_url) as proxy_response:
                     proxy_status_code = proxy_response.getcode()
                     proxy_content = proxy_response.read().decode('utf-8')
