@@ -119,6 +119,7 @@ class DigikalaCrawler:
 
     def call_api(self, url):
         try:
+            print(url)
             with urllib.request.urlopen(url) as response:
                 status_code = response.getcode()
                 content = response.read().decode('utf-8')
@@ -154,7 +155,7 @@ class DigikalaCrawler:
         url = self.API_URL_NOT_FRESH % self.dkp
         api_response = self.call_api(url)
         parsed_result = self.parse_result(api_response)
-
+        print(api_response)
         if int(parsed_result["status"]) == 200:
             parsed_result = self.parse_result(api_response)
         elif parsed_result["status"] == 302 and "fresh" in parsed_result["redirect_url"]["uri"]:
