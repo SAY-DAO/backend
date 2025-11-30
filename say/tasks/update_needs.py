@@ -12,10 +12,7 @@ def update_needs(self):
 
     needs = self.session.query(Need).filter(
         Need.type == 1,
-        or_(
-            Need.status < 3,
-            Need.title.is_(None),
-        ),
+        Need.status < 3,
         Need.isDeleted.is_(False),
         Need.link.isnot(None),
     )
@@ -27,6 +24,7 @@ def update_needs(self):
         counter+=1
         t.append(need.id)
         print(f"{counter}/{needs.count()}-> updating need: {need.id}")
+        sleep(10)
         update_need.delay(need.id)
 
     return t
@@ -42,8 +40,6 @@ def update_needs(self):
 )
 def update_need(self, need_id, force=False):
     from say.models.need_model import Need
-
-    sleep(10)
     need = self.session.query(Need).get(need_id)    
     data = need.update(force=force)
     safe_commit(self.session)

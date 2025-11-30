@@ -122,6 +122,7 @@ class DigikalaCrawler:
             with urllib.request.urlopen(url) as response:
                 status_code = response.getcode()
                 content = response.read().decode('utf-8')
+                print("updated via server...")
                 return status_code, content
         except urllib.error.URLError as e:
             # If there's an error, use proxy
@@ -130,6 +131,7 @@ class DigikalaCrawler:
                 with urllib.request.urlopen(proxy_url) as proxy_response:
                     proxy_status_code = proxy_response.getcode()
                     proxy_content = proxy_response.read().decode('utf-8')
+                    print("updated via proxy...")
                     return proxy_status_code, proxy_content
             except urllib.error.URLError as proxy_error:
                 return None, f"An error occurred with both APIs: {e} and {proxy_error}"
