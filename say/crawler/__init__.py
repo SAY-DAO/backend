@@ -7,6 +7,7 @@ import json
 import requests
 from cachetools import TTLCache
 from cachetools import cached
+from urllib.parse import urljoin
 
 from say.config import configs
 from say.crawler.patterns import get_patterns
@@ -106,7 +107,6 @@ class Crawler:
 
 
 class DigikalaCrawler:
-    PROXY = 'https://proxy.sayao.org/proxy?url=%s/'
     API_URL_NOT_FRESH = 'https://api.digikala.com/v2/product/%s/'
     API_URL_FRESH = 'https://api-fresh.digikala.com/v1/product/%s/'
     DKP_PATTERN = re.compile(r'.*/dkp-(\d+).*')
@@ -119,7 +119,6 @@ class DigikalaCrawler:
 
     def call_api(self, url):
         try:
-            print(url)
             with urllib.request.urlopen(url) as response:
                 status_code = response.getcode()
                 content = response.read().decode('utf-8')
@@ -128,7 +127,7 @@ class DigikalaCrawler:
         except urllib.error.URLError as e:
             # If there's an error, use proxy
             try:
-                proxy_url = self.PROXY 
+                proxy_url = urljoin(configs.NEST_API_URL, "api/dao/crawler/digikala?url=%s/") % url
                 with urllib.request.urlopen(proxy_url) as proxy_response:
                     proxy_status_code = proxy_response.getcode()
                     proxy_content = proxy_response.read().decode('utf-8')
