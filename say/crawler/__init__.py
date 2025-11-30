@@ -119,6 +119,7 @@ class DigikalaCrawler:
 
     def call_api(self, url):
         try:
+            print("updating via server...")
             with urllib.request.urlopen(url) as response:
                 status_code = response.getcode()
                 content = response.read().decode('utf-8')
@@ -127,7 +128,9 @@ class DigikalaCrawler:
         except urllib.error.URLError as e:
             # If there's an error, use proxy
             try:
+                print("updating via proxy...")
                 proxy_url = urljoin(configs.NEST_API_URL, "api/dao/crawler/digikala?url=%s/") % url
+                print(proxy_url)
                 with urllib.request.urlopen(proxy_url) as proxy_response:
                     proxy_status_code = proxy_response.getcode()
                     proxy_content = proxy_response.read().decode('utf-8')
@@ -154,7 +157,6 @@ class DigikalaCrawler:
         url = self.API_URL_NOT_FRESH % self.dkp
         api_response = self.call_api(url)
         parsed_result = self.parse_result(api_response)
-        print(api_response)
         if int(parsed_result["status"]) == 200:
             parsed_result = self.parse_result(api_response)
         elif parsed_result["status"] == 302 and "fresh" in parsed_result["redirect_url"]["uri"]:
