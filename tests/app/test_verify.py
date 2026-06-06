@@ -35,7 +35,6 @@ class TestVerify(BaseTestClass):
 
         # res = self.client.post(VERIFY_EMAIL_URL, data={'email': ' test@test.com  '})
         # assert res.status_code == 200
-        print('tst')
 
     def test_verify_wrong_email(self):
         res = self.client.post(VERIFY_EMAIL_URL, data={'email': 'test@test'})
