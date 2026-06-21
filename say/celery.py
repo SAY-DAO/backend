@@ -23,7 +23,7 @@ beat = {
     },
     'update-needs': {
         'task': 'say.tasks.update_needs.update_needs',
-        'schedule': crontab(minute=30, hour='0,4,8,12,16,20'),
+        'schedule': crontab(minute=30, hour='6'),
     },
     'report_to_family': {
         'task': 'say.tasks.report_to_family.report_to_families',
@@ -37,10 +37,10 @@ beat = {
         'task': 'say.tasks.delivere_to_child.delivere_to_child',
         'schedule': crontab(minute='10,40'),
     },
-    'update_nakama_txs': {
-        'task': 'say.tasks.nakama.update_nakama_txs',
-        'schedule': 10 * 60,
-    },
+    # 'update_nakama_txs': {
+    #     'task': 'say.tasks.nakama.update_nakama_txs',
+    #     'schedule': 10 * 60,
+    # },
     'check_unverified_payments': {
         'task': 'say.tasks.check_unverified_payments.check_unverified_payments',
         'schedule': crontab(minute=59),

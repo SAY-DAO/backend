@@ -73,7 +73,7 @@ class Config(object):
 
     # Celery
     BROKER = "redis"
-    task_soft_time_limit = 60
+    task_soft_time_limit = 120
     task_acks_late = True
     worker_prefetch_multiplier = 1
 
@@ -103,10 +103,14 @@ class Config(object):
 
             setattr(self, key, v)
 
+        print("ENV FALLBACK PASSWORD:", repr(os.environ.get("POSTGRES_PASSWORD")))
+        print("SECRET FILE EXISTS:", os.path.exists("/run/secrets/postgres-password"))
+
         self.POSTGRES_PASSWORD = get_secret(
             "postgres-password",
             self.POSTGRES_PASSWORD,
         )
+        print("FINAL PASSWORD:", repr(self.POSTGRES_PASSWORD))
 
     def _cast(self, v):
         try:

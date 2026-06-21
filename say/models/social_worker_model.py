@@ -203,18 +203,20 @@ class SocialWorker(BaseUser, Timestamp, ActivateMixin, SoftDeleteMixin):
     def send_password(self, password):
         from say.authorization import create_sw_access_token
         from say.tasks import send_embeded_subject_email
-
-        send_embeded_subject_email.delay(
-            to=self.email,
-            html=render_template_i18n(
-                'social_worker_password.html',
-                social_worker=self,
-                surname=surname(self.gender),
-                password=password,
-                token=create_sw_access_token(self),
-                locale=self.locale,
-            ),
-        )
+        try:
+            send_embeded_subject_email.delay(
+                to=self.email,
+                html=render_template_i18n(
+                    'social_worker_password.html',
+                    social_worker=self,
+                    surname=surname(self.gender),
+                    password=password,
+                    token=create_sw_access_token(self),
+                    locale=self.locale,
+                ),
+            )
+        except Exception as e:
+            self.retry(exc=e, countdown=60)
 
     @staticmethod
     def generate_password():

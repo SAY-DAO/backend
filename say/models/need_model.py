@@ -447,17 +447,22 @@ class Need(base, Timestamp):
         from say.crawler import DigikalaCrawler
 
         if 'digikala' in self.link:
+            print("updating via crawler.....")
             data = DigikalaCrawler(self.link).get_data(force=force)
+            print("Done updating.")
         else:
             data = Crawler(self.link).get_data(force=force)
 
         if data is None:
+            print(f"Could not get data for: {self.id}")
             return
 
         img = data['img']
         title = data['title']
         cost = data['cost']
-
+        print(f"Id: {self.id}")
+        print(f"fetched title: {title}")
+        print(f"fetched cost: {cost}")
         if img:
             self.img = img
 
